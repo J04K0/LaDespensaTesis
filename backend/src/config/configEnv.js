@@ -1,19 +1,29 @@
 "use strict";
-// Import the 'path' module to get the absolute path of the .env file
-import path from "node:path";
-const __dirname = import.meta.dirname;
 
-/** Get the absolute path of the .env file. */
-const envFilePath = path.resolve(__dirname, ".env");
-// Load environment variables from the .env file
+// Importa la función fileURLToPath desde el módulo url
+import { fileURLToPath } from "url";
+// Importa el módulo path
+import path from "path";
+// Importa el módulo dotenv
 import dotenv from "dotenv";
+
+// Obtiene la ruta del archivo actual
+const _filename = fileURLToPath(import.meta.url);
+
+// Obtiene el directorio padre de la ruta del archivo actual
+const _dirname = path.dirname(_filename);
+
+// Crea la ruta completa del archivo .env
+const envFilePath = path.resolve(_dirname, ".env");
+
+// Carga las variables de entorno desde el archivo .env
 dotenv.config({ path: envFilePath });
 
-/** Server port */
-export const PORT = process.env.PORT;
-/** Server host */
+// Exporta la variable de entorno HOST
 export const HOST = process.env.HOST;
-/** Database URL */
+// Exporta la variable de entorno PORT
+export const PORT = process.env.PORT;
+// Exporta la variable de entorno DB_URL
 export const DB_URL = process.env.DB_URL;
 /** Access token secret */
 export const ACCESS_JWT_SECRET = process.env.ACCESS_JWT_SECRET;
