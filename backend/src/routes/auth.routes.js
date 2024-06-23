@@ -1,17 +1,11 @@
-"use strict";
-// Importa el modulo 'express' para crear las rutas
-import { Router } from "express";
+import express from 'express';
+const router = express.Router();
 
-/** Controlador de autenticación */
-import authController from "../controllers/auth.controller.js";
+// Define tus rutas aquí
+// Ejemplo de ruta de autenticación
+router.post('/login', (req, res) => {
+  // Lógica de autenticación
+  res.send('Login');
+});
 
-/** Instancia del enrutador */
-const router = Router();
-
-// Define las rutas para la autenticación
-router.post("/login", authController.login);
-router.post("/logout", authController.logout);
-router.get("/refresh", authController.refresh);
-
-// Exporta el enrutador
 export default router;

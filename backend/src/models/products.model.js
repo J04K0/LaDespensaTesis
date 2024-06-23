@@ -1,27 +1,41 @@
 import mongoose from 'mongoose';
 
 const ProductSchema = new mongoose.Schema({
-  nombre: {
+  Nombre: {
     type: String,
     required: true,
   },
-  valorVenta: {
+  Marca: {
+    type: String,
+    required: true,
+  },
+  Stock: {
     type: Number,
     required: true,
   },
-  valorCompra: {
+  Categoria: {
+    type: String,
+    required: true,
+  },
+  precioVenta: {
     type: Number,
     required: true,
   },
-  stock: {
+  precioCompra: { 
     type: Number,
     required: true,
   },
-  fechaVencimiento: { 
+  fechaVencimiento: {
     type: Date,
     required: true,
   },
-})
+  imagenProducto: {
+    type: String,
+    required: true,
+  },
+}, { 
+  versionKey: false,
+  timestamps: true,});
 
 const Product = mongoose.model('Product', ProductSchema);
 export default Product;

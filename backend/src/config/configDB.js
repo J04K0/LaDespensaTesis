@@ -1,9 +1,17 @@
 "use strict";
-// Importa el modulo 'mongoose' para crear la conexion a la base de datos
-import { connect } from "mongoose";
+// Importa el módulo 'mongoose' para crear la conexión a la base de datos
+import mongoose from "mongoose";
+// Agregamos la configuración de las variables de entorno
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Agregamos la configuracion de las variables de entorno
-import { DB_URL } from "./configEnv.js";
+// Obtener la ruta del directorio actual usando import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Cargar el archivo .env desde src/config
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 import { handleError } from "../utils/errorHandler.js";
 
 /**
@@ -16,10 +24,11 @@ import { handleError } from "../utils/errorHandler.js";
 
 async function setupDB() {
   try {
-    await connect(DB_URL);
+    await mongoose.connect(process.env.DB_URL);
     console.log("=> Conectado a la base de datos");
   } catch (err) {
     handleError(err, "/configDB.js -> setupDB");
+    process.exit(1); // Salir del proceso si no se puede conectar a la base de datos
   }
 }
 

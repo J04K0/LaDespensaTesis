@@ -191,3 +191,4 @@ frontend/.env*.local
 
 # vercel
 frontend/.vercel
+backend/package-lock.json

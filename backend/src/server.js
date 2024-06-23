@@ -1,3 +1,15 @@
+// Cargar el archivo .env desde src/config
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener la ruta del directorio actual usando import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Cargar el archivo .env desde src/config
+dotenv.config({ path: path.resolve(__dirname, 'config/.env') });
+
 // Importa el archivo 'configEnv.js' para cargar las variables de entorno
 import { PORT, HOST } from "./config/configEnv.js";
 // Importa el módulo 'cors' para agregar los cors
@@ -34,8 +46,13 @@ async function setupServer() {
     server.use(cookieParser());
     // Agregamos morgan para ver las peticiones que se hacen al servidor
     server.use(morgan("dev"));
+
     // Agrega el enrutador principal al servidor
     server.use("/api", indexRoutes);
+
+    // Servir archivos estáticos desde el directorio 'uploads'
+    const uploadsPath = path.join(__dirname, '../uploads');
+    server.use('/uploads', express.static(uploadsPath));
 
     // Inicia el servidor en el puerto especificado
     server.listen(PORT, () => {

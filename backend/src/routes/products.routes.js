@@ -1,6 +1,7 @@
-import express from "express";
-import {  getProducts,getProductById, addProduct,updateProduct,deleteProduct, } from "../controllers/products.controller.js";
-const router = express.Router()
+import express from 'express';
+import { getProducts, getProductById, addProduct, updateProduct, deleteProduct } from "../controllers/products.controller.js";
+
+const router = express.Router();
 
 // @route   GET api/products
 // @desc    Get all products
