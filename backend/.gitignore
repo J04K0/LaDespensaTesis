@@ -160,3 +160,15 @@ frontend/.env*.local
 
 # vercel
 frontend/.vercel
+
+# backend
+package-lock.json
+node_modules/
+upload/
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+
