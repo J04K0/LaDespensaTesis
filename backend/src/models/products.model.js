@@ -29,10 +29,6 @@ const ProductSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  imagenProducto: {
-    type: String,
-    required: true,
-  },
 }, { 
   versionKey: false,
   timestamps: true,});
