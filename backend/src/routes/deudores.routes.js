@@ -6,11 +6,11 @@ const router = Router();
 // Ejemplo de ruta de deudores
 router.get('/',getDeudores);
 
-router.get('/:id', getDeudorById);
+router.get('/getbyid/:id', getDeudorById);
 
-router.put('/:id', updateDeudor);
+router.put('/actualizar/:id', updateDeudor);
 
-router.delete('/:id', deleteDeudor);
+router.delete('/eliminar/:id', deleteDeudor);
 
 router.post('/agregar', addDeudor);
 

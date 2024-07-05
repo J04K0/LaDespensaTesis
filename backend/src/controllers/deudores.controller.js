@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 
 
 
-// Get all deudores
+// Traer a todos los deudores
 export const getDeudores = async (req, res) => {
   try {
     const deudors = await Deudores.find();
@@ -15,7 +15,7 @@ export const getDeudores = async (req, res) => {
   }
 };
 
-// Get a single deudor by ID
+// Traer a un solo deudor por su ID
 export const getDeudorById = async (req, res) => {
   try {
     const deudor = await Deudores.findById(req.params.id);
@@ -32,7 +32,7 @@ export const getDeudorById = async (req, res) => {
   }
 };
 
-// Add a new deudor
+// Crear un nuevo deudor
 export const addDeudor = async (req, res) => {
   try {
     const {body } = req;
@@ -51,7 +51,7 @@ export const addDeudor = async (req, res) => {
   }
 };
 
-// Update an existing deudor
+// Actualizar un deudor
 export const updateDeudor = async (req, res) => {
   try {
     const { Nombre, fechaPaga, numeroTelefono, deudaTotal } = req.body;
@@ -81,7 +81,7 @@ export const updateDeudor = async (req, res) => {
   }
 };
 
-// Delete a deudor
+// Eliminar un deudor
 export const deleteDeudor = async (req, res) => {
   try {
     const deudor = await Deudores.findByIdAndDelete(req.params.id);

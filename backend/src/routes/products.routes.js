@@ -3,29 +3,14 @@ import { getProducts, getProductById, addProduct, updateProduct, deleteProduct }
 
 const router = express.Router();
 
-// @route   GET api/products
-// @desc    Get all products
-// @access  Public
 router.get('/', getProducts);
 
-// @route   GET api/products/:id
-// @desc    Get product by ID
-// @access  Public
-router.get('/:id', getProductById);
+router.get('/getbyid/:id', getProductById);
 
-// @route   POST api/products
-// @desc    Add a new product
-// @access  Public
-router.post('/', addProduct);
+router.post('/agregar', addProduct);
 
-// @route   PUT api/products/:id
-// @desc    Update a product
-// @access  Public
-router.put('/:id', updateProduct);
+router.put('/actualizar/:id', updateProduct);
 
-// @route   DELETE api/products/:id
-// @desc    Delete a product
-// @access  Public
-router.delete('/:id', deleteProduct);
+router.delete('/eliminar/:id', deleteProduct);
 
 export default router;

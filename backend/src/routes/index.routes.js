@@ -11,8 +11,5 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/files', fileRoutes);
-
-router.use('/products', productRoutes);
-
 router.use('/deudores', deudoresRoutes);
 export default router;

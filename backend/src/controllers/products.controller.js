@@ -1,7 +1,7 @@
 import Product from '../models/products.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 
-// Get all products
+// Traer todos los productos
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -12,7 +12,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// Get a single product by ID
+// Traer un solo producto por su ID
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -29,7 +29,7 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// Add a new product
+// Crear un nuevo producto
 export const addProduct = async (req, res) => {
   try {
     // Validar el cuerpo de la solicitud utilizando el esquema de validación
@@ -51,7 +51,7 @@ export const addProduct = async (req, res) => {
   }
 };
 
-// Update an existing product
+// Actualizar un producto
 export const updateProduct = async (req, res) => {
   try {
     const { Nombre, Marca, Stock, Categoria, precioVenta, precioCompra, fechaVencimiento, imagenProducto } = req.body;
@@ -85,7 +85,7 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// Delete a product
+// Elinminar un producto
 export const deleteProduct = async (req, res) => {
   try {
     const { value, error } = idProductSchema.validate(req.params, { convert: false });
@@ -93,7 +93,7 @@ export const deleteProduct = async (req, res) => {
       console.log('Validation error details:', error.details);
       return res.status(400).json(error.message);
     }
-    const product = await Product.findByIdAndDelete(value);
+    const product = await Product.findByIdAndDelete(value.id);
 
     if (!product) {
       return res.status(404).json({ msg: 'Product not found' });
