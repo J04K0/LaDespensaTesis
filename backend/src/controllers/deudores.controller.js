@@ -1,6 +1,5 @@
 import Deudores from '../models/deudores.model.js';
-import { deudorSchema } from '../schema/deudores.schema.js';
-import mongoose from 'mongoose';
+import { deudorSchema,idDeudorSchema } from '../schema/deudores.schema.js';
 
 
 
@@ -20,13 +19,13 @@ export const getDeudorById = async (req, res) => {
   try {
     const deudor = await Deudores.findById(req.params.id);
     if (!deudor) {
-      return res.status(404).json({ msg: 'Deudor not found' });
+      return res.status(404).json({ msg: 'Deudor no encontrado' });
     }
     res.json(deudor);
   } catch (err) {
     console.error(err.message);
     if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Deudor not found' });
+      return res.status(404).json({ msg: 'Deudor no encontrado' });
     }
     res.status(500).send('Server Error');
   }
@@ -36,10 +35,9 @@ export const getDeudorById = async (req, res) => {
 export const addDeudor = async (req, res) => {
   try {
     const {body } = req;
-    console.log("Request body:", body); 
     const {value, error} = deudorSchema.validate(body,{ convert: false });
     if (error) {
-      console.log("Validation error details:", error.details);
+      console.log("Error detalles de validación:", error.details);
       return res.status(400).json(error.message);
     }
     const newDeudor = new Deudores(value);
@@ -54,32 +52,35 @@ export const addDeudor = async (req, res) => {
 // Actualizar un deudor
 export const updateDeudor = async (req, res) => {
   try {
-    const { Nombre, fechaPaga, numeroTelefono, deudaTotal } = req.body;
+    const { id } = req.params;	
+    const { value: validatedId, error: errorId } = idDeudorSchema.validate({id});
+    if (errorId) return res.status(400).json({ message: errorId.message });
+    const deudor = await Deudores.findById(validatedId.id);
+    if(deudor.length === 0) return res.status(404).json({ message: 'Deudor no encontrado' });
+    const { body } = req;
+    const { value, error } = deudorSchema.validate(body);
+    if (error) return res.status(400).json({ message: error.message });
 
-    const deudorFields = {};
-    if (Nombre) deudorFields.Nombre = Nombre;
-    if (fechaPaga) deudorFields.fechaPaga = fechaPaga;
-    if (numeroTelefono) deudorFields.numeroTelefono = numeroTelefono;
-    if (deudaTotal) deudorFields.deudaTotal = deudaTotal;
-
-    let deudor = await Deudores.findById(req.params.id);
-
-    if (!deudor) {
-      return res.status(404).json({ msg: 'Deudor no encontrado' });
-    }
-
-    deudor = await Deudores.findByIdAndUpdate(
-      req.params.id,
-      { $set: deudorFields },
+    const updateDeudor = await Deudores.findByIdAndUpdate(
+      validatedId.id,
+      {
+        Nombre: value.Nombre,
+        fechaPaga: value.fechaPaga,
+        numeroTelefono: value.numeroTelefono,
+        deudaTotal: value.deudaTotal,
+      },
       { new: true }
-    );
-
-    res.json(deudor);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
+    )
+  
+    res.status(200).json({
+      msg: "Deudor modificado exitosamente",
+      data: updateDeudor
+  })
+} catch (err) {
+  res.status(500).json({ message: 'Error al modificar a un deudor', err });
+}
 };
+
 
 // Eliminar un deudor
 export const deleteDeudor = async (req, res) => {
@@ -87,9 +88,9 @@ export const deleteDeudor = async (req, res) => {
     const deudor = await Deudores.findByIdAndDelete(req.params.id);
 
     if (!deudor) {
-      return res.status(404).json({ msg: 'Deudor not found' });
+      return res.status(404).json({ msg: 'Deudor no encontrado' });
     }
-    res.json({ msg: 'Deudor removed' });
+    res.json({ msg: 'Deudor eliminado' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

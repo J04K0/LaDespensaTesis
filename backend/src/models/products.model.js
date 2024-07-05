@@ -29,6 +29,10 @@ const ProductSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  precioAntiguo: {
+    type: Number,
+    required: false,
+  },
 }, { 
   versionKey: false,
   timestamps: true,});

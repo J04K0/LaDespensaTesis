@@ -1,5 +1,12 @@
 import Joi from 'joi';
 
+const objectIdValidator = (value, helpers) => {
+  if (!mongoose.Types.ObjectId.isValid(value)) {
+    return helpers.message('Identificador no válido.');
+  }
+  return value;
+};
+
 export const deudorSchema = Joi.object({
   Nombre: Joi.string().required().messages({
     'string.base': 'El nombre debe ser una cadena de texto.',
@@ -30,4 +37,9 @@ export const deudorSchema = Joi.object({
     'number.base': 'La deuda total debe ser un número.',
     'any.required': 'La deuda total es un campo requerido.'
   }),
+});
+export const idDeudorSchema = Joi.object({
+  id: Joi.string().custom(objectIdValidator, 'Validación Id producto')
+}).messages({
+  'object.unknown': 'No se permiten propiedades adicionales.'
 });
