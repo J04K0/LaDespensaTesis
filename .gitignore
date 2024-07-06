@@ -192,3 +192,7 @@ frontend/.env*.local
 # vercel
 frontend/.vercel
 backend/package-lock.json
+
+# tmpnodejsnpm-cache
+tmpnodejsnpm-cache/
+
