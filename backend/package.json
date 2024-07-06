@@ -2,7 +2,7 @@
   "name": "api-node",
   "version": "1.0.0",
   "type": "module",
-  "description": "Template backend",
+  "description": "Tesis de grado de Joaquin Perez",
   "main": "src/server.js",
   "scripts": {
     "start": "nodemon src/server.js",

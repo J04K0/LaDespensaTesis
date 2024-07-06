@@ -1,17 +1,20 @@
 import {Router} from 'express';
 import { getDeudores,getDeudorById,updateDeudor,deleteDeudor,addDeudor } from '../controllers/deudores.controller.js';
-const router = Router();
+import { isAdmin,isEmpleado,authorizeRoles, isJefe } from '../middlewares/authorization.middleware.js';
+import authenticationMiddleware from "../middlewares/authentication.middleware.js";
 
+const router = Router();
+router.use(authenticationMiddleware);
 // Define tus rutas aquí
 // Ejemplo de ruta de deudores
-router.get('/',getDeudores);
+router.get('/', authorizeRoles([isEmpleado,isAdmin,isJefe]),getDeudores);
 
-router.get('/getbyid/:id', getDeudorById);
+router.get('/getbyid/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),getDeudorById);
 
-router.put('/actualizar/:id', updateDeudor);
+router.put('/actualizar/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),updateDeudor);
 
-router.delete('/eliminar/:id', deleteDeudor);
+router.delete('/eliminar/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),deleteDeudor);
 
-router.post('/agregar', addDeudor);
+router.post('/agregar', authorizeRoles([isEmpleado,isAdmin,isJefe]),addDeudor);
 
 export default router;
