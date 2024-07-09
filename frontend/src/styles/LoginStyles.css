@@ -1,0 +1,100 @@
+.containerLogin {
+    background: linear-gradient(#003366,#002651);
+    flex: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    /* El container login no esta utilizando el 100% del contenedor que lo contiene (Es el #root que se encuentra en el index.css) */
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+}
+.containerImagen{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: auto;
+}
+
+.imagen{
+    height: auto;
+    width: 50%;
+    /* aspect-ratio: 6/9; */
+}
+
+.containerLog{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 30px;
+    height: 100%;
+    width: 50%;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 50%;
+    background-color: #FFFFFF;
+    border-radius: 30px;
+    padding: 30px;
+    width: 50%;
+    border: 1px solid green;
+}
+
+.titulo{
+    padding: 0;
+    margin: 0 0 24px 0;
+    color: #000000;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+.containerInput{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 2% 0;
+    margin-bottom: 5px;
+}
+
+.tituloInput{
+    font-size: 22px;
+    font-weight: bold;
+    padding: 0;
+    margin: 0 0 5px 0;
+}
+
+.input{
+    border: 1.5px solid #000000;
+    border-radius: 15px;
+    padding: 5px 0 5px 15px;
+    height: 50px;
+    font-size: 20px;
+}
+
+.boton{
+    width: 100%;
+    background-color: #135170;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 15px;
+    padding: 15px 0;
+    margin: 10px 0;
+}
+
+.containerOlvidaste{
+    width: 100%;
+    display: flex;
+    margin-top: 2px;
+    justify-content: center;
+}
+
+.olvidaste{
+    font-size: 20px;
+    color: #135170;
+}
