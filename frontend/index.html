@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Titulo</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/public/logo.svg" alt="Marketplace">
+    </div>
+    <div class="container">
+        <div class="login-container">
+            <h2>Iniciar sesión</h2>
+            <form>
+                <label for="username">Nombre de usuario</label>
+                <input type="text" id="username" name="username" placeholder="Ingrese el nombre de usuario" required>
+                
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                
+                <button type="submit">Iniciar sesión</button>
+                
+                <div class="links">
+                    <a href="#">¿No tienes cuenta? Regístrate aquí</a>
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
 </html>

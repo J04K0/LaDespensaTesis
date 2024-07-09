@@ -8,26 +8,28 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.container {
-    display: flex;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    width: 800px;
-}
-
-.image-container {
-    flex: 1;
+.logo-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #0e387a;
+    flex-direction: column;
+    margin-right: 100px; /* Añade un margen derecho para separación */
 }
 
-.image-container img {
-    width: 80%;
-    max-width: 300px;
+.logo-container img {
+    width: 410px; /* Ajusta el tamaño según sea necesario */
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px; /* Ajusta el ancho máximo del contenedor */
+    padding: 2rem;
+    margin: 0 30px; /* Añade un margen para mantener el contenedor centrado */
+    border: 3px solid #0e387a; /* Añade un borde azul */
 }
 
 .login-container {
@@ -38,6 +40,7 @@ body {
 .login-container h2 {
     margin-bottom: 1rem;
     color: #333;
+    text-align: center;
 }
 
 .login-container label {
