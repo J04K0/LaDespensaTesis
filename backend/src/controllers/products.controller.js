@@ -110,3 +110,40 @@ export const deleteProduct = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+export const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoria } = req.params;
+    console.log(categoria);
+    if (!categoria) {
+      return res.status(400).json({ message: 'Categoría es requerida' });
+    }
+
+    const products = await Product.find({ Categoria: categoria });
+    console.log('Productos encontrados:', products); // Log para verificar los productos encontrados
+
+    if (products.length > 0) {
+      return res.json(products);
+    } else {
+      return res.status(404).json({ message: 'No se encontraron productos para esta categoría' });
+    }
+  } catch (err) {
+    console.error('Error al traer los productos por categoría:', err.message);
+    return res.status(500).send('Server Error');
+  }
+};
+
+
+export const verificarStock = async (req, res) => {
+  try {
+    const productosConPocoStock = await Product.find({ Stock: { $lt: 10 } });
+    if (productosConPocoStock.length > 0) {
+      return res.json(productosConPocoStock);
+    } else {
+      return res.json({ message: 'No hay productos con poco stock' });
+    }
+  } catch (error) {
+    console.error('Error al verificar el stock', error);
+    return res.status(500).json({ message: 'Error al verificar el stock' });
+  }
+};
