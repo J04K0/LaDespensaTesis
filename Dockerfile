@@ -28,7 +28,7 @@ RUN npm run build
 WORKDIR /app/backend
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 5000
 
 # Command to run the backend
 CMD ["npm", "start"]

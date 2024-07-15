@@ -1,14 +1,31 @@
 version: '3.8'
 
 services:
+  mongo:
+    image: mongo:3.6.3
+    restart: always
+    ports:
+      - "mongodb+srv://joakop76:OL3G5abjz4cYX0Yv@tesis.wx9nddv.mongodb.net/?retryWrites=true&w=majority&appName=Tesis"
+    networks: [ladespensa]
+    
   tesisladespensa:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5000:5000"
     env_file:
       - backend/src/config/.env
-    volumes:
-      - ./backend:/app/backend
-      - ./frontend:/app/frontend
+    networks: [ladespensa]
+
+  latesisladespensafrontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    networks: [ladespensa]
+
+networks:
+  ladespensa:
+    driver: bridge
