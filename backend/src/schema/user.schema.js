@@ -2,11 +2,8 @@
 
 import Joi from "joi";
 import ROLES from "../constants/roles.constants.js";
-/**
- * Esquema de validación para el cuerpo de la solicitud de usuario.
- * @constant {Object}
- */
-const userBodySchema = Joi.object({
+
+export const userBodySchema = Joi.object({
   username: Joi.string().required().messages({
     "string.empty": "El nombre de usuario no puede estar vacío.",
     "any.required": "El nombre de usuario es obligatorio.",
@@ -51,11 +48,7 @@ const userBodySchema = Joi.object({
   "object.unknown": "No se permiten propiedades adicionales.",
 });
 
-/**
- * Esquema de validación para el id de usuario.
- * @constant {Object}
- */
-const userIdSchema = Joi.object({
+export const userIdSchema = Joi.object({
   id: Joi.string()
     .required()
     .pattern(/^(?:[0-9a-fA-F]{24}|[0-9a-fA-F]{12})$/)
@@ -66,5 +59,3 @@ const userIdSchema = Joi.object({
       "string.pattern.base": "El id proporcionado no es un ObjectId válido.",
     }),
 });
-
-export { userBodySchema, userIdSchema };

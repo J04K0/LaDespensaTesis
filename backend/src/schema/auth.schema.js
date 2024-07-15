@@ -2,11 +2,7 @@
 
 import Joi from "joi";
 
-/**
- * Esquema de validación para el cuerpo de la solicitud de inicio de sesión.
- * @constant {Object}
- */
-const authLoginBodySchema = Joi.object({
+export const authLoginBodySchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.empty": "El email no puede estar vacío.",
     "any.required": "El email es obligatorio.",
@@ -21,5 +17,3 @@ const authLoginBodySchema = Joi.object({
 }).messages({
   "object.unknown": "No se permiten propiedades adicionales.",
 });
-
-export { authLoginBodySchema };

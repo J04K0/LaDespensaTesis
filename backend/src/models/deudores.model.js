@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import { Schema, model } from "mongoose";
 
-const DeudorSchema = new mongoose.Schema({
+const DeudorSchema = new Schema({
     Nombre: {
         type: String,
         required: true,
@@ -17,9 +17,12 @@ const DeudorSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    }, { 
+}, 
+    { 
     versionKey: false,
-    timestamps: true,});
+    timestamps: true,
+    }
+);
 
-const Deudor = mongoose.model('Deudor', DeudorSchema);
+const Deudor = model('Deudor', DeudorSchema);
 export default Deudor;

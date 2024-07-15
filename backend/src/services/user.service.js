@@ -1,13 +1,8 @@
 "use strict";
-// Importa el modelo de datos 'User'
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
-import { handleError } from "../utils/errorHandler.js";
+import { handleErrorServer } from "../utils/resHandlers.js";
 
-/**
- * Obtiene todos los usuarios de la base de datos
- * @returns {Promise} Promesa con el objeto de los usuarios
- */
 async function getUsers() {
   try {
     const users = await User.find()
@@ -18,15 +13,10 @@ async function getUsers() {
 
     return [users, null];
   } catch (error) {
-    handleError(error, "user.service -> getUsers");
+    handleErrorServer(error);
   }
 }
 
-/**
- * Crea un nuevo usuario en la base de datos
- * @param {Object} user Objeto de usuario
- * @returns {Promise} Promesa con el objeto de usuario creado
- */
 async function createUser(user) {
   try {
     const { username, rut, email, password, roles } = user;
@@ -49,15 +39,10 @@ async function createUser(user) {
 
     return [newUser, null];
   } catch (error) {
-    handleError(error, "user.service -> createUser");
+    handleErrorServer(error);
   }
 }
 
-/**
- * Obtiene un usuario por su id de la base de datos
- * @param {string} Id del usuario
- * @returns {Promise} Promesa con el objeto de usuario
- */
 async function getUserById(id) {
   try {
     const user = await User.findById({ _id: id })
@@ -69,16 +54,10 @@ async function getUserById(id) {
 
     return [user, null];
   } catch (error) {
-    handleError(error, "user.service -> getUserById");
+    handleErrorServer(error);
   }
 }
 
-/**
- * Actualiza un usuario por su id en la base de datos
- * @param {string} id Id del usuario
- * @param {Object} user Objeto de usuario
- * @returns {Promise} Promesa con el objeto de usuario actualizado
- */
 async function updateUser(id, user) {
   try {
     const userFound = await User.findById(id);
@@ -114,20 +93,15 @@ async function updateUser(id, user) {
 
     return [userUpdated, null];
   } catch (error) {
-    handleError(error, "user.service -> updateUser");
+    handleErrorServer(error);
   }
 }
 
-/**
- * Elimina un usuario por su id de la base de datos
- * @param {string} Id del usuario
- * @returns {Promise} Promesa con el objeto de usuario eliminado
- */
 async function deleteUser(id) {
   try {
     return await User.findByIdAndDelete(id);
   } catch (error) {
-    handleError(error, "user.service -> deleteUser");
+    handleErrorServer(error);
   }
 }
 

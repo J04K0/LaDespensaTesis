@@ -1,21 +1,11 @@
 "use strict";
 
-/** Modelo de datos 'User' */
 import User from "../models/user.model.js";
-/** Modulo 'jsonwebtoken' para crear tokens */
 import jwt from "jsonwebtoken";
-
 import { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } from "../config/configEnv.js";
+import { handleErrorClient, handleErrorServer } from "../utils/resHandlers.js";
 
-import { handleError } from "../utils/errorHandler.js";
-
-/**
- * Inicia sesión con un usuario.
- * @async
- * @function login
- * @param {Object} user - Objeto de usuario
- */
-async function login(user) {
+export async function login(user) {
   try {
     const { email, password } = user;
 
@@ -53,17 +43,11 @@ async function login(user) {
 
     return [accessToken, refreshToken, null];
   } catch (error) {
-    handleError(error, "auth.service -> signIn");
+    handleErrorServer(error);
   }
 }
 
-/**
- * Refresca el token de acceso
- * @async
- * @function refresh
- * @param {Object} cookies - Objeto de cookies
- */
-async function refresh(cookies) {
+export async function refresh(cookies) {
   try {
     if (!cookies.jwt) return [null, "No hay autorización"];
     const refreshToken = cookies.jwt;
@@ -96,8 +80,6 @@ async function refresh(cookies) {
 
     return accessToken;
   } catch (error) {
-    handleError(error, "auth.service -> refresh");
+    handleErrorClient(error);
   }
 }
-
-export default { login, refresh };

@@ -1,67 +1,62 @@
 import Product from '../models/products.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
+import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 
-// Traer todos los productos
-export const getProducts = async (req, res) => {
+export const getProducts = async (req, res) => { // ! Pensar en realizar paginación, revisar mongoose-paginate-v2
   try {
     const products = await Product.find();
-    res.json(products);
+
+    if(products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
+
+    handleSuccess(res, 200, 'Productos encontrados', products);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al traer los productos', err.message);
   }
 };
 
-// Traer un solo producto por su ID
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ msg: 'Producto no encontrado' });
-    }
-    res.json(product);
+    const product = await Product.findById(req.params.id); // ! validar id con joi
+
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    handleSuccess(res, 200, 'Producto encontrado', product);
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Producto no encontrado' });
-    }
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al traer un producto', err.message);
   }
 };
 
-// Crear un nuevo producto
 export const addProduct = async (req, res) => {
   try {
-    // Validar el cuerpo de la solicitud utilizando el esquema de validación
     const { value, error } = productSchema.validate(req.body)
-    if (error) {
-      console.log('Error detalles de validación:', error.details);
-      return res.status(400).json(error.message);
-    }
+    if (error) return handleErrorClient(res, 400, error.message);
 
-    // Crear un nuevo producto con los valores validados
     const newProduct = new Product(value);
+
     const product = await newProduct.save();
 
-    // Responder con un código de estado 201 y el producto creado
-    res.status(201).json(product);
+    handleSuccess(res, 201, 'Producto creado', product);
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al crear un producto', err.message);
   }
 };
 
-// Actualizar un producto
 export const updateProduct = async (req, res) => {
   try {
       const { id } = req.params;
       const { value: validatedId, error: errorId } = idProductSchema.validate({id});
-      if (errorId) return res.status(400).json({ message: errorId.message });
+      if (errorId) return handleErrorClient(res, 400, errorId.message);
+
       const product = await Product.findById(validatedId.id);
-      if (product.length === 0) return res.status(404).json({ msg: 'Producto no encontrado' });
+
+      if (product.length === 0) return handleErrorClient(res, 404, 'Producto no encontrado');
+
       const { body } = req;
+
       const { value, error } = productSchema.validate(body);
-      if (error) return res.status(400).json({ message: error.message });
+
+      if (error) return handleErrorClient(res, 400, error.message);
 
       const updatedProduct = await Product.findByIdAndUpdate(
           validatedId.id,
@@ -78,72 +73,84 @@ export const updateProduct = async (req, res) => {
           { new: true }
       );
 
-      res.status(200).json({
-          msg: "Producto modificado exitosamente",
-          data: updatedProduct
-      })
+      handleSuccess(res, 200, 'Producto modificado', updatedProduct);
   } catch (err) {
-      res.status(500).json({ message: 'Error al modificar un producto', err });
+      handleErrorServer(res, 500, 'Error al modificar un producto', err.message);
   }
 };
 
-// Elinminar un producto
 export const deleteProduct = async (req, res) => {
   try {
-    const { value, error } = idProductSchema.validate(req.params, { convert: false });
-    if (error) {
-      console.log('Error detalles de validación:', error.details);
-      return res.status(400).json(error.message);
-    }
+    const { id } = req.params; // ! validar id con joi
+
+    const { value, error } = idProductSchema.validate({id}, { convert: false });
+
+    if (error) return handleErrorClient(res, 400, error.message);
+
     const product = await Product.findByIdAndDelete(value.id);
 
-    if (!product) {
-      return res.status(404).json({ msg: 'Producto no encontrado' });
-    }
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-    res.json({ msg: 'Producto eliminado' });
+    handleSuccess(res, 200, 'Producto eliminado', product);
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Producto no encontrado' });
-    }
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al eliminar un producto', err.message);
   }
 };
 
 export const getProductsByCategory = async (req, res) => {
   try {
-    const { categoria } = req.params;
-    console.log(categoria);
-    if (!categoria) {
-      return res.status(400).json({ message: 'Categoría es requerida' });
-    }
+    const { categoria } = req.params; // ! validar categoria con joi
 
-    const products = await Product.find({ Categoria: categoria });
-    console.log('Productos encontrados:', products); // Log para verificar los productos encontrados
+    if (!categoria) return handleErrorClient(res, 400, 'Categoría es requerida');
 
-    if (products.length > 0) {
-      return res.json(products);
-    } else {
-      return res.status(404).json({ message: 'No se encontraron productos para esta categoría' });
-    }
+    const products = await Product.findOne({ Categoria: categoria });
+
+    if (products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
+
+    handleSuccess(res, 200, 'Productos encontrados', products);
   } catch (err) {
-    console.error('Error al traer los productos por categoría:', err.message);
-    return res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al traer los productos', err.message);
   }
 };
 
+const stockMinimoPorCategoria = {
+  'Congelados': 10,
+  'Carnes': 10,
+  'Despensa': 10,
+  'Panaderia y Pasteleria': 10,
+  'Quesos y Fiambres': 10,
+  'Bebidas y Licores': 10,
+  'Lacteos, Huevos y Refrigerados': 10,
+  'Desayuno y Dulces': 10,
+  'Bebes y Niños': 10,
+  'Cigarros': 5
+};
 
 export const verificarStock = async (req, res) => {
   try {
-    const productosConPocoStock = await Product.find({ Stock: { $lt: 10 } });
-    if (productosConPocoStock.length > 0) {
-      return res.json(productosConPocoStock);
-    } else {
-      return res.json({ message: 'No hay productos con poco stock' });
-    }
+    const productosConPocoStock = await Product.find();
+
+    if (productosConPocoStock.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
+
+    const productosFiltrados = productosConPocoStock.filter(producto => {
+      const categoria = producto.Categoria; // ! modificar desde la 134 a la 146, debido a que no es muy descriptivo y con no muy buenas practicas
+      if (!categoria) {
+        console.warn(`Producto sin categoría definida: ${JSON.stringify(producto)}`);
+        return false;
+      }
+
+      const stockMinimo = stockMinimoPorCategoria[categoria];
+      if (stockMinimo === undefined) {
+        console.warn(`Categoría no definida en stockMinimoPorCategoria: ${categoria}`);
+        return false;
+      }
+      return producto.Stock < stockMinimo;
+    });
+
+    if (productosFiltrados.length > 0) return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
+
+    handleErrorClient(res, 404, 'No hay productos con poco stock');
   } catch (error) {
-    console.error('Error al verificar el stock', error);
-    return res.status(500).json({ message: 'Error al verificar el stock' });
+    handleErrorServer(res, 500, 'Error al verificar el stock', error.message);
   }
 };

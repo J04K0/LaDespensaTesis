@@ -2,16 +2,9 @@
 // Autorizacion - Comprobar el rol del usuario
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
-import { respondError } from "../utils/resHandler.js";
-import { handleError } from "../utils/errorHandler.js";
+import { handleErrorClient, handleErrorServer } from "../utils/resHandlers.js";
 
-/**
- * Comprueba si el usuario es administrador
- * @param {Object} req - Objeto de petición
- * @param {Object} res - Objeto de respuesta
- * @param {Function} next - Función para continuar con la siguiente función
- */
-async function isAdmin(req, res, next) {
+export async function isAdmin(req, res, next) {
   try {
     const user = await User.findOne({ email: req.email });
     const roles = await Role.find({ _id: { $in: user.roles } });
@@ -21,19 +14,18 @@ async function isAdmin(req, res, next) {
         return;
       }
     }
-    return respondError(
-      req,
+    return handleErrorClient(
       res,
       401,
       "Se requiere un rol de administrador para realizar esta acción",
     );
   } catch (error) {
-    handleError(error, "authorization.middleware -> isAdmin");
+    handleErrorServer(res, 500, "Error al comprobar el rol de usuario");
   }
 }
 
 
-async function isEmpleado(req, res, next) {
+export async function isEmpleado(req, res, next) {
   try {
     const user = await User.findOne({ email:
     req.email });
@@ -44,19 +36,18 @@ async function isEmpleado(req, res, next) {
         return;
       }
     }
-    return respondError(
-      req,
+    return handleErrorClient(
       res,
       401,
       "Se requiere un rol de usuario para realizar esta acción",
     );
   }
   catch (error) {
-    handleError(error, "authorization.middleware -> isEmpleado");
+    handleErrorServer(res, 500, "Error al comprobar el rol de usuario");
   }
 }
 
-async function isJefe(req, res, next) {
+export async function isJefe(req, res, next) {
   try {
     const user = await User.findOne({ email: req.email });
     const roles = await Role.find({ _id: { $in: user.roles } });
@@ -66,14 +57,13 @@ async function isJefe(req, res, next) {
         return;
       }
     }
-    return respondError(
-      req,
+    return handleErrorClient(
       res,
       401,
       "Se requiere un rol de jefe para realizar esta acción",
     );
   } catch (error) {
-    handleError(error, "authorization.middleware -> isJefe");
+    handleErrorServer(res, 500, "Error al comprobar el rol de usuario");
   }
 }
 
@@ -88,17 +78,13 @@ async function checkRole(req, res, rolesToCheck, next) {
       return next();
     }
 
-    return res.status(401).json({
-      message: "No tienes los permisos necesarios para realizar esta acción"
-    });
+    return handleErrorClient(res, 401, "No tienes los permisos necesarios para realizar esta acción");
   } catch (error) {
-    return res.status(500).json({
-      message: "authorization.middleware -> checkRole()"
-    });
+    return handleErrorServer(res, 500, "Error al comprobar el rol de usuario");
   }
 }
 
-function authorizeRoles(roles) {
+export function authorizeRoles(roles) {
   return (req, res, next) => {
     const rolesToCheck = roles.map(roleFn => {
       if (roleFn === isAdmin) return "admin";
@@ -109,6 +95,4 @@ function authorizeRoles(roles) {
 
     checkRole(req, res, rolesToCheck, next);
   };
-} 
-
-export { isAdmin, isEmpleado, isJefe,authorizeRoles};
+}

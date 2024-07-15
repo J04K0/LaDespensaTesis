@@ -32,7 +32,20 @@ export const productSchema = Joi.object({
     'number.min': 'El stock no puede ser negativo',
     'number.empty': 'El stock del producto es obligatorio'
   }),
-  Categoria: Joi.string().valid('Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria', 'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados', 'Desayuno y Dulces', 'Bebes y Niños ', 'Cigarros').required().messages({
+  Categoria: Joi.string().
+  valid(
+    'Congelados', 
+    'Carnes', 
+    'Despensa', 
+    'Panaderia y Pasteleria', 
+    'Quesos y Fiambres', 
+    'Bebidas y Licores', 
+    'Lacteos, Huevos y Refrigerados', 
+    'Desayuno y Dulces', 
+    'Bebes y Niños ', 
+    'Cigarros')
+    .required()
+    .messages({
     'any.only': 'Categoría no válida',
     'string.empty': 'La categoría del producto es obligatoria',
     'string.base': 'La categoría del producto debe ser una cadena de texto'
@@ -58,5 +71,3 @@ export const idProductSchema = Joi.object({
 }).messages({
   'object.unknown': 'No se permiten propiedades adicionales.'
 });
-
-

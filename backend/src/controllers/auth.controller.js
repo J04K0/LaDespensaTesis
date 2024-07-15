@@ -1,86 +1,54 @@
 "use strict";
 
-import { respondSuccess, respondError } from "../utils/resHandler.js";
-import { handleError } from "../utils/errorHandler.js";
-
-/** Servicios de autenticación */
-import AuthService from "../services/auth.service.js";
+import { login as authLogin, refresh as authRefresh } from "../services/auth.service.js";
 import { authLoginBodySchema } from "../schema/auth.schema.js";
+import { handleErrorClient, handleErrorServer, handleSuccess } from "../utils/resHandlers.js";	
 
-/**
- * Inicia sesión con un usuario.
- * @async
- * @function login
- * @param {Object} req - Objeto de petición
- * @param {Object} res - Objeto de respuesta
- */
-async function login(req, res) {
+export async function login(req, res) {
   try {
     const { body } = req;
     const { error: bodyError } = authLoginBodySchema.validate(body);
-    if (bodyError) return respondError(req, res, 400, bodyError.message);
+    if (bodyError) return handleErrorClient(res, 400, bodyError.message);
 
-    const [accessToken, refreshToken, errorToken] =
-      await AuthService.login(body);
+    const [accessToken, refreshToken, errorToken] = await authLogin(body);
 
-    if (errorToken) return respondError(req, res, 400, errorToken);
+    if (errorToken) return handleErrorClient(res, 400, errorToken);
 
     // * Existen mas opciones de seguirdad para las cookies *//
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    respondSuccess(req, res, 200, { accessToken });
+    handleSuccess(res, 200, "Usuario logueado correctamente", { accessToken });
   } catch (error) {
-    handleError(error, "auth.controller -> login");
-    respondError(req, res, 400, error.message);
+    handleErrorServer(res, 500, "Error al loguear al usuario", error.message);
   }
 }
 
-/**
- * @name logout
- * @description Cierra la sesión del usuario
- * @param {Object} req - Objeto de petición
- * @param {Object} res - Objeto de respuesta
- * @returns
- */
-async function logout(req, res) {
+export async function logout(req, res) {
   try {
     const cookies = req.cookies;
-    if (!cookies?.jwt) return respondError(req, res, 400, "No hay token");
+    if (!cookies?.jwt) return handleErrorClient(res, 400, "No hay token");
+
     res.clearCookie("jwt", { httpOnly: true });
-    respondSuccess(req, res, 200, { message: "Sesión cerrada correctamente" });
+    handleSuccess(res, 200, "Sesión cerrada correctamente");
   } catch (error) {
-    handleError(error, "auth.controller -> logout");
-    respondError(req, res, 400, error.message);
+    handleErrorServer(res, 500, "Error al cerrar la sesión", error.message);
   }
 }
 
-/**
- * @name refresh
- * @description Refresca el token de acceso
- * @param {Object} req - Objeto de petición
- * @param {Object} res - Objeto de respuesta
- */
-async function refresh(req, res) {
+export async function refresh(req, res) {
   try {
     const cookies = req.cookies;
-    if (!cookies?.jwt) return respondError(req, res, 400, "No hay token");
+    if (!cookies?.jwt) return handleErrorClient(res, 400, "No hay token");
 
-    const [accessToken, errorToken] = await AuthService.refresh(cookies);
+    const [accessToken, errorToken] = await authRefresh(cookies);
 
-    if (errorToken) return respondError(req, res, 400, errorToken);
+    if (errorToken) return handleErrorClient(res, 400, errorToken);
 
-    respondSuccess(req, res, 200, { accessToken });
+    handleSuccess(res, 200, "Token refrescado correctamente", { accessToken });
   } catch (error) {
-    handleError(error, "auth.controller -> refresh");
-    respondError(req, res, 400, error.message);
+    handleErrorServer(res, 500, "Error al refrescar el token", error.message);
   }
 }
-
-export default {
-  login,
-  logout,
-  refresh,
-};

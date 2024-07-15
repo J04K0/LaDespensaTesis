@@ -1,65 +1,66 @@
 import Deudores from '../models/deudores.model.js';
 import { deudorSchema,idDeudorSchema } from '../schema/deudores.schema.js';
+import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
 
-
-
-// Traer a todos los deudores
 export const getDeudores = async (req, res) => {
   try {
-    const deudors = await Deudores.find();
-    res.json(deudors);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    const deudores = await Deudores.find();
+
+    if (deudores.length === 0) {
+      return handleErrorClient( res, 404, 'No hay deudores registrados');
+    }
+
+    handleSuccess(res, 200, 'Deudores encontrados', deudores);
+
+  } catch (error) {
+    handleErrorServer(res, 500, 'Error al traer los deudores', error.message);
   }
 };
 
-// Traer a un solo deudor por su ID
 export const getDeudorById = async (req, res) => {
   try {
-    const deudor = await Deudores.findById(req.params.id);
+    const deudor = await Deudores.findById(req.params.id); // ! validar esto con joi
     if (!deudor) {
-      return res.status(404).json({ msg: 'Deudor no encontrado' });
+      return handleErrorClient(res, 404, 'Deudor no encontrado');
     }
-    res.json(deudor);
+    handleSuccess(res, 200, 'Deudor encontrado', deudor);
   } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Deudor no encontrado' });
-    }
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al traer un deudor', err.message);
   }
 };
 
-// Crear un nuevo deudor
 export const addDeudor = async (req, res) => {
   try {
-    const {body } = req;
+    const { body } = req; 
     const {value, error} = deudorSchema.validate(body,{ convert: false });
     if (error) {
-      console.log("Error detalles de validación:", error.details);
-      return res.status(400).json(error.message);
+      return handleErrorClient(res, 400, error.message);
     }
     const newDeudor = new Deudores(value);
     const deudor = await newDeudor.save();
-    res.json(deudor);
+    handleSuccess(res, 201, 'Deudor creado', deudor);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al crear un deudor', err.message);
   }
 };
 
-// Actualizar un deudor
 export const updateDeudor = async (req, res) => {
   try {
     const { id } = req.params;	
+    
     const { value: validatedId, error: errorId } = idDeudorSchema.validate({id});
-    if (errorId) return res.status(400).json({ message: errorId.message });
+   
+    if (errorId) return handleErrorClient(res, 400, errorId.message);
+
     const deudor = await Deudores.findById(validatedId.id);
-    if(deudor.length === 0) return res.status(404).json({ message: 'Deudor no encontrado' });
+
+    if(deudor.length === 0) return handleErrorClient(res, 404, 'Deudor no encontrado');
+
     const { body } = req;
+
     const { value, error } = deudorSchema.validate(body);
-    if (error) return res.status(400).json({ message: error.message });
+
+    if (error) return handleErrorClient(res, 400, error.message);
 
     const updateDeudor = await Deudores.findByIdAndUpdate(
       validatedId.id,
@@ -72,30 +73,21 @@ export const updateDeudor = async (req, res) => {
       { new: true }
     )
   
-    res.status(200).json({
-      msg: "Deudor modificado exitosamente",
-      data: updateDeudor
-  })
-} catch (err) {
-  res.status(500).json({ message: 'Error al modificar a un deudor', err });
-}
+      handleSuccess(res, 200, 'Deudor modificado', updateDeudor);
+  } catch (err) {
+      handleErrorServer(res, 500, 'Error al modificar a un deudor', err.message);
+  };
 };
 
 
-// Eliminar un deudor
 export const deleteDeudor = async (req, res) => {
   try {
-    const deudor = await Deudores.findByIdAndDelete(req.params.id);
+    const deudor = await Deudores.findByIdAndDelete(req.params.id); // ! validar id con joi
+ 
+    if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
-    if (!deudor) {
-      return res.status(404).json({ msg: 'Deudor no encontrado' });
-    }
-    res.json({ msg: 'Deudor eliminado' });
+    handleSuccess(res, 200, 'Deudor eliminado', deudor);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    handleErrorServer(res, 500, 'Error al eliminar un deudor', err.message);
   }
-};
-
-
-
+}
