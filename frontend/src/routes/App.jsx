@@ -1,10 +1,10 @@
+import React from 'react';
+import  Home  from '../Views/Home.jsx';
 
 
 function App() {
   return (
-    <div>
-      <h1>Home!</h1>
-    </div>
+    <Home/>
   );
 }
 

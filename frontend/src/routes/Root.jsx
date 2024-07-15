@@ -17,6 +17,8 @@ function PageRoot() {
   const handleLogout = () => {
     logout();
     navigate('/auth');
+    navigate('/home');
+    navigate('/products');
   };
 
   const { user } = useAuth();

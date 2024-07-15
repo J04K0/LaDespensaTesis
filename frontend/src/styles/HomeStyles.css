@@ -1,0 +1,142 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.home-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: row; /* Asegúrate de que esto esté configurado como row */
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #001F3F;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 15px;
+  cursor: pointer;
+}
+
+.sidebar .footer {
+  text-align: center;
+  padding: 20px;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #f0f8ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrar el contenido horizontalmente */
+}
+
+.top-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%; /* Ocupa todo el ancho */
+  justify-content: center; /* Centrar los botones */
+}
+
+.top-buttons button {
+  flex: 1;
+  max-width: 200px; /* Limitar el ancho máximo de los botones */
+  padding: 10px;
+  background-color: #001F3F;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.top-buttons button:hover {
+  background-color: #004080;
+}
+
+.content {
+  display: flex;
+  background-color: #cce7ff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 100%; /* Asegúrate de que ocupe todo el ancho */
+  max-width: 1200px; /* Limitar el ancho máximo del contenido */
+  justify-content: space-between; /* Distribuir el contenido */
+  align-items: center; /* Alinear el contenido verticalmente */
+  flex-grow: 1;
+}
+
+.section-title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 24px;
+  color: #001F3F;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.fiadas-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 40px; /* Incrementar padding para mayor altura */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px; /* Limitar el ancho máximo del contenido */
+  display: flex;
+  flex-direction: column;
+  font-size: 18px; /* Incrementar tamaño de fuente */
+  min-height: 400px; /* Establecer una altura mínima para ocupar más espacio */
+}
+
+.fiadas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.fiadas-header h3 {
+  margin: 0;
+  font-size: 24px; /* Incrementar tamaño de fuente del encabezado */
+}
+
+.fiadas-header button {
+  background-color: #001F3F;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px; /* Incrementar padding del botón */
+  font-size: 16px; /* Incrementar tamaño de fuente del botón */
+}
+
+.fiadas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Incrementar espacio entre los elementos de la lista */
+}
+
+.fiadas-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px; /* Incrementar tamaño de fuente de los elementos de la lista */
+}
