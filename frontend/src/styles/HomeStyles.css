@@ -1,3 +1,4 @@
+/* src/styles/HomeStyles.css */
 html, body {
   margin: 0;
   padding: 0;
@@ -14,82 +15,129 @@ html, body {
   display: flex;
   height: 100%;
   width: 100%;
-  flex-direction: row; /* Asegúrate de que esto esté configurado como row */
+  flex-direction: row;
+  background-color: #B2DFFF; /* Establece el fondo al color B2DFFF */
 }
 
 .sidebar {
   width: 250px;
-  background-color: #001F3F;
+  background-color: #002651;
   color: white;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start; /* Cambia a flex-start para que los elementos se ubiquen desde la parte superior */
   height: 100%;
+  position: fixed; /* Asegúrate de que la barra lateral ocupe todo el borde derecho */
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding-top: 20px; /* Añade padding en la parte superior para separar la imagen del borde */
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  margin: 20px 0 0 0; /* Añade margen en la parte superior para separar la lista de la imagen */
+  text-align: right; /* Alinea el texto a la derecha */
 }
 
 .sidebar li {
-  padding: 15px;
+  padding: 10px; /* Reduce el padding para acercar más el texto */
   cursor: pointer;
 }
 
 .sidebar .footer {
-  text-align: center;
-  padding: 20px;
+  text-align: right; /* Alinea "La Despensa" a la derecha */
+  padding: 10px; /* Ajusta el padding para que coincida con el de los otros elementos */
+  margin: 0; /* Asegura que no haya márgenes adicionales */
+  width: 100%; /* Asegura que el texto ocupe todo el ancho disponible */
+  position: absolute; /* Añade posición absoluta para alinear en el fondo */
+  bottom: 15px; /* Alinea al fondo con un margen de 30px */
+  right: 0; /* Alinea a la derecha */
+}
+
+.sidebar .logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.sidebar .logo-container img {
+  max-width: 50%; /* Reduce el tamaño del logo */
+  height: auto;
 }
 
 .main-content {
   flex-grow: 1;
-  padding: 20px;
-  background-color: #f0f8ff;
+  padding: 0; /* Elimina el padding de .main-content */
+  background-color: #B2DFFF; /* También asegúrate de que esta sección tenga el mismo fondo */
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centrar el contenido horizontalmente */
+  align-items: center;
+  margin-right: 250px; /* Ajusta el margen para que no se superponga con la barra lateral */
+}
+
+.top-buttons-container {
+  background-color: #002651; /* Establece el fondo al color de la navbar */
+  padding: 10px 20px; /* Asegúrate de que el padding no cause el problema */
+  width: 100%;
+  box-sizing: border-box; /* Incluye el padding en el cálculo del ancho */
+  display: flex;
+  justify-content: space-between; /* Distribuye los botones a lo largo del contenedor */
+  margin: 0; /* Asegúrate de que no haya márgenes adicionales */
 }
 
 .top-buttons {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
-  width: 100%; /* Ocupa todo el ancho */
-  justify-content: center; /* Centrar los botones */
+  width: 100%; /* Asegura que los botones ocupen todo el ancho del contenedor */
 }
 
 .top-buttons button {
-  flex: 1;
-  max-width: 200px; /* Limitar el ancho máximo de los botones */
-  padding: 10px;
-  background-color: #001F3F;
+  flex-grow: 1; /* Permite que los botones crezcan para llenar el espacio disponible */
+  padding: 20px; /* Aumenta el padding para hacer los botones más anchos */
   color: white;
   border: none;
   cursor: pointer;
+  border-radius: 8px; /* Para hacer los bordes redondeados */
+  text-align: center; /* Asegura que el texto esté centrado */
+}
+
+.top-buttons button.ver-productos-sin-stock {
+  background-color: #B2DFFF; /* Color para "Ver productos sin stock" */
+  color: black; /* Ajustar el color del texto si es necesario */
+}
+
+.top-buttons button.ver-productos-vencidos {
+  background-color: #006EDF; /* Color para "Ver productos vencidos" */
+}
+
+.top-buttons button.producto-mas-vendido {
+  background-color: #135170; /* Color para "Producto más vendido" */
+}
+
+.top-buttons button.pagos-por-vencer {
+  background-color: #003366; /* Color para "Pagos por vencer" */
 }
 
 .top-buttons button:hover {
-  background-color: #004080;
+  opacity: 0.9; /* Añadir un pequeño efecto al pasar el mouse por encima */
 }
 
 .content {
   display: flex;
-  background-color: #cce7ff;
-  padding: 20px;
-  border-radius: 10px;
-  width: 100%; /* Asegúrate de que ocupe todo el ancho */
-  max-width: 1200px; /* Limitar el ancho máximo del contenido */
-  justify-content: space-between; /* Distribuir el contenido */
-  align-items: center; /* Alinear el contenido verticalmente */
-  flex-grow: 1;
+  justify-content: center; /* Centrar la card horizontalmente */
+  align-items: center; /* Centrar la card verticalmente */
+  width: 100%;
+  height: 100%; /* Ocupa todo el espacio disponible */
 }
 
 .section-title {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 24px;
-  color: #001F3F;
+  font-size: 60px;
+  color: #002651;
   display: flex;
   align-items: center;
   margin-right: 20px;
@@ -98,26 +146,30 @@ html, body {
 .fiadas-card {
   background-color: white;
   border-radius: 10px;
-  padding: 40px; /* Incrementar padding para mayor altura */
+  padding: 20px; /* Ajusta el padding según sea necesario */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 1000px; /* Limitar el ancho máximo del contenido */
+  width: 40%; /* Reduce el ancho de la card */
+  height: 70vh; /* Incrementa la altura de la card */
+  max-width: 600px; /* Ajusta el máximo ancho si es necesario */
   display: flex;
   flex-direction: column;
-  font-size: 18px; /* Incrementar tamaño de fuente */
-  min-height: 400px; /* Establecer una altura mínima para ocupar más espacio */
+  font-size: 18px;
+  margin: 20px auto; /* Añade margen para centrar verticalmente */
 }
 
 .fiadas-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  background-color: #002651;
+  color: white;
+  padding: 10px;
+  border-radius: 10px 10px 0 0; /* Bordes redondeados en la parte superior */
 }
 
 .fiadas-header h3 {
   margin: 0;
-  font-size: 24px; /* Incrementar tamaño de fuente del encabezado */
+  font-size: 24px;
 }
 
 .fiadas-header button {
@@ -125,18 +177,32 @@ html, body {
   color: white;
   border: none;
   cursor: pointer;
-  padding: 10px 20px; /* Incrementar padding del botón */
-  font-size: 16px; /* Incrementar tamaño de fuente del botón */
+  padding: 10px 20px;
+  font-size: 16px;
 }
 
 .fiadas-list {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Incrementar espacio entre los elementos de la lista */
+  gap: 15px;
+  padding: 10px;
+  max-height: calc(70vh - 60px); /* Ajusta la altura máxima de la lista */
+  overflow-y: auto; /* Añade scroll vertical si es necesario */
 }
 
 .fiadas-item {
   display: flex;
   justify-content: space-between;
-  font-size: 18px; /* Incrementar tamaño de fuente de los elementos de la lista */
+  font-size: 18px;
+  border-bottom: 1px solid #E0E0E0; /* Línea divisoria entre elementos */
+  padding: 10px 0;
+}
+
+.fiadas-item:last-child {
+  border-bottom: none; /* Elimina la línea divisoria en el último elemento */
+}
+
+.fiadas-item span {
+  display: flex;
+  align-items: center;
 }

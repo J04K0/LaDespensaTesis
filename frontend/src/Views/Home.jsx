@@ -1,18 +1,23 @@
 import React from 'react';
 import '../styles/HomeStyles.css';
+import LaDespensaLogo from '../../public/LaDespensaLogo.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 const Home = () => {
   return (
     <div className="home-container">
       <div className="main-content">
-        <div className="top-buttons">
-          <button>Ver productos sin stock</button>
-          <button>Ver productos vencidos</button>
-          <button>Producto más vendido</button>
-          <button>Pagos por vencer</button>
+        <div className="top-buttons-container">
+          <div className="top-buttons">
+            <button className="ver-productos-sin-stock">Ver productos sin stock</button>
+            <button className="ver-productos-vencidos">Ver productos vencidos</button>
+            <button className="producto-mas-vendido">Producto más vendido</button>
+            <button className="pagos-por-vencer">Pagos por vencer</button>
+          </div>
         </div>
         <div className="content">
-          <h2 className="section-title">Personas fiadas</h2>
+          <div className="section-title">Personas fiadas</div>
           <div className="fiadas-card">
             <div className="fiadas-header">
               <h3>Personas fiadas</h3>
@@ -20,19 +25,19 @@ const Home = () => {
             </div>
             <div className="fiadas-list">
               <div className="fiadas-item">
-                <span>Diego Salazar</span>
+                <span><FontAwesomeIcon icon={faUser} /> Diego Salazar</span>
                 <span>$125.0000</span>
               </div>
               <div className="fiadas-item">
-                <span>Pablo Castillo</span>
+                <span><FontAwesomeIcon icon={faUser} /> Pablo Castillo</span>
                 <span>$15.0000</span>
               </div>
               <div className="fiadas-item">
-                <span>Eduardo Riquelme</span>
+                <span><FontAwesomeIcon icon={faUser} /> Eduardo Riquelme</span>
                 <span>$5.0000</span>
               </div>
               <div className="fiadas-item">
-                <span>Diego Meza</span>
+                <span><FontAwesomeIcon icon={faUser} /> Diego Meza</span>
                 <span>$12.0000</span>
               </div>
             </div>
@@ -40,6 +45,9 @@ const Home = () => {
         </div>
       </div>
       <div className="sidebar">
+        <div className="logo-container">
+          <img src={LaDespensaLogo} alt="La Despensa Logo" />
+        </div>
         <ul>
           <li>Página Principal</li>
           <li>Productos</li>
