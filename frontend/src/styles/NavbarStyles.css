@@ -1,0 +1,49 @@
+.sidebar {
+    width: 250px;
+    background-color: #002651;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding-top: 20px;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0 0;
+    text-align: right;
+  }
+  
+  .sidebar li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .sidebar .footer {
+    text-align: right;
+    padding: 10px;
+    margin: 0;
+    width: 100%;
+    position: absolute;
+    bottom: 15px;
+    right: 0;
+  }
+  
+  .sidebar .logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+  }
+  
+  .sidebar .logo-container img {
+    max-width: 50%;
+    height: auto;
+  }
+  

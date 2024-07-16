@@ -1,9 +1,9 @@
-/* src/styles/HomeStyles.css */
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
+.home-container {
+  display: flex;
   height: 100%;
+  width: 100%;
+  flex-direction: row;
+  background-color: #B2DFFF; /* Establece el fondo al color B2DFFF */
 }
 
 #root {

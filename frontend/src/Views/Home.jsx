@@ -1,12 +1,13 @@
 import React from 'react';
+import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
-import LaDespensaLogo from '../../public/LaDespensaLogo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 const Home = () => {
   return (
     <div className="home-container">
+      <Navbar />
       <div className="main-content">
         <div className="top-buttons-container">
           <div className="top-buttons">
@@ -43,21 +44,6 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
-      <div className="sidebar">
-        <div className="logo-container">
-          <img src={LaDespensaLogo} alt="La Despensa Logo" />
-        </div>
-        <ul>
-          <li>Página Principal</li>
-          <li>Productos</li>
-          <li>Historial Precios</li>
-          <li>Estadísticas</li>
-          <li>Finanzas</li>
-          <li>Proveedores</li>
-          <li>Finanzas Boletas</li>
-        </ul>
-        <div className="footer">La despensa</div>
       </div>
     </div>
   );
