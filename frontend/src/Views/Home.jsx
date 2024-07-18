@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 
 const Home = () => {
+  const [showProductOptions, setShowProductOptions] = useState(false);
+
+  const toggleProductOptions = () => {
+    setShowProductOptions(!showProductOptions);
+  };
+
   return (
     <div className="home-container">
       <Navbar />

@@ -1,0 +1,125 @@
+.add-product-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  justify-content: center;
+}
+
+.add-product-container {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 8px;
+  width: 100%; /* Ajustado a 100% */
+  height: 100%; /* Ajustado a 100% */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Asegura que el contenido esté centrado verticalmente */
+  align-items: center;
+}
+
+.add-product-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px; /* Tamaño de fuente mayor */
+}
+
+.form-group,
+
+.form-group-row {
+  width: 100%;
+  margin-bottom: 20px; /* Incrementado para más espacio */
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-row {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px; /* Incrementado para más espacio */
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 18px;
+  margin: 10px 0; /* Incrementado para más espacio */
+}
+
+.form-group-row input {
+  width: 70%; /* Ajustado para campos en la misma línea */
+  padding: 15px; /* Incrementado para más espacio */
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 30px; /* Incrementado para más espacio */
+}
+
+button {
+  padding: 20px 40px; /* Incrementado para más espacio */
+  background-color: #002651;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+button .faPlusCircle,
+button .faTimesCircle {
+  margin-left: 8px;
+}
+
+button:hover {
+  background-color: #003366;
+}
+
+.cancel-button {
+  background-color: #a3a3a3;
+}
+
+.cancel-button:hover {
+  background-color: #858585;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-button .faPlusCircle {
+  margin-left: 8px;
+}
+
+/* Estilo del body y main para ocupar toda la pantalla */
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}

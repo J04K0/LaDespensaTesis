@@ -6,6 +6,7 @@ import Root from './routes/Root.jsx';
 import ErrorPage from './routes/ErrorPage.jsx';
 import Login from './routes/Login.jsx';
 import Products from './Views/Products.jsx';
+import AddProducts from './Views/AddProducts.jsx';
 
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
     path: '/products',
     element: <Products />,
   },
+  {
+   path: '/add-product',
+    element: <AddProducts />,
+  }, 
 
 ]);
 

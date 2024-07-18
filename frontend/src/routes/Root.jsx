@@ -19,6 +19,7 @@ function PageRoot() {
     navigate('/auth');
     navigate('/home');
     navigate('/products');
+    navigate('/add-product');
   };
 
   const { user } = useAuth();

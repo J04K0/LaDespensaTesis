@@ -19,55 +19,6 @@
   background-color: #B2DFFF; /* Establece el fondo al color B2DFFF */
 }
 
-.sidebar {
-  width: 250px;
-  background-color: #002651;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* Cambia a flex-start para que los elementos se ubiquen desde la parte superior */
-  height: 100%;
-  position: fixed; /* Asegúrate de que la barra lateral ocupe todo el borde derecho */
-  right: 0;
-  top: 0;
-  bottom: 0;
-  padding-top: 20px; /* Añade padding en la parte superior para separar la imagen del borde */
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0 0 0; /* Añade margen en la parte superior para separar la lista de la imagen */
-  text-align: right; /* Alinea el texto a la derecha */
-}
-
-.sidebar li {
-  padding: 10px; /* Reduce el padding para acercar más el texto */
-  cursor: pointer;
-}
-
-.sidebar .footer {
-  text-align: right; /* Alinea "La Despensa" a la derecha */
-  padding: 10px; /* Ajusta el padding para que coincida con el de los otros elementos */
-  margin: 0; /* Asegura que no haya márgenes adicionales */
-  width: 100%; /* Asegura que el texto ocupe todo el ancho disponible */
-  position: absolute; /* Añade posición absoluta para alinear en el fondo */
-  bottom: 15px; /* Alinea al fondo con un margen de 30px */
-  right: 0; /* Alinea a la derecha */
-}
-
-.sidebar .logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 0;
-}
-
-.sidebar .logo-container img {
-  max-width: 50%; /* Reduce el tamaño del logo */
-  height: auto;
-}
-
 .main-content {
   flex-grow: 1;
   padding: 0; /* Elimina el padding de .main-content */

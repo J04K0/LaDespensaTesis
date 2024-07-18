@@ -1,18 +1,7 @@
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #FFFFFF;
-    font-family: Arial, sans-serif;
-}
-
-#root {
+html, body, #root {
+    height: 100%;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     margin: 0;
-}
+    padding: 0;
+  }
+  
