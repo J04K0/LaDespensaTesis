@@ -50,12 +50,12 @@ export const productSchema = Joi.object({
     'string.empty': 'La categoría del producto es obligatoria',
     'string.base': 'La categoría del producto debe ser una cadena de texto'
   }),
-  precioVenta: Joi.number().min(1).required().messages({
+  PrecioVenta: Joi.number().min(1).required().messages({
     'number.base': 'El precio de venta debe ser un número',
     'number.min': 'El precio de venta no puede ser negativo',
     'number.empty': 'El precio de venta es obligatorio'
   }),
-  precioCompra: Joi.number().min(0).required().messages({
+  PrecioCompra: Joi.number().min(0).required().messages({
     'number.base': 'El precio de compra debe ser un número',
     'number.min': 'El precio de compra no puede ser negativo',
     'number.empty': 'El precio de compra es obligatorio'

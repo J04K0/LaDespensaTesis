@@ -1,34 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
-import Mantequilla from '../../public/mantequilla.png';
-import MonsterEnergy from '../../public/monsterenergy.png';
-import Lays from '../../public/lays.png';
-
-const productList = [
-  {
-    image: Mantequilla,
-    price: '1.000',
-    brand: 'Colun',
-    description: 'Mantequilla con Sal, 250 g',
-  },
-  {
-    image: MonsterEnergy,
-    price: '1.700',
-    brand: 'Monster Energy',
-    description: 'Monster Absolutely Zero, 473 ml',
-  },
-  {
-    image: Lays,
-    price: '2.000',
-    brand: 'Lays',
-    description: 'Papas fritas corte americano, 350 g',
-  },
-  // Añade más productos según sea necesario
-];
+import { getProducts } from '../services/AddProducts.service';
 
 const Products = () => {
+  const [productList, setProductList] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await getProducts();
+        console.log("data desde el front",response)
+        setProductList(response);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <div className="products-page">
       <Navbar />
@@ -39,19 +31,23 @@ const Products = () => {
           <button className="filter-button">Filtrar por</button>
         </div>
         <div className="product-list">
-          {productList.map((product, index) => (
-            <ProductCard
-              key={index}
-              image={product.image}
-              price={product.price}
-              brand={product.brand}
-              description={product.description}
-            />
-          ))}
+        {productList.map((product, index) => {
+      console.log('Product:', product); // Verifica cada producto aquí
+      return (
+    <ProductCard
+      key={index}
+      name={product.Nombre}
+      marca={product.Marca}
+      stock={product.Stock}
+      venta={product.PrecioVenta}
+    />
+  );
+})}
+
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Products;

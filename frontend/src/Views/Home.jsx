@@ -33,19 +33,19 @@ const Home = () => {
             <div className="fiadas-list">
               <div className="fiadas-item">
                 <span><FontAwesomeIcon icon={faUser} /> Diego Salazar</span>
-                <span>$125.0000</span>
+                <span>$125.000.000</span>
               </div>
               <div className="fiadas-item">
                 <span><FontAwesomeIcon icon={faUser} /> Pablo Castillo</span>
-                <span>$15.0000</span>
+                <span>$15.000</span>
               </div>
               <div className="fiadas-item">
                 <span><FontAwesomeIcon icon={faUser} /> Eduardo Riquelme</span>
-                <span>$5.0000</span>
+                <span>$5.000</span>
               </div>
               <div className="fiadas-item">
                 <span><FontAwesomeIcon icon={faUser} /> Diego Meza</span>
-                <span>$12.0000</span>
+                <span>$12.000</span>
               </div>
             </div>
           </div>

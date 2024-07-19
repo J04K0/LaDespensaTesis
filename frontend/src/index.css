@@ -1,7 +1,13 @@
+/* Importar la fuente Inter desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
 html, body, #root {
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
-  }
-  
+}

@@ -65,10 +65,10 @@ export const updateProduct = async (req, res) => {
               Marca: value.Marca,
               Stock: value.Stock,
               Categoria: value.Categoria,
-              precioVenta: value.precioVenta,
-              precioCompra: value.precioCompra,
+              precioVenta: value.PrecioVenta,
+              precioCompra: value.PrecioCompra,
               fechaVencimiento: value.fechaVencimiento,
-              precioAntiguo: product.precioVenta
+              precioAntiguo: product.PrecioVenta
           },
           { new: true }
       );

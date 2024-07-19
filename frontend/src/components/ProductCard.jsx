@@ -1,17 +1,23 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 
-const ProductCard = ({ image, price, brand, description }) => {
+const ProductCard = ({ venta, name, marca }) => {
   return (
     <div className="product-card">
-      <img src={image} alt={description} className="product-image" />
       <div className="product-info">
-        <p className="product-price">${price}</p>
-        <p className="product-brand">{brand}</p>
-        <p className="product-description">{description}</p>
+        <div className="product-price">Venta: ${venta}</div>
+        <div className="product-name">{name}</div>
+        <div className="product-brand">{marca}</div>
       </div>
     </div>
   );
+};
+
+ProductCard.propTypes = {
+  venta: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired,
+  marca: PropTypes.string.isRequired,
 };
 
 export default ProductCard;

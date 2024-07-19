@@ -1,6 +1,7 @@
 import React from "react";
 import Products from "../Views/Products.jsx";
 
+
 const Products = () => {
     return (
         <div className="products">

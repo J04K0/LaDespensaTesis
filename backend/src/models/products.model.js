@@ -17,11 +17,11 @@ const ProductSchema = new Schema({
     type: String,
     required: true,
   },
-  precioVenta: {
+  PrecioVenta: {
     type: Number,
     required: true,
   },
-  precioCompra: { 
+  PrecioCompra: { 
     type: Number,
     required: true,
   },

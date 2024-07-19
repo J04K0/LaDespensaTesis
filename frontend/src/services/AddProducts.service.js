@@ -9,3 +9,16 @@ export const addProducts = async (product) => {
         throw error;
     }
 };
+
+export const getProducts = async () => {
+  try {
+    const response = await axios.get('/products/');
+    const products = response.data.data; // Asegúrate de que esta es la estructura correcta
+    console.log('Productos desde el servicio:', products); // Verifica los datos aquí
+    return products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
+  }
+};
+
