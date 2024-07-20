@@ -1,3 +1,4 @@
+/* src/styles/HomeStyles.css */
 .home-container {
   display: flex;
   height: 100%;
@@ -9,14 +10,6 @@
 #root {
   width: 100%;
   height: 100%;
-}
-
-.home-container {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  flex-direction: row;
-  background-color: #B2DFFF; /* Establece el fondo al color B2DFFF */
 }
 
 .main-content {
@@ -87,20 +80,17 @@
 .section-title {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 60px;
+  font-size: 36px; /* Ajusta el tamaño según sea necesario */
   color: #002651;
-  display: flex;
-  align-items: center;
-  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
-.fiadas-card {
+.deudores-card {
   background-color: white;
   border-radius: 10px;
   padding: 20px; /* Ajusta el padding según sea necesario */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 40%; /* Reduce el ancho de la card */
-  height: 70vh; /* Incrementa la altura de la card */
+  width: 40%; /* Ajusta el ancho de la card */
   max-width: 600px; /* Ajusta el máximo ancho si es necesario */
   display: flex;
   flex-direction: column;
@@ -108,7 +98,7 @@
   margin: 20px auto; /* Añade margen para centrar verticalmente */
 }
 
-.fiadas-header {
+.deudores-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -118,21 +108,22 @@
   border-radius: 10px 10px 0 0; /* Bordes redondeados en la parte superior */
 }
 
-.fiadas-header h3 {
+.deudores-header h3 {
   margin: 0;
   font-size: 24px;
 }
 
-.fiadas-header button {
+.deudores-header button {
   background-color: #001F3F;
   color: white;
   border: none;
   cursor: pointer;
   padding: 10px 20px;
   font-size: 16px;
+  border-radius: 5px;
 }
 
-.fiadas-list {
+.deudores-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -141,19 +132,40 @@
   overflow-y: auto; /* Añade scroll vertical si es necesario */
 }
 
-.fiadas-item {
+.deudores-item {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Alinea los elementos verticalmente */
   font-size: 18px;
   border-bottom: 1px solid #E0E0E0; /* Línea divisoria entre elementos */
   padding: 10px 0;
 }
 
-.fiadas-item:last-child {
+.deudores-item:last-child {
   border-bottom: none; /* Elimina la línea divisoria en el último elemento */
 }
 
-.fiadas-item span {
+.deudores-item span {
   display: flex;
   align-items: center;
+}
+
+.deudores-item span:first-child {
+  flex-grow: 1;
+}
+
+.deudores-item svg {
+  margin-right: 10px;
+}
+
+.edit-button, .delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #002651;
+  margin-left: 10px;
+}
+
+.edit-button:hover, .delete-button:hover {
+  color: #135170;
 }

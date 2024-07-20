@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+// src/Views/Home.jsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
+import { getDeudores, deleteDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Home = () => {
   const [showProductOptions, setShowProductOptions] = useState(false);
+  const [deudores, setDeudores] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDeudores = async () => {
+      try {
+        const data = await getDeudores(1, 5);
+        setDeudores(data.deudores);
+      } catch (error) {
+        console.error('Error fetching deudores:', error);
+      }
+    };
+
+    fetchDeudores();
+  }, []);
 
   const toggleProductOptions = () => {
     setShowProductOptions(!showProductOptions);
+  };
+
+  const handleViewAllClick = () => {
+    navigate('/deudores');
+  };
+
+  const handleDelete = async (id) => {
+    console.log('Deleting deudor with ID:', id); // Verifica el ID aquí
+    try {
+      await deleteDeudor(id);
+      setDeudores(deudores.filter(deudor => deudor._id !== id));
+    } catch (error) {
+      console.error('Error deleting deudor:', error);
+    }
   };
 
   return (
@@ -24,29 +56,24 @@ const Home = () => {
           </div>
         </div>
         <div className="content">
-          <div className="section-title">Personas fiadas</div>
-          <div className="fiadas-card">
-            <div className="fiadas-header">
-              <h3>Personas fiadas</h3>
-              <button>Ver todos</button>
+          <div className="section-title">Personas deudoras</div>
+          <div className="deudores-card">
+            <div className="deudores-header">
+              <h3>Personas deudoras</h3>
+              <button onClick={handleViewAllClick}>Ver todos</button>
             </div>
-            <div className="fiadas-list">
-              <div className="fiadas-item">
-                <span><FontAwesomeIcon icon={faUser} /> Diego Salazar</span>
-                <span>$125.000.000</span>
-              </div>
-              <div className="fiadas-item">
-                <span><FontAwesomeIcon icon={faUser} /> Pablo Castillo</span>
-                <span>$15.000</span>
-              </div>
-              <div className="fiadas-item">
-                <span><FontAwesomeIcon icon={faUser} /> Eduardo Riquelme</span>
-                <span>$5.000</span>
-              </div>
-              <div className="fiadas-item">
-                <span><FontAwesomeIcon icon={faUser} /> Diego Meza</span>
-                <span>$12.000</span>
-              </div>
+            <div className="deudores-list">
+              {deudores.map((deudor, index) => (
+                <div key={index} className="deudores-item">
+                  <span><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</span>
+                  <span>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</span>
+                  <span>
+                    <button onClick={() => handleDelete(deudor._id)} className="delete-button">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

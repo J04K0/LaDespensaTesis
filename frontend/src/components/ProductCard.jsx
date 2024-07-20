@@ -6,7 +6,7 @@ const ProductCard = ({ venta, name, marca }) => {
   return (
     <div className="product-card">
       <div className="product-info">
-        <div className="product-price">Venta: ${venta}</div>
+        <div className="product-price">Precio: ${venta}</div>
         <div className="product-name">{name}</div>
         <div className="product-brand">{marca}</div>
       </div>

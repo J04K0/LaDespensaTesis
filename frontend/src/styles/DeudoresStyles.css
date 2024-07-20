@@ -1,0 +1,102 @@
+/* src/styles/DeudoresStyles.css */
+.deudores-list-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.section-title-deudores {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.deudores-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deudores-table th, .deudores-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.deudores-table th {
+  background-color: #002651; /* Color del encabezado */
+  color: white; /* Color del texto del encabezado */
+}
+
+.deudores-table td {
+  vertical-align: middle;
+}
+
+.actions-cell {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Espacio entre los botones */
+}
+
+.edit-button, .delete-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #002651; /* Color de botón de editar */
+  color: white;
+}
+
+.edit-button:hover {
+  opacity: 0.8;
+}
+
+.delete-button {
+  background-color: #E74C3C; /* Color de botón de eliminar */
+  color: white;
+}
+
+.delete-button:hover {
+  opacity: 0.8;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination button.active {
+  background-color: #006EDF; /* Color de botón activo */
+  color: white;
+}
+
+.pagination button:hover:not(.active) {
+  background-color: #f2f2f2;
+}
+
+.pagination button:disabled {
+  background-color: #f2f2f2;
+  cursor: not-allowed;
+}

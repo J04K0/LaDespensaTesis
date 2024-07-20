@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import mongoose from 'mongoose';
 
 const objectIdValidator = (value, helpers) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -13,12 +14,7 @@ export const deudorSchema = Joi.object({
     'string.empty': 'El nombre no puede estar vacío.',
     'any.required': 'El nombre es un campo requerido.'
   }),
-  fechaPaga: Joi.string().custom((value, helpers) => {
-    if (isNaN(Date.parse(value))) {
-      return helpers.error('date.base', { value });
-    }
-    return value;
-  }).required().messages({
+  fechaPaga: Joi.date().required().messages({
     'date.base': 'La fecha de pago debe ser una fecha válida.',
     'any.required': 'La fecha de pago es un campo requerido.'
   }),
@@ -31,15 +27,15 @@ export const deudorSchema = Joi.object({
       'string.length': 'El número de teléfono debe tener exactamente 9 dígitos.',
       'string.pattern.base': 'El número de teléfono debe ser un número.',
       'any.required': 'El número de teléfono es un campo requerido.'
-    }), 
-    
+    }),
   deudaTotal: Joi.number().required().messages({
     'number.base': 'La deuda total debe ser un número.',
     'any.required': 'La deuda total es un campo requerido.'
   }),
 });
+
 export const idDeudorSchema = Joi.object({
-  id: Joi.string().custom(objectIdValidator, 'Validación Id producto')
+  id: Joi.string().custom(objectIdValidator, 'Validación Id deudor')
 }).messages({
   'object.unknown': 'No se permiten propiedades adicionales.'
 });

@@ -22,3 +22,14 @@ export const getProducts = async () => {
   }
 };
 
+export const deleteProduct = async (id) => {  
+  try {
+    const response = await axios.delete(`/products/${id}`);
+    return response;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    throw error;
+  }
+}
+
+

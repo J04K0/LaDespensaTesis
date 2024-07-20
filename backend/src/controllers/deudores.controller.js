@@ -1,25 +1,35 @@
 import Deudores from '../models/deudores.model.js';
-import { deudorSchema,idDeudorSchema } from '../schema/deudores.schema.js';
+import { deudorSchema, idDeudorSchema } from '../schema/deudores.schema.js';
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
 
 export const getDeudores = async (req, res) => {
   try {
-    const deudores = await Deudores.find();
+    const { page = 1, limit = 2 } = req.query;
+
+    const deudores = await Deudores.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Deudores.countDocuments();
 
     if (deudores.length === 0) {
-      return handleErrorClient( res, 404, 'No hay deudores registrados');
+      return handleErrorClient(res, 404, 'No hay deudores registrados');
     }
 
-    handleSuccess(res, 200, 'Deudores encontrados', deudores);
-
-  } catch (error) {
-    handleErrorServer(res, 500, 'Error al traer los deudores', error.message);
+    handleSuccess(res, 200, 'Deudores encontrados', {
+      deudores,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al traer los deudores', err.message);
   }
 };
 
 export const getDeudorById = async (req, res) => {
   try {
-    const deudor = await Deudores.findById(req.params.id); // ! validar esto con joi
+    const deudor = await Deudores.findById(req.params.id);
     if (!deudor) {
       return handleErrorClient(res, 404, 'Deudor no encontrado');
     }
@@ -32,7 +42,7 @@ export const getDeudorById = async (req, res) => {
 export const addDeudor = async (req, res) => {
   try {
     const { body } = req; 
-    const {value, error} = deudorSchema.validate(body,{ convert: false });
+    const { value, error } = deudorSchema.validate(body, { convert: false });
     if (error) {
       return handleErrorClient(res, 400, error.message);
     }
@@ -46,23 +56,22 @@ export const addDeudor = async (req, res) => {
 
 export const updateDeudor = async (req, res) => {
   try {
-    const { id } = req.params;	
-    
-    const { value: validatedId, error: errorId } = idDeudorSchema.validate({id});
-   
+    const { id } = req.params;
+
+    const { value: validatedId, error: errorId } = idDeudorSchema.validate({ id });
+
     if (errorId) return handleErrorClient(res, 400, errorId.message);
 
     const deudor = await Deudores.findById(validatedId.id);
 
-    if(deudor.length === 0) return handleErrorClient(res, 404, 'Deudor no encontrado');
+    if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
     const { body } = req;
-
+    console.log("Backend",body)
     const { value, error } = deudorSchema.validate(body);
-
+    console.log(error)
     if (error) return handleErrorClient(res, 400, error.message);
-
-    const updateDeudor = await Deudores.findByIdAndUpdate(
+    const updatedDeudor = await Deudores.findByIdAndUpdate(
       validatedId.id,
       {
         Nombre: value.Nombre,
@@ -71,23 +80,27 @@ export const updateDeudor = async (req, res) => {
         deudaTotal: value.deudaTotal,
       },
       { new: true }
-    )
-  
-      handleSuccess(res, 200, 'Deudor modificado', updateDeudor);
-  } catch (err) {
-      handleErrorServer(res, 500, 'Error al modificar a un deudor', err.message);
-  };
-};
+    );
 
+    handleSuccess(res, 200, 'Deudor modificado', updatedDeudor);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al modificar a un deudor', err.message);
+  }
+};
 
 export const deleteDeudor = async (req, res) => {
   try {
-    const deudor = await Deudores.findByIdAndDelete(req.params.id); // ! validar id con joi
- 
+    const { id } = req.params;
+    const { value: validatedId, error: errorId } = idDeudorSchema.validate({ id });
+
+    if (errorId) return handleErrorClient(res, 400, errorId.message);
+
+    const deudor = await Deudores.findByIdAndDelete(validatedId.id);
+
     if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
     handleSuccess(res, 200, 'Deudor eliminado', deudor);
   } catch (err) {
     handleErrorServer(res, 500, 'Error al eliminar un deudor', err.message);
   }
-}
+};

@@ -1,5 +1,5 @@
 import React from "react";
-import AddProduct from "../Views/AddProducts.jsx"; // Asegúrate de que esta ruta sea correcta
+import AddProduct from "../Views/AddProducts.jsx";
 
 const AddProductsRoute = () => {
     return (

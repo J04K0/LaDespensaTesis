@@ -20,6 +20,7 @@ function PageRoot() {
     navigate('/home');
     navigate('/products');
     navigate('/add-product');
+    navigate('/deudores');
   };
 
   const { user } = useAuth();

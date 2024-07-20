@@ -1,0 +1,36 @@
+/* src/styles/DeudorCardStyles.css */
+.deudor-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+  
+  .deudor-info span {
+    margin-right: 10px;
+  }
+  
+  .deudor-actions button {
+    margin-left: 5px;
+  }
+  
+  .edit-button:hover {
+    opacity: 0.8;
+  }
+  
+  .delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+  
+  .delete-button:hover {
+    opacity: 0.8;
+  }
+  

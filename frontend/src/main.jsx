@@ -7,7 +7,8 @@ import ErrorPage from './routes/ErrorPage.jsx';
 import Login from './routes/Login.jsx';
 import Products from './Views/Products.jsx';
 import AddProducts from './Views/AddProducts.jsx';
-
+import DeudoresList from './Views/Deudores.jsx';
+import EditDeudor from './Views/EditDeudor.jsx';
 
 const router = createBrowserRouter([
   {
@@ -28,10 +29,17 @@ const router = createBrowserRouter([
     element: <Products />,
   },
   {
-   path: '/add-product',
+    path: '/add-product',
     element: <AddProducts />,
-  }, 
-
+  },
+  {
+    path: '/deudores',
+    element: <DeudoresList />,
+  },
+  {
+    path: '/editar-deudor',
+    element: <EditDeudor />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(

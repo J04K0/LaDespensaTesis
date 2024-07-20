@@ -2,12 +2,6 @@ import { useRouteError } from 'react-router-dom';
 
 const ErrorPage = () => {
   const error = useRouteError();
-
-  /**
-   * Este mensaje de error, está pensado para los desarrolladores.
-   * En un entorno de producción, no se debería mostrar este mensaje o almenos
-   * no de esta forma.
-   */
   console.error({
     status: error.status,
     statusText: error.statusText,
