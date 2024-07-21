@@ -67,9 +67,7 @@ export const updateDeudor = async (req, res) => {
     if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
     const { body } = req;
-    console.log("Backend",body)
     const { value, error } = deudorSchema.validate(body);
-    console.log(error)
     if (error) return handleErrorClient(res, 400, error.message);
     const updatedDeudor = await Deudores.findByIdAndUpdate(
       validatedId.id,

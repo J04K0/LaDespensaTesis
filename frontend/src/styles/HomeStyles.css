@@ -1,10 +1,79 @@
-/* src/styles/HomeStyles.css */
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #002651;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  position: fixed;
+  right: 0; /* Cambiado a right */
+  top: 0;
+  bottom: 0;
+  padding-top: 70px;
+  z-index: 2;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 5px 0 0 0;
+  text-align: right;
+}
+
+.sidebar li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.sidebar li a {
+  color: white;
+  text-decoration: none;
+}
+
+.sidebar .footer {
+  text-align: right;
+  padding: 10px;
+  margin: 0;
+  width: 100%;
+  position: absolute;
+  bottom: 15px;
+  right: 0;
+}
+
+.sidebar .logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.sidebar .logo-container img {
+  max-width: 50%;
+  height: auto;
+}
+
+.submenu {
+  background-color: #003366;
+  list-style-type: none;
+  margin: 10px 0 0 0;
+  text-align: right;
+}
+
+.submenu li {
+  padding: 5px 10px;
+  cursor: pointer;
+  padding-top: 10px;
+}
+
+/* General Container */
 .home-container {
   display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
-  flex-direction: row;
-  background-color: #B2DFFF; /* Establece el fondo al color B2DFFF */
+  background-color: #B2DFFF; /* Fondo */
 }
 
 #root {
@@ -12,45 +81,38 @@
   height: 100%;
 }
 
-.main-content {
-  flex-grow: 1;
-  padding: 0; /* Elimina el padding de .main-content */
-  background-color: #B2DFFF; /* También asegúrate de que esta sección tenga el mismo fondo */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-right: 250px; /* Ajusta el margen para que no se superponga con la barra lateral */
-}
-
+/* Top Buttons Container */
 .top-buttons-container {
-  background-color: #002651; /* Establece el fondo al color de la navbar */
-  padding: 10px 20px; /* Asegúrate de que el padding no cause el problema */
-  width: 100%;
-  box-sizing: border-box; /* Incluye el padding en el cálculo del ancho */
+  background-color: #002651; /* Fondo de la navbar */
+  padding: 10px 20px;
+  width: calc(100% - 250px); /* Asegura que los botones no se extiendan detrás de la sidebar */
+  margin-right: 250px; /* Alinea con la sidebar */
+  box-sizing: border-box;
   display: flex;
-  justify-content: space-between; /* Distribuye los botones a lo largo del contenedor */
-  margin: 0; /* Asegúrate de que no haya márgenes adicionales */
+  justify-content: space-between; /* Distribuir los botones a lo largo del contenedor */
+  z-index: 1;
 }
 
 .top-buttons {
   display: flex;
   gap: 10px;
-  width: 100%; /* Asegura que los botones ocupen todo el ancho del contenedor */
+  width: 100%;
 }
 
 .top-buttons button {
-  flex-grow: 1; /* Permite que los botones crezcan para llenar el espacio disponible */
-  padding: 20px; /* Aumenta el padding para hacer los botones más anchos */
+  flex-grow: 1;
+  padding: 20px;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 8px; /* Para hacer los bordes redondeados */
-  text-align: center; /* Asegura que el texto esté centrado */
+  border-radius: 8px; /* Bordes redondeados */
+  text-align: center;
 }
 
+/* Botones de navegación */
 .top-buttons button.ver-productos-sin-stock {
   background-color: #B2DFFF; /* Color para "Ver productos sin stock" */
-  color: black; /* Ajustar el color del texto si es necesario */
+  color: black;
 }
 
 .top-buttons button.ver-productos-vencidos {
@@ -66,36 +128,44 @@
 }
 
 .top-buttons button:hover {
-  opacity: 0.9; /* Añadir un pequeño efecto al pasar el mouse por encima */
+  opacity: 0.9; /* Efecto hover */
 }
 
+/* Content Container */
 .content {
   display: flex;
   justify-content: center; /* Centrar la card horizontalmente */
   align-items: center; /* Centrar la card verticalmente */
   width: 100%;
-  height: 100%; /* Ocupa todo el espacio disponible */
+  height: 100%;
+  position: relative; /* Posicionar absolutamente el título */
 }
 
+/* Section Title */
 .section-title {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 36px; /* Ajusta el tamaño según sea necesario */
+  font-size: 36px; /* Ajustar el tamaño según sea necesario */
   color: #002651;
-  margin-bottom: 20px;
+  position: absolute; /* Posicionar absolutamente */
+  left: 0; /* Alinear a la izquierda */
+  top: 50%; /* Centrar verticalmente */
+  transform: translateY(-50%) rotate(180deg); /* Centrar verticalmente y rotar */
+  margin-left: 10px; /* Añadir margen izquierdo */
 }
 
+/* Deudores Card */
 .deudores-card {
-  background-color: white;
+  background-color: white; /* Fondo blanco */
   border-radius: 10px;
-  padding: 20px; /* Ajusta el padding según sea necesario */
+  padding: 20px; /* Ajustar el padding según sea necesario */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 40%; /* Ajusta el ancho de la card */
-  max-width: 600px; /* Ajusta el máximo ancho si es necesario */
+  width: 80%; /* Ajustar el tamaño de la tarjeta */
+  max-width: 600px; /* Ajustar el máximo ancho si es necesario */
   display: flex;
   flex-direction: column;
   font-size: 18px;
-  margin: 20px auto; /* Añade margen para centrar verticalmente */
+  margin: 20px auto; /* Añadir margen para centrar verticalmente */
 }
 
 .deudores-header {
@@ -123,49 +193,30 @@
   border-radius: 5px;
 }
 
-.deudores-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.deudores-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deudores-table th, .deudores-table td {
   padding: 10px;
-  max-height: calc(70vh - 60px); /* Ajusta la altura máxima de la lista */
-  overflow-y: auto; /* Añade scroll vertical si es necesario */
+  border-bottom: 1px solid #ddd;
 }
 
-.deudores-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* Alinea los elementos verticalmente */
-  font-size: 18px;
-  border-bottom: 1px solid #E0E0E0; /* Línea divisoria entre elementos */
-  padding: 10px 0;
+.deudores-table th {
+  background-color: #002651;
+  color: white;
 }
 
-.deudores-item:last-child {
-  border-bottom: none; /* Elimina la línea divisoria en el último elemento */
-}
-
-.deudores-item span {
-  display: flex;
-  align-items: center;
-}
-
-.deudores-item span:first-child {
-  flex-grow: 1;
-}
-
-.deudores-item svg {
-  margin-right: 10px;
-}
-
-.edit-button, .delete-button {
-  background: none;
+.delete-button {
+  background-color: #ff4d4d;
+  color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  color: #002651;
-  margin-left: 10px;
+  padding: 5px 10px;
 }
 
-.edit-button:hover, .delete-button:hover {
-  color: #135170;
+.delete-button:hover {
+  opacity: 0.8;
 }

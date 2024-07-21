@@ -14,8 +14,9 @@ export const deudorSchema = Joi.object({
     'string.empty': 'El nombre no puede estar vacío.',
     'any.required': 'El nombre es un campo requerido.'
   }),
-  fechaPaga: Joi.date().required().messages({
+  fechaPaga: Joi.string().isoDate().required().messages({
     'date.base': 'La fecha de pago debe ser una fecha válida.',
+    'date.format': 'La fecha de pago debe estar en formato ISO.',
     'any.required': 'La fecha de pago es un campo requerido.'
   }),
   numeroTelefono: Joi.string()

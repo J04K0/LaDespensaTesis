@@ -10,7 +10,8 @@
   right: 0;
   top: 0;
   bottom: 0;
-  padding-top: 20px;
+  padding-top: 70px;
+  z-index: 2;
 }
 
 .sidebar ul {

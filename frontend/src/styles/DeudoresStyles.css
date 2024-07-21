@@ -54,21 +54,7 @@
   cursor: pointer;
 }
 
-.edit-button {
-  background-color: #002651; /* Color de botón de editar */
-  color: white;
-}
-
 .edit-button:hover {
-  opacity: 0.8;
-}
-
-.delete-button {
-  background-color: #E74C3C; /* Color de botón de eliminar */
-  color: white;
-}
-
-.delete-button:hover {
   opacity: 0.8;
 }
 
@@ -82,13 +68,12 @@
   margin: 0 5px;
   padding: 10px 15px;
   border: 1px solid #ddd;
-  background-color: white;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
 }
 
 .pagination button.active {
-  background-color: #006EDF; /* Color de botón activo */
+  background-color: #002651; /* Color de botón activo */
   color: white;
 }
 
