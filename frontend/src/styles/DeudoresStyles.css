@@ -7,8 +7,9 @@
 
 .main-content {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 20px auto;
+  min-width: 300px;
   padding: 20px;
   background-color: white;
   border-radius: 8px;
@@ -24,12 +25,17 @@
 .deudores-table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 20px;
+  table-layout: fixed; /* Esto asegura que la tabla tenga un ancho fijo */
 }
 
 .deudores-table th, .deudores-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
+  white-space: nowrap; /* Evita que el texto se desborde en varias líneas */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es demasiado largo */
 }
 
 .deudores-table th {
@@ -54,14 +60,14 @@
   cursor: pointer;
 }
 
-.edit-button:hover {
+.edit-button:hover, .delete-button:hover {
   opacity: 0.8;
 }
 
 .pagination {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .pagination button {
@@ -73,15 +79,10 @@
 }
 
 .pagination button.active {
-  background-color: #002651; /* Color de botón activo */
-  color: white;
+  background-color: #006EDF; /* Color de botón activo */
 }
 
 .pagination button:hover:not(.active) {
   background-color: #f2f2f2;
-}
-
-.pagination button:disabled {
-  background-color: #f2f2f2;
-  cursor: not-allowed;
+  color: #000;
 }

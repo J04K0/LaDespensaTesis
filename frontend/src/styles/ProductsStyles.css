@@ -1,101 +1,25 @@
 .products-page {
   display: flex;
-  .products-page {
-    display: flex;
-    justify-content: center; /* Centra horizontalmente el contenido */
-    min-height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
-    width: 100%; /* Asegura que ocupe todo el ancho disponible */
-    padding: 0; /* Elimina cualquier padding */
-  }
-  
-  .products-content {
-    flex: 1;
-    padding: 20px;
-    max-width: 1200px; /* Limita el ancho máximo del contenido */
-    width: 100%; /* Asegura que ocupe todo el ancho disponible */
-    margin: 0; /* Elimina cualquier margen */
-  }
-  
-  .products-header {
-    display: flex;
-    justify-content: center; /* Centra horizontalmente los botones */
-    gap: 20px; /* Aumenta el espacio entre los botones */
-    margin-bottom: 20px;
-    width: 100%; /* Asegura que ocupe todo el ancho disponible */
-  }
-  
-  .filter-button {
-    background-color: #002651;
-    color: white;
-    border: none;
-    padding: 20px 40px; /* Aumenta el tamaño de los botones */
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px; /* Aumenta el tamaño de la fuente */
-  }
-  
-  .product-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px; /* Ajusta el espacio entre las tarjetas */
-    justify-content: center; /* Centra las tarjetas horizontalmente */
-    width: 100%; /* Asegura que ocupe todo el ancho disponible */
-  }
-  
-  .product-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    width: 300px; /* Aumenta el tamaño de las tarjetas */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 10px;
-    text-align: center;
-  }
-  
-  .product-image {
-    width: 100%;
-    height: auto;
-  }
-  
-  .product-info {
-    padding: 20px; /* Aumenta el espacio de padding */
-  }
-  
-  .product-price {
-    font-size: 22px; /* Aumenta el tamaño de la fuente */
-    font-weight: bold;
-    margin: 10px 0;
-  }
-  
-  .product-brand {
-    font-size: 18px; /* Aumenta el tamaño de la fuente */
-    color: #757575;
-    margin: 5px 0;
-  }
-  
-  .product-description {
-    font-size: 18px; /* Aumenta el tamaño de la fuente */
-    color: #757575;
-    margin: 5px 0;
-  }
-  
+  justify-content: center; /* Centra horizontalmente el contenido */
   min-height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
   width: 100%; /* Asegura que ocupe todo el ancho disponible */
-  padding-left: 0; /* Elimina el margen izquierdo */
+  padding: 0; /* Elimina cualquier padding */
 }
 
 .products-content {
   flex: 1;
   padding: 20px;
-  max-width: 100%; /* Utiliza todo el ancho disponible */
-  margin-left: 0; /* Elimina cualquier margen izquierdo */
+  max-width: 1200px; /* Limita el ancho máximo del contenido */
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  margin: 0; /* Elimina cualquier margen */
 }
 
 .products-header {
   display: flex;
-  justify-content: flex-start; /* Alinea horizontalmente los botones al lado izquierdo */
+  justify-content: center; /* Centra horizontalmente los botones */
   gap: 20px; /* Aumenta el espacio entre los botones */
   margin-bottom: 20px;
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
 }
 
 .filter-button {
@@ -112,7 +36,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px; /* Ajusta el espacio entre las tarjetas */
-  justify-content: flex-start; /* Alinea las tarjetas al lado izquierdo */
+  justify-content: center; /* Centra las tarjetas horizontalmente */
   width: 100%; /* Asegura que ocupe todo el ancho disponible */
 }
 
@@ -151,4 +75,28 @@
   font-size: 18px; /* Aumenta el tamaño de la fuente */
   color: #757575;
   margin: 5px 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination-button {
+  margin: 0 5px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination-button.active {
+  background-color: #006EDF; /* Color de botón activo */
+}
+
+.pagination-button:hover {
+  opacity: 0.8;
+  background-color: #f2f2f2;
+  color: #000;
 }

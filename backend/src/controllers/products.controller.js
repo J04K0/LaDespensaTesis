@@ -2,13 +2,22 @@ import Product from '../models/products.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 
-export const getProducts = async (req, res) => { // ! Pensar en realizar paginación, revisar mongoose-paginate-v2
+export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const { page = 1, limit = 5 } = req.query;
+    const products = await Product.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+    const count = await Product.countDocuments();
 
-    if(products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
+    if (products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 
-    handleSuccess(res, 200, 'Productos encontrados', products);
+    handleSuccess(res, 200, 'Productos encontrados', {
+      products,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    });
   } catch (err) {
     handleErrorServer(res, 500, 'Error al traer los productos', err.message);
   }
