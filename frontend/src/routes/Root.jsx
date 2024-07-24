@@ -21,6 +21,8 @@ function PageRoot() {
     navigate('/products');
     navigate('/add-product');
     navigate('/deudores');
+    navigate('/editar-deudor');
+    navigate('/agregar-deudor');
   };
 
   const { user } = useAuth();

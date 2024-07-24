@@ -16,12 +16,6 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.section-title-deudores {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
 .deudores-table {
   width: 100%;
   border-collapse: collapse;
@@ -85,4 +79,38 @@
 .pagination button:hover:not(.active) {
   background-color: #f2f2f2;
   color: #000;
+}
+.section-title-deudores {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between; /* Para que el botón "Agregar Deudor" se alinee a la derecha */
+}
+
+.add-deudor-button {
+  background-color: #006EDF;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.add-deudor-button:hover {
+  background-color: #0056b3;
+}
+
+.search-bar {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.input.search-input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }

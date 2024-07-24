@@ -43,3 +43,13 @@ export const deleteDeudor = async (id) => {
     throw error;
   }
 };
+
+export const addDeudor = async (deudorData) => { // Nueva función
+  try {
+    const response = await axios.post('/deudores/agregar', deudorData);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error adding deudor:', error);
+    throw error;
+  }
+};
