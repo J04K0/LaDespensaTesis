@@ -53,38 +53,23 @@ export const addProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-      const { id } = req.params;
-      const { value: validatedId, error: errorId } = idProductSchema.validate({id});
-      if (errorId) return handleErrorClient(res, 400, errorId.message);
+    const { id } = req.params;
 
-      const product = await Product.findById(validatedId.id);
+    console.log('ID del producto:', id);
+    console.log('Datos del producto:', req.body); // Agrega esto para ver los datos enviados
 
-      if (product.length === 0) return handleErrorClient(res, 404, 'Producto no encontrado');
+    const { value: validatedId, error: errorId } = idProductSchema.validate({ id });
+    if (errorId) return handleErrorClient(res, 400, errorId.message);
 
-      const { body } = req;
+    const { value, error } = productSchema.validate(req.body, { abortEarly: false });
+    if (error) return handleErrorClient(res, 400, error.message);
 
-      const { value, error } = productSchema.validate(body);
+    const product = await Product.findByIdAndUpdate(validatedId.id, value, { new: true });
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-      if (error) return handleErrorClient(res, 400, error.message);
-
-      const updatedProduct = await Product.findByIdAndUpdate(
-          validatedId.id,
-          { 
-              Nombre: value.Nombre,
-              Marca: value.Marca,
-              Stock: value.Stock,
-              Categoria: value.Categoria,
-              precioVenta: value.PrecioVenta,
-              precioCompra: value.PrecioCompra,
-              fechaVencimiento: value.fechaVencimiento,
-              precioAntiguo: product.PrecioVenta
-          },
-          { new: true }
-      );
-
-      handleSuccess(res, 200, 'Producto modificado', updatedProduct);
+    handleSuccess(res, 200, 'Producto modificado', product);
   } catch (err) {
-      handleErrorServer(res, 500, 'Error al modificar un producto', err.message);
+    handleErrorServer(res, 500, 'Error al modificar el producto', err.message);
   }
 };
 
@@ -92,7 +77,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params; // ! validar id con joi
 
-    const { value, error } = idProductSchema.validate({id}, { convert: false });
+    const { value, error } = idProductSchema.validate({ id }, { convert: false });
 
     if (error) return handleErrorClient(res, 400, error.message);
 
@@ -112,7 +97,7 @@ export const getProductsByCategory = async (req, res) => {
 
     if (!categoria) return handleErrorClient(res, 400, 'Categoría es requerida');
 
-    const products = await Product.findOne({ Categoria: categoria });
+    const products = await Product.find({ Categoria: categoria });
 
     if (products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 

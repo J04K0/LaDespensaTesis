@@ -2,22 +2,28 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 
-const ProductCard = ({ venta, name, marca }) => {
+const ProductCard = ({ name, marca, stock, venta, onDelete, onEdit }) => {
   return (
-    <div className="product-card">
+    <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>
       <div className="product-info">
-        <div className="product-price">Precio: ${venta}</div>
-        <div className="product-name">{name}</div>
-        <div className="product-brand">{marca}</div>
+        <h3>{name}</h3>
+        <p>{marca}</p>
+        <p>Stock: {stock}</p>
+        <p>Precio: ${venta}</p>
+        <button onClick={onDelete}>Eliminar</button>
+        <button onClick={onEdit}>Editar</button>
       </div>
     </div>
   );
 };
 
 ProductCard.propTypes = {
-  venta: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   marca: PropTypes.string.isRequired,
+  stock: PropTypes.number.isRequired,
+  venta: PropTypes.number.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 export default ProductCard;

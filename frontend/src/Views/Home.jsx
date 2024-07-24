@@ -15,7 +15,7 @@ const Home = () => {
   useEffect(() => {
     const fetchDeudores = async () => {
       try {
-        const data = await getDeudores(1, 7);
+        const data = await getDeudores(1, 8);
         setDeudores(data.deudores);
       } catch (error) {
         console.error('Error fetching deudores:', error);

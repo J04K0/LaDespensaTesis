@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/AddProductStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,6 +21,7 @@ const categories = [
 ];
 
 const AddProducts = () => {
+  const navigate = useNavigate();
   const [Nombre, setNombre] = useState('');
   const [Marca, setMarca] = useState('');
   const [Stock, setStock] = useState('');
@@ -66,7 +68,8 @@ const AddProducts = () => {
     try {
       const response = await addProducts(productData);
       console.log('Respuesta del servidor:', response);
-      // Aquí puedes añadir lógica para limpiar el formulario o mostrar un mensaje de éxito
+      // Redirige a la página de productos después de añadir el producto
+      navigate('/products');
     } catch (error) {
       console.error('Error al añadir el producto', error);
       if (error.response && error.response.data) {
@@ -157,7 +160,7 @@ const AddProducts = () => {
             <button type="submit" className="add-button">
               Añadir producto <FontAwesomeIcon icon={faPlusCircle} />
             </button>
-            <button type="button" className="cancel-button">
+            <button type="button" className="cancel-button" onClick={() => navigate('/products')}>
               Cancelar <FontAwesomeIcon icon={faTimesCircle} />
             </button>
           </div>

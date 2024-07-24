@@ -9,6 +9,8 @@ import Products from './Views/Products.jsx';
 import AddProducts from './Views/AddProducts.jsx';
 import DeudoresList from './Views/Deudores.jsx';
 import EditDeudor from './Views/EditDeudor.jsx';
+import AddDeudor from './Views/AddDeudor.jsx';
+import EditProduct from './Views/EditProducts.jsx';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +41,14 @@ const router = createBrowserRouter([
   {
     path: '/editar-deudor',
     element: <EditDeudor />,
+  },
+  {
+  path: '/agregar-deudor',
+  element: <AddDeudor />,
+  },
+  {
+  path: '/edit-product',
+  element: <EditProduct />,
   },
 ]);
 
