@@ -11,6 +11,7 @@ import DeudoresList from './Views/Deudores.jsx';
 import EditDeudor from './Views/EditDeudor.jsx';
 import AddDeudor from './Views/AddDeudor.jsx';
 import EditProduct from './Views/EditProducts.jsx';
+import ExpiringProducts from './Views/ExpiringProducts.jsx';
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
   {
   path: '/edit-product',
   element: <EditProduct />,
+  },
+  {
+  path: '/expiring-products',
+  element: <ExpiringProducts />,
   },
 ]);
 

@@ -32,24 +32,24 @@ export const productSchema = Joi.object({
     'number.min': 'El stock no puede ser negativo',
     'number.empty': 'El stock del producto es obligatorio'
   }),
-  Categoria: Joi.string().
-  valid(
-    'Congelados', 
-    'Carnes', 
-    'Despensa', 
-    'Panaderia y Pasteleria', 
-    'Quesos y Fiambres', 
-    'Bebidas y Licores', 
-    'Lacteos, Huevos y Refrigerados', 
-    'Desayuno y Dulces', 
-    'Bebes y Niños ', 
-    'Cigarros')
+  Categoria: Joi.string()
+    .valid(
+      'Congelados', 
+      'Carnes', 
+      'Despensa', 
+      'Panaderia y Pasteleria', 
+      'Quesos y Fiambres', 
+      'Bebidas y Licores', 
+      'Lacteos, Huevos y Refrigerados', 
+      'Desayuno y Dulces', 
+      'Bebes y Niños', 
+      'Cigarros')
     .required()
     .messages({
-    'any.only': 'Categoría no válida',
-    'string.empty': 'La categoría del producto es obligatoria',
-    'string.base': 'La categoría del producto debe ser una cadena de texto'
-  }),
+      'any.only': 'Categoría no válida',
+      'string.empty': 'La categoría del producto es obligatoria',
+      'string.base': 'La categoría del producto debe ser una cadena de texto'
+    }),
   PrecioVenta: Joi.number().min(1).required().messages({
     'number.base': 'El precio de venta debe ser un número',
     'number.min': 'El precio de venta no puede ser negativo',
@@ -64,6 +64,10 @@ export const productSchema = Joi.object({
     'date.base': 'La fecha de vencimiento debe ser una fecha válida',
     'date.empty': 'La fecha de vencimiento es obligatoria'
   }),
+  precioAntiguo: Joi.number().min(0).optional().messages({
+    'number.base': 'El precio antiguo debe ser un número',
+    'number.min': 'El precio antiguo no puede ser negativo',
+  })
 });
 
 export const idProductSchema = Joi.object({

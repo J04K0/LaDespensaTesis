@@ -5,6 +5,7 @@ import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 
 const DeudoresList = () => {
   const [allDeudores, setAllDeudores] = useState([]);
@@ -23,7 +24,7 @@ const DeudoresList = () => {
   useEffect(() => {
     const fetchAllDeudores = async () => {
       try {
-        const data = await getDeudores(1, Number.MAX_SAFE_INTEGER); // Obtener todos los deudores
+        const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
         setAllDeudores(data.deudores);
         setFilteredDeudores(data.deudores);
         setTotalPages(Math.ceil(data.deudores.length / deudoresPerPage));
@@ -57,8 +58,19 @@ const DeudoresList = () => {
       );
       setFilteredDeudores(filtered);
       setTotalPages(Math.ceil(filtered.length / deudoresPerPage));
+      Swal.fire({
+        icon: 'success',
+        title: 'Deudor eliminado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error deleting deudor:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar el deudor',
+        text: 'Ocurrió un error al intentar eliminar el deudor.',
+      });
     }
   };
 

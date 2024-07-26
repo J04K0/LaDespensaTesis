@@ -8,34 +8,34 @@
   padding: 0;
   width: 100%;
   justify-content: center;
-  overflow: hidden; /* Evita overflow */
+  overflow: hidden; 
 }
 
 .add-product-container {
-  background-color: #ffffff;
+  background-color: #B2DFFF;
   padding: 40px;
   border-radius: 8px;
-  width: 100%; /* Ajustado a 100% */
-  height: 100%; /* Ajustado a 100% */
+  width: 100%; 
+  height: 100%; 
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Asegura que el contenido esté centrado verticalmente */
+  justify-content: center;
   align-items: center;
-  overflow: hidden; /* Evita overflow */
+  overflow: hidden;
 }
 
 .add-product-container h2 {
   text-align: center;
   margin-bottom: 20px;
   color: #333;
-  font-size: 24px; /* Tamaño de fuente mayor */
+  font-size: 24px;
 }
 
 .form-group,
 .form-group-row {
   width: 100%;
-  margin-bottom: 20px; /* Incrementado para más espacio */
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
@@ -48,27 +48,27 @@
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 10px; /* Incrementado para más espacio */
+  padding: 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 18px;
-  margin: 10px 0; /* Incrementado para más espacio */
+  margin: 10px 0;
 }
 
 .form-group-row input {
-  width: 70%; /* Ajustado para campos en la misma línea */
-  padding: 15px; /* Incrementado para más espacio */
+  width: 70%;
+  padding: 15px; 
 }
 
 .form-buttons {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-top: 30px; /* Incrementado para más espacio */
+  margin-top: 30px;
 }
 
 button {
-  padding: 20px 40px; /* Incrementado para más espacio */
+  padding: 20px 40px;
   background-color: #002651;
   color: white;
   border: none;
@@ -80,10 +80,6 @@ button {
   font-size: 18px;
 }
 
-button .faPlusCircle,
-button .faTimesCircle {
-  margin-left: 8px;
-}
 
 button:hover {
   background-color: #003366;
@@ -103,6 +99,3 @@ button:hover {
   justify-content: center;
 }
 
-.add-button .faPlusCircle {
-  margin-left: 8px;
-}

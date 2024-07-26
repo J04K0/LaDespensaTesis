@@ -55,9 +55,6 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    console.log('ID del producto:', id);
-    console.log('Datos del producto:', req.body); // Agrega esto para ver los datos enviados
-
     const { value: validatedId, error: errorId } = idProductSchema.validate({ id });
     if (errorId) return handleErrorClient(res, 400, errorId.message);
 
@@ -73,9 +70,10 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+
 export const deleteProduct = async (req, res) => {
   try {
-    const { id } = req.params; // ! validar id con joi
+    const { id } = req.params;
 
     const { value, error } = idProductSchema.validate({ id }, { convert: false });
 
@@ -109,11 +107,11 @@ export const getProductsByCategory = async (req, res) => {
 
 const stockMinimoPorCategoria = {
   'Congelados': 10,
-  'Carnes': 10,
-  'Despensa': 10,
+  'Carnes': 5,
+  'Despensa': 8,
   'Panaderia y Pasteleria': 10,
-  'Quesos y Fiambres': 10,
-  'Bebidas y Licores': 10,
+  'Quesos y Fiambres': 5,
+  'Bebidas y Licores': 5,
   'Lacteos, Huevos y Refrigerados': 10,
   'Desayuno y Dulces': 10,
   'Bebes y Niños': 10,
@@ -127,7 +125,7 @@ export const verificarStock = async (req, res) => {
     if (productosConPocoStock.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 
     const productosFiltrados = productosConPocoStock.filter(producto => {
-      const categoria = producto.Categoria; // ! modificar desde la 134 a la 146, debido a que no es muy descriptivo y con no muy buenas practicas
+      const categoria = producto.Categoria;
       if (!categoria) {
         console.warn(`Producto sin categoría definida: ${JSON.stringify(producto)}`);
         return false;
@@ -146,5 +144,48 @@ export const verificarStock = async (req, res) => {
     handleErrorClient(res, 404, 'No hay productos con poco stock');
   } catch (error) {
     handleErrorServer(res, 500, 'Error al verificar el stock', error.message);
+  }
+};
+
+export const getProductsExpiringSoon = async (req, res) => {
+  try {
+    const today = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(today.getDate() + 5);
+
+    const productsExpiringSoon = await Product.find({
+      fechaVencimiento: {
+        $gte: today,
+        $lte: thirtyDaysFromNow
+      }
+    });
+
+    if (productsExpiringSoon.length === 0) {
+      return handleErrorClient(res, 404, 'No hay productos próximos a caducar');
+    }
+
+    handleSuccess(res, 200, 'Productos próximos a caducar', productsExpiringSoon);
+  } catch (error) {
+    handleErrorServer(res, 500, 'Error al obtener los productos próximos a caducar', error.message);
+  }
+};
+
+export const getExpiredProducts = async (req, res) => {
+  try {
+    const today = new Date();
+
+    const expiredProducts = await Product.find({
+      fechaVencimiento: {
+        $lt: today
+      }
+    });
+
+    if (expiredProducts.length === 0) {
+      return handleErrorClient(res, 404, 'No hay productos vencidos');
+    }
+
+    handleSuccess(res, 200, 'Productos vencidos', expiredProducts);
+  } catch (error) {
+    handleErrorServer(res, 500, 'Error al obtener los productos vencidos', error.message);
   }
 };

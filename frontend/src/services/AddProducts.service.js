@@ -13,9 +13,8 @@ export const addProducts = async (product) => {
 export const getProducts = async (page, limit) => {
   try {
     const response = await axios.get(`/products?page=${page}&limit=${limit}`);
-    const products = response.data.data; // Asegúrate de que esta es la estructura correcta
-    console.log('Productos desde el servicio:', products); // Verifica los datos aquí
-    return response.data; // Ajusta según sea necesario
+    const products = response.data.data;
+    return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
     throw error;
@@ -25,7 +24,7 @@ export const getProducts = async (page, limit) => {
 export const deleteProduct = async (id) => {
   try {
     const response = await axios.delete(`/products/eliminar/${id}`);
-    return response.data.data; // Asegúrate de que esta es la estructura correcta
+    return response.data.data;
   } catch (error) {
     console.error('Error deleting product:', error);
     throw error;
@@ -35,9 +34,8 @@ export const deleteProduct = async (id) => {
 export const getProductsByCategory = async (category) => {
   try {
     const response = await axios.get(`/products/getbycategory/${category}`);
-    const products = response.data.data; // Ajustar según la estructura de tu respuesta
-    console.log('Productos por categoría desde el servicio:', products); // Verifica los datos aquí
-    return products; // Ajusta según sea necesario
+    const products = response.data.data;
+    return products;
   } catch (error) {
     console.error('Error fetching products by category:', error);
     throw error;
@@ -63,3 +61,45 @@ export const getProductById = async (id) => {
     throw error;
   }
 };
+
+export const getOutOfStockProducts = async () => {
+  try {
+    const response = await axios.get('/products/verificarstock');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching out of stock products:', error);
+    throw error;
+  }
+};
+
+export const getLowStockProducts = async () => {
+  try {
+    const response = await axios.get('/products/verificarstock');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching low stock products:', error);
+    throw error;
+  }
+};
+
+
+export const getProductsExpiringSoon = async () => {
+  try {
+    const response = await axios.get('/products/expiringsoon');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching products expiring soon:', error);
+    throw error;
+  }
+};
+
+export const getExpiredProducts = async () => {
+  try {
+    const response = await axios.get('/products/expired');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching expired products:', error);
+    throw error;
+  }
+};
+

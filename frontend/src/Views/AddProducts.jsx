@@ -5,9 +5,10 @@ import '../styles/AddProductStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { addProducts } from '../services/AddProducts.service.js';
+import Swal from 'sweetalert2';
 
 const categories = [
-  { label: 'Seleccione una categoría', value: null },
+  { label: 'Seleccione una categoría', value: '' },
   { label: 'Congelados', value: 'Congelados' },
   { label: 'Carnes', value: 'Carnes' },
   { label: 'Despensa', value: 'Despensa' },
@@ -25,7 +26,7 @@ const AddProducts = () => {
   const [Nombre, setNombre] = useState('');
   const [Marca, setMarca] = useState('');
   const [Stock, setStock] = useState('');
-  const [Categoria, setCategoria] = useState(null);
+  const [Categoria, setCategoria] = useState('');
   const [PrecioCompra, setPrecioCompra] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [PrecioVenta, setPrecioVenta] = useState('');
@@ -36,7 +37,7 @@ const AddProducts = () => {
   const handleCategoriaChange = (e) => {
     const value = e.target.value;
     setCategoria(value);
-    setCategoriaColor(value === null ? '#b5b5b5' : '#000000');
+    setCategoriaColor(value === '' ? '#b5b5b5' : '#000000');
   };
 
   const handleFechaChange = (e) => {
@@ -48,7 +49,7 @@ const AddProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (Categoria === null) {
+    if (Categoria === '') {
       alert('Por favor, seleccione una categoría válida.');
       return;
     }
@@ -63,19 +64,28 @@ const AddProducts = () => {
       PrecioVenta,
     };
 
-    console.log('Enviando datos del producto:', productData);
+
 
     try {
       const response = await addProducts(productData);
-      console.log('Respuesta del servidor:', response);
-      // Redirige a la página de productos después de añadir el producto
+   
+      Swal.fire({
+        icon: 'success',
+        title: 'Producto creado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
       navigate('/products');
     } catch (error) {
       console.error('Error al añadir el producto', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al crear el producto',
+        text: 'Ocurrió un error al intentar crear el producto.',
+      });
       if (error.response && error.response.data) {
         console.error('Detalles del error:', error.response.data);
       }
-      // Aquí puedes añadir lógica para manejar el error
     }
   };
 

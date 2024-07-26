@@ -16,7 +16,7 @@ async function setupDB() {
     console.log("=> Conectado a la base de datos");
   } catch (err) {
     handleErrorServer(res, 500, 'Error al conectar a la base');
-    process.exit(1); // Salir del proceso si no se puede conectar a la base de datos
+    process.exit(1);
   }
 }
 

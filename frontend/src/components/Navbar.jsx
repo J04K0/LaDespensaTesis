@@ -4,6 +4,7 @@ import LaDespensaLogo from '../../public/LaDespensaLogo.png';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+import { logout } from '../services/auth.service';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -15,6 +16,11 @@ const Navbar = () => {
 
   const toggleProductOptions = () => {
     setShowProductOptions(!showProductOptions);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
   };
 
   return (
@@ -38,6 +44,7 @@ const Navbar = () => {
         <li onClick={() => handleNavigation('/finanzas')}>Finanzas</li>
         <li onClick={() => handleNavigation('/proveedores')}>Proveedores</li>
         <li onClick={() => handleNavigation('/finanzas-boletas')}>Finanzas Boletas</li>
+        <li className="logout-button" onClick={handleLogout}>Cerrar sesión</li> {}
       </ul>
       <div className="footer">La despensa</div>
     </div>

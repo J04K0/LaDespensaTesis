@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updateProduct, getProductById } from '../services/AddProducts.service';
 import '../styles/EditProductStyles.css';
+import Swal from 'sweetalert2';
 
 const EditProduct = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const EditProduct = () => {
     precioAntiguo: 0,
   });
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (!productId) {
       console.error('Product ID is not provided');
@@ -30,18 +33,24 @@ const EditProduct = () => {
       try {
         const data = await getProductById(productId);
 
-        // Asegúrate de que la fecha esté en el formato correcto y que Stock sea un número
         const formattedDate = data.fechaVencimiento 
           ? new Date(data.fechaVencimiento).toISOString().split('T')[0] 
           : '';
 
         setProduct({
-          ...data,
+          Nombre: data.Nombre || '',
+          Marca: data.Marca || '',
+          Stock: Number(data.Stock) || 0,
+          Categoria: data.Categoria || '',
+          PrecioVenta: Number(data.PrecioVenta) || 0,
+          PrecioCompra: Number(data.PrecioCompra) || 0,
           fechaVencimiento: formattedDate,
-          Stock: Number(data.Stock),
+          precioAntiguo: Number(data.precioAntiguo) || 0,
         });
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
+        setLoading(false);
       }
     };
 
@@ -55,16 +64,36 @@ const EditProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Remover los campos _id y __v antes de enviar
-    const { _id, __v,FechaVencimiento, updatedAt,  ...productToUpdate } = product;
-    console.log('Datos enviados:', productToUpdate); // Verifica que los datos sean correctos
+
+    const { _id, __v, FechaVencimiento, updatedAt, createdAt, ...productToUpdate } = product;
+
+
     try {
-      await updateProduct(productId, productToUpdate);
+      const response = await updateProduct(productId, productToUpdate);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Producto editado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
       navigate('/products');
     } catch (error) {
       console.error('Error updating product:', error);
+      if (error.response && error.response.data) {
+        console.error('Detalles del error:', error.response.data);
+      }
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al editar el producto',
+        text: 'Ocurrió un error al intentar editar el producto.',
+      });
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="edit-product-container">
@@ -153,7 +182,7 @@ const EditProduct = () => {
             type="number"
             id="precioAntiguo"
             name="precioAntiguo"
-            value={product.precioAntiguo}
+            value={product.precioAntiguo || ''}
             onChange={handleChange}
           />
         </div>

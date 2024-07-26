@@ -5,8 +5,7 @@ export const getDeudores = async (page = 1, limit = 6) => {
     const response = await axios.get('/deudores', {
       params: { page, limit }
     });
-    const deudores = response.data.data; // Asegúrate de que esta es la estructura correcta
-    console.log('Deudores desde el servicio:', deudores); // Verifica los datos aquí
+    const deudores = response.data.data;
     return deudores;
   } catch (error) {
     console.error('Error fetching deudores:', error);
@@ -26,7 +25,7 @@ export const getDeudorById = async (id) => {
 
 export const updateDeudor = async (id, deudorData) => {
   try {
-    const response = await axios.patch(`/deudores/actualizar/${id}`, deudorData); // Cambiado a PATCH
+    const response = await axios.patch(`/deudores/actualizar/${id}`, deudorData);
     return response.data.data;
   } catch (error) {
     console.error('Error updating deudor:', error);
@@ -37,14 +36,14 @@ export const updateDeudor = async (id, deudorData) => {
 export const deleteDeudor = async (id) => {
   try {
     const response = await axios.delete(`/deudores/eliminar/${id}`);
-    return response.data.data; // Asegúrate de que esta es la estructura correcta
+    return response.data.data;
   } catch (error) {
     console.error('Error deleting deudor:', error);
     throw error;
   }
 };
 
-export const addDeudor = async (deudorData) => { // Nueva función
+export const addDeudor = async (deudorData) => {
   try {
     const response = await axios.post('/deudores/agregar', deudorData);
     return response.data.data;

@@ -6,7 +6,9 @@ import {
     updateProduct, 
     deleteProduct,
     getProductsByCategory,
-    verificarStock 
+    verificarStock,
+    getProductsExpiringSoon,
+    getExpiredProducts
 } from "../controllers/products.controller.js";
 
 import { 
@@ -21,12 +23,14 @@ import authenticationMiddleware from "../middlewares/authentication.middleware.j
 const router = express.Router();
 router.use(authenticationMiddleware);
 
-router.post('/agregar', authorizeRoles([isEmpleado,isAdmin,isJefe]),addProduct);
-router.get('/', authorizeRoles([isEmpleado,isAdmin,isJefe]),getProducts);
-router.get('/getbyid/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),getProductById);
-router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado,isAdmin,isJefe]),getProductsByCategory);
-router.get('/verificarstock', authorizeRoles([isEmpleado,isAdmin,isJefe]),verificarStock);
-router.patch('/actualizar/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),updateProduct);
-router.delete('/eliminar/:id', authorizeRoles([isEmpleado,isAdmin,isJefe]),deleteProduct);
+router.post('/agregar', authorizeRoles([isEmpleado, isAdmin, isJefe]), addProduct);
+router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProducts);
+router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductById);
+router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsByCategory);
+router.get('/verificarstock', authorizeRoles([isEmpleado, isAdmin, isJefe]), verificarStock);
+router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsExpiringSoon);
+router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
+router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
+router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProduct);
 
 export default router;

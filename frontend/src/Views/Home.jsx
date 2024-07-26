@@ -1,11 +1,10 @@
-// src/Views/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
 import { getDeudores, deleteDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 const Home = () => {
   const [showProductOptions, setShowProductOptions] = useState(false);
@@ -33,8 +32,20 @@ const Home = () => {
     navigate('/deudores');
   };
 
+  const handleViewOutOfStock = () => {
+    navigate('/products?filter=unavailable');
+  };
+
+  const handleViewExpiringProducts = () => {
+    navigate('/products?filter=expiring');
+  };
+
+  const handleViewExpiredProducts = () => {
+    navigate('/products?filter=expired');
+  };
+
   const handleDelete = async (id) => {
-    console.log('Deleting deudor with ID:', id); // Verifica el ID aquí
+    console.log('Deleting deudor with ID:', id);
     try {
       await deleteDeudor(id);
       setDeudores(deudores.filter(deudor => deudor._id !== id));
@@ -48,8 +59,8 @@ const Home = () => {
       <Navbar />
       <div className="top-buttons-container">
         <div className="top-buttons">
-          <button className="ver-productos-sin-stock">Ver productos sin stock</button>
-          <button className="ver-productos-vencidos">Ver productos vencidos</button>
+          <button onClick={handleViewOutOfStock} className="ver-productos-sin-stock">Ver productos sin stock</button>
+          <button onClick={handleViewExpiredProducts} className="ver-productos-vencidos">Ver productos vencidos</button>
           <button className="producto-mas-vendido">Producto más vendido</button>
           <button className="pagos-por-vencer">Pagos por vencer</button>
         </div>

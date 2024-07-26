@@ -1,4 +1,3 @@
-/* Importar la fuente Inter desde Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
     * {
@@ -6,6 +5,7 @@
     }
 
 html, body, #root {
+    background-color: #B2DFFF;
     height: 100%;
     width: 100%;
     margin: 0;

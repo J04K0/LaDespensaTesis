@@ -4,21 +4,20 @@ import jwtDecode from 'jwt-decode';
 
 export const login = async ({ email, password }) => {
   try {
-    const response = await axios.post('auth/login', {
-      email,
-      password,
-    });
+    const response = await axios.post('auth/login', { email, password });
     const { status, data } = response;
     if (status === 200) {
       const { email, roles } = await jwtDecode(data.data.accessToken);
       localStorage.setItem('user', JSON.stringify({ email, roles }));
-      axios.defaults.headers.common[
-        'Authorization'
-      ] = `Bearer ${data.data.accessToken}`;
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.data.accessToken}`;
       cookies.set('jwt-auth', data.data.accessToken, { path: '/' });
     }
   } catch (error) {
-    console.log(error);
+    if (error.response && error.response.status === 401) {
+      throw new Error('Credenciales incorrectas');
+    } else {
+      throw new Error('Error al iniciar sesión');
+    }
   }
 };
 

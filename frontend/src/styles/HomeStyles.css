@@ -1,4 +1,3 @@
-/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #002651;
@@ -8,7 +7,7 @@
   justify-content: flex-start;
   height: 100%;
   position: fixed;
-  right: 0; /* Cambiado a right */
+  right: 0;
   top: 0;
   bottom: 0;
   padding-top: 70px;
@@ -67,13 +66,12 @@
   padding-top: 10px;
 }
 
-/* General Container */
 .home-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: #B2DFFF; /* Fondo */
+  background-color: #B2DFFF;
 }
 
 #root {
@@ -81,15 +79,14 @@
   height: 100%;
 }
 
-/* Top Buttons Container */
 .top-buttons-container {
-  background-color: #002651; /* Fondo de la navbar */
+  background-color: #002651;
   padding: 10px 20px;
-  width: calc(100% - 250px); /* Asegura que los botones no se extiendan detrás de la sidebar */
-  margin-right: 250px; /* Alinea con la sidebar */
+  width: calc(100% - 250px);
+  margin-right: 250px;
   box-sizing: border-box;
   display: flex;
-  justify-content: space-between; /* Distribuir los botones a lo largo del contenedor */
+  justify-content: space-between;
   z-index: 1;
 }
 
@@ -105,67 +102,63 @@
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 8px; /* Bordes redondeados */
+  border-radius: 8px;
   text-align: center;
 }
 
-/* Botones de navegación */
 .top-buttons button.ver-productos-sin-stock {
-  background-color: #B2DFFF; /* Color para "Ver productos sin stock" */
+  background-color: #B2DFFF;
   color: black;
 }
 
 .top-buttons button.ver-productos-vencidos {
-  background-color: #006EDF; /* Color para "Ver productos vencidos" */
+  background-color: #006EDF;
 }
 
 .top-buttons button.producto-mas-vendido {
-  background-color: #135170; /* Color para "Producto más vendido" */
+  background-color: #135170;
 }
 
 .top-buttons button.pagos-por-vencer {
-  background-color: #003366; /* Color para "Pagos por vencer" */
+  background-color: #003366;
 }
 
 .top-buttons button:hover {
-  opacity: 0.9; /* Efecto hover */
+  opacity: 0.9;
 }
 
-/* Content Container */
 .content {
   display: flex;
-  justify-content: center; /* Centrar la card horizontalmente */
-  align-items: center; /* Centrar la card verticalmente */
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
-  position: relative; /* Posicionar absolutamente el título */
+  position: relative;
 }
 
-/* Section Title */
 .section-title {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 36px; /* Ajustar el tamaño según sea necesario */
+  font-size: 36px;
   color: #002651;
-  position: absolute; /* Posicionar absolutamente */
-  left: 0; /* Alinear a la izquierda */
-  top: 50%; /* Centrar verticalmente */
-  transform: translateY(-50%) rotate(180deg); /* Centrar verticalmente y rotar */
-  margin-left: 10px; /* Añadir margen izquierdo */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(180deg);
+  margin-left: 10px;
 }
 
-/* Deudores Card */
 .deudores-card {
-  background-color: white; /* Fondo blanco */
+  background-color: white;
   border-radius: 10px;
-  padding: 20px; /* Ajustar el padding según sea necesario */
+  padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 80%; /* Ajustar el tamaño de la tarjeta */
-  max-width: 600px; /* Ajustar el máximo ancho si es necesario */
+  width: 80%;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
   font-size: 18px;
-  margin: 20px auto; /* Añadir margen para centrar verticalmente */
+  margin: 20px auto;
 }
 
 .deudores-header {
@@ -175,7 +168,7 @@
   background-color: #002651;
   color: white;
   padding: 10px;
-  border-radius: 10px 10px 0 0; /* Bordes redondeados en la parte superior */
+  border-radius: 10px 10px 0 0;
 }
 
 .deudores-header h3 {

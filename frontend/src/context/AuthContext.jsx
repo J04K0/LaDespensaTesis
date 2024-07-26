@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AuthContext = createContext();
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
-// eslint-disable-next-line react/prop-types
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
@@ -21,6 +21,13 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user }}>
+      ReactDOM.render(
+  <React.StrictMode>
+    <App />
+    <ToastContainer />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
       {children}
     </AuthContext.Provider>
   );

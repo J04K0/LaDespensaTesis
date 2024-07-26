@@ -65,3 +65,12 @@
   cursor: pointer;
   padding-top: 10px;
 }
+
+.logout-button {
+  color: #FF4136; /* Color rojo para destacar */
+  font-weight: bold;
+}
+
+.logout-button:hover {
+  opacity: 0.8;
+}

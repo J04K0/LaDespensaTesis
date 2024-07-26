@@ -1,4 +1,3 @@
-import { Outlet } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../services/auth.service';
 import { useAuth,AuthProvider } from '../context/AuthContext';
@@ -23,6 +22,9 @@ function PageRoot() {
     navigate('/deudores');
     navigate('/editar-deudor');
     navigate('/agregar-deudor');
+    navigate('/edit-product');
+    navigate('/ProductsSinStock');
+    
   };
 
   const { user } = useAuth();

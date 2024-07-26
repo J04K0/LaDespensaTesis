@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/EditDeudorStyles.css';
 import { getDeudorById, updateDeudor } from '../services/deudores.service.js';
-import { useLocation } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const EditDeudor = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { deudors } = location.state;	
+  const { deudors } = location.state;
+
   const [deudor, setDeudor] = useState({
     Nombre: '',
     fechaPaga: '',
@@ -30,7 +31,7 @@ const EditDeudor = () => {
     };
 
     fetchDeudor();
-  }, []);
+  }, [deudors._id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,16 +41,26 @@ const EditDeudor = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-  
       await updateDeudor(deudors._id, {
         Nombre: deudor.Nombre,
         fechaPaga: deudor.fechaPaga,
         numeroTelefono: deudor.numeroTelefono.toString(),
         deudaTotal: deudor.deudaTotal,
       });
+      Swal.fire({
+        icon: 'success',
+        title: 'Deudor actualizado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
       navigate('/deudores');
     } catch (error) {
       console.error('Error updating deudor:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar el deudor',
+        text: 'Ocurrió un error al intentar actualizar el deudor.',
+      });
     }
   };
 

@@ -1,4 +1,3 @@
-/* src/styles/DeudoresStyles.css */
 .deudores-list-container {
   display: flex;
   flex-direction: column;
@@ -20,21 +19,21 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-  table-layout: fixed; /* Esto asegura que la tabla tenga un ancho fijo */
+  table-layout: fixed;
 }
 
 .deudores-table th, .deudores-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
-  white-space: nowrap; /* Evita que el texto se desborde en varias líneas */
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es demasiado largo */
+  text-overflow: ellipsis;
 }
 
 .deudores-table th {
-  background-color: #002651; /* Color del encabezado */
-  color: white; /* Color del texto del encabezado */
+  background-color: #002651;
+  color: white;
 }
 
 .deudores-table td {
@@ -44,7 +43,7 @@
 .actions-cell {
   display: flex;
   justify-content: center;
-  gap: 10px; /* Espacio entre los botones */
+  gap: 10px;
 }
 
 .edit-button, .delete-button {
@@ -73,7 +72,7 @@
 }
 
 .pagination button.active {
-  background-color: #006EDF; /* Color de botón activo */
+  background-color: #006EDF;
 }
 
 .pagination button:hover:not(.active) {
@@ -85,7 +84,7 @@
   font-weight: bold;
   margin-bottom: 20px;
   display: flex;
-  justify-content: space-between; /* Para que el botón "Agregar Deudor" se alinee a la derecha */
+  justify-content: space-between;
 }
 
 .add-deudor-button {

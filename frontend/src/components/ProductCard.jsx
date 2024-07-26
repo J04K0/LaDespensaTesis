@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 
-const ProductCard = ({ name, marca, stock, venta, onDelete, onEdit }) => {
+const ProductCard = ({ name, marca, stock, venta, fechaVencimiento, onDelete, onEdit }) => {
   return (
     <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>
       <div className="product-info">
@@ -10,8 +10,11 @@ const ProductCard = ({ name, marca, stock, venta, onDelete, onEdit }) => {
         <p>{marca}</p>
         <p>Stock: {stock}</p>
         <p>Precio: ${venta}</p>
-        <button onClick={onDelete}>Eliminar</button>
-        <button onClick={onEdit}>Editar</button>
+        {fechaVencimiento && <p>Caducidad: {new Date(fechaVencimiento).toLocaleDateString()}</p>}
+        <div className="button-group">
+          <button className="delete-button" onClick={onDelete}>Eliminar</button>
+          <button className="edit-button" onClick={onEdit}>Editar</button>
+        </div>
       </div>
     </div>
   );
@@ -22,6 +25,7 @@ ProductCard.propTypes = {
   marca: PropTypes.string.isRequired,
   stock: PropTypes.number.isRequired,
   venta: PropTypes.number.isRequired,
+  fechaVencimiento: PropTypes.string,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
 };
