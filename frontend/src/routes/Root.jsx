@@ -24,6 +24,7 @@ function PageRoot() {
     navigate('/agregar-deudor');
     navigate('/edit-product');
     navigate('/ProductsSinStock');
+    navigate('/ProductScanner');
     
   };
 

@@ -31,16 +31,6 @@
   text-decoration: none;
 }
 
-.sidebar .footer {
-  text-align: right;
-  padding: 10px;
-  margin: 0;
-  width: 100%;
-  position: absolute;
-  bottom: 15px;
-  right: 0;
-}
-
 .sidebar .logo-container {
   display: flex;
   justify-content: center;

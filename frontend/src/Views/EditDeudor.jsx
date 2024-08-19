@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/EditDeudorStyles.css';
 import { getDeudorById, updateDeudor } from '../services/deudores.service.js';
@@ -67,10 +67,10 @@ const EditDeudor = () => {
   return (
     <div className="edit-deudor-container">
       <Navbar />
-      <div className="main-content">
+      <div className="edit-deudor-main-content">
         <h2>Editar Deudor</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="edit-deudor-form">
+          <div className="edit-deudor-form-group">
             <label htmlFor="Nombre">Nombre</label>
             <input
               type="text"
@@ -81,7 +81,7 @@ const EditDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="edit-deudor-form-group">
             <label htmlFor="fechaPaga">Fecha a Pagar</label>
             <input
               type="date"
@@ -92,7 +92,7 @@ const EditDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="edit-deudor-form-group">
             <label htmlFor="numeroTelefono">Número de Teléfono</label>
             <input
               type="text"
@@ -103,7 +103,7 @@ const EditDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="edit-deudor-form-group">
             <label htmlFor="deudaTotal">Deuda Total</label>
             <input
               type="number"
@@ -114,7 +114,12 @@ const EditDeudor = () => {
               required
             />
           </div>
-          <button type="submit">Guardar Cambios</button>
+          <div className="edit-deudor-button-group">
+            <button type="submit" className="submit-button">Guardar Cambios</button>
+            <button type="button" className="edit-deudor-cancel-button" onClick={() => navigate('/deudores')}>
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

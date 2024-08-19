@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updateProduct, getProductById } from '../services/AddProducts.service';
+import Navbar from '../components/Navbar';
 import '../styles/EditProductStyles.css';
 import Swal from 'sweetalert2';
 
@@ -67,7 +68,6 @@ const EditProduct = () => {
 
     const { _id, __v, FechaVencimiento, updatedAt, createdAt, ...productToUpdate } = product;
 
-
     try {
       const response = await updateProduct(productId, productToUpdate);
 
@@ -96,10 +96,11 @@ const EditProduct = () => {
   }
 
   return (
-    <div className="edit-product-container">
+    <div className="edit-prod-container">
+      <Navbar />
       <h2>Editar Producto</h2>
-      <form onSubmit={handleSubmit} className="edit-product-form">
-        <div className="form-group">
+      <form onSubmit={handleSubmit} className="edit-prod-form">
+        <div className="edit-prod-form-group edit-prod-form-group-full">
           <label htmlFor="Nombre">Nombre:</label>
           <input
             type="text"
@@ -110,7 +111,7 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group">
           <label htmlFor="Marca">Marca:</label>
           <input
             type="text"
@@ -121,7 +122,7 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group">
           <label htmlFor="Stock">Stock:</label>
           <input
             type="number"
@@ -132,7 +133,7 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group edit-prod-form-group-full">
           <label htmlFor="Categoria">Categoría:</label>
           <input
             type="text"
@@ -143,18 +144,7 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="PrecioVenta">Precio de Venta:</label>
-          <input
-            type="number"
-            id="PrecioVenta"
-            name="PrecioVenta"
-            value={product.PrecioVenta}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group">
           <label htmlFor="PrecioCompra">Precio de Compra:</label>
           <input
             type="number"
@@ -165,7 +155,7 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group">
           <label htmlFor="fechaVencimiento">Fecha de Vencimiento:</label>
           <input
             type="date"
@@ -176,7 +166,18 @@ const EditProduct = () => {
             required
           />
         </div>
-        <div className="form-group">
+        <div className="edit-prod-form-group">
+          <label htmlFor="PrecioVenta">Precio de Venta:</label>
+          <input
+            type="number"
+            id="PrecioVenta"
+            name="PrecioVenta"
+            value={product.PrecioVenta}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="edit-prod-form-group">
           <label htmlFor="precioAntiguo">Precio Antiguo:</label>
           <input
             type="number"
@@ -186,8 +187,11 @@ const EditProduct = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="button-group">
-          <button type="submit">Guardar</button>
+        <div className="edit-prod-button-group">
+          <button type="submit">Editar producto 🛒</button>
+          <button type="button" className="edit-prod-cancel-button" onClick={() => navigate('/products')}>
+            Cancelar ❌
+          </button>
         </div>
       </form>
     </div>

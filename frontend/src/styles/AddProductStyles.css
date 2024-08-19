@@ -1,75 +1,84 @@
-.add-product-page {
+/* Página de añadir producto */
+.add-prod-page {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f4f4f4;
   margin: 0;
   padding: 0;
   width: 100%;
-  justify-content: center;
-  overflow: hidden; 
+  height: 100vh; /* Ocupa todo el alto de la ventana */
 }
 
-.add-product-container {
-  background-color: #B2DFFF;
+/* Contenedor de añadir producto */
+.add-prod-container {
+  width: 100%;
+  max-width: 1000px; /* Ancho máximo ajustado */
+  margin: auto;
   padding: 40px;
-  border-radius: 8px;
-  width: 100%; 
-  height: 100%; 
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  overflow: hidden;
 }
 
-.add-product-container h2 {
+/* Título del formulario */
+.add-prod-container h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #333;
   font-size: 24px;
+  color: #4A4A4A;
 }
 
-.form-group,
-.form-group-row {
+/* Formulario */
+.add-prod-form {
   width: 100%;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+  gap: 20px;
+}
+
+/* Campos que ocupan toda la fila */
+.add-prod-form-group-full {
+  grid-column: span 2; /* Ocupa ambas columnas */
+}
+
+/* Grupo de formularios */
+.add-prod-form-group {
   display: flex;
   flex-direction: column;
 }
 
-.form-group-row {
-  flex-direction: row;
-  justify-content: space-between;
-}
-
-.form-group input,
-.form-group select {
+/* Campos de entrada */
+.add-prod-form-group input, .add-prod-form-group select {
   width: 100%;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 15px;
   border: 1px solid #ccc;
-  font-size: 18px;
-  margin: 10px 0;
+  border-radius: 8px;
+  background-color: #EAEAEA;
+  font-size: 16px;
+  color: #4A4A4A;
+  box-sizing: border-box;
 }
 
-.form-group-row input {
-  width: 70%;
-  padding: 15px; 
+/* Estilo para campos en foco */
+.add-prod-form-group input:focus, .add-prod-form-group select:focus {
+  border-color: #4A90E2;
+  outline: none;
 }
 
-.form-buttons {
+/* Botones */
+.add-prod-buttons {
   display: flex;
   justify-content: space-between;
+  margin-top: 20px;
   width: 100%;
-  margin-top: 30px;
+  grid-column: span 2; /* Ocupa ambas columnas */
 }
 
-button {
-  padding: 20px 40px;
-  background-color: #002651;
+/* Estilo individual de botones */
+.add-prod-buttons button {
+  padding: 15px 30px;
+  background-color: #4A90E2;
   color: white;
   border: none;
   border-radius: 8px;
@@ -78,24 +87,24 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  transition: background-color 0.3s;
 }
 
-
-button:hover {
-  background-color: #003366;
+/* Efecto hover para botones */
+.add-prod-buttons button:hover {
+  background-color: #357ABD;
 }
 
-.cancel-button {
-  background-color: #a3a3a3;
+/* Botón de cancelar (estilo secundario) */
+.add-prod-buttons .cancel-button {
+  background-color: #D0021B;
 }
 
-.cancel-button:hover {
-  background-color: #858585;
+.add-prod-buttons .cancel-button:hover {
+  background-color: #A00117;
 }
 
-.add-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Iconos en botones */
+.add-prod-buttons .icon {
+  margin-left: 10px;
 }
-

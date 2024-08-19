@@ -12,6 +12,7 @@ import EditDeudor from './Views/EditDeudor.jsx';
 import AddDeudor from './Views/AddDeudor.jsx';
 import EditProduct from './Views/EditProducts.jsx';
 import ExpiringProducts from './Views/ExpiringProducts.jsx';
+import ProductScanner from './Views/ProductScanner.jsx';
 
 const router = createBrowserRouter([
   {
@@ -55,7 +56,12 @@ const router = createBrowserRouter([
   path: '/expiring-products',
   element: <ExpiringProducts />,
   },
-]);
+  {
+  path: '/ProductScanner',
+  element: <ProductScanner />,
+  },
+  
+  ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <RouterProvider router={router} />

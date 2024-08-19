@@ -42,10 +42,10 @@ const AddDeudor = () => {
   return (
     <div className="add-deudor-container">
       <Navbar />
-      <div className="main-content">
+      <div className="add-deudor-main-content">
         <h2>Agregar Nuevo Deudor</h2>
         <form onSubmit={handleSubmit} className="add-deudor-form">
-          <div className="form-group">
+          <div className="add-deudor-form-group add-deudor-form-group-full">
             <label htmlFor="nombre">Nombre:</label>
             <input
               type="text"
@@ -55,7 +55,7 @@ const AddDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-deudor-form-group">
             <label htmlFor="fechaPaga">Fecha a Pagar:</label>
             <input
               type="date"
@@ -65,7 +65,7 @@ const AddDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-deudor-form-group">
             <label htmlFor="numeroTelefono">Número de Teléfono:</label>
             <input
               type="text"
@@ -75,7 +75,7 @@ const AddDeudor = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-deudor-form-group">
             <label htmlFor="deudaTotal">Deuda Total:</label>
             <input
               type="number"
@@ -85,7 +85,12 @@ const AddDeudor = () => {
               required
             />
           </div>
-          <button type="submit" className="submit-button">Agregar Deudor</button>
+          <div className="add-deudor-button-group">
+            <button type="submit" className="submit-button">Agregar Deudor</button>
+            <button type="button" className="add-deudor-cancel-button" onClick={() => navigate('/deudores')}>
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

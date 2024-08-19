@@ -64,8 +64,6 @@ const AddProducts = () => {
       PrecioVenta,
     };
 
-
-
     try {
       const response = await addProducts(productData);
    
@@ -90,12 +88,12 @@ const AddProducts = () => {
   };
 
   return (
-    <div className="add-product-page">
+    <div className="add-prod-page">
       <Navbar />
-      <div className="add-product-container">
+      <div className="add-prod-container">
         <h2>Añadir producto</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="add-prod-form">
+          <div className="add-prod-form-group add-prod-form-group-full">
             <input
               type="text"
               placeholder="Nombre del producto"
@@ -104,7 +102,7 @@ const AddProducts = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-prod-form-group add-prod-form-group-full">
             <input
               type="text"
               placeholder="Marca del producto"
@@ -113,16 +111,16 @@ const AddProducts = () => {
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-prod-form-group add-prod-form-group-full">
             <input
-              type="number"
+              type="text"
               placeholder="Stock"
               value={Stock}
               onChange={(e) => setStock(e.target.value)}
               required
             />
           </div>
-          <div className="form-group">
+          <div className="add-prod-form-group add-prod-form-group-full">
             <select
               value={Categoria}
               onChange={handleCategoriaChange}
@@ -136,42 +134,40 @@ const AddProducts = () => {
               ))}
             </select>
           </div>
-          <div className="form-group-row">
-            <div className="form-group">
-              <input
-                type="number"
-                placeholder="Precio de compra"
-                value={PrecioCompra}
-                onChange={(e) => setPrecioCompra(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <input
-                type="date"
-                placeholder="Fecha de vencimiento"
-                value={fechaVencimiento}
-                onChange={handleFechaChange}
-                required
-                style={{ color: fechaColor }}
-              />
-            </div>
-            <div className="form-group">
-              <input
-                type="number"
-                placeholder="Precio de venta"
-                value={PrecioVenta}
-                onChange={(e) => setPrecioVenta(e.target.value)}
-                required
-              />
-            </div>
+          <div className="add-prod-form-group">
+            <input
+              type="number"
+              placeholder="Precio de compra"
+              value={PrecioCompra}
+              onChange={(e) => setPrecioCompra(e.target.value)}
+              required
+            />
           </div>
-          <div className="form-buttons">
+          <div className="add-prod-form-group">
+            <input
+              type="date"
+              placeholder="Fecha de vencimiento"
+              value={fechaVencimiento}
+              onChange={handleFechaChange}
+              required
+              style={{ color: fechaColor }}
+            />
+          </div>
+          <div className="add-prod-form-group">
+            <input
+              type="number"
+              placeholder="Precio de venta"
+              value={PrecioVenta}
+              onChange={(e) => setPrecioVenta(e.target.value)}
+              required
+            />
+          </div>
+          <div className="add-prod-buttons">
             <button type="submit" className="add-button">
-              Añadir producto <FontAwesomeIcon icon={faPlusCircle} />
+              Añadir producto <span className="icon">🛒</span>
             </button>
             <button type="button" className="cancel-button" onClick={() => navigate('/products')}>
-              Cancelar <FontAwesomeIcon icon={faTimesCircle} />
+              Cancelar <span className="icon">❌</span>
             </button>
           </div>
         </form>
