@@ -8,7 +8,9 @@ import {
     getProductsByCategory,
     verificarStock,
     getProductsExpiringSoon,
-    getExpiredProducts
+    getExpiredProducts,
+    scanProducts,
+    actualizarStockVenta
 } from "../controllers/products.controller.js";
 
 import { 
@@ -32,5 +34,8 @@ router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getPr
 router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProduct);
+router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
+router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
+
 
 export default router;

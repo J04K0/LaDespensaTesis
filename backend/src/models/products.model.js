@@ -29,9 +29,9 @@ const ProductSchema = new Schema({
     type: Date,
     required: true,
   },
-  precioAntiguo: {
-    type: Number,
-    required: false,
+  codigoBarras: {
+    type: String,
+    required: true,
   },
 }, 
 { 

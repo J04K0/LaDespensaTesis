@@ -189,3 +189,61 @@ export const getExpiredProducts = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener los productos vencidos', error.message);
   }
 };
+
+export const scanProducts = async (req, res) => {
+  try {
+    const { codigoBarras } = req.body;
+
+    if (!codigoBarras) return handleErrorClient(res, 400, "Código de barras es requerido");
+
+    // Buscar en la base de datos el producto con el código de barras
+    const product = await Product.findOne({ codigoBarras });
+
+    if (!product) return handleErrorClient(res, 404, "Producto no encontrado");
+
+    // Responder con los datos del producto encontrado
+    handleSuccess(res, 200, "Producto escaneado exitosamente", {
+      codigoBarras: product.codigoBarras,
+      nombre: product.Nombre,
+      marca: product.Marca,
+      stock: product.Stock,
+      categoria: product.Categoria,
+      precioVenta: product.PrecioVenta,
+      fechaVencimiento: product.fechaVencimiento
+    });
+
+  } catch (err) {
+    handleErrorServer(res, 500, "Error al escanear producto", err.message);
+  }
+};
+
+export const actualizarStockVenta = async (req, res) => {
+  try {
+    const { productosVendidos } = req.body; // Recibimos los productos vendidos con código y cantidad
+
+    if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
+      return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
+    }
+
+    // Usamos `bulkWrite` para hacer múltiples actualizaciones de stock en una sola operación
+    const operaciones = productosVendidos.map(({ codigoBarras, cantidad }) => ({
+      updateOne: {
+        filter: { codigoBarras },
+        update: { $inc: { Stock: -cantidad } }, // 🔹 Resta la cantidad vendida del stock
+      }
+    }));
+
+    const resultado = await Product.bulkWrite(operaciones);
+
+    if (resultado.modifiedCount === 0) {
+      return handleErrorClient(res, 400, "No se pudo actualizar el stock de los productos");
+    }
+
+    handleSuccess(res, 200, "Stock actualizado después de la venta", resultado);
+  } catch (err) {
+    handleErrorServer(res, 500, "Error al actualizar stock", err.message);
+  }
+};
+
+
+

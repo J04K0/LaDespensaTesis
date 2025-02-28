@@ -67,6 +67,11 @@ export const productSchema = Joi.object({
   precioAntiguo: Joi.number().min(0).optional().messages({
     'number.base': 'El precio antiguo debe ser un número',
     'number.min': 'El precio antiguo no puede ser negativo',
+  }),
+  codigobarras: Joi.string().min(13).max(13).required().messages({
+    'string.empty': 'El código de barras del producto es obligatorio',
+    'string.min': 'El código de barras debe tener 13 caracteres',
+    'string.max': 'El código de barras debe tener 13 caracteres'
   })
 });
 

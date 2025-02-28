@@ -1,34 +1,34 @@
-# Official base image for node 20.X.X
-FROM node:20
+# Imagen base oficial para node 20.15.1
+FROM node:20.15.1 AS base
 
-# Set the working directory for backend
-WORKDIR /app/backend
+# Crear directorios de trabajo para el frontend y el backend
+WORKDIR /app
 
-# Copy backend package files and install dependencies
-COPY backend/package*.json ./
-RUN npm install
-
-# Copy backend source code
-COPY backend .
-
-# Set the working directory for frontend
+# Establece el directorio de trabajo para el frontend
+FROM base AS frontend
 WORKDIR /app/frontend
 
-# Copy frontend package files and install dependencies
+# Copia los archivos package del frontend y instala las dependencias
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy frontend source code
-COPY frontend .
+# Copiar el código fuente del frontend
+COPY frontend ./
 
-# Build frontend
-RUN npm run build
-
-# Set the working directory back to backend
+# Establecer el directorio de trabajo para el backend
+FROM base AS backend
 WORKDIR /app/backend
 
-# Expose the application port
-EXPOSE 5000
+# Copiar los archivos package del backend e instalar las dependencias
+COPY backend/package*.json ./
+RUN npm install
 
-# Command to run the backend
-CMD ["npm", "start"]
+# Copiar el código fuente del backend
+COPY backend ./
+
+# Puertos
+EXPOSE 5000
+EXPOSE 5173
+
+# Comando por defecto para el contenedor
+CMD ["sh", "-c", "cd /app/frontend && npm run dev -- --host 0.0.0.0 & cd /app/backend && npm run dev"]
