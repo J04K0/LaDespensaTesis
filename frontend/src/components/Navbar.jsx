@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LaDespensaLogo from '../../public/LaDespensaLogo.png';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faTimes, faCaretDown, faCaretUp, faHome, faBoxOpen, faHistory, faChartLine, faDollarSign, faTruck, faFileInvoiceDollar, faSignOutAlt, faBarcode } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faTimes, faCaretDown, faCaretUp,faAdd ,faHome, faBoxOpen, faHistory, faChartLine, faDollarSign, faTruck, faSignOutAlt, faBarcode } from '@fortawesome/free-solid-svg-icons';
 import { logout } from '../services/auth.service';
 
 const Navbar = () => {
@@ -31,14 +31,14 @@ const Navbar = () => {
   return (
     <>
       {!isNavVisible && (
-        <button className="open-navbar-btn" onClick={toggleNavbar}>
+        <button className="open-navbar-btn" onClick={toggleNavbar} aria-label="Abrir menú de navegación">
           <FontAwesomeIcon icon={faBars} />
         </button>
       )}
-      <div className={`sidebar ${isNavVisible ? 'visible' : 'hidden'}`}>
+      <div className={`sidebar ${isNavVisible ? 'visible' : 'hidden'}`} role="navigation">
         <div className="logo-container">
           <img src={LaDespensaLogo} alt="La Despensa Logo" />
-          <button className="toggle-navbar-btn" onClick={toggleNavbar}>
+          <button className="toggle-navbar-btn" onClick={toggleNavbar} aria-label="Cerrar menú de navegación">
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
@@ -55,16 +55,16 @@ const Navbar = () => {
                 <FontAwesomeIcon icon={faBoxOpen} /> Ver productos
               </li>
               <li onClick={() => handleNavigation('/add-product')}>
-                <FontAwesomeIcon icon={faBoxOpen} /> Añadir productos
+                <FontAwesomeIcon icon={faAdd} /> Añadir productos
               </li>
               <li onClick={() => handleNavigation('/ProductScanner')}>
-                <FontAwesomeIcon icon={faBarcode} /> Vender Producto
+                <FontAwesomeIcon icon={faBarcode} /> Vender producto
+              </li>
+              <li onClick={() => handleNavigation('/HistorySale')}>
+                <FontAwesomeIcon icon={faHistory} /> Historial de ventas
               </li>
             </ul>
           )}
-          <li onClick={() => handleNavigation('/historial-precios')}>
-            <FontAwesomeIcon icon={faHistory} /> Historial Precios
-          </li>
           <li onClick={() => handleNavigation('/estadisticas')}>
             <FontAwesomeIcon icon={faChartLine} /> Estadísticas
           </li>
@@ -74,10 +74,7 @@ const Navbar = () => {
           <li onClick={() => handleNavigation('/proveedores')}>
             <FontAwesomeIcon icon={faTruck} /> Proveedores
           </li>
-          <li onClick={() => handleNavigation('/finanzas-boletas')}>
-            <FontAwesomeIcon icon={faFileInvoiceDollar} /> Finanzas Boletas
-          </li>
-          <li className="logout-button" onClick={handleLogout}>
+          <li onClick={handleLogout}>
             <FontAwesomeIcon icon={faSignOutAlt} /> Cerrar sesión
           </li>
         </ul>

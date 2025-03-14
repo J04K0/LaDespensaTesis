@@ -25,7 +25,8 @@ function PageRoot() {
     navigate('/edit-product');
     navigate('/ProductsSinStock');
     navigate('/ProductScanner');
-    
+    navigate('/estadisticas');
+    navigate('/HistorySale');
   };
 
   const { user } = useAuth();

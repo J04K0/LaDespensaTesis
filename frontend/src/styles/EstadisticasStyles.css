@@ -1,0 +1,47 @@
+.estadisticas-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
+    padding: 20px;
+  }
+  
+  .chart-container {
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chart {
+    margin: 20px auto;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%; /* 🔹 Reduce el ancho */
+    max-width: 600px; /* 🔹 Máximo ancho */
+    height: auto; /* 🔹 Ajustar altura */
+  }
+  
+  canvas {
+    max-width: 100% !important;
+    height: 300px !important; /* 🔹 Limita la altura */
+  }
+  
+  
+  h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  h2 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  

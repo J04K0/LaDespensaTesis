@@ -123,3 +123,22 @@ export const actualizarStockVenta = async (productosVendidos) => {
   }
 };
 
+export const registrarVenta = async (productosVendidos) => {
+  try {
+    const response = await axios.post("/products/registrar-venta", { productosVendidos });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al registrar la venta:", error);
+    throw error;
+  }
+};
+
+export const obtenerVentas = async () => {
+  try {
+    const response = await axios.get("/products/ventas/obtener");
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al obtener las ventas:", error);
+    throw error;
+  }
+}

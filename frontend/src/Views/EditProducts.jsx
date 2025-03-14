@@ -12,6 +12,7 @@ const EditProduct = () => {
 
   const [product, setProduct] = useState({
     Nombre: '',
+    codigoBarras: '',
     Marca: '',
     Stock: 0,
     Categoria: '',
@@ -40,6 +41,7 @@ const EditProduct = () => {
 
         setProduct({
           Nombre: data.Nombre || '',
+          codigoBarras: data.codigoBarras || '',
           Marca: data.Marca || '',
           Stock: Number(data.Stock) || 0,
           Categoria: data.Categoria || '',
@@ -107,6 +109,17 @@ const EditProduct = () => {
             id="Nombre"
             name="Nombre"
             value={product.Nombre}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="edit-prod-form-group">
+          <label htmlFor="Codigo de Barras">codigobarras:</label>
+          <input
+            type="text"
+            id="codigoBarras"
+            name="codigoBarras"
+            value={product.codigoBarras}
             onChange={handleChange}
             required
           />

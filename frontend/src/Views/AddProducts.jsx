@@ -16,12 +16,19 @@ const categories = [
   { label: 'Lacteos, Huevos y Refrigerados', value: 'Lacteos, Huevos y Refrigerados' },
   { label: 'Desayuno y Dulces', value: 'Desayuno y Dulces' },
   { label: 'Bebes y Niños', value: 'Bebes y Niños' },
-  { label: 'Cigarros', value: 'Cigarros' }
+  { label: 'Cigarros', value: 'Cigarros' },
+  { label: 'Cuidado Personal', value: 'Cuidado Personal' },
+  { label: 'Limpieza y Hogar', value: 'Limpieza y Hogar' },
+  { label: 'Mascotas', value: 'Mascotas' },
+  { label: 'Remedios', value: 'Remedios' },
+  { label: 'Otros', value: 'Otros' },
+
 ];
 
 const AddProducts = () => {
   const navigate = useNavigate();
   const [Nombre, setNombre] = useState('');
+  const [codigoBarras, setCodigoBarras] = useState('');
   const [Marca, setMarca] = useState('');
   const [Stock, setStock] = useState('');
   const [Categoria, setCategoria] = useState('');
@@ -54,6 +61,7 @@ const AddProducts = () => {
 
     const productData = {
       Nombre,
+      codigoBarras,
       Marca,
       Categoria,
       Stock,
@@ -103,6 +111,15 @@ const AddProducts = () => {
           <div className="add-prod-form-group add-prod-form-group-full">
             <input
               type="text"
+              placeholder="Código de Barras"
+              value={codigoBarras}
+              onChange={(e) => setCodigoBarras(e.target.value)}
+              required
+            />
+          </div>
+          <div className="add-prod-form-group add-prod-form-group-full">
+            <input
+              type="text"
               placeholder="Marca del producto"
               value={Marca}
               onChange={(e) => setMarca(e.target.value)}
@@ -123,7 +140,6 @@ const AddProducts = () => {
               value={Categoria}
               onChange={handleCategoriaChange}
               required
-              style={{ color: categoriaColor }}
             >
               {categories.map((category, index) => (
                 <option key={index} value={category.value}>
@@ -148,7 +164,6 @@ const AddProducts = () => {
               value={fechaVencimiento}
               onChange={handleFechaChange}
               required
-              style={{ color: fechaColor }}
             />
           </div>
           <div className="add-prod-form-group">

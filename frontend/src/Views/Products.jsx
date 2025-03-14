@@ -14,15 +14,45 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('Todos');
+  const [sortOption, setSortOption] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const productsPerPage = 9;
   const navigate = useNavigate();
   const location = useLocation();
 
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros'
+    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
+    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
+    'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
+
+  // 🔹 Función para manejar el ordenamiento
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+  };
+
+  // 🔹 Aplica el ordenamiento según la opción seleccionada
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
+    if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
+    if (sortOption === 'stock-asc') return a.Stock - b.Stock;
+    if (sortOption === 'stock-desc') return b.Stock - a.Stock;
+    if (sortOption === 'price-asc') return a.PrecioVenta - b.PrecioVenta;
+    if (sortOption === 'price-desc') return b.PrecioVenta - a.PrecioVenta;
+    return 0;
+  });
+
+  // 🔹 Filtra por búsqueda y paginación
+  const filteredAndSearchedProducts = sortedProducts.filter(product =>
+    product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const displayedProducts = filteredAndSearchedProducts.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+  );
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -113,6 +143,8 @@ const Products = () => {
 
   useEffect(() => {
     const fetchAllProducts = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
         const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
@@ -124,6 +156,9 @@ const Products = () => {
         setAllProducts([]);
         setFilteredProducts([]);
         setTotalPages(1);
+        setError('Error al cargar los productos. Inténtalo de nuevo.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -156,7 +191,6 @@ const Products = () => {
   }, [location.search, allProducts]);
 
   const handleDelete = async (id) => {
-
     try {
       await deleteProduct(id);
       const updatedProducts = allProducts.filter(product => product._id !== id);
@@ -187,14 +221,15 @@ const Products = () => {
     setCurrentPage(page);
   };
 
-  const filteredAndSearchedProducts = filteredProducts.filter(product =>
-    product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const displayedProducts = filteredAndSearchedProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setCategory('');
+    setAvailabilityFilter('Todos');
+    setSortOption('');
+    setFilteredProducts(allProducts);
+    setTotalPages(Math.ceil(allProducts.length / productsPerPage));
+    setCurrentPage(1);
+  };
 
   return (
     <div className="products-page">
@@ -205,7 +240,7 @@ const Products = () => {
             <input
               id="search"
               type="text"
-              className="input search-input"
+              className="barra-de-busqueda"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="Buscar productos..."
@@ -225,25 +260,43 @@ const Products = () => {
             <option value="Vencidos">Vencidos</option>
             <option value="Poco stock">Poco stock</option>
           </select>
+          <select onChange={handleSortChange} value={sortOption} className="filter-select">
+            <option value="">Ordenar por</option>
+            <option value="name-asc">Nombre (A-Z)</option>
+            <option value="name-desc">Nombre (Z-A)</option>
+            <option value="stock-asc">Stock (Ascendente)</option>
+            <option value="stock-desc">Stock (Descendente)</option>
+            <option value="price-asc">Precio (Ascendente)</option>
+            <option value="price-desc">Precio (Descendente)</option>
+          </select>
+          <button onClick={handleClearFilters} className="clear-filters-button">
+            Limpiar Filtros
+          </button>
         </div>
-        <div className="product-list">
-          {displayedProducts.length > 0 ? (
-            displayedProducts.map((product, index) => (
-              <ProductCard
-                key={index}
-                name={product.Nombre}
-                marca={product.Marca}
-                stock={product.Stock}
-                venta={product.PrecioVenta}
-                fechaVencimiento={product.fechaVencimiento}
-                onDelete={() => handleDelete(product._id)}
-                onEdit={() => handleEdit(product._id)}
-              />
-            ))
-          ) : (
-            <p>No hay productos disponibles.</p>
-          )}
-        </div>
+        {loading ? (
+          <p>Cargando productos...</p>
+        ) : error ? (
+          <p className="error">{error}</p>
+        ) : (
+          <div className="product-list">
+            {displayedProducts.length > 0 ? (
+              displayedProducts.map((product, index) => (
+                <ProductCard
+                  key={index}
+                  name={product.Nombre}
+                  marca={product.Marca}
+                  stock={product.Stock}
+                  venta={product.PrecioVenta}
+                  fechaVencimiento={product.fechaVencimiento}
+                  onDelete={() => handleDelete(product._id)}
+                  onEdit={() => handleEdit(product._id)}
+                />
+              ))
+            ) : (
+              <p>No hay productos disponibles.</p>
+            )}
+          </div>
+        )}
         <div className="pagination">
           {Array.from({ length: totalPages }, (_, index) => (
             <button

@@ -1,31 +1,33 @@
 version: '3.8'
 
 services:
-  mongo:
-    image: mongo:3.6.3
-    restart: always
-    ports:
-      - "mongodb+srv://joakop76:OL3G5abjz4cYX0Yv@tesis.wx9nddv.mongodb.net/?retryWrites=true&w=majority&appName=Tesis"
-    networks: [ladespensa]
-    
-  tesisladespensa:
+  frontend:
     build:
-      context: .
+      context: . #usa todos los archivos en el directorio actual
       dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    env_file:
-      - backend/src/config/.env
-    networks: [ladespensa]
-
-  latesisladespensafrontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+      target: frontend  #especifica la etapa de creación Dockerfile
+    working_dir: /app/frontend #directorio de trabajo
+    volumes:
+      - ./frontend:/app/frontend
     ports:
       - "5173:5173"
-    networks: [ladespensa]
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5173
 
-networks:
-  ladespensa:
-    driver: bridge
+  backend:
+    build:
+      context: . #usa todos los archivos en el directorio actual
+      dockerfile: Dockerfile
+      target: backend  
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend
+    ports:
+      - "5000:5000"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - PORT=5000
+      - HOST=0.0.0.0
+      - MONGODB_URI=mongodb+srv://joakop76:OL3G5abjz4cYX0Yv@tesis.wx9nddv.mongodb.net/?retryWrites=true&w=majority&appName=Tesis

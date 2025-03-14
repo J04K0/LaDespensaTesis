@@ -13,11 +13,24 @@ const DeudoresList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('');
   const deudoresPerPage = 6;
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSortOption('');
+    setFilteredDeudores(allDeudores);
+    setTotalPages(Math.ceil(allDeudores.length / deudoresPerPage));
     setCurrentPage(1);
   };
 
@@ -43,6 +56,19 @@ const DeudoresList = () => {
     setFilteredDeudores(filtered);
     setTotalPages(Math.ceil(filtered.length / deudoresPerPage));
   }, [searchQuery, allDeudores]);
+
+  useEffect(() => {
+    const sortedDeudores = [...filteredDeudores].sort((a, b) => {
+      if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
+      if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
+      if (sortOption === 'debt-asc') return a.deudaTotal - b.deudaTotal;
+      if (sortOption === 'debt-desc') return b.deudaTotal - a.deudaTotal;
+      if (sortOption === 'date-asc') return new Date(a.fechaPaga) - new Date(b.fechaPaga);
+      if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
+      return 0;
+    });
+    setFilteredDeudores(sortedDeudores);
+  }, [sortOption]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -97,15 +123,31 @@ const DeudoresList = () => {
             <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
           </button>
         </div>
-        <div className="search-bar">
-          <input
-            id="search"
-            type="text"
-            className="input search-input"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Buscar deudores..."
-          />
+        <div className="search-sort-container">
+          <div className="search-bar-deudores">
+            <input
+              id="search"
+              type="text"
+              className="input search-input"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Buscar deudores..."
+            />
+          </div>
+          <div className="sort-bar">
+            <select onChange={handleSortChange} value={sortOption} className="sort-select">
+              <option value="">Ordenar por</option>
+              <option value="name-asc">Nombre (A-Z)</option>
+              <option value="name-desc">Nombre (Z-A)</option>
+              <option value="debt-asc">Deuda (Ascendente)</option>
+              <option value="debt-desc">Deuda (Descendente)</option>
+              <option value="date-asc">Fecha a Pagar (Ascendente)</option>
+              <option value="date-desc">Fecha a Pagar (Descendente)</option>
+            </select>
+          </div>
+          <button onClick={handleClearFilters} className="clear-filters-button">
+            Limpiar Filtros
+          </button>
         </div>
         <table className="deudores-table">
           <thead>

@@ -42,27 +42,66 @@
   padding: 10px 20px;
   cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .add-deudor-button:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
 }
 
-/* Barra de búsqueda */
-.search-bar {
+.add-deudor-button:active {
+  background-color: #004494;
+  transform: translateY(0);
+}
+
+/* Barra de búsqueda y ordenamiento */
+.search-sort-container {
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 
+.search-bar-deudores {
+  flex: 1;
+  margin-right: 20px;
+}
+
 .search-input {
-  width: 100%;
-  padding: 15px; /* Aumentar el padding */
+  width: 80%;
+  padding: 10px; /* Reducir el padding */
   box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.sort-bar {
+  flex: 0 0 300px; /* Ancho fijo ajustado */
+}
+
+.sort-select {
+  width: 100%;
+  padding: 10px; /* Reducir el padding */
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.sort-select:focus {
+  border-color: #006EDF;
+  box-shadow: 0 0 5px rgba(0, 110, 223, 0.5);
 }
 
 /* Tabla de deudores */

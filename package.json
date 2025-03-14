@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@radix-ui/react-toast": "^1.2.6",
+    "@shadcn/ui": "^0.0.4",
+    "classnames": "^2.5.1"
+  }
+}

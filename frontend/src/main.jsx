@@ -13,6 +13,8 @@ import AddDeudor from './Views/AddDeudor.jsx';
 import EditProduct from './Views/EditProducts.jsx';
 import ExpiringProducts from './Views/ExpiringProducts.jsx';
 import ProductScanner from './Views/ProductScanner.jsx';
+import Estadisticas from './Views/Estadisticas.jsx';
+import HistorySale from './Views/HistorySale.jsx';
 
 const router = createBrowserRouter([
   {
@@ -60,7 +62,14 @@ const router = createBrowserRouter([
   path: '/ProductScanner',
   element: <ProductScanner />,
   },
-  
+  {
+  path: '/estadisticas',
+  element: <Estadisticas />,
+  },
+  {
+  path: '/HistorySale',
+  element: <HistorySale />,
+  },
   ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(

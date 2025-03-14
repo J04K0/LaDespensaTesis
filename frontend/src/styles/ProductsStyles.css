@@ -22,6 +22,14 @@
   width: 100%;
 }
 
+.barra-de-busqueda {
+  color: white;
+  border: none;
+  padding: 20px 40px;
+  border-radius: 5px;
+  font-size: 18px;
+}
+
 .filter-button {
   background-color: #002651;
   color: white;
@@ -142,4 +150,26 @@
   background-color: #f2f2f2;
   color: #000;
   margin-left: 20px;
+}
+
+.clear-filters-button {
+  background-color: #d32f2f;
+  color: white;
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background var(--transition-duration);
+  margin-left: 20px;
+  font-size: 18px; 
+}
+
+.clear-filters-button:hover {
+  background-color: #b71c1c;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 16px;
+  margin-top: 20px;
 }
