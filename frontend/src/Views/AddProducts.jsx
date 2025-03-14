@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/AddProductStyles.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { addProducts } from '../services/AddProducts.service.js';
 import Swal from 'sweetalert2';
 

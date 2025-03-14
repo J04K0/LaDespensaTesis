@@ -43,6 +43,11 @@ export const productSchema = Joi.object({
       'Lacteos, Huevos y Refrigerados', 
       'Desayuno y Dulces', 
       'Bebes y Niños', 
+      'Mascotas',
+      'Cuidado Personal',
+      'Limpieza y Hogar',
+      'Remedios',
+      'Otros',
       'Cigarros')
     .required()
     .messages({
@@ -68,7 +73,7 @@ export const productSchema = Joi.object({
     'number.base': 'El precio antiguo debe ser un número',
     'number.min': 'El precio antiguo no puede ser negativo',
   }),
-  codigobarras: Joi.string().min(13).max(13).required().messages({
+  codigoBarras: Joi.string().min(13).max(13).required().messages({
     'string.empty': 'El código de barras del producto es obligatorio',
     'string.min': 'El código de barras debe tener 13 caracteres',
     'string.max': 'El código de barras debe tener 13 caracteres'

@@ -16,7 +16,10 @@
   "author": "Joaquin Perez",
   "license": "MIT",
   "dependencies": {
+    "@radix-ui/react-toast": "^1.2.6",
+    "@shadcn/ui": "^0.0.4",
     "bcryptjs": "2.4.3",
+    "classnames": "^2.5.1",
     "cookie-parser": "1.4.6",
     "cors": "2.8.5",
     "dotenv": "^16.4.4",

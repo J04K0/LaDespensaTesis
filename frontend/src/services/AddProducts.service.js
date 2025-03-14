@@ -103,3 +103,23 @@ export const getExpiredProducts = async () => {
   }
 };
 
+export const scanProducts = async (codigoBarras) => {
+  try {
+    const response = await axios.post('/products/scan', { codigoBarras });
+    return response;
+  } catch (error) {
+    console.error('❌ Error al escanear el producto:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const actualizarStockVenta = async (productosVendidos) => {
+  try {
+    const response = await axios.post("/products/actualizar-stock-venta", { productosVendidos });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al actualizar stock:", error);
+    throw error;
+  }
+};
+

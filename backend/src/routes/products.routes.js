@@ -10,7 +10,9 @@ import {
     getProductsExpiringSoon,
     getExpiredProducts,
     scanProducts,
-    actualizarStockVenta
+    actualizarStockVenta,
+    registrarVenta,
+    obtenerVentas,
 } from "../controllers/products.controller.js";
 
 import { 
@@ -32,10 +34,13 @@ router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado, isAdmin, isJ
 router.get('/verificarstock', authorizeRoles([isEmpleado, isAdmin, isJefe]), verificarStock);
 router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsExpiringSoon);
 router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
+
+router.post('/registrar-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), registrarVenta);
+router.get('/ventas/obtener', authorizeRoles([isEmpleado, isAdmin, isJefe]), obtenerVentas);
+
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
-
 
 export default router;

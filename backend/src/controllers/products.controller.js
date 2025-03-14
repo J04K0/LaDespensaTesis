@@ -1,4 +1,5 @@
 import Product from '../models/products.model.js';
+import Venta from '../models/venta.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 
@@ -209,6 +210,7 @@ export const scanProducts = async (req, res) => {
       stock: product.Stock,
       categoria: product.Categoria,
       precioVenta: product.PrecioVenta,
+      precioCompra: product.PrecioCompra,
       fechaVencimiento: product.fechaVencimiento
     });
 
@@ -245,5 +247,47 @@ export const actualizarStockVenta = async (req, res) => {
   }
 };
 
+export const registrarVenta = async (req, res) => {
+  try {
+    const { productosVendidos } = req.body;
 
+    if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
+      console.error("❌ Error: Lista de productos vendidos es inválida o vacía.");
+      return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
+    }
+
+    console.log("🛒 Recibiendo productos vendidos:", productosVendidos);
+
+    // ✅ Crear un registro de ventas en la base de datos
+    const ventas = productosVendidos.map(({ codigoBarras, nombre, cantidad, categoria, precioVenta, precioCompra }) => ({
+      codigoBarras,
+      nombre,
+      cantidad,
+      categoria,
+      precioVenta,
+      precioCompra,
+      fecha: new Date(),
+    }));
+
+    console.log("📦 Registrando ventas en la base de datos:", ventas);
+
+    // ✅ Guardar las ventas en la base de datos
+    await Venta.insertMany(ventas); // ✅ Aquí cambiamos `Ventas` por `Venta`
+
+    handleSuccess(res, 201, "Venta registrada correctamente", ventas);
+  } catch (err) {
+    console.error("❌ Error en registrarVenta:", err);
+    handleErrorServer(res, 500, "Error al registrar la venta", err.message);
+  }
+};
+
+// ✅ Obtener todas las ventas para estadísticas
+export const obtenerVentas = async (req, res) => {
+  try {
+      const ventas = await Venta.find();
+      handleSuccess(res, 200, "Historial de ventas obtenido correctamente", ventas);
+  } catch (error) {
+      handleErrorServer(res, 500, "Error al obtener las ventas", error.message);
+  }
+};
 
