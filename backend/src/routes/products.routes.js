@@ -23,11 +23,12 @@ import {
 } from '../middlewares/authorization.middleware.js';
 
 import authenticationMiddleware from "../middlewares/authentication.middleware.js";
+import { handleFileSizeLimit , upload } from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 router.use(authenticationMiddleware);
 
-router.post('/agregar', authorizeRoles([isEmpleado, isAdmin, isJefe]), addProduct);
+router.post('/agregar', upload.single('image'), handleFileSizeLimit,authorizeRoles([isEmpleado, isAdmin, isJefe]), addProduct);
 router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProducts);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductById);
 router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsByCategory);

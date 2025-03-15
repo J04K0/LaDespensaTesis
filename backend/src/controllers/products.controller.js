@@ -2,6 +2,7 @@ import Product from '../models/products.model.js';
 import Venta from '../models/venta.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
+import { HOST, PORT } from '../config/configEnv.js';
 
 export const getProducts = async (req, res) => {
   try {
@@ -36,21 +37,33 @@ export const getProductById = async (req, res) => {
   }
 };
 
-export const addProduct = async (req, res) => {
+export const addProduct = async (req, res) => { 
   try {
-    const { value, error } = productSchema.validate(req.body)
+    const { value, error } = productSchema.validate(req.body);
     if (error) return handleErrorClient(res, 400, error.message);
 
-    const newProduct = new Product(value);
+    console.log("Archivo recibido:", req.file); // Depuración
+
+    let imageUrl = null;
+
+    // Verifica si hay un archivo subido
+    if (req.file) {
+        imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
+    }
+
+    // Crear el producto con la imagen incluida
+    const newProduct = new Product({ ...value, image: imageUrl });
+    console.log("Nuevo producto:", newProduct);
 
     const product = await newProduct.save();
 
     handleSuccess(res, 201, 'Producto creado', product);
-
   } catch (err) {
     handleErrorServer(res, 500, 'Error al crear un producto', err.message);
   }
 };
+
+
 
 export const updateProduct = async (req, res) => {
   try {
