@@ -1,14 +1,20 @@
 import axios from './root.service.js';
 
-export const addProducts = async (product) => {
+export const addProducts = async (formData) => {
     try {
-        const response = await axios.post('/products/agregar', product);
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        };
+        const response = await axios.post('/products/agregar', formData, config);
         return response;
     } catch (error) {
         console.error('Error al añadir el producto:', error);
         throw error;
     }
 };
+
 
 export const getProducts = async (page, limit) => {
   try {

@@ -22,7 +22,7 @@ const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onDel
 };
 console.log(ProductCard);
 ProductCard.propTypes = {
-  image: PropTypes.string.isRequired,
+  image: PropTypes.string, //Ver si dejar isRequired o no
   name: PropTypes.string.isRequired,
   marca: PropTypes.string.isRequired,
   stock: PropTypes.number.isRequired,

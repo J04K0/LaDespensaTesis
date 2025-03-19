@@ -35,10 +35,11 @@ const AddProducts = () => {
   const [PrecioCompra, setPrecioCompra] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [PrecioVenta, setPrecioVenta] = useState('');
-  
+  const [image, setImage] = useState(null); // Estado para la imagen
+
   const [categoriaColor, setCategoriaColor] = useState('#b5b5b5');
   const [fechaColor, setFechaColor] = useState('#b5b5b5');
-
+  const handleImageChange = (e) => setImage(e.target.files[0]); // Guardar archivo
   const handleCategoriaChange = (e) => {
     const value = e.target.value;
     setCategoria(value);
@@ -59,37 +60,24 @@ const AddProducts = () => {
       return;
     }
 
-    const productData = {
-      Nombre,
-      codigoBarras,
-      Marca,
-      Categoria,
-      Stock,
-      PrecioCompra,
-      fechaVencimiento,
-      PrecioVenta,
-    };
+    const formData = new FormData();
+    formData.append('Nombre', Nombre);
+    formData.append('codigoBarras', codigoBarras);
+    formData.append('Marca', Marca);
+    formData.append('Categoria', Categoria);
+    formData.append('Stock', Stock);
+    formData.append('PrecioCompra', PrecioCompra);
+    formData.append('fechaVencimiento', fechaVencimiento);
+    formData.append('PrecioVenta', PrecioVenta);
+    if (image) formData.append('image', image); // Agregar la imagen solo si existe
 
     try {
-      const response = await addProducts(productData);
-   
-      Swal.fire({
-        icon: 'success',
-        title: 'Producto creado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      await addProducts(formData);
+      Swal.fire('Éxito', 'Producto creado con éxito', 'success');
       navigate('/products');
     } catch (error) {
       console.error('Error al añadir el producto', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al crear el producto',
-        text: 'Ocurrió un error al intentar crear el producto.',
-      });
-      if (error.response && error.response.data) {
-        console.error('Detalles del error:', error.response.data);
-      }
+      Swal.fire('Error', 'Ocurrió un error al intentar crear el producto.', 'error');
     }
   };
 
@@ -100,47 +88,19 @@ const AddProducts = () => {
         <h2>Añadir producto</h2>
         <form onSubmit={handleSubmit} className="add-prod-form">
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input
-              type="text"
-              placeholder="Nombre del producto"
-              value={Nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-            />
+            <input type="text" placeholder="Nombre del producto" value={Nombre} onChange={(e) => setNombre(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input
-              type="text"
-              placeholder="Código de Barras"
-              value={codigoBarras}
-              onChange={(e) => setCodigoBarras(e.target.value)}
-              required
-            />
+            <input type="text" placeholder="Código de Barras" value={codigoBarras} onChange={(e) => setCodigoBarras(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input
-              type="text"
-              placeholder="Marca del producto"
-              value={Marca}
-              onChange={(e) => setMarca(e.target.value)}
-              required
-            />
+            <input type="text" placeholder="Marca del producto" value={Marca} onChange={(e) => setMarca(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input
-              type="text"
-              placeholder="Stock"
-              value={Stock}
-              onChange={(e) => setStock(e.target.value)}
-              required
-            />
+            <input type="text" placeholder="Stock" value={Stock} onChange={(e) => setStock(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <select
-              value={Categoria}
-              onChange={handleCategoriaChange}
-              required
-            >
+            <select value={Categoria} onChange={handleCategoriaChange} required>
               {categories.map((category, index) => (
                 <option key={index} value={category.value}>
                   {category.label}
@@ -149,39 +109,27 @@ const AddProducts = () => {
             </select>
           </div>
           <div className="add-prod-form-group">
-            <input
-              type="number"
-              placeholder="Precio de compra"
-              value={PrecioCompra}
-              onChange={(e) => setPrecioCompra(e.target.value)}
-              required
-            />
+            <input type="number" placeholder="Precio de compra" value={PrecioCompra} onChange={(e) => setPrecioCompra(e.target.value)} required />
           </div>
           <div className="add-prod-form-group">
-            <input
-              type="date"
-              placeholder="Fecha de vencimiento"
-              value={fechaVencimiento}
-              onChange={handleFechaChange}
-              required
-            />
+            <input type="date" placeholder="Fecha de vencimiento" value={fechaVencimiento} onChange={handleFechaChange} required />
           </div>
           <div className="add-prod-form-group">
+            <input type="number" placeholder="Precio de venta" value={PrecioVenta} onChange={(e) => setPrecioVenta(e.target.value)} required />
+          </div>
+          <div className="add-prod-form-group">
+            <label className="label">Imagen:</label>
             <input
-              type="number"
-              placeholder="Precio de venta"
-              value={PrecioVenta}
-              onChange={(e) => setPrecioVenta(e.target.value)}
-              required
-            />
+  type="file"
+  accept="image/*"
+  onChange={(e) => setImage(e.target.files[0])}
+  required
+/>
+
           </div>
           <div className="add-prod-buttons">
-            <button type="submit" className="add-button">
-              Añadir producto <span className="icon">🛒</span>
-            </button>
-            <button type="button" className="cancel-button" onClick={() => navigate('/products')}>
-              Cancelar <span className="icon">❌</span>
-            </button>
+            <button type="submit" className="add-button">Añadir producto 🛒</button>
+            <button type="button" className="cancel-button" onClick={() => navigate('/products')}>Cancelar ❌</button>
           </div>
         </form>
       </div>
