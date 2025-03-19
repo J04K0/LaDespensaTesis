@@ -283,6 +283,7 @@ const Products = () => {
               displayedProducts.map((product, index) => (
                 <ProductCard
                   key={index}
+                  image={product.image}
                   name={product.Nombre}
                   marca={product.Marca}
                   stock={product.Stock}

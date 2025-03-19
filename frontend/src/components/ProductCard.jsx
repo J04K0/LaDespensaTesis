@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 
-const ProductCard = ({ name, marca, stock, venta, fechaVencimiento, onDelete, onEdit }) => {
+const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onDelete, onEdit }) => {
   return (
     <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>
       <div className="product-info">
+      <img src={image ? `${image}` : "/default-image.jpg"} alt={name} className="product-image" />
         <h3>{name}</h3>
         <p>{marca}</p>
         <p>Stock: {stock}</p>
@@ -19,8 +20,9 @@ const ProductCard = ({ name, marca, stock, venta, fechaVencimiento, onDelete, on
     </div>
   );
 };
-
+console.log(ProductCard);
 ProductCard.propTypes = {
+  image: PropTypes.string, //Ver si dejar isRequired o no
   name: PropTypes.string.isRequired,
   marca: PropTypes.string.isRequired,
   stock: PropTypes.number.isRequired,

@@ -19,7 +19,7 @@ async function setupServer() {
     server.use(json());
     server.use(cookieParser());
     server.use(morgan("dev"));
-
+    server.use('/api/src/upload', express.static('src/upload')); //Rutas estaticas de imagenes
     server.use("/api", indexRoutes);
 
     server.listen(PORT, () => {
@@ -29,6 +29,7 @@ async function setupServer() {
     handleErrorServer(res, 500, 'Error al iniciar el servidor');
   }
 }
+
 
 async function setupAPI() {
   try {
