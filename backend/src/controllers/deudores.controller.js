@@ -17,8 +17,14 @@ export const getDeudores = async (req, res) => {
       return handleErrorClient(res, 404, 'No hay deudores registrados');
     }
 
+    // Formatear el monto de la deuda con separadores de miles
+    const deudoresFormateados = deudores.map(deudor => ({
+      ...deudor.toObject(), // Convertimos el documento de MongoDB a objeto JSON
+      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-CL")}` // Formateo de moneda
+    }));
+
     handleSuccess(res, 200, 'Deudores encontrados', {
-      deudores,
+      deudores: deudoresFormateados,
       totalPages: Math.ceil(count / limit),
       currentPage: page
     });
@@ -26,6 +32,7 @@ export const getDeudores = async (req, res) => {
     handleErrorServer(res, 500, 'Error al traer los deudores', err.message);
   }
 };
+
 
 export const getDeudorById = async (req, res) => {
   try {

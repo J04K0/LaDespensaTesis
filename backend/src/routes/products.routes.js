@@ -13,6 +13,8 @@ import {
     actualizarStockVenta,
     registrarVenta,
     obtenerVentas,
+    getProductByBarcode,
+    obtenerVentasPorTicket, 
 } from "../controllers/products.controller.js";
 
 import { 
@@ -34,6 +36,8 @@ router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado, isAdmin, isJ
 router.get('/verificarstock', authorizeRoles([isEmpleado, isAdmin, isJefe]), verificarStock);
 router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsExpiringSoon);
 router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
+router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
+router.get("/ventas/tickets", authorizeRoles([isEmpleado, isAdmin, isJefe]),obtenerVentasPorTicket);
 
 router.post('/registrar-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), registrarVenta);
 router.get('/ventas/obtener', authorizeRoles([isEmpleado, isAdmin, isJefe]), obtenerVentas);

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const VentaSchema = new mongoose.Schema({
+  ticketId: { type: String, required: true },
   codigoBarras: { type: String, required: true },
   nombre: { type: String, required: true },
   cantidad: { type: Number, required: true },

@@ -2,6 +2,10 @@ import Product from '../models/products.model.js';
 import Venta from '../models/venta.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
+import cron from 'node-cron';
+import { v4 as uuidv4 } from 'uuid';
+
+let ticketCounter = 0; // Variable global para el contador de tickets
 
 export const getProducts = async (req, res) => {
   try {
@@ -197,12 +201,14 @@ export const scanProducts = async (req, res) => {
 
     if (!codigoBarras) return handleErrorClient(res, 400, "Código de barras es requerido");
 
-    // Buscar en la base de datos el producto con el código de barras
-    const product = await Product.findOne({ codigoBarras });
+    // Buscar el producto con stock disponible y fecha de vencimiento más próxima
+    const product = await Product.findOne({
+      codigoBarras,
+      Stock: { $gt: 0 } // Filtra solo productos con stock disponible
+    }).sort({ fechaVencimiento: 1 }); // Ordena para obtener el más próximo a vencer
 
-    if (!product) return handleErrorClient(res, 404, "Producto no encontrado");
+    if (!product) return handleErrorClient(res, 404, "Producto no encontrado o sin stock disponible");
 
-    // Responder con los datos del producto encontrado
     handleSuccess(res, 200, "Producto escaneado exitosamente", {
       codigoBarras: product.codigoBarras,
       nombre: product.Nombre,
@@ -219,29 +225,49 @@ export const scanProducts = async (req, res) => {
   }
 };
 
+
 export const actualizarStockVenta = async (req, res) => {
   try {
-    const { productosVendidos } = req.body; // Recibimos los productos vendidos con código y cantidad
+    const { productosVendidos } = req.body;
 
     if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
       return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
     }
 
-    // Usamos `bulkWrite` para hacer múltiples actualizaciones de stock en una sola operación
-    const operaciones = productosVendidos.map(({ codigoBarras, cantidad }) => ({
-      updateOne: {
-        filter: { codigoBarras },
-        update: { $inc: { Stock: -cantidad } }, // 🔹 Resta la cantidad vendida del stock
+    for (const { codigoBarras, cantidad } of productosVendidos) {
+      let cantidadRestante = cantidad;
+
+      // Obtener todos los productos con el mismo código de barras, ordenados por fecha de vencimiento
+      const productos = await Product.find({ 
+        codigoBarras, 
+        Stock: { $gt: 0 }
+      }).sort({ fechaVencimiento: 1 });
+
+      if (!productos.length) {
+        return handleErrorClient(res, 400, `No hay stock disponible para el producto ${codigoBarras}`);
       }
-    }));
 
-    const resultado = await Product.bulkWrite(operaciones);
+      // Resta la cantidad vendida de cada lote hasta que se complete la venta
+      for (const producto of productos) {
+        if (cantidadRestante <= 0) break;
 
-    if (resultado.modifiedCount === 0) {
-      return handleErrorClient(res, 400, "No se pudo actualizar el stock de los productos");
+        if (producto.Stock >= cantidadRestante) {
+          producto.Stock -= cantidadRestante;
+          cantidadRestante = 0;
+        } else {
+          cantidadRestante -= producto.Stock;
+          producto.Stock = 0;
+        }
+
+        await producto.save(); // Guardar cambios en la base de datos
+      }
+
+      if (cantidadRestante > 0) {
+        return handleErrorClient(res, 400, `No hay suficiente stock para el producto ${codigoBarras}`);
+      }
     }
 
-    handleSuccess(res, 200, "Stock actualizado después de la venta", resultado);
+    handleSuccess(res, 200, "Stock actualizado correctamente");
   } catch (err) {
     handleErrorServer(res, 500, "Error al actualizar stock", err.message);
   }
@@ -252,34 +278,43 @@ export const registrarVenta = async (req, res) => {
     const { productosVendidos } = req.body;
 
     if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
-      console.error("❌ Error: Lista de productos vendidos es inválida o vacía.");
       return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
     }
 
-    console.log("🛒 Recibiendo productos vendidos:", productosVendidos);
+    // Obtener el siguiente número de ticket
+    ticketCounter += 1;
+    const ticketId = ticketCounter;
 
-    // ✅ Crear un registro de ventas en la base de datos
-    const ventas = productosVendidos.map(({ codigoBarras, nombre, cantidad, categoria, precioVenta, precioCompra }) => ({
-      codigoBarras,
-      nombre,
-      cantidad,
-      categoria,
-      precioVenta,
-      precioCompra,
+    // Asignar el ticketId a cada producto vendido
+    const ventas = productosVendidos.map((producto) => ({
+      ticketId,
+      ...producto,
       fecha: new Date(),
     }));
 
-    console.log("📦 Registrando ventas en la base de datos:", ventas);
+    // Guardar todas las ventas asociadas a un mismo ticket
+    await Venta.insertMany(ventas);
 
-    // ✅ Guardar las ventas en la base de datos
-    await Venta.insertMany(ventas); // ✅ Aquí cambiamos `Ventas` por `Venta`
-
-    handleSuccess(res, 201, "Venta registrada correctamente", ventas);
+    handleSuccess(res, 201, "Venta registrada correctamente", { ticketId, ventas });
   } catch (err) {
     console.error("❌ Error en registrarVenta:", err);
     handleErrorServer(res, 500, "Error al registrar la venta", err.message);
   }
 };
+
+export const obtenerVentasPorTicket = async (req, res) => {
+  try {
+    const ventasPorTicket = await Venta.aggregate([
+      { $group: { _id: "$ticketId", ventas: { $push: "$$ROOT" }, fecha: { $first: "$fecha" } } },
+      { $sort: { fecha: -1 } } // Ordenar por fecha descendente
+    ]);
+
+    handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasPorTicket);
+  } catch (error) {
+    handleErrorServer(res, 500, "Error al obtener las ventas por ticket", error.message);
+  }
+};
+
 
 // ✅ Obtener todas las ventas para estadísticas
 export const obtenerVentas = async (req, res) => {
@@ -291,3 +326,60 @@ export const obtenerVentas = async (req, res) => {
   }
 };
 
+export const getProductByBarcode = async (req, res) => {
+  try {
+    const codigoBarras = req.params.codigoBarras || req.query.codigoBarras;
+
+    if (!codigoBarras) return handleErrorClient(res, 400, "Código de barras es requerido");
+
+    // Buscar todos los productos con el código de barras, ordenados por fecha de vencimiento
+    const productos = await Product.find({ codigoBarras: String(codigoBarras), Stock: { $gt: 0 } })
+      .sort({ fechaVencimiento: 1 }); // Ordenar por fecha de vencimiento (el más antiguo primero)
+
+    if (!productos.length) return handleErrorClient(res, 404, "No hay stock disponible para este producto");
+
+    // Seleccionar el producto con el stock más antiguo disponible
+    const producto = productos[0];
+
+    handleSuccess(res, 200, "Producto escaneado exitosamente", {
+      codigoBarras: producto.codigoBarras,
+      nombre: producto.Nombre,
+      marca: producto.Marca,
+      stock: producto.Stock,
+      categoria: producto.Categoria,
+      precioVenta: producto.PrecioVenta,
+      precioCompra: producto.PrecioCompra,
+      fechaVencimiento: producto.fechaVencimiento
+    });
+
+  } catch (err) {
+    handleErrorServer(res, 500, "Error al escanear producto", err.message);
+  }
+};
+
+export const eliminarProductosSinStock = async () => {
+  try {
+
+    // Buscar todos los productos que tienen stock 0
+    const productosSinStock = await Product.find({ Stock: 0 });
+
+    for (const producto of productosSinStock) {
+      // Buscar si existe otro producto con el mismo código de barras pero con stock disponible
+      const existeOtroProducto = await Product.findOne({
+        codigoBarras: producto.codigoBarras,
+        Stock: { $gt: 0 }
+      });
+
+      if (existeOtroProducto) {
+        // Si hay otro producto con el mismo código de barras, eliminar este producto
+        await Product.findByIdAndDelete(producto._id);
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error al eliminar productos sin stock:", error);
+  }
+};
+
+cron.schedule('0 */5 * * *', async () => {
+  await eliminarProductosSinStock();
+});
