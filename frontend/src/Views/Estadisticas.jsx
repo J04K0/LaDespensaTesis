@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Bar, Line, Pie, Doughnut } from "react-chartjs-2";
+import { Bar, Pie, Doughnut } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
-import axios from "../services/root.service.js"; // ✅ API Backend
+import axios from "../services/root.service.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -10,7 +10,6 @@ import {
   CategoryScale, 
   LinearScale, 
   BarElement, 
-  LineElement, 
   ArcElement, 
   DoughnutController,
   Title, 
@@ -25,7 +24,6 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  LineElement,
   ArcElement,
   DoughnutController,
   PointElement,
@@ -35,19 +33,12 @@ ChartJS.register(
 );
 
 const Estadisticas = () => {
+  // Solo mantenemos los estados para los tres gráficos que queremos
   const [ventasPorProducto, setVentasPorProducto] = useState(null);
-  const [ventasPorFecha, setVentasPorFecha] = useState(null);
   const [ventasPorCategoria, setVentasPorCategoria] = useState(null);
-  const [ingresosPorFecha, setIngresosPorFecha] = useState(null);
   const [topProductos, setTopProductos] = useState(null);
-  const [stockBajo, setStockBajo] = useState(null);
-  const [ventasPorMes, setVentasPorMes] = useState(null);
-  const [ticketPromedio, setTicketPromedio] = useState(0);
-  const [totalVentas, setTotalVentas] = useState(0);
-  const [totalCostos, setTotalCostos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filtroFecha, setFiltroFecha] = useState("12M");
 
   useEffect(() => {
     obtenerVentas();
@@ -75,64 +66,13 @@ const Estadisticas = () => {
   };
 
   const procesarDatos = (ventas) => {
-    let totalVentasMonto = 0;
-    let totalCostosMonto = 0;
-    let totalTransacciones = ventas.length;
+    // Procesamos solo los datos para los tres gráficos que queremos mantener
     
-    
-    const meses = {};
-    console.log("📊 Ventas por mes:", meses);
-    ventas.forEach(({ fecha, cantidad, precioVenta, precioCompra }) => {  // ✅ Cambio aquí
-      if (!cantidad || precioVenta === undefined || precioCompra === undefined) {
-        console.warn("⚠️ Datos inválidos en venta:", { fecha, cantidad, precioVenta, precioCompra });
-        return; // Saltar este dato
-      }
-    
-      const mes = new Date(fecha).toLocaleString("es-ES", { month: "short", year: "numeric" });
-    
-      if (!meses[mes]) meses[mes] = { ventas: 0, costos: 0 };
-    
-      meses[mes].ventas += cantidad * precioVenta;
-      meses[mes].costos += cantidad * precioCompra;
-      totalVentasMonto += cantidad * precioVenta;
-      totalCostosMonto += cantidad * precioCompra;
-    });
-    
-    console.log("📊 Ventas por mes (después de procesar):", meses);
-
+    // Ventas por producto
     const productos = {};
-    const ingresos = {};
-    ventas.forEach(({ nombre, cantidad, precioVenta, fecha }) => {
+    ventas.forEach(({ nombre, cantidad }) => {
       productos[nombre] = (productos[nombre] || 0) + cantidad;
-
-      const fechaFormateada = new Date(fecha).toLocaleDateString();
-      ingresos[fechaFormateada] = (ingresos[fechaFormateada] || 0) + (precioVenta * cantidad);
     });
-
-    setVentasPorMes({
-      labels: Object.keys(meses),
-      datasets: [
-        {
-          label: "Ventas",
-          data: Object.values(meses).map((m) => m.ventas),
-          borderColor: "#4CAF50",
-          backgroundColor: "rgba(76, 175, 80, 0.2)",
-          borderWidth: 2,
-        },
-        {
-          label: "Costos",
-          data: Object.values(meses).map((m) => m.costos),
-          borderColor: "#FF5733",
-          backgroundColor: "rgba(255, 87, 51, 0.2)",
-          borderWidth: 2,
-        },
-      ],
-    });
-
-    // 🔹 Ticket Promedio
-    setTicketPromedio(totalVentasMonto / (totalTransacciones || 1));
-    setTotalVentas(totalVentasMonto);
-    setTotalCostos(totalCostosMonto);
 
     setVentasPorProducto({
       labels: Object.keys(productos),
@@ -141,48 +81,14 @@ const Estadisticas = () => {
           label: "Cantidad Vendida",
           data: Object.values(productos),
           backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", 
-          "#FF9F40", "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"
-           , "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"],
+          "#FF9F40", "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40",
+           "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"],
           borderColor: "#fff",
         },
       ],
     });
-    
-    // 🔹 Ventas por fecha
-    const fechas = {};
-    ventas.forEach(({ fecha, cantidad }) => {
-      const fechaFormateada = new Date(fecha).toLocaleDateString();
-      fechas[fechaFormateada] = (fechas[fechaFormateada] || 0) + cantidad;
-    });
 
-    setVentasPorFecha({
-      labels: Object.keys(fechas),
-      datasets: [
-        {
-          label: "Ventas Diarias",
-          data: Object.values(fechas),
-          borderColor: "#4BC0C0",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderWidth: 2,
-        },
-      ],
-    });
-
-    // 🔹 Ingresos por fecha
-    setIngresosPorFecha({
-      labels: Object.keys(ingresos),
-      datasets: [
-        {
-          label: "Ingresos Generados",
-          data: Object.values(ingresos),
-          borderColor: "#FFA500",
-          backgroundColor: "rgba(255, 165, 0, 0.2)",
-          borderWidth: 2,
-        },
-      ],
-    });
-
-    // 🔹 Ventas por categoría
+    // Ventas por categoría
     const categorias = {};
     ventas.forEach(({ categoria, cantidad }) => {
       categorias[categoria] = (categorias[categoria] || 0) + cantidad;
@@ -200,7 +106,7 @@ const Estadisticas = () => {
       ],
     });
 
-    // 🔹 Top 5 productos más vendidos
+    // Top 5 productos más vendidos
     const topProductosOrdenados = Object.entries(productos)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
@@ -215,24 +121,55 @@ const Estadisticas = () => {
         },
       ],
     });
-
-    // 🔹 Productos con stock bajo (menos de 5 unidades)
-    const stockBajoProductos = ventas.filter(({ stock }) => stock < 5);
-    setStockBajo(stockBajoProductos);
   };
 
   const descargarReporte = () => {
     const doc = new jsPDF();
-    doc.text("Reporte de Ventas", 20, 10);
-    autoTable(doc, {
-      head: [["Métricas", "Valor"]],
-      body: [
-        ["Total Ventas", `$${totalVentas.toFixed(2)}`],
-        ["Total Costos", `$${totalCostos.toFixed(2)}`],
-        ["Ticket Promedio", `$${ticketPromedio.toFixed(2)}`],
-      ],
-    });
-    doc.save("reporte_ventas.pdf");
+    doc.text("Reporte de Productos", 20, 10);
+    
+    // Información sobre los productos más vendidos
+    if (ventasPorProducto && ventasPorProducto.labels) {
+      doc.text("Productos Más Vendidos", 20, 30);
+      const productoData = ventasPorProducto.labels.map((producto, i) => 
+        [producto, ventasPorProducto.datasets[0].data[i]]
+      ).sort((a, b) => b[1] - a[1]);
+      
+      autoTable(doc, {
+        startY: 35,
+        head: [["Producto", "Unidades Vendidas"]],
+        body: productoData.slice(0, 10), // Top 10 productos
+      });
+    }
+    
+    // Top 5 productos
+    if (topProductos && topProductos.labels) {
+      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 120;
+      doc.text("Top 5 Productos Más Vendidos", 20, currentY);
+      
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [["Producto", "Unidades Vendidas"]],
+        body: topProductos.labels.map((producto, i) => 
+          [producto, topProductos.datasets[0].data[i]]
+        ),
+      });
+    }
+    
+    // Ventas por categoría
+    if (ventasPorCategoria && ventasPorCategoria.labels) {
+      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 180;
+      doc.text("Ventas por Categoría", 20, currentY);
+      
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [["Categoría", "Unidades Vendidas"]],
+        body: ventasPorCategoria.labels.map((categoria, i) => 
+          [categoria, ventasPorCategoria.datasets[0].data[i]]
+        ),
+      });
+    }
+    
+    doc.save("reporte_productos.pdf");
   };
 
   const chartOptions = {
@@ -242,14 +179,23 @@ const Estadisticas = () => {
       legend: { display: true, position: "top" },
     },
   };
-  
-  
 
   return (
     <div className="estadisticas-page">
       <Navbar />
       <div className="chart-container">
-        <h1>📊 Estadísticas de Ventas</h1>
+        <h1>📊 Estadísticas de Productos</h1>
+        
+        {/* Filtros y botón de descarga (como en Finanzas) */}
+        <div className="filter-container">
+          <div className="filter-group">
+            {/* Este div está vacío pero mantiene la estructura para alinear el botón a la derecha */}
+          </div>
+          
+          <button onClick={descargarReporte} className="download-button">
+            Descargar Reporte de Productos 📄
+          </button>
+        </div>
   
         {loading && <p>Cargando datos...</p>}
         {error && <p className="error">{error}</p>}
@@ -271,58 +217,9 @@ const Estadisticas = () => {
           <h2>Ventas por Categoría</h2>
           {ventasPorCategoria && <Pie data={ventasPorCategoria} options={chartOptions} />}
         </div>
-  
-        {/* 🔹 Ventas por Fecha */}
-        <div className="chart">
-          <h2>Ventas Diarias</h2>
-          {ventasPorFecha && <Line data={ventasPorFecha} options={chartOptions} />}
-        </div>
-  
-        {/* 🔹 Ingresos por Fecha */}
-        <div className="chart">
-          <h2>Ingresos Generados por Día</h2>
-          {ingresosPorFecha && <Line data={ingresosPorFecha} options={chartOptions} />}
-        </div>
-  
-        {/* 🔹 Productos con Stock Bajo */}
-        <div className="chart">
-          <h2>Productos con Bajo Stock</h2>
-          {stockBajo && stockBajo.length > 0 ? (
-            <ul>
-              {stockBajo.map((producto, index) => (
-                <li key={index}>
-                  <strong>{producto.nombre}</strong> - Stock: {producto.stock}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No hay productos con bajo stock.</p>
-          )}
-          <div className="stats-summary">
-            <div className="stat-card">Total Ventas: <b>${totalVentas}</b></div>
-            <div className="stat-card">Total Costos: <b>${totalCostos}</b></div>
-            <div className="stat-card">Ticket Promedio: <b>${ticketPromedio.toFixed(2)}</b></div>
-          </div>
-        </div>
-  
-        {/* 🔹 Filtros de Fecha */}
-        <div className="filter-buttons">
-          <button onClick={() => setFiltroFecha("1M")}>1M</button>
-          <button onClick={() => setFiltroFecha("3M")}>3M</button>
-          <button onClick={() => setFiltroFecha("12M")} className="active">12M</button>
-        </div>
-  
-        {/* 🔹 Ventas y Costos Últimos 12 Meses */}
-        <div className="chart">
-          <h2>Ventas y Costos Últimos 12 Meses</h2>
-          {ventasPorMes && <Bar data={ventasPorMes} options={chartOptions} />}
-        </div>
-  
-        {/* 🔹 Botón de descarga */}
-        <button onClick={descargarReporte} className="download-button">Descargar Reporte 📄</button>
       </div>
     </div>
   );
-}  
+};
 
 export default Estadisticas;

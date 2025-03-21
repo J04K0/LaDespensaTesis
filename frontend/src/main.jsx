@@ -15,6 +15,7 @@ import ExpiringProducts from './Views/ExpiringProducts.jsx';
 import ProductScanner from './Views/ProductScanner.jsx';
 import Estadisticas from './Views/Estadisticas.jsx';
 import HistorySale from './Views/HistorySale.jsx';
+import Finanzas from './Views/Finanzas.jsx';
 
 const router = createBrowserRouter([
   {
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
   {
   path: '/HistorySale',
   element: <HistorySale />,
+  },
+  {
+  path: '/finanzas',
+  element: <Finanzas />,
   },
   ]);
 
