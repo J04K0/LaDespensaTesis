@@ -166,6 +166,8 @@ body {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .cart-list .quantity-controls {
@@ -207,11 +209,16 @@ body {
 /* 🔹 Campo para ingresar el monto entregado */
 .payment-section {
   margin-top: 15px;
+  padding: 20px;
 }
 
 .payment-section label {
   font-size: var(--font-size-medium);
   margin-bottom: 5px;
+  display: block;
+  font-weight: bold;
+  color: #333;
+  text-align: left;
 }
 
 .payment-section input {
@@ -221,6 +228,12 @@ body {
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   margin-bottom: 10px;
+  transition: transform var(--transition-duration) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+  background-color: white !important;
+  color: black !important;
 }
 
 /* 🔹 Botón "Finalizar venta" */
@@ -242,10 +255,12 @@ body {
 }
 
 .product-image {
-  width: 200px;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+  width: 150px !important;
+  height: 150px !important;
+  object-fit: cover !important;
+  border-radius: var(--border-radius) !important;
+  margin-bottom: 10px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* 🔹 Mensajes de error */

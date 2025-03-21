@@ -8,7 +8,8 @@ import "../styles/ProductScannerStyles.css";
 const ProductScanner = () => {
   const navigate = useNavigate();
   const [codigoEscaneado, setCodigoEscaneado] = useState("");
-  const [producto, setProducto] = useState(null);
+  const [productoActual, setProductoActual] = useState(null); // Último producto escaneado
+  const [stockPorProducto, setStockPorProducto] = useState({}); // Control de stock en tiempo real
   const [cantidad, setCantidad] = useState(1);
   const [carrito, setCarrito] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,10 +34,17 @@ const ProductScanner = () => {
       const productoEncontrado = response.data.data;
 
       if (productoEncontrado) {
-
         if (productoEncontrado.stock > 0) {
-          setProducto({ ...productoEncontrado, stock: productoEncontrado.stock });
-          agregarAlCarrito({ ...productoEncontrado, stock: productoEncontrado.stock });
+          // Guardar el producto actual y su stock en el mapeo
+          setProductoActual(productoEncontrado);
+          
+          // Actualizar o inicializar el stock por producto
+          setStockPorProducto(prevStock => ({
+            ...prevStock,
+            [productoEncontrado.codigoBarras]: productoEncontrado.stock
+          }));
+          
+          agregarAlCarrito(productoEncontrado);
         } else {
           console.warn("⚠️ Producto agotado.");
           Swal.fire({
@@ -47,7 +55,7 @@ const ProductScanner = () => {
           });
         }
       } else {
-        setProducto(null);
+        setProductoActual(null);
         Swal.fire({
           title: "Producto no encontrado",
           text: "No existe un producto con este código de barras en la base de datos.",
@@ -60,7 +68,7 @@ const ProductScanner = () => {
     } catch (error) {
       console.error("❌ Error al escanear el producto:", error);
       setError("Error al escanear el producto. Inténtalo de nuevo.");
-      setProducto(null);
+      setProductoActual(null);
     } finally {
       setLoading(false);
     }
@@ -73,10 +81,13 @@ const ProductScanner = () => {
   }, [cantidad]);
 
   const incrementarCantidad = useCallback(() => {
-    if (producto && cantidad < producto.stock) {
-      setCantidad(cantidad + 1);
+    if (productoActual) {
+      const stockDisponible = stockPorProducto[productoActual.codigoBarras] || 0;
+      if (cantidad < stockDisponible) {
+        setCantidad(cantidad + 1);
+      }
     }
-  }, [cantidad, producto]);
+  }, [cantidad, productoActual, stockPorProducto]);
 
   const agregarAlCarrito = (producto) => {
     if (!producto) {
@@ -89,7 +100,9 @@ const ProductScanner = () => {
       return;
     }
 
-    if (producto.stock < cantidad) {
+    const stockDisponible = stockPorProducto[producto.codigoBarras] || producto.stock;
+    
+    if (stockDisponible < cantidad) {
       Swal.fire({
         title: "Stock insuficiente",
         text: "No hay suficiente stock disponible para esta cantidad.",
@@ -125,9 +138,9 @@ const ProductScanner = () => {
     setCarrito(nuevoCarrito);
 
     // Actualizar el stock del producto en tiempo real
-    setProducto((prevProducto) => ({
-      ...prevProducto,
-      stock: prevProducto.stock - cantidad,
+    setStockPorProducto(prevStock => ({
+      ...prevStock,
+      [producto.codigoBarras]: (prevStock[producto.codigoBarras] || producto.stock) - cantidad
     }));
 
     setCodigoEscaneado("");
@@ -140,31 +153,34 @@ const ProductScanner = () => {
 
     setCarrito(nuevoCarrito);
 
-    // Actualizar el stock del producto en tiempo real
-    setProducto((prevProducto) => ({
-      ...prevProducto,
-      stock: prevProducto.stock + productoEliminado.cantidad,
+    // Restaurar el stock del producto eliminado
+    setStockPorProducto(prevStock => ({
+      ...prevStock,
+      [productoEliminado.codigoBarras]: (prevStock[productoEliminado.codigoBarras] || 0) + productoEliminado.cantidad
     }));
 
     // Si el carrito está vacío, restablecer el estado o recargar la página
     if (nuevoCarrito.length === 0) {
       resetState(); // Restablecer el estado del componente
-      // window.location.reload(); // Alternativamente, recargar la página
     }
   };
 
   const incrementarCantidadCarrito = (index) => {
     const productoEnCarrito = carrito[index];
-    if (productoEnCarrito.cantidad < productoEnCarrito.stock) {
+    const stockDisponible = stockPorProducto[productoEnCarrito.codigoBarras] || 0;
+    
+    if (stockDisponible > 0) {
+      // Actualizar el carrito
       setCarrito(
         carrito.map((p, i) =>
           i === index ? { ...p, cantidad: p.cantidad + 1 } : p
         )
       );
-      // Actualizar el stock del producto en tiempo real
-      setProducto((prevProducto) => ({
-        ...prevProducto,
-        stock: prevProducto.stock - 1,
+      
+      // Actualizar el stock del producto específico
+      setStockPorProducto(prevStock => ({
+        ...prevStock,
+        [productoEnCarrito.codigoBarras]: prevStock[productoEnCarrito.codigoBarras] - 1
       }));
     }
   };
@@ -172,24 +188,27 @@ const ProductScanner = () => {
   const disminuirCantidadCarrito = (index) => {
     const productoEnCarrito = carrito[index];
     if (productoEnCarrito.cantidad > 1) {
+      // Actualizar el carrito
       setCarrito(
         carrito.map((p, i) =>
           i === index ? { ...p, cantidad: p.cantidad - 1 } : p
         )
       );
-      // Actualizar el stock del producto en tiempo real
-      setProducto((prevProducto) => ({
-        ...prevProducto,
-        stock: prevProducto.stock + 1,
+      
+      // Actualizar el stock del producto específico
+      setStockPorProducto(prevStock => ({
+        ...prevStock,
+        [productoEnCarrito.codigoBarras]: prevStock[productoEnCarrito.codigoBarras] + 1
       }));
     }
   };
 
   const resetState = () => {
     setCodigoEscaneado("");
-    setProducto(null);
+    setProductoActual(null);
     setCantidad(1);
     setCarrito([]);
+    setStockPorProducto({});
     setLoading(false);
     setError(null);
   };
@@ -202,12 +221,12 @@ const ProductScanner = () => {
         icon: "warning",
         confirmButtonText: "Aceptar",
       });
-      return;
+      return Promise.reject("Carrito vacío");
     }
-
+  
     const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
     const montoEntregado = parseFloat(document.getElementById("montoEntregado").value);
-
+  
     if (montoEntregado < total) {
       Swal.fire({
         title: "Monto insuficiente",
@@ -215,26 +234,27 @@ const ProductScanner = () => {
         icon: "error",
         confirmButtonText: "Aceptar",
       });
-      return;
+      return Promise.reject("Monto insuficiente");
     }
-
+  
     setLoading(true);
     setError(null);
     try {
       // First register the sale and update stock
       await actualizarStockVenta(carrito);
       await registrarVenta(carrito);
-
-      // Show success message - move this up before trying to scan products again
+  
+      // Show success message
       Swal.fire({
         title: "Venta realizada",
         text: "Los productos han sido vendidos con éxito y el stock ha sido actualizado.",
         icon: "success",
         confirmButtonText: "Aceptar",
       });
-
-      // Reset the state without trying to scan products again
+  
+      // Reset the state
       resetState();
+      return Promise.resolve(); // Retornar promesa resuelta
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);
       setError("Hubo un problema al actualizar el stock y registrar la venta en la base de datos.");
@@ -244,10 +264,12 @@ const ProductScanner = () => {
         icon: "error",
         confirmButtonText: "Aceptar",
       });
+      return Promise.reject(error); // Retornar promesa rechazada
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="scanner-container">
@@ -259,14 +281,16 @@ const ProductScanner = () => {
       />
       <div className="scanner-content">
         <ProductInfo
-          producto={producto}
+          producto={productoActual}
+          stockActual={productoActual ? stockPorProducto[productoActual.codigoBarras] || 0 : 0}
           cantidad={cantidad}
           disminuirCantidad={disminuirCantidad}
           incrementarCantidad={incrementarCantidad}
-          agregarAlCarrito={agregarAlCarrito}
+          agregarAlCarrito={() => productoActual && agregarAlCarrito(productoActual)}
         />
         <Cart
           carrito={carrito}
+          stockPorProducto={stockPorProducto}
           eliminarDelCarrito={eliminarDelCarrito}
           incrementarCantidadCarrito={incrementarCantidadCarrito}
           disminuirCantidadCarrito={disminuirCantidadCarrito}
@@ -297,7 +321,7 @@ const SearchBar = React.memo(({ codigoEscaneado, setCodigoEscaneado, handleScan 
   </div>
 ));
 
-const ProductInfo = React.memo(({ producto }) => (
+const ProductInfo = React.memo(({ producto, stockActual, cantidad, disminuirCantidad, incrementarCantidad, agregarAlCarrito }) => (
   <div className="scanner-section">
     <h2>Escanear Producto</h2>
     {producto && (
@@ -308,16 +332,17 @@ const ProductInfo = React.memo(({ producto }) => (
         <p>Categoría: {producto.categoria}</p>
         <p className="product-price">Precio: ${producto.precioVenta}</p>
         <p className="product-price">Precio de compra: ${producto.precioCompra}</p>
-        <p>Stock restante: {producto.stock}</p>
+        <p>Stock restante: {stockActual}</p>
         <p>Fecha de Vencimiento: {new Date(producto.fechaVencimiento).toLocaleDateString()}</p>
       </div>
     )}
   </div>
 ));
 
-const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => {
+const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => {
   const [montoEntregado, setMontoEntregado] = useState("");
   const [errorMonto, setErrorMonto] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false); // Estado para controlar procesamiento
 
   // Calcular el total de la compra
   const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
@@ -336,6 +361,22 @@ const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarri
 
     return () => clearTimeout(timer);
   }, [montoEntregado, total]);
+
+  // Función que maneja el procesamiento de venta con bloqueo
+  const handleFinalizarVenta = async () => {
+    if (isProcessing) return; // Evitar múltiples clics
+    
+    setIsProcessing(true); // Activar bloqueo
+    
+    try {
+      await finalizarVenta();
+    } finally {
+      // Agregar un retraso antes de permitir otra venta
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1500); // 1.5 segundos de espera
+    }
+  };
 
   return (
     <div className="cart-section">
@@ -369,6 +410,7 @@ const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarri
               onChange={(e) => setMontoEntregado(e.target.value)}
               min={total}
               placeholder="Ingrese el monto"
+              disabled={isProcessing}
             />
             {errorMonto && <p className="error-text">{errorMonto}</p>}
           </div>
@@ -377,8 +419,17 @@ const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarri
             <p className="vuelto">Vuelto: ${vuelto}</p>
           )}
 
-          <button className="checkout-button" onClick={finalizarVenta} aria-label="Aceptar venta">
-            Aceptar Venta
+          <button 
+            className="checkout-button" 
+            onClick={handleFinalizarVenta} 
+            aria-label="Aceptar venta"
+            disabled={isProcessing} // Deshabilitar botón durante procesamiento
+            style={{ 
+              opacity: isProcessing ? 0.7 : 1,
+              cursor: isProcessing ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isProcessing ? 'Procesando...' : 'Aceptar Venta'}
           </button>
         </>
       )}
