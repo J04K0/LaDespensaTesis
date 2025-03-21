@@ -123,6 +123,14 @@
   font-weight: bold;
 }
 
+.history-sale-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.history-sale-table tr:hover {
+  background-color: #ddd;
+}
+
 /* Paginación */
 .history-sale-pagination {
   margin-top: 20px;
@@ -143,6 +151,10 @@
 .history-sale-pagination-button.active {
   background-color: #006edf;
   color: white;
+}
+
+.history-sale-pagination-button:hover {
+  background-color: #ddd;
 }
 
 /* Contenedor de botones de exportación */
@@ -175,4 +187,20 @@
 
 .history-sale-export-buttons button:hover {
   transform: translateY(-2px);
+}
+
+/* Indicador de carga */
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #006edf;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

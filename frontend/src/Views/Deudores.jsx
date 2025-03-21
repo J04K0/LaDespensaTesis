@@ -14,7 +14,7 @@ const DeudoresList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
-  const deudoresPerPage = 6;
+  const deudoresPerPage = 8;
   const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
@@ -61,12 +61,22 @@ const DeudoresList = () => {
     const sortedDeudores = [...filteredDeudores].sort((a, b) => {
       if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
       if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
-      if (sortOption === 'debt-asc') return a.deudaTotal - b.deudaTotal;
-      if (sortOption === 'debt-desc') return b.deudaTotal - a.deudaTotal;
+      if (sortOption === 'debt-asc') {
+        // Convertir string "$8.500" a número 8500
+        const aValue = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const bValue = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        return aValue - bValue;
+      }
+      if (sortOption === 'debt-desc') {
+        const aValue = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const bValue = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        return bValue - aValue;
+      }
       if (sortOption === 'date-asc') return new Date(a.fechaPaga) - new Date(b.fechaPaga);
       if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
       return 0;
     });
+    
     setFilteredDeudores(sortedDeudores);
   }, [sortOption]);
 

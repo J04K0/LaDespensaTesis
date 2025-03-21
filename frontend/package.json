@@ -30,6 +30,7 @@
     "react-toastify": "^10.0.5",
     "sweetalert2": "^11.12.3",
     "tailwind-variants": "^0.3.1",
+    "twilio": "^5.5.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

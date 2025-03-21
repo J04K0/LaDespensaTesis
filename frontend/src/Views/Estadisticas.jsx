@@ -140,7 +140,10 @@ const Estadisticas = () => {
         {
           label: "Cantidad Vendida",
           data: Object.values(productos),
-          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", 
+          "#FF9F40", "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"
+           , "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"],
+          borderColor: "#fff",
         },
       ],
     });
@@ -191,7 +194,8 @@ const Estadisticas = () => {
         {
           label: "Ventas por Categoría",
           data: Object.values(categorias),
-          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#FF6384", "#36A2EB"],
+          borderColor: "#fff",
         },
       ],
     });

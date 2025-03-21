@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
@@ -31,9 +31,21 @@ const ProductScanner = () => {
     try {
       const response = await scanProducts(codigoEscaneado);
       const productoEncontrado = response.data.data;
+
       if (productoEncontrado) {
-        setProducto({ ...productoEncontrado, stock: productoEncontrado.stock });
-        agregarAlCarrito({ ...productoEncontrado, stock: productoEncontrado.stock });
+
+        if (productoEncontrado.stock > 0) {
+          setProducto({ ...productoEncontrado, stock: productoEncontrado.stock });
+          agregarAlCarrito({ ...productoEncontrado, stock: productoEncontrado.stock });
+        } else {
+          console.warn("⚠️ Producto agotado.");
+          Swal.fire({
+            title: "Stock insuficiente",
+            text: "No hay suficiente stock disponible para este producto.",
+            icon: "error",
+            confirmButtonText: "Aceptar",
+          });
+        }
       } else {
         setProducto(null);
         Swal.fire({
@@ -76,7 +88,7 @@ const ProductScanner = () => {
       });
       return;
     }
-  
+
     if (producto.stock < cantidad) {
       Swal.fire({
         title: "Stock insuficiente",
@@ -86,10 +98,10 @@ const ProductScanner = () => {
       });
       return;
     }
-  
+
     // Verificar si el producto ya está en el carrito
     const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
-  
+
     let nuevoCarrito;
     if (productoEnCarrito) {
       nuevoCarrito = carrito.map((p) =>
@@ -108,18 +120,37 @@ const ProductScanner = () => {
         }
       ];
     }
-  
+
     // Actualizar el estado del carrito
     setCarrito(nuevoCarrito);
-  
-    // No modificar el stock de `producto`, sino restarlo en el estado del carrito
+
+    // Actualizar el stock del producto en tiempo real
+    setProducto((prevProducto) => ({
+      ...prevProducto,
+      stock: prevProducto.stock - cantidad,
+    }));
+
     setCodigoEscaneado("");
     setCantidad(1);
   };
-  
 
   const eliminarDelCarrito = (index) => {
-    setCarrito(carrito.filter((_, i) => i !== index));
+    const productoEliminado = carrito[index];
+    const nuevoCarrito = carrito.filter((_, i) => i !== index);
+
+    setCarrito(nuevoCarrito);
+
+    // Actualizar el stock del producto en tiempo real
+    setProducto((prevProducto) => ({
+      ...prevProducto,
+      stock: prevProducto.stock + productoEliminado.cantidad,
+    }));
+
+    // Si el carrito está vacío, restablecer el estado o recargar la página
+    if (nuevoCarrito.length === 0) {
+      resetState(); // Restablecer el estado del componente
+      // window.location.reload(); // Alternativamente, recargar la página
+    }
   };
 
   const incrementarCantidadCarrito = (index) => {
@@ -130,6 +161,11 @@ const ProductScanner = () => {
           i === index ? { ...p, cantidad: p.cantidad + 1 } : p
         )
       );
+      // Actualizar el stock del producto en tiempo real
+      setProducto((prevProducto) => ({
+        ...prevProducto,
+        stock: prevProducto.stock - 1,
+      }));
     }
   };
 
@@ -141,7 +177,21 @@ const ProductScanner = () => {
           i === index ? { ...p, cantidad: p.cantidad - 1 } : p
         )
       );
+      // Actualizar el stock del producto en tiempo real
+      setProducto((prevProducto) => ({
+        ...prevProducto,
+        stock: prevProducto.stock + 1,
+      }));
     }
+  };
+
+  const resetState = () => {
+    setCodigoEscaneado("");
+    setProducto(null);
+    setCantidad(1);
+    setCarrito([]);
+    setLoading(false);
+    setError(null);
   };
 
   const finalizarVenta = async () => {
@@ -154,26 +204,37 @@ const ProductScanner = () => {
       });
       return;
     }
-  
-    console.log("📦 Carrito antes de registrar venta:", carrito); // ✅ Depuración
-  
+
+    const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
+    const montoEntregado = parseFloat(document.getElementById("montoEntregado").value);
+
+    if (montoEntregado < total) {
+      Swal.fire({
+        title: "Monto insuficiente",
+        text: "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      await actualizarStockVenta(carrito); // ✅ Actualiza el stock en la base de datos
-      await registrarVenta(carrito); // ✅ Registra la venta en la base de datos
-  
+      // First register the sale and update stock
+      await actualizarStockVenta(carrito);
+      await registrarVenta(carrito);
+
+      // Show success message - move this up before trying to scan products again
       Swal.fire({
         title: "Venta realizada",
         text: "Los productos han sido vendidos con éxito y el stock ha sido actualizado.",
         icon: "success",
         confirmButtonText: "Aceptar",
       });
-  
-      setCarrito([]);  // Vaciar carrito
-      setProducto(null); // Limpiar producto escaneado
-      setCodigoEscaneado(""); // Limpiar input
-      setCantidad(1); // Reiniciar cantidad
+
+      // Reset the state without trying to scan products again
+      resetState();
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);
       setError("Hubo un problema al actualizar el stock y registrar la venta en la base de datos.");
@@ -187,7 +248,6 @@ const ProductScanner = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="scanner-container">
@@ -238,11 +298,11 @@ const SearchBar = React.memo(({ codigoEscaneado, setCodigoEscaneado, handleScan 
 ));
 
 const ProductInfo = React.memo(({ producto }) => (
-  
   <div className="scanner-section">
     <h2>Escanear Producto</h2>
     {producto && (
       <div className="product-info">
+        <img src={producto.image} alt={producto.nombre} className="product-image" />
         <h3>{producto.nombre}</h3>
         <p>Marca: {producto.marca}</p>
         <p>Categoría: {producto.categoria}</p>
@@ -255,33 +315,75 @@ const ProductInfo = React.memo(({ producto }) => (
   </div>
 ));
 
-const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => (
-  <div className="cart-section">
-    <h2>Carrito de Compras</h2>
-    <ul className="cart-list">
-      {carrito.map((producto, index) => (
-        <li key={index}>
-          {producto.nombre} - Cantidad: {producto.cantidad} - Total: ${producto.precioVenta * producto.cantidad}
-          <div className="quantity-controls">
-            <button onClick={() => disminuirCantidadCarrito(index)} aria-label="Disminuir cantidad">-</button>
-            <span>{producto.cantidad}</span>
-            <button onClick={() => incrementarCantidadCarrito(index)} aria-label="Incrementar cantidad">+</button>
-            <button className="delete-product" onClick={() => eliminarDelCarrito(index)} aria-label="Eliminar producto">
-              🗑
-            </button>
+const Cart = React.memo(({ carrito, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => {
+  const [montoEntregado, setMontoEntregado] = useState("");
+  const [errorMonto, setErrorMonto] = useState("");
+
+  // Calcular el total de la compra
+  const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
+
+  // Calcular el vuelto
+  const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (montoEntregado && parseFloat(montoEntregado) < total) {
+        setErrorMonto("El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
+      } else {
+        setErrorMonto("");
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [montoEntregado, total]);
+
+  return (
+    <div className="cart-section">
+      <h2>Carrito de Compras</h2>
+      <ul className="cart-list">
+        {carrito.map((producto, index) => (
+          <li key={index}>
+            {producto.nombre} - Cantidad: {producto.cantidad} - Total: ${producto.precioVenta * producto.cantidad}
+            <div className="quantity-controls">
+              <button onClick={() => disminuirCantidadCarrito(index)} aria-label="Disminuir cantidad">-</button>
+              <span>{producto.cantidad}</span>
+              <button onClick={() => incrementarCantidadCarrito(index)} aria-label="Incrementar cantidad">+</button>
+              <button className="delete-product" onClick={() => eliminarDelCarrito(index)} aria-label="Eliminar producto">
+                🗑
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {carrito.length > 0 && (
+        <>
+          <p className="total-price">Total: ${total}</p>
+
+          {/* Campo para ingresar el monto entregado */}
+          <div className="payment-section">
+            <label htmlFor="montoEntregado">Efectivo entregado:</label>
+            <input
+              type="number"
+              id="montoEntregado"
+              value={montoEntregado}
+              onChange={(e) => setMontoEntregado(e.target.value)}
+              min={total}
+              placeholder="Ingrese el monto"
+            />
+            {errorMonto && <p className="error-text">{errorMonto}</p>}
           </div>
-        </li>
-      ))}
-    </ul>
-    {carrito.length > 0 && (
-      <>
-        <p className="total-price">Total: ${carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0)}</p>
-        <button className="checkout-button" onClick={finalizarVenta} aria-label="Aceptar venta">
-          Aceptar Venta
-        </button>
-      </>
-    )}
-  </div>
-));
+          
+          {montoEntregado && vuelto >= 0 && (
+            <p className="vuelto">Vuelto: ${vuelto}</p>
+          )}
+
+          <button className="checkout-button" onClick={finalizarVenta} aria-label="Aceptar venta">
+            Aceptar Venta
+          </button>
+        </>
+      )}
+    </div>
+  );
+});
 
 export default ProductScanner;

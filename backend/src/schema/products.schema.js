@@ -78,13 +78,9 @@ export const productSchema = Joi.object({
     'string.min': 'El código de barras debe tener 13 caracteres',
     'string.max': 'El código de barras debe tener 13 caracteres'
   }),
-  image: Joi.string()
-        .label('archivo')
-        .optional()
-        .allow(null)
-        .messages({
-            "string.base": "El archivo debe ser de tipo string.",
-        }),
+  image: Joi.string().optional().allow(null).messages({
+    "string.base": "El archivo debe ser de tipo string.",
+  }),
 });
 
 export const idProductSchema = Joi.object({

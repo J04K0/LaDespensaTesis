@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 const EditProduct = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [Stock, setStock] = useState('');
   const productId = location.state?.productId;
 
   const [product, setProduct] = useState({
@@ -22,6 +23,7 @@ const EditProduct = () => {
     precioAntiguo: 0,
   });
 
+  const [image, setImage] = useState(null); // Estado para la imagen
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,13 +67,25 @@ const EditProduct = () => {
     setProduct({ ...product, [name]: name === 'Stock' ? Number(value) : value });
   };
 
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const { _id, __v, FechaVencimiento, updatedAt, createdAt, ...productToUpdate } = product;
 
+    const formData = new FormData();
+    for (const key in productToUpdate) {
+      formData.append(key, productToUpdate[key]);
+    }
+    if (image) {
+      formData.append('image', image);
+    }
+
     try {
-      const response = await updateProduct(productId, productToUpdate);
+      const response = await updateProduct(productId, formData);
 
       Swal.fire({
         icon: 'success',
@@ -114,7 +128,7 @@ const EditProduct = () => {
           />
         </div>
         <div className="edit-prod-form-group">
-          <label htmlFor="Codigo de Barras">codigobarras:</label>
+          <label htmlFor="codigoBarras">Código de Barras:</label>
           <input
             type="text"
             id="codigoBarras"
@@ -138,7 +152,7 @@ const EditProduct = () => {
         <div className="edit-prod-form-group">
           <label htmlFor="Stock">Stock:</label>
           <input
-            type="number"
+            type="text"
             id="Stock"
             name="Stock"
             value={product.Stock}
@@ -198,6 +212,16 @@ const EditProduct = () => {
             name="precioAntiguo"
             value={product.precioAntiguo || ''}
             onChange={handleChange}
+          />
+        </div>
+        <div className="edit-prod-form-group edit-prod-form-group-full">
+          <label htmlFor="image">Imagen:</label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
           />
         </div>
         <div className="edit-prod-button-group">

@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 let ticketCounter = 0; // Variable global para el contador de tickets
 import { HOST, PORT } from '../config/configEnv.js';
+import { sendLowStockAlert, sendExpirationAlert } from '../services/email.service.js';
 
 export const getProducts = async (req, res) => {
   try {
@@ -133,7 +134,12 @@ const stockMinimoPorCategoria = {
   'Lacteos, Huevos y Refrigerados': 10,
   'Desayuno y Dulces': 10,
   'Bebes y Niños': 10,
-  'Cigarros': 5
+  'Cigarros': 5,
+  'Cuidado Personal': 8,
+  'Remedios': 3,
+  'Limpieza y Hogar': 5,
+  'Mascotas': 5,
+  'Otros': 5
 };
 
 export const verificarStock = async (req, res) => {
@@ -154,10 +160,21 @@ export const verificarStock = async (req, res) => {
         console.warn(`Categoría no definida en stockMinimoPorCategoria: ${categoria}`);
         return false;
       }
-      return producto.Stock < stockMinimo;
+      return producto.Stock <= stockMinimo;
     });
 
-    if (productosFiltrados.length > 0) return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
+    if (productosFiltrados.length > 0) {
+      try {
+        // Usar el nuevo servicio de email en lugar de WhatsApp
+        await sendLowStockAlert(productosFiltrados);
+        console.log("Alerta de stock bajo enviada por correo electrónico");
+      } catch (emailError) {
+        console.error("Error al enviar alerta por correo electrónico:", emailError);
+        // Continuar con la ejecución aunque falle el envío de correo
+      }
+      
+      return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
+    }
 
     handleErrorClient(res, 404, 'No hay productos con poco stock');
   } catch (error) {
@@ -182,6 +199,15 @@ export const getProductsExpiringSoon = async (req, res) => {
       return handleErrorClient(res, 404, 'No hay productos próximos a caducar');
     }
 
+    if (productsExpiringSoon.length > 0) {
+      try {
+        await sendExpirationAlert(productsExpiringSoon, 'porVencer');
+        console.log("Alerta de productos por vencer enviada por correo electrónico");
+      } catch (emailError) {
+        console.error("Error al enviar alerta de productos por vencer:", emailError);
+      }
+    }
+
     handleSuccess(res, 200, 'Productos próximos a caducar', productsExpiringSoon);
   } catch (error) {
     handleErrorServer(res, 500, 'Error al obtener los productos próximos a caducar', error.message);
@@ -200,6 +226,14 @@ export const getExpiredProducts = async (req, res) => {
 
     if (expiredProducts.length === 0) {
       return handleErrorClient(res, 404, 'No hay productos vencidos');
+    }
+
+    // Enviar alerta por correo de productos vencidos
+    try {
+      await sendExpirationAlert(expiredProducts, 'vencidos');
+      console.log("Alerta de productos vencidos enviada por correo electrónico");
+    } catch (emailError) {
+      console.error("Error al enviar alerta de productos vencidos:", emailError);
     }
 
     handleSuccess(res, 200, 'Productos vencidos', expiredProducts);
@@ -223,6 +257,7 @@ export const scanProducts = async (req, res) => {
     if (!product) return handleErrorClient(res, 404, "Producto no encontrado o sin stock disponible");
 
     handleSuccess(res, 200, "Producto escaneado exitosamente", {
+      image: product.image,
       codigoBarras: product.codigoBarras,
       nombre: product.Nombre,
       marca: product.Marca,
@@ -247,8 +282,15 @@ export const actualizarStockVenta = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
     }
 
+    // Array para almacenar productos que llegaron a stock mínimo en esta venta
+    const productosAfectadosEnVenta = [];
+    // Array para almacenar productos que se agotaron en esta venta
+    const productosAgotados = [];
+    const codigosBarrasVendidos = new Set();
+
     for (const { codigoBarras, cantidad } of productosVendidos) {
       let cantidadRestante = cantidad;
+      codigosBarrasVendidos.add(codigoBarras);
 
       // Obtener todos los productos con el mismo código de barras, ordenados por fecha de vencimiento
       const productos = await Product.find({ 
@@ -264,6 +306,9 @@ export const actualizarStockVenta = async (req, res) => {
       for (const producto of productos) {
         if (cantidadRestante <= 0) break;
 
+        // Guardar el stock anterior para comparar después
+        const stockAnterior = producto.Stock;
+
         if (producto.Stock >= cantidadRestante) {
           producto.Stock -= cantidadRestante;
           cantidadRestante = 0;
@@ -273,10 +318,81 @@ export const actualizarStockVenta = async (req, res) => {
         }
 
         await producto.save(); // Guardar cambios en la base de datos
+        
+        // Si el stock anterior estaba bien pero ahora es bajo, añadir a productos afectados
+        const stockMinimo = stockMinimoPorCategoria[producto.Categoria];
+        if (stockMinimo && stockAnterior > stockMinimo && producto.Stock <= stockMinimo && producto.Stock > 0) {
+          productosAfectadosEnVenta.push(producto);
+        }
+        
+        // Si el producto se agotó completamente en esta venta
+        if (stockAnterior > 0 && producto.Stock === 0) {
+          productosAgotados.push(producto);
+        }
       }
 
       if (cantidadRestante > 0) {
         return handleErrorClient(res, 400, `No hay suficiente stock para el producto ${codigoBarras}`);
+      }
+    }
+
+    // Buscar TODOS los productos, incluyendo los que tienen stock = 0
+    const todosProductos = await Product.find();
+    
+    // Filtrar los que tienen stock bajo pero no están agotados
+    const todosProductosBajoStock = todosProductos.filter(producto => {
+      const stockMinimo = stockMinimoPorCategoria[producto.Categoria];
+      if (!stockMinimo) return false;
+      return producto.Stock <= stockMinimo && producto.Stock > 0;
+    });
+
+    // Productos que YA estaban agotados (stock = 0) ANTES de esta venta
+    const productosYaAgotados = todosProductos.filter(producto => {
+      return producto.Stock === 0 && 
+        !productosAgotados.some(p => p._id.toString() === producto._id.toString());
+    });
+
+    // Resaltar los productos recién afectados y los agotados
+    const productosEmailInfo = [
+      ...todosProductosBajoStock.map(producto => ({
+        ...producto.toObject(),
+        esRecienAfectado: productosAfectadosEnVenta.some(p => p._id.toString() === producto._id.toString()),
+        esAgotado: false,
+        esYaAgotado: false
+      })),
+      ...productosAgotados.map(producto => ({
+        ...producto.toObject(),
+        esRecienAfectado: false,
+        esAgotado: true,
+        esYaAgotado: false
+      })),
+      ...productosYaAgotados.map(producto => ({
+        ...producto.toObject(),
+        esRecienAfectado: false,
+        esAgotado: false,
+        esYaAgotado: true
+      }))
+    ];
+
+    // Buscar productos vencidos
+    const today = new Date();
+    const productosVencidos = await Product.find({
+      fechaVencimiento: { $lt: today }
+    });
+    
+    // Enviar alerta por correo si hay productos con stock bajo, agotados o vencidos
+    if (productosEmailInfo.length > 0 || productosVencidos.length > 0) {
+      try {
+        await sendLowStockAlert(
+          productosEmailInfo, 
+          productosAfectadosEnVenta.length > 0, 
+          productosAgotados.length > 0,
+          productosYaAgotados.length > 0,
+          productosVencidos // Nuevo parámetro
+        );
+        console.log(`Alerta enviada para ${productosEmailInfo.length} productos (${productosAfectadosEnVenta.length} bajo stock, ${productosAgotados.length} agotados, ${productosYaAgotados.length} ya agotados) y ${productosVencidos.length} vencidos`);
+      } catch (emailError) {
+        console.error("Error al enviar alerta:", emailError);
       }
     }
 
@@ -285,7 +401,6 @@ export const actualizarStockVenta = async (req, res) => {
     handleErrorServer(res, 500, "Error al actualizar stock", err.message);
   }
 };
-
 export const registrarVenta = async (req, res) => {
   try {
     const { productosVendidos } = req.body;
@@ -294,26 +409,57 @@ export const registrarVenta = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
     }
 
-    // Obtener el siguiente número de ticket
-    ticketCounter += 1;
-    const ticketId = ticketCounter;
-
-    // Asignar el ticketId a cada producto vendido
-    const ventas = productosVendidos.map((producto) => ({
-      ticketId,
-      ...producto,
-      fecha: new Date(),
-    }));
-
-    // Guardar todas las ventas asociadas a un mismo ticket
-    await Venta.insertMany(ventas);
-
-    handleSuccess(res, 201, "Venta registrada correctamente", { ticketId, ventas });
-  } catch (err) {
-    console.error("❌ Error en registrarVenta:", err);
-    handleErrorServer(res, 500, "Error al registrar la venta", err.message);
+    // Incrementar el contador y generar un ID de ticket secuencial
+    ticketCounter++;
+    const ticketId = `TK-${ticketCounter.toString().padStart(6, '0')}`;
+    
+    // Crear registros de venta para cada producto
+    const ventasRegistradas = [];
+    for (const producto of productosVendidos) {
+      const nuevaVenta = new Venta({
+        ticketId,
+        nombre: producto.nombre,
+        codigoBarras: producto.codigoBarras,
+        categoria: producto.categoria,
+        cantidad: producto.cantidad,
+        precioVenta: producto.precioVenta,
+        precioCompra: producto.precioCompra,
+        fecha: new Date()
+      });
+      
+      await nuevaVenta.save();
+      ventasRegistradas.push(nuevaVenta);
+    }
+    
+    console.log(`Venta registrada con ticket ID: ${ticketId}`);
+    
+    handleSuccess(res, 201, "Venta registrada correctamente", { 
+      ticketId, 
+      productos: ventasRegistradas 
+    });
+  } catch (error) {
+    console.error("Error al registrar venta:", error);
+    handleErrorServer(res, 500, "Error al registrar la venta", error.message);
   }
 };
+
+// Añadir al inicio del archivo o en una función de inicialización
+const inicializarTicketCounter = async () => {
+  try {
+    const ultimaVenta = await Venta.findOne().sort({ ticketId: -1 });
+    if (ultimaVenta && ultimaVenta.ticketId) {
+      const match = ultimaVenta.ticketId.match(/TK-(\d+)/);
+      if (match && match[1]) {
+        ticketCounter = parseInt(match[1], 10);
+      }
+    }
+  } catch (error) {
+    console.error("Error al inicializar el contador de tickets:", error);
+  }
+};
+
+// Llamar a esta función al iniciar la aplicación
+inicializarTicketCounter();
 
 export const obtenerVentasPorTicket = async (req, res) => {
   try {
@@ -322,8 +468,11 @@ export const obtenerVentasPorTicket = async (req, res) => {
       { $sort: { fecha: -1 } } // Ordenar por fecha descendente
     ]);
 
+    console.log("Ventas agrupadas por ticket:", ventasPorTicket);
+    
     handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasPorTicket);
   } catch (error) {
+    console.error("Error al obtener ventas por ticket:", error);
     handleErrorServer(res, 500, "Error al obtener las ventas por ticket", error.message);
   }
 };
@@ -355,6 +504,7 @@ export const getProductByBarcode = async (req, res) => {
     const producto = productos[0];
 
     handleSuccess(res, 200, "Producto escaneado exitosamente", {
+      image: producto.image,
       codigoBarras: producto.codigoBarras,
       nombre: producto.Nombre,
       marca: producto.Marca,
@@ -370,22 +520,55 @@ export const getProductByBarcode = async (req, res) => {
   }
 };
 
+export const getProductForCreation = async (req, res) => {
+  try {
+    const codigoBarras = req.params.codigoBarras || req.query.codigoBarras;
+
+    if (!codigoBarras) return handleErrorClient(res, 400, "Código de barras es requerido");
+
+    const producto = await Product.findOne({ codigoBarras: String(codigoBarras) });
+
+    if (!producto) return handleErrorClient(res, 404, "Producto no encontrado");
+
+    handleSuccess(res, 200, "Producto encontrado", {
+      image: producto.image,
+      codigoBarras: producto.codigoBarras,
+      nombre: producto.Nombre,
+      marca: producto.Marca,
+      stock: producto.Stock,
+      categoria: producto.Categoria,
+      precioVenta: producto.PrecioVenta,
+      precioCompra: producto.PrecioCompra,
+      fechaVencimiento: producto.fechaVencimiento
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, "Error al obtener producto", err.message);
+  }
+};
+
 export const eliminarProductosSinStock = async () => {
   try {
+    // Add a timeout to prevent deleting products that were just sold
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
-    // Buscar todos los productos que tienen stock 0
-    const productosSinStock = await Product.find({ Stock: 0 });
+    // Only delete products that have been at 0 stock for at least 5 minutes
+    const productosSinStock = await Product.find({ 
+      Stock: 0,
+      updatedAt: { $lt: fiveMinutesAgo }
+    });
 
     for (const producto of productosSinStock) {
-      // Buscar si existe otro producto con el mismo código de barras pero con stock disponible
+      // Check if another product with the same barcode exists with stock
       const existeOtroProducto = await Product.findOne({
         codigoBarras: producto.codigoBarras,
         Stock: { $gt: 0 }
       });
 
       if (existeOtroProducto) {
-        // Si hay otro producto con el mismo código de barras, eliminar este producto
+        // If another product with the same barcode has stock, delete this one
         await Product.findByIdAndDelete(producto._id);
+        console.log(`Producto sin stock eliminado: ${producto.Nombre} (${producto._id})`);
       }
     }
   } catch (error) {
@@ -396,3 +579,41 @@ export const eliminarProductosSinStock = async () => {
 cron.schedule('0 */5 * * *', async () => {
   await eliminarProductosSinStock();
 });
+
+export const testEmailAlert = async (req, res) => {
+  try {
+    console.log("Test manual de alerta por correo electrónico");
+    
+    // Get all products
+    const todosProductos = await Product.find();
+    
+    if (todosProductos.length === 0) {
+      return handleSuccess(res, 200, "No hay productos registrados", []);
+    }
+    
+    // Filter products with low stock
+    const productosBajoStock = todosProductos.filter(producto => {
+      const categoria = producto.Categoria;
+      if (!categoria) {
+        return false;
+      }
+
+      const stockMinimo = stockMinimoPorCategoria[categoria];
+      if (stockMinimo === undefined) {
+        return false;
+      }
+      
+      return producto.Stock <= stockMinimo;
+    });
+    
+    if (productosBajoStock.length > 0) {
+      await sendLowStockAlert(productosBajoStock);
+      handleSuccess(res, 200, `Alerta enviada para ${productosBajoStock.length} productos con stock bajo`, productosBajoStock);
+    } else {
+      handleSuccess(res, 200, "No hay productos con stock bajo para enviar alerta", []);
+    }
+  } catch (error) {
+    console.error("Error en test de correo:", error);
+    handleErrorServer(res, 500, "Error al probar alerta de correo", error.message);
+  }
+};

@@ -148,3 +148,42 @@ export const obtenerVentas = async () => {
     throw error;
   }
 }
+
+export const obtenerVentasPorTicket = async () => {
+  try {
+    const response = await axios.get("/products/ventas/tickets");
+    console.log("Respuesta del servidor:", response);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error al obtener las ventas por ticket:", error);
+    throw error;
+  }
+};
+
+export const getProductByBarcode = async (barcode) => {
+  try {
+    const response = await axios.get(`/products/getbybarcode/${barcode}`);
+    if (response && response.data && response.data.data) {
+      return response.data.data;
+    } else {
+      throw new Error('Respuesta inesperada del servidor');
+    }
+  } catch (error) {
+    console.error('Error fetching product by barcode:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export const getProductByBarcodeForCreation = async (barcode) => {
+  try {
+    const response = await axios.get(`/products/getbybarcodecreate/${barcode}`);
+    if (response && response.data && response.data.data) {
+      return response.data.data;
+    } else {
+      throw new Error('Respuesta inesperada del servidor');
+    }
+  } catch (error) {
+    console.error('Error fetching product by barcode:', error.response?.data || error.message);
+    throw error;
+  }
+};

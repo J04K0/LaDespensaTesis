@@ -1,29 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import '../styles/AddProductStyles.css';
-import { addProducts } from '../services/AddProducts.service.js';
 import Swal from 'sweetalert2';
-
-const categories = [
-  { label: 'Seleccione una categoría', value: '' },
-  { label: 'Congelados', value: 'Congelados' },
-  { label: 'Carnes', value: 'Carnes' },
-  { label: 'Despensa', value: 'Despensa' },
-  { label: 'Panaderia y Pasteleria', value: 'Panaderia y Pasteleria' },
-  { label: 'Quesos y Fiambres', value: 'Quesos y Fiambres' },
-  { label: 'Bebidas y Licores', value: 'Bebidas y Licores' },
-  { label: 'Lacteos, Huevos y Refrigerados', value: 'Lacteos, Huevos y Refrigerados' },
-  { label: 'Desayuno y Dulces', value: 'Desayuno y Dulces' },
-  { label: 'Bebes y Niños', value: 'Bebes y Niños' },
-  { label: 'Cigarros', value: 'Cigarros' },
-  { label: 'Cuidado Personal', value: 'Cuidado Personal' },
-  { label: 'Limpieza y Hogar', value: 'Limpieza y Hogar' },
-  { label: 'Mascotas', value: 'Mascotas' },
-  { label: 'Remedios', value: 'Remedios' },
-  { label: 'Otros', value: 'Otros' },
-
-];
+import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
+import '../styles/AddProductStyles.css';
 
 const AddProducts = () => {
   const navigate = useNavigate();
@@ -35,31 +15,49 @@ const AddProducts = () => {
   const [PrecioCompra, setPrecioCompra] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [PrecioVenta, setPrecioVenta] = useState('');
-  const [image, setImage] = useState(null); // Estado para la imagen
+  const [image, setImage] = useState(null);
 
-  const [categoriaColor, setCategoriaColor] = useState('#b5b5b5');
-  const [fechaColor, setFechaColor] = useState('#b5b5b5');
-  const handleImageChange = (e) => setImage(e.target.files[0]); // Guardar archivo
-  const handleCategoriaChange = (e) => {
-    const value = e.target.value;
-    setCategoria(value);
-    setCategoriaColor(value === '' ? '#b5b5b5' : '#000000');
-  };
+  const handleImageChange = (e) => setImage(e.target.files[0]);
+  const handleCategoriaChange = (e) => setCategoria(e.target.value);
+  const handleFechaChange = (e) => setFechaVencimiento(e.target.value);
 
-  const handleFechaChange = (e) => {
+  const handleCodigoBarrasChange = async (e) => {
     const value = e.target.value;
-    setFechaVencimiento(value);
-    setFechaColor(value === '' ? '#b5b5b5' : '#000000');
+    setCodigoBarras(value);
+  
+    if (value.length === 13) {
+      try {
+        const product = await getProductByBarcodeForCreation(value);
+  
+        if (product) {
+          setNombre(product.nombre);
+          setMarca(product.marca);
+          setCategoria(product.categoria);
+  
+          if (product.image) {
+            setImage(product.image); // 🔹 Guarda la URL de la imagen existente
+          } else {
+            setImage(null); // 🔹 Limpia la imagen si no hay una asociada
+          }
+        } else {
+          Swal.fire('Error', 'Producto no encontrado', 'error');
+        }
+      } catch (error) {
+        console.error('Error fetching product by barcode:', error);
+        Swal.fire('Error', 'Ocurrió un error al buscar el producto.', 'error');
+      }
+    }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (Categoria === '') {
-      alert('Por favor, seleccione una categoría válida.');
+      Swal.fire('Error', 'Por favor, seleccione una categoría válida.', 'error');
       return;
     }
-
+  
     const formData = new FormData();
     formData.append('Nombre', Nombre);
     formData.append('codigoBarras', codigoBarras);
@@ -69,8 +67,14 @@ const AddProducts = () => {
     formData.append('PrecioCompra', PrecioCompra);
     formData.append('fechaVencimiento', fechaVencimiento);
     formData.append('PrecioVenta', PrecioVenta);
-    if (image) formData.append('image', image); // Agregar la imagen solo si existe
-
+  
+    // 🔹 Verificar si `image` es una URL o un archivo
+    if (image instanceof File) {
+      formData.append('image', image); // Si es un archivo, lo adjuntamos
+    } else if (typeof image === 'string' && image.startsWith('http')) {
+      formData.append('imageUrl', image); // Enviar URL en otro campo
+    }
+  
     try {
       await addProducts(formData);
       Swal.fire('Éxito', 'Producto creado con éxito', 'success');
@@ -80,6 +84,9 @@ const AddProducts = () => {
       Swal.fire('Error', 'Ocurrió un error al intentar crear el producto.', 'error');
     }
   };
+  
+  
+  
 
   return (
     <div className="add-prod-page">
@@ -91,7 +98,7 @@ const AddProducts = () => {
             <input type="text" placeholder="Nombre del producto" value={Nombre} onChange={(e) => setNombre(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input type="text" placeholder="Código de Barras" value={codigoBarras} onChange={(e) => setCodigoBarras(e.target.value)} required />
+            <input type="text" placeholder="Código de Barras" value={codigoBarras} onChange={handleCodigoBarrasChange} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
             <input type="text" placeholder="Marca del producto" value={Marca} onChange={(e) => setMarca(e.target.value)} required />
@@ -101,11 +108,22 @@ const AddProducts = () => {
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
             <select value={Categoria} onChange={handleCategoriaChange} required>
-              {categories.map((category, index) => (
-                <option key={index} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
+              <option value="">Seleccione una categoría</option>
+              <option value="Congelados">Congelados</option>
+              <option value="Carnes">Carnes</option>
+              <option value="Despensa">Despensa</option>
+              <option value="Panaderia y Pasteleria">Panaderia y Pasteleria</option>
+              <option value="Quesos y Fiambres">Quesos y Fiambres</option>
+              <option value="Bebidas y Licores">Bebidas y Licores</option>
+              <option value="Lacteos, Huevos y Refrigerados">Lacteos, Huevos y Refrigerados</option>
+              <option value="Desayuno y Dulces">Desayuno y Dulces</option>
+              <option value="Bebes y Niños">Bebes y Niños</option>
+              <option value="Cigarros">Cigarros</option>
+              <option value="Cuidado Personal">Cuidado Personal</option>
+              <option value="Limpieza y Hogar">Limpieza y Hogar</option>
+              <option value="Mascotas">Mascotas</option>
+              <option value="Remedios">Remedios</option>
+              <option value="Otros">Otros</option>
             </select>
           </div>
           <div className="add-prod-form-group">
@@ -120,12 +138,17 @@ const AddProducts = () => {
           <div className="add-prod-form-group">
             <label className="label">Imagen:</label>
             <input
-  type="file"
-  accept="image/*"
-  onChange={(e) => setImage(e.target.files[0])}
-  required
-/>
-
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              required={!image} // Requerido solo si no hay una imagen previa
+            />
+            {image && typeof image === 'string' && (
+              <div className="image-preview-container">
+                <p>Vista previa de la imagen:</p>
+                <img src={image} alt="Vista previa del producto" className="product-preview" />
+              </div>
+            )}
           </div>
           <div className="add-prod-buttons">
             <button type="submit" className="add-button">Añadir producto 🛒</button>
@@ -135,6 +158,5 @@ const AddProducts = () => {
       </div>
     </div>
   );
-};
-
+}  
 export default AddProducts;

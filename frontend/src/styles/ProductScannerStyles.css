@@ -14,7 +14,7 @@
   --transition-duration: 0.3s;
 }
 
-/* Global Styles */
+/* 🔹 Global Styles */
 *,
 *::before,
 *::after {
@@ -23,48 +23,48 @@
   padding: 0;
 }
 
-/* Contenedor principal */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* 🔹 Contenedor principal */
 .scanner-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
-/* Barra de búsqueda */
+/* 🔹 Barra de búsqueda */
 .search-bar {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 40px;
-  height: 50px; /* Fijar la altura */
+  max-width: 400px;
+  height: 50px;
   margin-bottom: 15px;
   padding: 5px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Input de la barra de búsqueda */
 .search-bar input {
   flex: 1;
   padding: 10px;
   font-size: var(--font-size-medium);
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
-  height: 40px; /* Fijar la altura */
-  max-height: 40px;
+  outline: none;
 }
 
-/* Botón dentro de la barra de búsqueda */
-.search-bar button {
-  padding: 10px 15px;
-  font-size: var(--font-size-medium);
-  height: 40px;
-  max-height: 40px;
-  border-radius: var(--border-radius);
-}
-
-/* Contenido principal */
+/* 🔹 Contenedor del escáner y carrito */
 .scanner-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -73,7 +73,7 @@
   max-width: 1200px;
 }
 
-/* Sección del escáner */
+/* 🔹 Sección del escáner */
 .scanner-section {
   background-color: white;
   padding: 25px;
@@ -82,7 +82,6 @@
   text-align: center;
 }
 
-/* Información del producto */
 .product-info h3 {
   font-size: 24px;
   margin-bottom: 10px;
@@ -100,7 +99,7 @@
   margin-bottom: 15px;
 }
 
-/* Controles de cantidad */
+/* 🔹 Controles de cantidad */
 .quantity-controls {
   display: flex;
   justify-content: center;
@@ -109,14 +108,14 @@
 }
 
 .quantity-controls button {
-  padding: 5px;
-  font-size: 16px;
+  padding: 8px;
+  font-size: var(--font-size-medium);
   border: none;
   background-color: var(--primary-color);
   color: white;
   border-radius: var(--border-radius);
   cursor: pointer;
-  width: 30px;
+  width: 40px;
   transition: background var(--transition-duration);
   margin: 0 5px;
 }
@@ -130,7 +129,7 @@
   margin: 0 10px;
 }
 
-/* Botón "Agregar al carrito" */
+/* 🔹 Botón "Agregar al carrito" */
 .add-to-cart-button {
   width: 100%;
   padding: 15px;
@@ -147,9 +146,13 @@
   background-color: var(--secondary-hover-color);
 }
 
-/* Sección del carrito */
+/* 🔹 Sección del carrito */
 .cart-section {
-  margin-top: 20px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  text-align: center;
 }
 
 .cart-list {
@@ -171,12 +174,12 @@
   margin-right: 10px;
 }
 
-/* Botón "Eliminar producto" */
+/* 🔹 Botón "Eliminar producto" */
 .delete-product {
   background-color: var(--danger-color) !important;
   color: white;
   padding: 5px;
-  font-size: 16px;
+  font-size: var(--font-size-small);
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -193,7 +196,7 @@
   background-color: var(--danger-hover-color) !important;
 }
 
-/* Total de la compra */
+/* 🔹 Total de la compra */
 .total-price {
   font-size: var(--font-size-large);
   font-weight: bold;
@@ -201,13 +204,32 @@
   margin-top: 20px;
 }
 
-/* Botón de pago */
+/* 🔹 Campo para ingresar el monto entregado */
+.payment-section {
+  margin-top: 15px;
+}
+
+.payment-section label {
+  font-size: var(--font-size-medium);
+  margin-bottom: 5px;
+}
+
+.payment-section input {
+  width: 100%;
+  padding: 10px;
+  font-size: var(--font-size-medium);
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  margin-bottom: 10px;
+}
+
+/* 🔹 Botón "Finalizar venta" */
 .checkout-button {
   width: 100%;
   padding: 15px;
   font-size: var(--font-size-medium);
   background-color: var(--warning-color);
-  color: #333;
+  color: black;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
@@ -217,4 +239,25 @@
 
 .checkout-button:hover {
   background-color: var(--warning-hover-color);
+}
+
+.product-image {
+  width: 200px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 🔹 Mensajes de error */
+.error-text {
+  color: var(--danger-color);
+  font-size: var(--font-size-small);
+  margin-top: 5px;
+}
+
+/* 🔹 Responsividad */
+@media (max-width: 900px) {
+  .scanner-content {
+    grid-template-columns: 1fr;
+  }
 }

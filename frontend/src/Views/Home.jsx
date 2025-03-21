@@ -61,8 +61,6 @@ const Home = () => {
         <div className="top-buttons">
           <button onClick={handleViewOutOfStock} className="ver-productos-sin-stock">Ver productos sin stock</button>
           <button onClick={handleViewExpiredProducts} className="ver-productos-vencidos">Ver productos vencidos</button>
-          <button className="producto-mas-vendido">Producto más vendido</button>
-          <button className="pagos-por-vencer">Pagos por vencer</button>
         </div>
       </div>
       <div className="content">

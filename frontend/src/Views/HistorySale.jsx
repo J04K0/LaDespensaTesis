@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { obtenerVentas } from "../services/AddProducts.service.js";
+import { obtenerVentasPorTicket } from "../services/AddProducts.service.js";
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -25,11 +25,14 @@ const HistorySale = () => {
 
   const fetchVentas = async () => {
     try {
-      const response = await obtenerVentas();
-      console.log("📦 Datos de ventas:", response.data); // Debug
-      const ventasData = Array.isArray(response.data) ? response.data : [];
+      setLoading(true);
+      const response = await obtenerVentasPorTicket();
+      console.log("Ventas response:", response);
+      
+      // Make sure we're accessing the data correctly
+      const ventasData = response.data || [];
       setVentas(ventasData);
-      setFilteredVentas(ventasData); // 🔹 También inicializamos las ventas filtradas
+      setFilteredVentas(ventasData);
       setLoading(false);
     } catch (error) {
       console.error("Error al obtener el historial de ventas:", error);
@@ -43,10 +46,12 @@ const HistorySale = () => {
     const value = e.target.value.toLowerCase();
     setSearchQuery(value);
 
-    const filtered = ventas.filter(
-      (venta) =>
-        venta.nombre.toLowerCase().includes(value) ||
-        venta.codigoBarras?.includes(value)
+    const filtered = ventas.filter((venta) =>
+      venta.ventas.some(
+        (producto) =>
+          producto.nombre.toLowerCase().includes(value) ||
+          producto.codigoBarras?.includes(value)
+      )
     );
     setFilteredVentas(filtered);
     setCurrentPage(1);
@@ -73,7 +78,9 @@ const HistorySale = () => {
     const category = e.target.value;
     setCategoryFilter(category);
     const filtered = category
-      ? ventas.filter((venta) => venta.categoria === category)
+      ? ventas.filter((venta) =>
+          venta.ventas.some((producto) => producto.categoria === category)
+        )
       : ventas;
     setFilteredVentas(filtered);
     setCurrentPage(1);
@@ -96,22 +103,35 @@ const HistorySale = () => {
     let filtered = ventas;
 
     if (categoryFilter) {
-      filtered = filtered.filter((venta) => venta.categoria === categoryFilter);
+      filtered = filtered.filter((venta) =>
+        venta.ventas.some((producto) => producto.categoria === categoryFilter)
+      );
     }
 
     if (dateRange.start && dateRange.end) {
-      filtered = filtered.filter(
-        (venta) =>
-          new Date(venta.fecha) >= new Date(dateRange.start) &&
-          new Date(venta.fecha) <= new Date(dateRange.end)
-      );
+      const startDate = new Date(dateRange.start);
+      startDate.setUTCHours(0, 0, 0, 0); // Asegura que el inicio del día sea 00:00 UTC
+
+      const endDate = new Date(dateRange.end);
+      endDate.setUTCHours(23, 59, 59, 999); // Asegura que el final del día sea 23:59 UTC
+
+      filtered = filtered.filter((venta) => {
+        const ventaFecha = new Date(venta.fecha);
+        return ventaFecha >= startDate && ventaFecha <= endDate;
+      });
     }
 
     if (totalRange.min && totalRange.max) {
       filtered = filtered.filter(
         (venta) =>
-          (venta.cantidad * venta.precioVenta) >= parseFloat(totalRange.min) &&
-          (venta.cantidad * venta.precioVenta) <= parseFloat(totalRange.max)
+          venta.ventas.reduce(
+            (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+            0
+          ) >= parseFloat(totalRange.min) &&
+          venta.ventas.reduce(
+            (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+            0
+          ) <= parseFloat(totalRange.max)
       );
     }
 
@@ -120,12 +140,31 @@ const HistorySale = () => {
 
   // Ordenar las ventas según la opción seleccionada
   const sortedVentas = [...filteredVentas].sort((a, b) => {
-    if (sortOption === "name-asc") return a.nombre.localeCompare(b.nombre);
-    if (sortOption === "name-desc") return b.nombre.localeCompare(a.nombre);
     if (sortOption === "date-asc") return new Date(a.fecha) - new Date(b.fecha);
-    if (sortOption === "date-desc") return new Date(b.fecha) - new Date(a.fecha);
-    if (sortOption === "total-asc") return (a.cantidad * a.precioVenta) - (b.cantidad * b.precioVenta);
-    if (sortOption === "total-desc") return (b.cantidad * b.precioVenta) - (a.cantidad * a.precioVenta);
+    if (sortOption === "date-desc")
+      return new Date(b.fecha) - new Date(a.fecha);
+    if (sortOption === "total-asc")
+      return (
+        a.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        ) -
+        b.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        )
+      );
+    if (sortOption === "total-desc")
+      return (
+        b.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        ) -
+        a.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        )
+      );
     return 0;
   });
 
@@ -136,15 +175,20 @@ const HistorySale = () => {
     const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas; // 🔹 Si no hay filtro, exportamos todas las ventas
 
     autoTable(doc, {
-      head: [["Producto", "Cantidad", "Categoría", "Precio Venta", "Precio Compra", "Fecha", "Total"]],
+      head: [["Ticket", "Fecha", "Productos", "Total"]],
       body: dataToExport.map((venta) => [
-        venta.nombre,
-        venta.cantidad,
-        venta.categoria,
-        venta.precioVenta,
-        venta.precioCompra,
+        venta._id,
         new Date(venta.fecha).toLocaleDateString(),
-        (venta.cantidad * venta.precioVenta).toFixed(2), // Calcula el total
+        venta.ventas
+          .map(
+            (producto) =>
+              `${producto.nombre} - ${producto.cantidad}x $${producto.precioVenta}`
+          )
+          .join("\n"),
+        venta.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        ),
       ]),
     });
 
@@ -156,13 +200,18 @@ const HistorySale = () => {
 
     const ws = XLSX.utils.json_to_sheet(
       dataToExport.map((venta) => ({
-        Producto: venta.nombre,
-        Cantidad: venta.cantidad,
-        Categoría: venta.categoria,
-        "Precio Venta": venta.precioVenta,
-        "Precio Compra": venta.precioCompra,
+        Ticket: venta._id,
         Fecha: new Date(venta.fecha).toLocaleDateString(),
-        Total: (venta.cantidad * venta.precioVenta).toFixed(2), // Calcula el total
+        Productos: venta.ventas
+          .map(
+            (producto) =>
+              `${producto.nombre} - ${producto.cantidad}x $${producto.precioVenta}`
+          )
+          .join("\n"),
+        Total: venta.ventas.reduce(
+          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+          0
+        ),
       }))
     );
 
@@ -178,14 +227,40 @@ const HistorySale = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Añadir un spinner de carga
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Cargando historial de ventas...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="history-sale-container">
       <Navbar />
       <div className="history-sale-main-content">
         <h1>Historial de Ventas</h1>
-
+        
+        {/* Add refresh button */}
+        <button 
+          onClick={fetchVentas}
+          className="refresh-button"
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginBottom: '16px'
+          }}
+        >
+          Actualizar Ventas
+        </button>
+        
         <div className="history-sale-search-sort-container">
-          {/* Buscador */}
           <input
             type="text"
             placeholder="Buscar por producto."
@@ -193,20 +268,22 @@ const HistorySale = () => {
             onChange={handleSearch}
             className="history-sale-search-bar"
           />
-
-          {/* Filtro de ordenamiento */}
-          <select onChange={handleSortChange} value={sortOption} className="history-sale-sort-select">
+          <select
+            onChange={handleSortChange}
+            value={sortOption}
+            className="history-sale-sort-select"
+          >
             <option value="">Ordenar por</option>
-            <option value="name-asc">Nombre (A-Z)</option>
-            <option value="name-desc">Nombre (Z-A)</option>
             <option value="date-asc">Fecha (Ascendente)</option>
             <option value="date-desc">Fecha (Descendente)</option>
             <option value="total-asc">Precio Total (Ascendente)</option>
             <option value="total-desc">Precio Total (Descendente)</option>
           </select>
-
-          {/* Filtro de categoría */}
-          <select onChange={handleFilterByCategory} value={categoryFilter} className="history-sale-category-select">
+          <select
+            onChange={handleFilterByCategory}
+            value={categoryFilter}
+            className="history-sale-category-select"
+          >
             <option value="">Todas las categorías</option>
             <option value="Congelados">Congelados</option>
             <option value="Carnes">Carnes</option>
@@ -214,18 +291,18 @@ const HistorySale = () => {
             <option value="Panaderia y Pasteleria">Panaderia y Pasteleria</option>
             <option value="Quesos y Fiambres">Quesos y Fiambres</option>
             <option value="Bebidas y Licores">Bebidas y Licores</option>
-            <option value="Lacteos, Huevos y Refrigerados">Lacteos, Huevos y Refrigerados</option>
+            <option value="Lacteos, Huevos y Refrigerados">
+              Lacteos, Huevos y Refrigerados
+            </option>
             <option value="Desayuno y Dulces">Desayuno y Dulces</option>
             <option value="Bebes y Niños">Bebes y Niños</option>
             <option value="Mascotas">Mascotas</option>
             <option value="Cuidado Personal">Cuidado Personal</option>
             <option value="Limpieza y Hogar">Limpieza y Hogar</option>
             <option value="Remedios">Remedios</option>
-            <option value="Otros">Otros</option>
             <option value="Cigarros">Cigarros</option>
+            <option value="Otros">Otros</option>
           </select>
-
-          {/* Filtro por rango de fechas */}
           <div className="history-sale-date-range">
             <label>Desde:</label>
             <input
@@ -242,8 +319,6 @@ const HistorySale = () => {
               onChange={handleDateRangeChange}
             />
           </div>
-
-          {/* Filtro por rango de total */}
           <div className="history-sale-total-range">
             <label>Precio Total Mín:</label>
             <input
@@ -260,17 +335,15 @@ const HistorySale = () => {
               onChange={handleTotalRangeChange}
             />
           </div>
-
-          {/* Botón Limpiar Filtros */}
-          <button onClick={handleClearFilters} className="history-sale-clear-filters-button">
+          <button
+            onClick={handleClearFilters}
+            className="history-sale-clear-filters-button"
+          >
             Limpiar Filtros
           </button>
         </div>
 
-        {/* Tabla */}
-        {loading ? (
-          <p>Cargando historial de ventas...</p>
-        ) : error ? (
+        {error ? (
           <p className="error">{error}</p>
         ) : (
           <>
@@ -278,50 +351,62 @@ const HistorySale = () => {
               <table className="history-sale-table">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Cantidad</th>
-                    <th>Categoría</th>
-                    <th>Precio de Venta</th>
-                    <th>Precio de Compra</th>
+                    <th>Ticket</th>
                     <th>Fecha</th>
-                    <th>Precio Total</th> {/* Nueva columna para el total */}
+                    <th>Productos</th>
+                    <th>Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentVentas.length > 0 ? (
                     currentVentas.map((venta, index) => (
                       <tr key={index}>
-                        <td>{venta.nombre || "Sin nombre"}</td>
-                        <td>{venta.cantidad || 0}</td>
-                        <td>{venta.categoria || "Sin categoría"}</td>
-                        <td>${venta.precioVenta || 0}</td>
-                        <td>${venta.precioCompra || 0}</td>
-                        <td>{venta.fecha ? new Date(venta.fecha).toLocaleDateString() : "Sin fecha"}</td>
-                        <td>${(venta.cantidad * venta.precioVenta)}</td>
+                        <td>{venta._id}</td>
+                        <td>{new Date(venta.fecha).toLocaleDateString()}</td>
+                        <td>
+                          <ul>
+                            {venta.ventas.map((producto, i) => (
+                              <li key={i}>
+                                {producto.nombre} - {producto.cantidad}x $
+                                {producto.precioVenta}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                        <td>
+                          $
+                          {venta.ventas.reduce(
+                            (acc, producto) =>
+                              acc + producto.cantidad * producto.precioVenta,
+                            0
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7">No hay ventas registradas.</td>
+                      <td colSpan="4">No hay ventas registradas.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
-
             <div className="history-sale-pagination">
-              {Array.from({ length: Math.ceil(filteredVentas.length / ventasPerPage) }, (_, index) => (
-                <button
-                  key={index}
-                  className={`history-sale-pagination-button ${index + 1 === currentPage ? "active" : ""}`}
-                  onClick={() => paginate(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+              {Array.from(
+                { length: Math.ceil(filteredVentas.length / ventasPerPage) },
+                (_, index) => (
+                  <button
+                    key={index}
+                    className={`history-sale-pagination-button ${
+                      index + 1 === currentPage ? "active" : ""
+                    }`}
+                    onClick={() => paginate(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                )
+              )}
             </div>
-
-            {/* Botones de exportación */}
             <div className="history-sale-export-buttons">
               <button onClick={exportToPDF}>📄 Exportar a PDF</button>
               <button onClick={exportToExcel}>📊 Exportar a Excel</button>

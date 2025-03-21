@@ -15,6 +15,8 @@ import {
     obtenerVentas,
     getProductByBarcode,
     obtenerVentasPorTicket, 
+    getProductForCreation,
+    testEmailAlert
 } from "../controllers/products.controller.js";
 
 import { 
@@ -38,12 +40,15 @@ router.get('/verificarstock', authorizeRoles([isEmpleado, isAdmin, isJefe]), ver
 router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsExpiringSoon);
 router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
 router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
+router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get("/ventas/tickets", authorizeRoles([isEmpleado, isAdmin, isJefe]),obtenerVentasPorTicket);
+router.get('/test-email-alert', authorizeRoles([isAdmin, isJefe, isEmpleado]), testEmailAlert);
 
 router.post('/registrar-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), registrarVenta);
 router.get('/ventas/obtener', authorizeRoles([isEmpleado, isAdmin, isJefe]), obtenerVentas);
 
-router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
+
+router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
