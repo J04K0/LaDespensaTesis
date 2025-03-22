@@ -50,7 +50,12 @@ export const getProductsByCategory = async (category) => {
 
 export const updateProduct = async (id, productData) => {
   try {
-    const response = await axios.patch(`products/actualizar/${id}`, productData);
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    const response = await axios.patch(`/products/actualizar/${id}`, productData, config);
     return response.data.data;
   } catch (error) {
     console.error('Error updating product:', error);

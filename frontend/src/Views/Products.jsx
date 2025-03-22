@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
-import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts } from '../services/AddProducts.service';
+import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import Swal from 'sweetalert2';
 
 const Products = () => {
+  // Estados existentes
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,10 +18,27 @@ const Products = () => {
   const [sortOption, setSortOption] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Nuevos estados para el modal de edición
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [productToEdit, setProductToEdit] = useState({
+    Nombre: '',
+    codigoBarras: '',
+    Marca: '',
+    Stock: 0,
+    Categoria: '',
+    PrecioVenta: 0,
+    PrecioCompra: 0,
+    fechaVencimiento: '',
+    precioAntiguo: 0
+  });
+  const [editImage, setEditImage] = useState(null);
+  
   const productsPerPage = 9;
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Categorías existentes sin cambios
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
     'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
@@ -213,8 +231,110 @@ const Products = () => {
     }
   };
 
-  const handleEdit = (id) => {
-    navigate(`/edit-product`, { state: { productId: id } });
+  // Modificar la función handleEdit para usar el modal en lugar de navegar
+  const handleEdit = async (id) => {
+    try {
+      setLoading(true);
+      const data = await getProductById(id);
+      
+      // Formatear la fecha para el input type="date"
+      const formattedDate = data.fechaVencimiento 
+        ? new Date(data.fechaVencimiento).toISOString().split('T')[0] 
+        : '';
+      
+      setProductToEdit({
+        _id: id,
+        Nombre: data.Nombre || '',
+        codigoBarras: data.codigoBarras || '',
+        Marca: data.Marca || '',
+        Stock: Number(data.Stock) || 0,
+        Categoria: data.Categoria || '',
+        PrecioVenta: Number(data.PrecioVenta) || 0,
+        PrecioCompra: Number(data.PrecioCompra) || 0,
+        fechaVencimiento: formattedDate,
+        precioAntiguo: Number(data.precioAntiguo) || 0,
+      });
+      
+      setEditImage(data.image || null);
+      setShowEditModal(true);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      setLoading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al cargar el producto',
+        text: 'No se pudo cargar la información del producto para editar.',
+      });
+    }
+  };
+  
+  // Función para manejar los cambios en el formulario
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setProductToEdit({
+      ...productToEdit,
+      [name]: name === 'Stock' || name === 'PrecioVenta' || name === 'PrecioCompra' || name === 'precioAntiguo' 
+        ? Number(value) 
+        : value
+    });
+  };
+  
+  // Función para manejar el cambio de imagen
+  const handleImageChange = (e) => {
+    setEditImage(e.target.files[0]);
+  };
+  
+  // Función para guardar los cambios
+  const handleEditSubmit = async () => {
+    try {
+      setLoading(true);
+      
+      const formData = new FormData();
+      const { _id, ...productData } = productToEdit;
+      
+      // Añadir datos del producto al FormData
+      Object.keys(productData).forEach(key => {
+        formData.append(key, productData[key]);
+      });
+      
+      // Añadir imagen solo si se seleccionó una nueva
+      if (editImage instanceof File) {
+        formData.append('image', editImage);
+      }
+      
+      // No añadir ningún campo de imagen si se mantiene la existente
+      // El backend debe mantener la imagen anterior si no se proporciona una nueva
+      
+      await updateProduct(_id, formData);
+      
+      // Resto del código sin cambios
+      const updatedProductsList = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      const productsArray = Array.isArray(updatedProductsList.products) 
+        ? updatedProductsList.products 
+        : updatedProductsList.data.products;
+      
+      setAllProducts(productsArray);
+      setFilteredProducts(productsArray);
+      
+      setShowEditModal(false);
+      setLoading(false);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Producto actualizado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Error updating product:', error);
+      setLoading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar el producto',
+        text: 'Ocurrió un error al intentar actualizar el producto.',
+      });
+    }
   };
 
   const handlePageChange = (page) => {
@@ -310,6 +430,157 @@ const Products = () => {
           ))}
         </div>
       </div>
+      {/* Modal para editar producto */}
+      {showEditModal && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowEditModal(false)} // Cerrar al hacer clic en el fondo
+        >
+          <div 
+            className="modal-content edit-modal product-edit-modal"
+            onClick={(e) => e.stopPropagation()} // Evitar que clics dentro del modal lo cierren
+          >
+            <h3>Editar Producto</h3>
+            
+            <div className="modal-form-group">
+              <label htmlFor="Nombre">Nombre:</label>
+              <input
+                type="text"
+                id="Nombre"
+                name="Nombre"
+                value={productToEdit.Nombre}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="codigoBarras">Código de Barras:</label>
+              <input
+                type="text"
+                id="codigoBarras"
+                name="codigoBarras"
+                value={productToEdit.codigoBarras}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="Marca">Marca:</label>
+              <input
+                type="text"
+                id="Marca"
+                name="Marca"
+                value={productToEdit.Marca}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="Stock">Stock:</label>
+              <input
+                type="text"
+                id="Stock"
+                name="Stock"
+                value={productToEdit.Stock}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="Categoria">Categoría:</label>
+              <select
+                id="Categoria"
+                name="Categoria"
+                value={productToEdit.Categoria}
+                onChange={handleEditChange}
+                required
+              >
+                <option value="">Seleccione una categoría</option>
+                {categories.map((cat, index) => (
+                  <option key={index} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="PrecioCompra">Precio de Compra:</label>
+              <input
+                type="number"
+                id="PrecioCompra"
+                name="PrecioCompra"
+                value={productToEdit.PrecioCompra}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="PrecioVenta">Precio de Venta:</label>
+              <input
+                type="number"
+                id="PrecioVenta"
+                name="PrecioVenta"
+                value={productToEdit.PrecioVenta}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="fechaVencimiento">Fecha de Vencimiento:</label>
+              <input
+                type="date"
+                id="fechaVencimiento"
+                name="fechaVencimiento"
+                value={productToEdit.fechaVencimiento}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="precioAntiguo">Precio Antiguo (opcional):</label>
+              <input
+                type="number"
+                id="precioAntiguo"
+                name="precioAntiguo"
+                value={productToEdit.precioAntiguo}
+                onChange={handleEditChange}
+              />
+            </div>
+            
+            <div className="modal-form-group">
+              <label htmlFor="image">Imagen:</label>
+              <input
+                type="file"
+                id="image"
+                name="image"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
+              {typeof editImage === 'string' && (
+                <div className="current-image">
+                  <p>Imagen actual:</p>
+                  <img src={editImage} alt="Imagen actual del producto" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-buttons">
+              <button onClick={handleEditSubmit} className="confirm-button">
+                Guardar Cambios
+              </button>
+              <button onClick={() => setShowEditModal(false)} className="cancel-button">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

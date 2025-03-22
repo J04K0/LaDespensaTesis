@@ -20,7 +20,6 @@ const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onDel
     </div>
   );
 };
-console.log(ProductCard);
 ProductCard.propTypes = {
   image: PropTypes.string, //Ver si dejar isRequired o no
   name: PropTypes.string.isRequired,
