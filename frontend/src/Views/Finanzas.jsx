@@ -575,6 +575,48 @@ const Finanzas = () => {
             Descargar Reporte Financiero 📄
           </button>
         </div>
+
+                {/* Resumen financiero */}
+                {ingresosPorDia && comparacionIngresoCosto && (
+          <div className="finance-summary">
+            <div className="summary-card income">
+              <h3>Ingresos Totales</h3>
+              <p className="amount">
+                ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
+              </p>
+            </div>
+            
+            <div className="summary-card transactions">
+              <h3>Transacciones</h3>
+              <p className="amount">
+                {numeroTransacciones}
+              </p>
+            </div>
+            
+            <div className="summary-card" style={{ borderTop: '5px solid rgba(255, 99, 132, 1)' }}>
+              <h3>Costos Totales</h3>
+              <p className="amount" style={{ color: 'rgba(255, 99, 132, 1)' }}>
+                ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
+              </p>
+            </div>
+            
+            <div className="summary-card" style={{ borderTop: '5px solid rgba(54, 162, 235, 1)' }}>
+              <h3>Ganancias Totales</h3>
+              <p className="amount" style={{ color: 'rgba(54, 162, 235, 1)' }}>
+                ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="summary-card" style={{ borderTop: '5px solid #FF5733' }}>
+              <h3>Inversión en Mercadería</h3>
+              <p className="amount" style={{ color: '#FF5733' }}>
+                ${inversionMercaderiaPorCategoria ? 
+                  inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
+                  '0'}
+              </p>
+            </div>
+          </div>
+        )}
   
         {loading && <p className="loading-message">Cargando datos financieros...</p>}
         {error && <p className="error-message">{error}</p>}
@@ -628,48 +670,6 @@ const Finanzas = () => {
             <p className="no-data">No hay datos disponibles</p>
           )}
         </div>
-        
-        {/* Resumen financiero */}
-        {ingresosPorDia && comparacionIngresoCosto && (
-          <div className="finance-summary">
-            <div className="summary-card income">
-              <h3>Ingresos Totales</h3>
-              <p className="amount">
-                ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
-            </div>
-            
-            <div className="summary-card transactions">
-              <h3>Transacciones</h3>
-              <p className="amount">
-                {numeroTransacciones}
-              </p>
-            </div>
-            
-            <div className="summary-card" style={{ borderTop: '5px solid rgba(255, 99, 132, 1)' }}>
-              <h3>Costos Totales</h3>
-              <p className="amount" style={{ color: 'rgba(255, 99, 132, 1)' }}>
-                ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
-            </div>
-            
-            <div className="summary-card" style={{ borderTop: '5px solid rgba(54, 162, 235, 1)' }}>
-              <h3>Ganancias Totales</h3>
-              <p className="amount" style={{ color: 'rgba(54, 162, 235, 1)' }}>
-                ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="summary-card" style={{ borderTop: '5px solid #FF5733' }}>
-              <h3>Inversión en Mercadería</h3>
-              <p className="amount" style={{ color: '#FF5733' }}>
-                ${inversionMercaderiaPorCategoria ? 
-                  inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
-                  '0'}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

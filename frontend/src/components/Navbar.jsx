@@ -65,11 +65,11 @@ const Navbar = () => {
               </li>
             </ul>
           )}
-          <li onClick={() => handleNavigation('/estadisticas')}>
-            <FontAwesomeIcon icon={faChartLine} /> Estadísticas
-          </li>
+        {/* <li onClick={() => handleNavigation('/estadisticas')}>
+          <FontAwesomeIcon icon={faChartLine} /> Estadísticas
+        </li> */}
           <li onClick={() => handleNavigation('/finanzas')}>
-            <FontAwesomeIcon icon={faDollarSign} /> Finanzas
+            <FontAwesomeIcon icon={faChartLine} /> Estadisticas Financieras
           </li>
           <li onClick={() => handleNavigation('/proveedores')}>
             <FontAwesomeIcon icon={faTruck} /> Proveedores

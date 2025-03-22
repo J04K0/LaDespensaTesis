@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/DeudoresStyles.css';
-import { getDeudores, deleteDeudor } from '../services/deudores.service.js';
+import { getDeudores, deleteDeudor, updateDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 
 const DeudoresList = () => {
@@ -16,6 +16,21 @@ const DeudoresList = () => {
   const [sortOption, setSortOption] = useState('');
   const deudoresPerPage = 8;
   const navigate = useNavigate();
+  
+  // Estados para el modal de actualización de deuda
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDeudor, setSelectedDeudor] = useState(null);
+  const [amount, setAmount] = useState('');
+  const [isPayment, setIsPayment] = useState(true); // true = pago (restar), false = añadir deuda
+
+  // Estados para el modal de edición
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [deudorToEdit, setDeudorToEdit] = useState({
+    Nombre: '',
+    fechaPaga: '',
+    numeroTelefono: '',
+    deudaTotal: ''
+  });
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -110,8 +125,18 @@ const DeudoresList = () => {
     }
   };
 
-  const handleEdit = (deudors) => {
-    navigate(`/editar-deudor`, { state: { deudors } });
+  const handleEdit = (deudor) => {
+    // Formatear la fecha para el input type="date"
+    const fechaFormateada = new Date(deudor.fechaPaga).toISOString().split('T')[0];
+    
+    setDeudorToEdit({
+      _id: deudor._id,
+      Nombre: deudor.Nombre,
+      fechaPaga: fechaFormateada,
+      numeroTelefono: deudor.numeroTelefono,
+      deudaTotal: parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'))
+    });
+    setShowEditModal(true);
   };
 
   const handleAddDeudor = () => {
@@ -122,6 +147,113 @@ const DeudoresList = () => {
     (currentPage - 1) * deudoresPerPage,
     currentPage * deudoresPerPage
   );
+
+  // Función para abrir el modal de actualización de deuda
+  const handleUpdateDebt = (deudor) => {
+    setSelectedDeudor(deudor);
+    setAmount('');
+    setIsPayment(true);
+    setShowModal(true);
+  };
+
+  // Función para procesar la actualización de la deuda
+  const handleDebtUpdate = async () => {
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Monto inválido',
+        text: 'Por favor ingrese un monto válido mayor a cero.',
+      });
+      return;
+    }
+
+    try {
+      // Convertir la deuda actual a número
+      const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      
+      // Calcular nueva deuda
+      const parsedAmount = parseFloat(amount);
+      let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
+      
+      // Asegurarse de que la deuda no sea negativa
+      newDebt = Math.max(0, newDebt);
+      
+      // Actualizar el deudor en la base de datos
+      await updateDeudor(selectedDeudor._id, {
+        Nombre: selectedDeudor.Nombre,
+        fechaPaga: selectedDeudor.fechaPaga,
+        numeroTelefono: selectedDeudor.numeroTelefono.toString(),
+        deudaTotal: newDebt,
+      });
+      
+      // Actualizar el estado local
+      const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+      setAllDeudores(updatedDeudores.deudores);
+      setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
+        deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+      
+      // Cerrar modal y mostrar mensaje de éxito
+      setShowModal(false);
+      Swal.fire({
+        icon: 'success',
+        title: isPayment ? 'Pago registrado con éxito' : 'Deuda actualizada con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Error al actualizar la deuda:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar la deuda',
+        text: 'Ocurrió un error al intentar actualizar la deuda.',
+      });
+    }
+  };
+
+  // Manejar cambios en el formulario de edición
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setDeudorToEdit(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Manejar envío del formulario de edición
+  const handleEditSubmit = async () => {
+    try {
+      await updateDeudor(deudorToEdit._id, {
+        Nombre: deudorToEdit.Nombre,
+        fechaPaga: deudorToEdit.fechaPaga,
+        numeroTelefono: deudorToEdit.numeroTelefono.toString(),
+        deudaTotal: parseFloat(deudorToEdit.deudaTotal)
+      });
+      
+      // Actualizar el estado local
+      const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+      setAllDeudores(updatedDeudores.deudores);
+      setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
+        deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+      
+      // Cerrar modal y mostrar mensaje de éxito
+      setShowEditModal(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Deudor actualizado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Error updating deudor:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar el deudor',
+        text: 'Ocurrió un error al intentar actualizar el deudor.',
+      });
+    }
+  };
 
   return (
     <div className="deudores-list-container">
@@ -177,6 +309,9 @@ const DeudoresList = () => {
                 <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
                 <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
                 <td className="actions-cell">
+                  <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
+                    <FontAwesomeIcon icon={faMoneyBillWave} />
+                  </button>
                   <button onClick={() => handleEdit(deudor)} className="edit-button">
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
@@ -200,6 +335,126 @@ const DeudoresList = () => {
             </button>
           ))}
         </div>
+        
+        {/* Modal para actualizar deuda */}
+        {showModal && selectedDeudor && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
+              <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
+              <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
+              
+              <div className="modal-form-group">
+                <label htmlFor="amount">Monto:</label>
+                <input
+                  type="number"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="Ingrese el monto"
+                  min="0"
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group payment-type">
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentType"
+                    checked={isPayment}
+                    onChange={() => setIsPayment(true)}
+                  />
+                  Registrar pago (restar de la deuda)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentType"
+                    checked={!isPayment}
+                    onChange={() => setIsPayment(false)}
+                  />
+                  Añadir a la deuda
+                </label>
+              </div>
+              
+              <div className="modal-buttons">
+                <button onClick={handleDebtUpdate} className="confirm-button">
+                  Confirmar
+                </button>
+                <button onClick={() => setShowModal(false)} className="cancel-button">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Nuevo Modal para editar deudor */}
+        {showEditModal && (
+          <div className="modal-overlay">
+            <div className="modal-content edit-modal">
+              <h3>Editar Deudor</h3>
+              
+              <div className="modal-form-group">
+                <label htmlFor="Nombre">Nombre:</label>
+                <input
+                  type="text"
+                  id="Nombre"
+                  name="Nombre"
+                  value={deudorToEdit.Nombre}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group">
+                <label htmlFor="fechaPaga">Fecha a Pagar:</label>
+                <input
+                  type="date"
+                  id="fechaPaga"
+                  name="fechaPaga"
+                  value={deudorToEdit.fechaPaga}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group">
+                <label htmlFor="numeroTelefono">Número de Teléfono:</label>
+                <input
+                  type="text"
+                  id="numeroTelefono"
+                  name="numeroTelefono"
+                  value={deudorToEdit.numeroTelefono}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group">
+                <label htmlFor="deudaTotal">Deuda Total:</label>
+                <input
+                  type="number"
+                  id="deudaTotal"
+                  name="deudaTotal"
+                  value={deudorToEdit.deudaTotal}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-buttons">
+                <button onClick={handleEditSubmit} className="confirm-button">
+                  Guardar Cambios
+                </button>
+                <button onClick={() => setShowEditModal(false)} className="cancel-button">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
