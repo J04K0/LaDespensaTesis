@@ -44,6 +44,7 @@ const Finanzas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState("semana"); // semana, mes, año
+  const [productosPocoVendidos, setProductosPocoVendidos] = useState(null);
 
   useEffect(() => {
     obtenerDatosFinancieros();
@@ -122,6 +123,7 @@ const Finanzas = () => {
     procesarVentasPorMes(ventas);
     procesarIngresosPorCategoria(ventasFiltradas);
     procesarComparacionIngresoCosto(ventasFiltradas);
+    procesarProductosPocoVendidos(ventas); // Agregar esta línea
   };
 
   const procesarDatosInventario = (productos) => {
@@ -450,6 +452,38 @@ const Finanzas = () => {
     });
   };
 
+  const procesarProductosPocoVendidos = (ventas) => {
+    // Contabilizar ventas por producto
+    const productoVentas = {};
+    
+    // Recopilar todos los productos vendidos y sus cantidades
+    ventas.forEach(venta => {
+      venta.ventas.forEach(producto => {
+        if (!productoVentas[producto.nombre]) {
+          productoVentas[producto.nombre] = 0;
+        }
+        productoVentas[producto.nombre] += producto.cantidad;
+      });
+    });
+    
+    // Ordenar por menor cantidad de ventas y tomar los 5 menos vendidos
+    const productosOrdenados = Object.entries(productoVentas)
+      .sort((a, b) => a[1] - b[1])  // Ordenar de menor a mayor
+      .slice(0, 5);  // Tomar los 5 primeros (menos vendidos)
+    
+    setProductosPocoVendidos({
+      labels: productosOrdenados.map(([nombre]) => nombre),
+      datasets: [
+        {
+          label: "Productos Menos Vendidos",
+          data: productosOrdenados.map(([, cantidad]) => cantidad),
+          backgroundColor: ["#C0C0C0", "#A9A9A9", "#808080", "#696969", "#778899"],
+          borderColor: "#fff",
+        },
+      ],
+    });
+  };
+
   const handleTimeRangeChange = (e) => {
     setTimeRange(e.target.value);
   };
@@ -666,6 +700,16 @@ const Finanzas = () => {
           <h2>Inversión Actual en Mercadería</h2>
           {inversionMercaderiaPorCategoria ? (
             <Pie data={inversionMercaderiaPorCategoria} options={chartOptions} />
+          ) : (
+            <p className="no-data">No hay datos disponibles</p>
+          )}
+        </div>
+
+          {/* Productos Menos Vendidos */}
+        <div className="chart">
+          <h2>Productos Menos Vendidos</h2>
+          {productosPocoVendidos ? (
+            <Doughnut data={productosPocoVendidos} options={chartOptions} />
           ) : (
             <p className="no-data">No hay datos disponibles</p>
           )}

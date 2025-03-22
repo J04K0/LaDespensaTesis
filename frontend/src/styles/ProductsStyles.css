@@ -56,6 +56,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin: 10px;
   text-align: center;
+  position: relative; /* Necesario para posicionamiento absoluto del botón */
 }
 
 .product-image {
@@ -271,4 +272,125 @@
 
 .cancel-button:hover {
   background-color: #d32f2f;
+}
+
+/* Modal para información de producto */
+.product-info-modal {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.product-info-modal h3 {
+  color: #17a2b8;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.product-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-basic-info {
+  display: flex;
+  gap: 20px;
+}
+
+.product-info-image {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.product-details {
+  flex: 1;
+}
+
+.product-details p {
+  margin-bottom: 8px;
+}
+
+.product-stats {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.product-stats h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #17a2b8;
+}
+
+.sales-by-month {
+  margin-top: 15px;
+}
+
+.sales-by-month h5 {
+  margin-bottom: 10px;
+}
+
+.sales-by-month ul {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sales-by-month li {
+  background-color: #e9ecef;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Nuevo estilo para el botón de info */
+.info-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(128, 128, 128, 0.8) !important;
+  color: white;
+  border: none;
+  border-radius: 10px; /* Cambiado de 50% a 4px para hacerlo cuadrado */
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.2s;
+  z-index: 5;
+}
+
+.info-button:hover {
+  background-color: rgba(100, 100, 100, 0.9) !important;
+  transform: scale(1.1);
+}
+
+/* Asegurarse que el botón info ya no ocupe el ancho completo en el grid */
+.button-group .info-button {
+  grid-column: auto;
+  display: none; /* Ocultar el botón en su posición original */
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .product-basic-info {
+    flex-direction: column;
+  }
+  
+  .product-info-image {
+    align-self: center;
+  }
 }

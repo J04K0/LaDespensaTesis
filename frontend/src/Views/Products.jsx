@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
-import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
+import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById, obtenerVentas } from '../services/AddProducts.service';
 import Swal from 'sweetalert2';
 
 const Products = () => {
@@ -33,6 +33,16 @@ const Products = () => {
     precioAntiguo: 0
   });
   const [editImage, setEditImage] = useState(null);
+  
+  // Nuevos estados para el modal de información
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [productInfo, setProductInfo] = useState(null);
+  const [productStats, setProductStats] = useState({
+    totalVentas: 0,
+    ingresos: 0,
+    ultimaVenta: null,
+    ventasPorMes: []
+  });
   
   const productsPerPage = 9;
   const navigate = useNavigate();
@@ -337,6 +347,64 @@ const Products = () => {
     }
   };
 
+  // Nueva función para obtener estadísticas del producto
+  const handleProductInfo = async (product) => {
+    setLoading(true);
+    setProductInfo(product);
+    
+    try {
+      // Obtener todas las ventas
+      const response = await obtenerVentas();
+      const ventas = response.data || [];
+      
+      // Filtra ventas por el producto seleccionado
+      const ventasProducto = ventas.filter(venta => 
+        venta.nombre === product.Nombre && venta.codigoBarras === product.codigoBarras
+      );
+      
+      // Calcular estadísticas
+      const totalVentas = ventasProducto.reduce((sum, venta) => sum + venta.cantidad, 0);
+      const ingresos = ventasProducto.reduce((sum, venta) => sum + (venta.cantidad * venta.precioVenta), 0);
+      
+      // Encontrar última venta
+      let ultimaVenta = null;
+      if (ventasProducto.length > 0) {
+        const fechas = ventasProducto.map(v => new Date(v.fecha));
+        ultimaVenta = new Date(Math.max(...fechas));
+      }
+      
+      // Agrupar ventas por mes
+      const ventasPorMes = {};
+      ventasProducto.forEach(venta => {
+        const fecha = new Date(venta.fecha);
+        const mes = `${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+        
+        if (!ventasPorMes[mes]) {
+          ventasPorMes[mes] = 0;
+        }
+        ventasPorMes[mes] += venta.cantidad;
+      });
+      
+      setProductStats({
+        totalVentas,
+        ingresos,
+        ultimaVenta,
+        ventasPorMes: Object.entries(ventasPorMes).map(([mes, cantidad]) => ({ mes, cantidad }))
+      });
+      
+      setShowInfoModal(true);
+    } catch (error) {
+      console.error('Error fetching product statistics:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar las estadísticas del producto'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -411,6 +479,7 @@ const Products = () => {
                   fechaVencimiento={product.fechaVencimiento}
                   onDelete={() => handleDelete(product._id)}
                   onEdit={() => handleEdit(product._id)}
+                  onInfo={() => handleProductInfo(product)}
                 />
               ))
             ) : (
@@ -430,6 +499,74 @@ const Products = () => {
           ))}
         </div>
       </div>
+      {/* Modal para mostrar información del producto */}
+      {showInfoModal && productInfo && (
+        <div 
+          className="modal-overlay" 
+          onClick={() => setShowInfoModal(false)}
+        >
+          <div 
+            className="modal-content info-modal product-info-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Información de Producto: {productInfo.Nombre}</h3>
+            
+            <div className="product-info-container">
+              <div className="product-basic-info">
+                <img 
+                  src={productInfo.image || "/default-image.jpg"} 
+                  alt={productInfo.Nombre} 
+                  className="product-info-image" 
+                />
+                <div className="product-details">
+                  <p><strong>Código de Barras:</strong> {productInfo.codigoBarras}</p>
+                  <p><strong>Marca:</strong> {productInfo.Marca}</p>
+                  <p><strong>Categoría:</strong> {productInfo.Categoria}</p>
+                  <p><strong>Stock Actual:</strong> {productInfo.Stock} unidades</p>
+                  <p><strong>Precio de Venta:</strong> ${productInfo.PrecioVenta}</p>
+                  <p><strong>Precio de Compra:</strong> ${productInfo.PrecioCompra}</p>
+                  {productInfo.fechaVencimiento && (
+                    <p><strong>Fecha de Vencimiento:</strong> {new Date(productInfo.fechaVencimiento).toLocaleDateString()}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="product-stats">
+                <h4>Estadísticas de Ventas</h4>
+                {productStats.totalVentas > 0 ? (
+                  <>
+                    <p><strong>Total de Unidades Vendidas:</strong> {productStats.totalVentas}</p>
+                    <p><strong>Ingresos Generados:</strong> ${productStats.ingresos}</p>
+                    {productStats.ultimaVenta && (
+                      <p><strong>Última Venta:</strong> {productStats.ultimaVenta.toLocaleDateString()}</p>
+                    )}
+                    
+                    {productStats.ventasPorMes.length > 0 && (
+                      <div className="sales-by-month">
+                        <h5>Ventas por Mes</h5>
+                        <ul>
+                          {productStats.ventasPorMes.map((item, index) => (
+                            <li key={index}>{item.mes}: {item.cantidad} unidades</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p>Este producto aún no tiene registros de ventas</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="modal-buttons">
+              <button onClick={() => setShowInfoModal(false)} className="cancel-button">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Modal para editar producto */}
       {showEditModal && (
         <div 

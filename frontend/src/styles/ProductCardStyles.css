@@ -28,8 +28,9 @@
 }
 
 .button-group {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 5px;
   margin-top: 10px;
 }
 
@@ -41,6 +42,10 @@
   border-radius: 4px;
   cursor: pointer;
   color: white;
+}
+
+.button-group .info-button {
+  grid-column: span 2;
 }
 
 .delete-button {
@@ -57,4 +62,19 @@
 
 .edit-button:hover {
   background-color: #025aa5;
+}
+
+.info-button {
+  background-color: #17a2b8 !important;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+  width: 100%;
+}
+
+.info-button:hover {
+  background-color: #138496 !important;
 }
