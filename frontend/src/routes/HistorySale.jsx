@@ -1,7 +1,7 @@
 import React from "react";
 import HistorySale from "../Views/HistorySale.jsx";
 
-const Estadisticas = () => {
+const HistorySale = () => {
     return (
         <div>
         <HistorySale />

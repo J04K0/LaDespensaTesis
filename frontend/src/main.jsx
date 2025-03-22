@@ -11,9 +11,9 @@ import DeudoresList from './Views/Deudores.jsx';
 import AddDeudor from './Views/AddDeudor.jsx';
 import ExpiringProducts from './Views/ExpiringProducts.jsx';
 import ProductScanner from './Views/ProductScanner.jsx';
-import Estadisticas from './Views/Estadisticas.jsx';
 import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
+import Proveedores from './Views/Proveedores.jsx';
 
 const router = createBrowserRouter([
   {
@@ -54,16 +54,16 @@ const router = createBrowserRouter([
   element: <ProductScanner />,
   },
   {
-  path: '/estadisticas',
-  element: <Estadisticas />,
-  },
-  {
   path: '/HistorySale',
   element: <HistorySale />,
   },
   {
   path: '/finanzas',
   element: <Finanzas />,
+  },
+  {
+  path: '/proveedores',
+  element: <Proveedores />,
   },
   ]);
 
