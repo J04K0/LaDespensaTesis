@@ -70,22 +70,33 @@ export const addProduct = async (req, res) => {
 
 
 
-export const updateProduct = async (req, res) => {
+export const updateProduct = async (req, res) => { 
   try {
-    const { id } = req.params;
-
-    const { value: validatedId, error: errorId } = idProductSchema.validate({ id });
-    if (errorId) return handleErrorClient(res, 400, errorId.message);
-
-    const { value, error } = productSchema.validate(req.body, { abortEarly: false });
+    const { value, error } = productSchema.validate(req.body);
     if (error) return handleErrorClient(res, 400, error.message);
 
-    const product = await Product.findByIdAndUpdate(validatedId.id, value, { new: true });
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-    handleSuccess(res, 200, 'Producto modificado', product);
+    let imageUrl = product.image; // Mantiene la imagen anterior por defecto
+
+    // Verifica si hay un archivo subido y actualiza la imagen
+    if (req.file) {
+      imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
+    }
+
+    // Actualizar los datos del producto
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id, 
+      { ...value, image: imageUrl }, 
+      { new: true, runValidators: true }
+    );
+
+    handleSuccess(res, 200, 'Producto actualizado', updatedProduct);
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al modificar el producto', err.message);
+    handleErrorServer(res, 500, 'Error al actualizar el producto', err.message);
   }
 };
 
