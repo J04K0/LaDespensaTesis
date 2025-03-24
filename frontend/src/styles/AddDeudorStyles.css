@@ -1,29 +1,27 @@
-/* Contenedor principal */
+
 .add-deudor-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Ocupa toda la altura de la ventana */
-  width: 100vw; /* Ocupa todo el ancho de la ventana */
+  height: 100vh; 
+  width: 100vw; 
   padding: 0;
   margin: 0;
 }
 
-/* Contenido principal */
 .add-deudor-main-content {
-  max-width: 600px; /* Ajuste del ancho máximo del formulario */
-  width: 100%; /* Que ocupe todo el ancho posible */
+  max-width: 600px; 
+  width: 100%; 
   padding: 30px;
   border-radius: 10px;
   background-color: white;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Añadir sombra para resaltar */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centra el contenido dentro del contenedor */
+  align-items: center; 
 }
 
-/* Título del formulario */
 .add-deudor-main-content h2 {
   text-align: center;
   margin-bottom: 30px;
@@ -31,69 +29,60 @@
   width: 100%;
 }
 
-/* Formulario */
 .add-deudor-form {
   display: flex;
   flex-direction: column;
-  width: 100%; /* Asegura que el formulario ocupe todo el ancho disponible */
-  gap: 20px; /* Espacio entre los campos del formulario */
-  max-width: 500px; /* Limita el ancho máximo del formulario */
+  width: 100%;
+  gap: 20px;
+  max-width: 500px;
 }
-
-/* Grupo de formularios */
 .add-deudor-form-group {
   display: flex;
   flex-direction: column;
-  width: 100%; /* Que ocupe todo el ancho */
+  width: 100%;
 }
 
-/* Etiquetas */
 .add-deudor-form-group label {
   margin-bottom: 10px;
   font-weight: bold;
   font-size: 18px;
 }
-
-/* Campos de entrada */
 .add-deudor-form-group input {
+
   width: 100%;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
-  box-sizing: border-box; /* Asegura que el padding no desborde */
+  box-sizing: border-box;
 }
 
-/* Estilo para campos en foco */
 .add-deudor-form-group input:focus {
   border-color: #006edf;
   outline: none;
 }
 
-/* Botones */
 .add-deudor-button-group {
   display: flex;
-  justify-content: center; /* Centrar los botones */
+  justify-content: center;
   margin-top: 30px;
   width: 100%;
 }
 
-/* Estilo individual de botones */
 .add-deudor-button-group .submit-button,
 .add-deudor-button-group .add-deudor-cancel-button {
   flex: 1;
   padding: 15px 30px;
-  margin: 0 10px; /* Espacio entre los botones */
+  margin: 0 10px;
   border-radius: 4px;
   font-size: 18px;
   cursor: pointer;
   transition: background-color 0.3s;
   color: white;
   border: none;
-  max-width: 200px; /* Limita el ancho máximo de los botones */
+  max-width: 200px; 
 }
 
-/* Estilo botón "Agregar Deudor" */
 .add-deudor-button-group .submit-button {
   background-color: #006edf;
 }
@@ -102,7 +91,6 @@
   background-color: #0056b3;
 }
 
-/* Estilo botón "Cancelar" */
 .add-deudor-button-group .add-deudor-cancel-button {
   background-color: #f44336;
 }

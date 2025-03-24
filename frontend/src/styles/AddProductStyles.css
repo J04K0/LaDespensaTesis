@@ -1,4 +1,3 @@
-/* Página de añadir producto */
 .add-prod-page {
   display: flex;
   justify-content: center;
@@ -6,13 +5,12 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh; /* Ocupa todo el alto de la ventana */
+  height: 100vh;
 }
 
-/* Contenedor de añadir producto */
 .add-prod-container {
   width: 100%;
-  max-width: 1000px; /* Ancho máximo ajustado */
+  max-width: 1000px;
   margin: auto;
   padding: 40px;
   border-radius: 12px;
@@ -21,7 +19,6 @@
   align-items: center;
 }
 
-/* Título del formulario */
 .add-prod-container h2 {
   text-align: center;
   margin-bottom: 20px;
@@ -29,26 +26,22 @@
   color: #4A4A4A;
 }
 
-/* Formulario */
 .add-prod-form {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-/* Campos que ocupan toda la fila */
 .add-prod-form-group-full {
-  grid-column: span 2; /* Ocupa ambas columnas */
+  grid-column: span 2;
 }
 
-/* Grupo de formularios */
 .add-prod-form-group {
   display: flex;
   flex-direction: column;
 }
 
-/* Campos de entrada */
 .add-prod-form-group input, .add-prod-form-group select {
   width: 100%;
   padding: 15px;
@@ -60,22 +53,19 @@
   box-sizing: border-box;
 }
 
-/* Estilo para campos en foco */
 .add-prod-form-group input:focus, .add-prod-form-group select:focus {
   border-color: #4A90E2;
   outline: none;
 }
 
-/* Botones */
 .add-prod-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
   width: 100%;
-  grid-column: span 2; /* Ocupa ambas columnas */
+  grid-column: span 2;
 }
 
-/* Estilo individual de botones */
 .add-prod-buttons button {
   padding: 15px 30px;
   background-color: #4A90E2;
@@ -90,12 +80,10 @@
   transition: background-color 0.3s;
 }
 
-/* Efecto hover para botones */
 .add-prod-buttons button:hover {
   background-color: #357ABD;
 }
 
-/* Botón de cancelar (estilo secundario) */
 .add-prod-buttons .cancel-button {
   background-color: #D0021B;
 }
@@ -104,7 +92,6 @@
   background-color: #A00117;
 }
 
-/* Iconos en botones */
 .add-prod-buttons .icon {
   margin-left: 10px;
 }

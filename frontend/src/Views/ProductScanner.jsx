@@ -8,8 +8,8 @@ import "../styles/ProductScannerStyles.css";
 const ProductScanner = () => {
   const navigate = useNavigate();
   const [codigoEscaneado, setCodigoEscaneado] = useState("");
-  const [productoActual, setProductoActual] = useState(null); // Último producto escaneado
-  const [stockPorProducto, setStockPorProducto] = useState({}); // Control de stock en tiempo real
+  const [productoActual, setProductoActual] = useState(null);
+  const [stockPorProducto, setStockPorProducto] = useState({});
   const [cantidad, setCantidad] = useState(1);
   const [carrito, setCarrito] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -35,10 +35,7 @@ const ProductScanner = () => {
 
       if (productoEncontrado) {
         if (productoEncontrado.stock > 0) {
-          // Guardar el producto actual y su stock en el mapeo
           setProductoActual(productoEncontrado);
-          
-          // Actualizar o inicializar el stock por producto
           setStockPorProducto(prevStock => ({
             ...prevStock,
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
@@ -111,8 +108,6 @@ const ProductScanner = () => {
       });
       return;
     }
-
-    // Verificar si el producto ya está en el carrito
     const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
 
     let nuevoCarrito;
@@ -133,11 +128,7 @@ const ProductScanner = () => {
         }
       ];
     }
-
-    // Actualizar el estado del carrito
     setCarrito(nuevoCarrito);
-
-    // Actualizar el stock del producto en tiempo real
     setStockPorProducto(prevStock => ({
       ...prevStock,
       [producto.codigoBarras]: (prevStock[producto.codigoBarras] || producto.stock) - cantidad
@@ -152,16 +143,12 @@ const ProductScanner = () => {
     const nuevoCarrito = carrito.filter((_, i) => i !== index);
 
     setCarrito(nuevoCarrito);
-
-    // Restaurar el stock del producto eliminado
     setStockPorProducto(prevStock => ({
       ...prevStock,
       [productoEliminado.codigoBarras]: (prevStock[productoEliminado.codigoBarras] || 0) + productoEliminado.cantidad
     }));
-
-    // Si el carrito está vacío, restablecer el estado o recargar la página
     if (nuevoCarrito.length === 0) {
-      resetState(); // Restablecer el estado del componente
+      resetState();
     }
   };
 
@@ -170,14 +157,11 @@ const ProductScanner = () => {
     const stockDisponible = stockPorProducto[productoEnCarrito.codigoBarras] || 0;
     
     if (stockDisponible > 0) {
-      // Actualizar el carrito
       setCarrito(
         carrito.map((p, i) =>
           i === index ? { ...p, cantidad: p.cantidad + 1 } : p
         )
       );
-      
-      // Actualizar el stock del producto específico
       setStockPorProducto(prevStock => ({
         ...prevStock,
         [productoEnCarrito.codigoBarras]: prevStock[productoEnCarrito.codigoBarras] - 1
@@ -188,14 +172,11 @@ const ProductScanner = () => {
   const disminuirCantidadCarrito = (index) => {
     const productoEnCarrito = carrito[index];
     if (productoEnCarrito.cantidad > 1) {
-      // Actualizar el carrito
       setCarrito(
         carrito.map((p, i) =>
           i === index ? { ...p, cantidad: p.cantidad - 1 } : p
         )
       );
-      
-      // Actualizar el stock del producto específico
       setStockPorProducto(prevStock => ({
         ...prevStock,
         [productoEnCarrito.codigoBarras]: prevStock[productoEnCarrito.codigoBarras] + 1
@@ -240,21 +221,16 @@ const ProductScanner = () => {
     setLoading(true);
     setError(null);
     try {
-      // First register the sale and update stock
       await actualizarStockVenta(carrito);
       await registrarVenta(carrito);
-  
-      // Show success message
       Swal.fire({
         title: "Venta realizada",
         text: "Los productos han sido vendidos con éxito y el stock ha sido actualizado.",
         icon: "success",
         confirmButtonText: "Aceptar",
       });
-  
-      // Reset the state
       resetState();
-      return Promise.resolve(); // Retornar promesa resuelta
+      return Promise.resolve();
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);
       setError("Hubo un problema al actualizar el stock y registrar la venta en la base de datos.");
@@ -264,7 +240,7 @@ const ProductScanner = () => {
         icon: "error",
         confirmButtonText: "Aceptar",
       });
-      return Promise.reject(error); // Retornar promesa rechazada
+      return Promise.reject(error);
     } finally {
       setLoading(false);
     }
@@ -342,12 +318,8 @@ const ProductInfo = React.memo(({ producto, stockActual, cantidad, disminuirCant
 const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => {
   const [montoEntregado, setMontoEntregado] = useState("");
   const [errorMonto, setErrorMonto] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false); // Estado para controlar procesamiento
-
-  // Calcular el total de la compra
+  const [isProcessing, setIsProcessing] = useState(false);
   const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
-
-  // Calcular el vuelto
   const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
 
   useEffect(() => {
@@ -361,20 +333,17 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
 
     return () => clearTimeout(timer);
   }, [montoEntregado, total]);
-
-  // Función que maneja el procesamiento de venta con bloqueo
   const handleFinalizarVenta = async () => {
-    if (isProcessing) return; // Evitar múltiples clics
-    
-    setIsProcessing(true); // Activar bloqueo
+    if (isProcessing) 
+      return;
+    setIsProcessing(true);
     
     try {
       await finalizarVenta();
     } finally {
-      // Agregar un retraso antes de permitir otra venta
       setTimeout(() => {
         setIsProcessing(false);
-      }, 1500); // 1.5 segundos de espera
+      }, 1500);
     }
   };
 
@@ -423,7 +392,7 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
             className="checkout-button" 
             onClick={handleFinalizarVenta} 
             aria-label="Aceptar venta"
-            disabled={isProcessing} // Deshabilitar botón durante procesamiento
+            disabled={isProcessing}
             style={{ 
               opacity: isProcessing ? 0.7 : 1,
               cursor: isProcessing ? 'not-allowed' : 'pointer'

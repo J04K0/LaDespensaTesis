@@ -43,7 +43,7 @@ const Finanzas = () => {
   const [inversionMercaderiaPorCategoria, setInversionMercaderiaPorCategoria] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeRange, setTimeRange] = useState("semana"); // semana, mes, año
+  const [timeRange, setTimeRange] = useState("semana");
   const [productosPocoVendidos, setProductosPocoVendidos] = useState(null);
 
   useEffect(() => {
@@ -54,8 +54,6 @@ const Finanzas = () => {
   const obtenerDatosFinancieros = async () => {
     try {
       setLoading(true);
-      
-      // Obtener tickets de ventas
       const response = await obtenerVentasPorTicket();
       const ventas = response.data || [];
       
@@ -76,7 +74,6 @@ const Finanzas = () => {
 
   const obtenerDatosInventario = async () => {
     try {
-      // Obtener todos los productos del inventario
       const response = await getProducts(1, Number.MAX_SAFE_INTEGER);
 
       const productos = response.products || response.data?.products || response.data || [];
@@ -93,11 +90,9 @@ const Finanzas = () => {
   };
 
   const procesarDatosFinancieros = (ventas) => {
-    // Filtrar ventas según el rango de tiempo seleccionado
     const hoy = new Date();
     const fechaInicio = new Date();
     
-    // Establecer fecha de inicio según el rango seleccionado
     if (timeRange === "semana") {
       fechaInicio.setDate(hoy.getDate() - 7);
     } else if (timeRange === "mes") {
@@ -105,29 +100,25 @@ const Finanzas = () => {
     } else if (timeRange === "año") {
       fechaInicio.setFullYear(hoy.getFullYear() - 1);
     }
-    
-    // Filtrar ventas dentro del rango de fechas
+  
     const ventasFiltradas = ventas.filter(venta => {
       const fechaVenta = new Date(venta.fecha);
       return fechaVenta >= fechaInicio && fechaVenta <= hoy;
     });
     
-    // Contar el número real de transacciones (tickets) en el período seleccionado
     setNumeroTransacciones(ventasFiltradas.length);
     
     procesarIngresosPorDia(ventasFiltradas);
     procesarVentasPorMes(ventas);
     procesarIngresosPorCategoria(ventasFiltradas);
     procesarComparacionIngresoCosto(ventasFiltradas);
-    procesarProductosPocoVendidos(ventas); // Agregar esta línea
+    procesarProductosPocoVendidos(ventas);
   };
 
   const procesarDatosInventario = (productos) => {
-    // Organizar costos por categoría
     const inversionPorCategoria = {};
     
     productos.forEach(producto => {
-      // Verificar si el producto tiene los datos necesarios
       if (!producto) return;
       
       const categoria = producto.Categoria || producto.categoria || "Sin categoría";
@@ -135,23 +126,19 @@ const Finanzas = () => {
         inversionPorCategoria[categoria] = 0;
       }
       
-      // Acceder a los campos con diferentes posibles capitalizaciones
       const precioCompra = producto.PrecioCompra || producto.precioCompra || 0;
       const stock = producto.Stock || producto.stock || 0;
       
-      // Solo sumar si ambos valores son mayores que cero
       if (precioCompra > 0 && stock > 0) {
         inversionPorCategoria[categoria] += precioCompra * stock;
       }
     });
     
-    // Verificar si hay datos para mostrar
     if (Object.keys(inversionPorCategoria).length === 0) {
       console.warn("⚠️ No hay datos de inversión para mostrar.");
       return;
     }
     
-    // Preparar datos para el gráfico
     setInversionMercaderiaPorCategoria({
       labels: Object.keys(inversionPorCategoria),
       datasets: [
@@ -170,12 +157,10 @@ const Finanzas = () => {
   };
 
   const procesarIngresosPorDia = (ventas) => {
-    // Organizar ventas por día
     const ingresosPorDia = {};
     const hoy = new Date();
     const fechaInicio = new Date();
     
-    // Establecer fecha de inicio según el rango seleccionado
     if (timeRange === "semana") {
       fechaInicio.setDate(hoy.getDate() - 7);
     } else if (timeRange === "mes") {
@@ -184,7 +169,6 @@ const Finanzas = () => {
       fechaInicio.setFullYear(hoy.getFullYear() - 1);
     }
     
-    // Llenar el objeto con días y sus ventas
     const fechaActual = new Date(fechaInicio);
     while (fechaActual <= hoy) {
       const fechaStr = fechaActual.toISOString().split('T')[0];
@@ -192,7 +176,6 @@ const Finanzas = () => {
       fechaActual.setDate(fechaActual.getDate() + 1);
     }
     
-    // Sumar ventas por día
     ventas.forEach(venta => {
       const fecha = new Date(venta.fecha);
       const fechaStr = fecha.toISOString().split('T')[0];
@@ -206,7 +189,6 @@ const Finanzas = () => {
       }
     });
     
-    // Preparar datos para el gráfico
     setIngresosPorDia({
       labels: Object.keys(ingresosPorDia),
       datasets: [
@@ -223,7 +205,6 @@ const Finanzas = () => {
   };
 
   const procesarVentasPorMes = (ventas) => {
-    // Organizar ventas por mes
     const meses = {
       "01": "Enero",
       "02": "Febrero",
@@ -242,12 +223,10 @@ const Finanzas = () => {
     const ventasPorMes = {};
     const añoActual = new Date().getFullYear();
     
-    // Inicializar meses
     Object.keys(meses).forEach(mes => {
       ventasPorMes[meses[mes]] = 0;
     });
     
-    // Sumar ventas por mes
     ventas.forEach(venta => {
       const fecha = new Date(venta.fecha);
       if (fecha.getFullYear() === añoActual) {
@@ -264,7 +243,6 @@ const Finanzas = () => {
       }
     });
     
-    // Preparar datos para el gráfico
     setVentasPorMes({
       labels: Object.keys(ventasPorMes),
       datasets: [
@@ -283,12 +261,9 @@ const Finanzas = () => {
   };
 
   const procesarIngresosPorCategoria = (ventas) => {
-    // Organizar ingresos por categoría
     const ingresosPorCategoria = {};
     
-    // Procesar cada venta
     ventas.forEach(venta => {
-      // Agrupar productos por categoría
       venta.ventas.forEach(producto => {
         const categoria = producto.categoria || "Sin categoría";
         if (!ingresosPorCategoria[categoria]) {
@@ -298,8 +273,7 @@ const Finanzas = () => {
         ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
       });
     });
-    
-    // Preparar datos para el gráfico
+  
     setIngresosPorCategoria({
       labels: Object.keys(ingresosPorCategoria),
       datasets: [
@@ -317,7 +291,6 @@ const Finanzas = () => {
   };
 
   const procesarComparacionIngresoCosto = (ventas) => {
-    // Objeto para almacenar datos de ingresos y costos por período
     const comparacion = {
       labels: [],
       ingresos: [],
@@ -326,12 +299,10 @@ const Finanzas = () => {
     };
     
     if (timeRange === "semana") {
-      // Comparación diaria para la última semana
       const hoy = new Date();
       const fechaInicio = new Date();
       fechaInicio.setDate(hoy.getDate() - 7);
       
-      // Crear array de fechas
       const fechaActual = new Date(fechaInicio);
       while (fechaActual <= hoy) {
         const fechaStr = fechaActual.toISOString().split('T')[0];
@@ -339,12 +310,10 @@ const Finanzas = () => {
         fechaActual.setDate(fechaActual.getDate() + 1);
       }
       
-      // Inicializar arrays con ceros
       comparacion.ingresos = Array(comparacion.labels.length).fill(0);
       comparacion.costos = Array(comparacion.labels.length).fill(0);
       comparacion.ganancias = Array(comparacion.labels.length).fill(0);
       
-      // Calcular ingresos y costos por día
       ventas.forEach(venta => {
         const fecha = new Date(venta.fecha);
         const fechaStr = fecha.toISOString().split('T')[0];
@@ -355,10 +324,8 @@ const Finanzas = () => {
           let costoDia = 0;
           
           venta.ventas.forEach(producto => {
-            // Calculamos ingreso
             ingresoDia += producto.precioVenta * producto.cantidad;
             
-            // Calculamos costo (si existe precioCompra, o estimamos un 70% del precio de venta)
             costoDia += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
           });
           
@@ -368,19 +335,16 @@ const Finanzas = () => {
         }
       });
     } else if (timeRange === "mes" || timeRange === "año") {
-      // Para mes o año, agrupamos por semanas
-      const periodos = timeRange === "mes" ? 4 : 12; // 4 semanas o 12 meses
+      const periodos = timeRange === "mes" ? 4 : 12;
       
       for (let i = 0; i < periodos; i++) {
         comparacion.labels.push(timeRange === "mes" ? `Semana ${i+1}` : `Mes ${i+1}`);
       }
       
-      // Inicializar arrays
       comparacion.ingresos = Array(periodos).fill(0);
       comparacion.costos = Array(periodos).fill(0);
       comparacion.ganancias = Array(periodos).fill(0);
       
-      // Fecha actual y fecha de inicio para calcular el período
       const hoy = new Date();
       const fechaInicio = new Date();
       
@@ -390,15 +354,12 @@ const Finanzas = () => {
         fechaInicio.setFullYear(hoy.getFullYear() - 1);
       }
       
-      // Calcular la duración de cada período
       const duracionPeriodo = (hoy - fechaInicio) / periodos;
       
       ventas.forEach(venta => {
         const fechaVenta = new Date(venta.fecha);
         
-        // Verificar si la venta está en el rango de tiempo
         if (fechaVenta >= fechaInicio && fechaVenta <= hoy) {
-          // Calcular a qué período pertenece
           const tiempoTranscurrido = fechaVenta - fechaInicio;
           const periodoIndex = Math.min(Math.floor(tiempoTranscurrido / duracionPeriodo), periodos - 1);
           
@@ -417,7 +378,6 @@ const Finanzas = () => {
       });
     }
     
-    // Preparar datos para el gráfico
     setComparacionIngresoCosto({
       labels: comparacion.labels,
       datasets: [
@@ -447,10 +407,8 @@ const Finanzas = () => {
   };
 
   const procesarProductosPocoVendidos = (ventas) => {
-    // Contabilizar ventas por producto
     const productoVentas = {};
     
-    // Recopilar todos los productos vendidos y sus cantidades
     ventas.forEach(venta => {
       venta.ventas.forEach(producto => {
         if (!productoVentas[producto.nombre]) {
@@ -459,11 +417,10 @@ const Finanzas = () => {
         productoVentas[producto.nombre] += producto.cantidad;
       });
     });
-    
-    // Ordenar por menor cantidad de ventas y tomar los 5 menos vendidos
+
     const productosOrdenados = Object.entries(productoVentas)
-      .sort((a, b) => a[1] - b[1])  // Ordenar de menor a mayor
-      .slice(0, 5);  // Tomar los 5 primeros (menos vendidos)
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5);
     
     setProductosPocoVendidos({
       labels: productosOrdenados.map(([nombre]) => nombre),
@@ -486,17 +443,14 @@ const Finanzas = () => {
     const doc = new jsPDF();
     doc.text("Reporte Financiero - La Despensa", 20, 10);
     
-    // Añadir fecha del reporte
     const fechaActual = new Date().toLocaleDateString();
     doc.text(`Fecha: ${fechaActual}`, 20, 20);
     
-    // Añadir periodo del reporte
     let periodoTexto = "Últimos 7 días";
     if (timeRange === "mes") periodoTexto = "Último mes";
     if (timeRange === "año") periodoTexto = "Último año";
     doc.text(`Periodo: ${periodoTexto}`, 20, 30);
     
-    // Ingresos por día
     if (ingresosPorDia && ingresosPorDia.labels) {
       doc.text("Ingresos por Día", 20, 45);
       
@@ -510,8 +464,7 @@ const Finanzas = () => {
         body: datosIngresos,
       });
     }
-    
-    // Ingresos por categoría
+
     if (ingresosPorCategoria && ingresosPorCategoria.labels) {
       const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 120;
       doc.text("Ingresos por Categoría", 20, currentY);
@@ -527,7 +480,6 @@ const Finanzas = () => {
       });
     }
     
-    // Agregar sección de Ingresos vs Costos al reporte
     if (comparacionIngresoCosto && comparacionIngresoCosto.labels) {
       const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 180;
       doc.text("Comparación de Ingresos vs Costos", 20, currentY);
@@ -546,7 +498,6 @@ const Finanzas = () => {
       });
     }
 
-    // Añadir sección de inversión en mercadería al reporte
     if (inversionMercaderiaPorCategoria && inversionMercaderiaPorCategoria.labels) {
       const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 230;
       doc.text("Inversión en Mercadería por Categoría", 20, currentY);

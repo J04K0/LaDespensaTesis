@@ -6,7 +6,6 @@ import Swal from 'sweetalert2';
 import '../styles/ProveedoresStyles.css';
 import Papa from 'papaparse';
 
-// Importar servicios
 import { 
   getProveedores, 
   getProveedorById, 
@@ -19,20 +18,15 @@ import {
 import { getProducts } from '../services/AddProducts.service.js';
 
 const Proveedores = () => {
-  // Estados principales
   const [proveedores, setProveedores] = useState([]);
   const [filteredProveedores, setFilteredProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Estados para filtros y paginación
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('');
-  
-  // Estados para el modal de creación/edición
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProveedor, setCurrentProveedor] = useState({
@@ -46,13 +40,11 @@ const Proveedores = () => {
     sitioWeb: ''
   });
   
-  // Estados para productos
   const [allProducts, setAllProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [proveedorProductos, setProveedorProductos] = useState([]);
   const [showProductsModal, setShowProductsModal] = useState(false);
   
-  // Estados para visualización de productos
   const [viewingProveedor, setViewingProveedor] = useState(null);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
 
@@ -63,8 +55,6 @@ const Proveedores = () => {
     'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
-
-  // Carga inicial de datos
   useEffect(() => {
     const inicializarDatos = async () => {
       await fetchProveedores();
@@ -73,8 +63,6 @@ const Proveedores = () => {
     
     inicializarDatos();
   }, []);
-
-  // Función para obtener proveedores
   const fetchProveedores = async () => {
     try {
       setLoading(true);
@@ -92,8 +80,6 @@ const Proveedores = () => {
       setLoading(false);
     }
   };
-
-  // Cargar todos los productos
   const fetchAllProducts = async () => {
     try {
       setLoading(true);
@@ -105,8 +91,6 @@ const Proveedores = () => {
       setLoading(false);
     }
   };
-
-  // Cargar productos de un proveedor específico
   const fetchProveedorProductos = async (proveedorId) => {
     try {
       setLoading(true);
@@ -121,8 +105,6 @@ const Proveedores = () => {
       setLoading(false);
     }
   };
-
-  // Handlers para filtros y búsqueda
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     filterProveedores(e.target.value, sortOption, categoryFilter);
@@ -149,8 +131,6 @@ const Proveedores = () => {
 
   const filterProveedores = (query, sortOpt, category) => {
     let filtered = [...proveedores];
-    
-    // Filtrar por búsqueda
     if (query) {
       filtered = filtered.filter(proveedor => 
         proveedor.nombre.toLowerCase().includes(query.toLowerCase()) ||
@@ -158,15 +138,13 @@ const Proveedores = () => {
         proveedor.categorias.some(cat => cat.toLowerCase().includes(query.toLowerCase()))
       );
     }
-    
-    // Filtrar por categoría
+  
     if (category) {
       filtered = filtered.filter(proveedor => 
         proveedor.categorias.includes(category)
       );
     }
-    
-    // Ordenar
+  
     if (sortOpt) {
       filtered.sort((a, b) => {
         switch (sortOpt) {
@@ -181,13 +159,9 @@ const Proveedores = () => {
     setTotalPages(Math.ceil(filtered.length / proveedoresPorPagina));
     setCurrentPage(1);
   };
-
-  // Paginación
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-
-  // Funciones para gestionar proveedores
   const handleAddProveedor = async () => {
     setCurrentProveedor({
       nombre: '',
@@ -266,8 +240,6 @@ const Proveedores = () => {
       }
     });
   };
-
-  // Manejar cambios en el formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentProveedor({
@@ -293,12 +265,8 @@ const Proveedores = () => {
       }
     });
   };
-
-  // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validación básica
     if (!currentProveedor.nombre || !currentProveedor.telefono) {
       Swal.fire('Error', 'El nombre y teléfono son obligatorios', 'error');
       return;
@@ -308,18 +276,14 @@ const Proveedores = () => {
       setLoading(true);
       
       if (isEditing) {
-        // Actualizar proveedor existente
         const { _id, ...proveedorData } = currentProveedor;
         await updateProveedor(_id, proveedorData);
-        
-        // Si hay productos seleccionados, vincularlos
         if (selectedProducts.length > 0) {
           await vincularProductos(_id, selectedProducts);
         }
         
         Swal.fire('Actualizado', 'Proveedor actualizado con éxito', 'success');
       } else {
-        // Crear nuevo proveedor con los productos seleccionados
         const nuevoProveedorData = { 
           ...currentProveedor, 
           productos: selectedProducts 
@@ -328,11 +292,9 @@ const Proveedores = () => {
         await createProveedor(nuevoProveedorData);
         Swal.fire('Agregado', 'Proveedor agregado con éxito', 'success');
       }
-      
-      // Recargar lista actualizada
+
       fetchProveedores();
-      
-      // Cerrar modal
+
       setShowModal(false);
     } catch (error) {
       console.error(isEditing ? 'Error al actualizar proveedor:' : 'Error al crear proveedor:', error);
@@ -346,7 +308,6 @@ const Proveedores = () => {
     }
   };
 
-  // Función para importar proveedores desde CSV
   const handleImportCSV = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -358,7 +319,6 @@ const Proveedores = () => {
           setLoading(true);
           
           for (const proveedorData of results.data) {
-            // Convertir datos del CSV
             const proveedor = {
               nombre: proveedorData.Nombre,
               telefono: proveedorData.Teléfono,
@@ -369,14 +329,12 @@ const Proveedores = () => {
               contactoPrincipal: proveedorData['Persona de Contacto'] || '',
               sitioWeb: proveedorData['Sitio Web'] || ''
             };
-            
-            // Verificar que tenga al menos los campos requeridos
+          
             if (proveedor.nombre && proveedor.telefono && proveedor.email) {
               await createProveedor(proveedor);
             }
           }
           
-          // Recargar lista después de importar
           await fetchProveedores();
           
           Swal.fire({
@@ -393,7 +351,6 @@ const Proveedores = () => {
           });
         } finally {
           setLoading(false);
-          // Limpiar el input para poder seleccionar el mismo archivo de nuevo
           e.target.value = '';
         }
       },
@@ -408,7 +365,6 @@ const Proveedores = () => {
     });
   };
 
-  // Funciones para productos
   const handleLinkProducts = async (e) => {
     if (e) {
       e.preventDefault();
@@ -443,12 +399,10 @@ const Proveedores = () => {
       setLoading(true);
       
       if (!currentProveedor._id) {
-        // En modo creación, solo cerramos el modal
         setShowProductsModal(false);
         return;
       }
       
-      // En modo edición, vinculamos los productos
       await vincularProductos(currentProveedor._id, selectedProducts);
       await fetchProveedorProductos(currentProveedor._id);
       
@@ -492,7 +446,6 @@ const Proveedores = () => {
     }
   };
 
-  // Calcular elementos para la página actual
   const indexOfLastProveedor = currentPage * proveedoresPorPagina;
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
@@ -501,15 +454,12 @@ const Proveedores = () => {
     <div className="proveedores-container">
       <Navbar />
       <div className="proveedores-content">
-        {/* Header */}
         <div className="proveedores-header">
           <h1>Gestión de Proveedores</h1>
           <button className="proveedores-btn-add" onClick={handleAddProveedor}>
             <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
           </button>
         </div>
-        
-        {/* Controles de filtrado y búsqueda */}
         <div className="proveedores-controls">
           <div className="proveedores-search-bar">
             <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
@@ -520,14 +470,12 @@ const Proveedores = () => {
               onChange={handleSearchChange}
             />
           </div>
-          
           <div className="proveedores-sort-filter">
             <select value={sortOption} onChange={handleSortChange}>
               <option value="">Ordenar por</option>
               <option value="nombre-asc">Nombre (A-Z)</option>
               <option value="nombre-desc">Nombre (Z-A)</option>
             </select>
-            
             <button onClick={handleClearFilters} className="proveedores-btn-clear-filters">
               <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
             </button>
@@ -544,8 +492,6 @@ const Proveedores = () => {
             ))}
           </select>
         </div>
-
-        {/* Botón de importación */}
         <div className="proveedores-export-import">
           <label className="proveedores-btn-import">
             <FontAwesomeIcon icon={faFilter} /> Importar CSV
@@ -557,8 +503,6 @@ const Proveedores = () => {
             />
           </label>
         </div>
-
-        {/* Contenido principal */}
         {loading ? (
           <p className="proveedores-loading-message">Cargando proveedores...</p>
         ) : error ? (

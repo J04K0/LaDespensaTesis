@@ -17,13 +17,11 @@ const DeudoresList = () => {
   const deudoresPerPage = 8;
   const navigate = useNavigate();
   
-  // Estados para el modal de actualización de deuda
   const [showModal, setShowModal] = useState(false);
   const [selectedDeudor, setSelectedDeudor] = useState(null);
   const [amount, setAmount] = useState('');
-  const [isPayment, setIsPayment] = useState(true); // true = pago (restar), false = añadir deuda
+  const [isPayment, setIsPayment] = useState(true);
 
-  // Estados para el modal de edición
   const [showEditModal, setShowEditModal] = useState(false);
   const [deudorToEdit, setDeudorToEdit] = useState({
     Nombre: '',
@@ -77,7 +75,6 @@ const DeudoresList = () => {
       if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
       if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
       if (sortOption === 'debt-asc') {
-        // Convertir string "$8.500" a número 8500
         const aValue = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
         const bValue = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
         return aValue - bValue;
@@ -126,7 +123,6 @@ const DeudoresList = () => {
   };
 
   const handleEdit = (deudor) => {
-    // Formatear la fecha para el input type="date"
     const fechaFormateada = new Date(deudor.fechaPaga).toISOString().split('T')[0];
     
     setDeudorToEdit({
@@ -147,16 +143,12 @@ const DeudoresList = () => {
     (currentPage - 1) * deudoresPerPage,
     currentPage * deudoresPerPage
   );
-
-  // Función para abrir el modal de actualización de deuda
   const handleUpdateDebt = (deudor) => {
     setSelectedDeudor(deudor);
     setAmount('');
     setIsPayment(true);
     setShowModal(true);
   };
-
-  // Función para procesar la actualización de la deuda
   const handleDebtUpdate = async () => {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       Swal.fire({
@@ -168,17 +160,12 @@ const DeudoresList = () => {
     }
 
     try {
-      // Convertir la deuda actual a número
       const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-      
-      // Calcular nueva deuda
       const parsedAmount = parseFloat(amount);
       let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
-      
-      // Asegurarse de que la deuda no sea negativa
+    
       newDebt = Math.max(0, newDebt);
       
-      // Actualizar el deudor en la base de datos
       await updateDeudor(selectedDeudor._id, {
         Nombre: selectedDeudor.Nombre,
         fechaPaga: selectedDeudor.fechaPaga,
@@ -186,14 +173,12 @@ const DeudoresList = () => {
         deudaTotal: newDebt,
       });
       
-      // Actualizar el estado local
       const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
       setAllDeudores(updatedDeudores.deudores);
       setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
         deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
       ));
       
-      // Cerrar modal y mostrar mensaje de éxito
       setShowModal(false);
       Swal.fire({
         icon: 'success',
@@ -211,7 +196,6 @@ const DeudoresList = () => {
     }
   };
 
-  // Manejar cambios en el formulario de edición
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setDeudorToEdit(prev => ({
@@ -220,7 +204,6 @@ const DeudoresList = () => {
     }));
   };
 
-  // Manejar envío del formulario de edición
   const handleEditSubmit = async () => {
     try {
       await updateDeudor(deudorToEdit._id, {
@@ -230,14 +213,12 @@ const DeudoresList = () => {
         deudaTotal: parseFloat(deudorToEdit.deudaTotal)
       });
       
-      // Actualizar el estado local
       const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
       setAllDeudores(updatedDeudores.deudores);
       setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
         deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
       ));
       
-      // Cerrar modal y mostrar mensaje de éxito
       setShowEditModal(false);
       Swal.fire({
         icon: 'success',

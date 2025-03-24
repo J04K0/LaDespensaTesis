@@ -35,9 +35,9 @@ const AddProducts = () => {
           setCategoria(product.categoria);
   
           if (product.image) {
-            setImage(product.image); // 🔹 Guarda la URL de la imagen existente
+            setImage(product.image);
           } else {
-            setImage(null); // 🔹 Limpia la imagen si no hay una asociada
+            setImage(null);
           }
         } else {
           Swal.fire('Error', 'Producto no encontrado', 'error');
@@ -68,11 +68,10 @@ const AddProducts = () => {
     formData.append('fechaVencimiento', fechaVencimiento);
     formData.append('PrecioVenta', PrecioVenta);
   
-    // 🔹 Verificar si `image` es una URL o un archivo
     if (image instanceof File) {
-      formData.append('image', image); // Si es un archivo, lo adjuntamos
+      formData.append('image', image);
     } else if (typeof image === 'string' && image.startsWith('http')) {
-      formData.append('imageUrl', image); // Enviar URL en otro campo
+      formData.append('imageUrl', image);
     }
   
     try {
@@ -141,7 +140,7 @@ const AddProducts = () => {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              required={!image} // Requerido solo si no hay una imagen previa
+              required={!image}
             />
             {image && typeof image === 'string' && (
               <div className="image-preview-container">

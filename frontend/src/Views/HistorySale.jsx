@@ -17,7 +17,7 @@ const HistorySale = () => {
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [totalRange, setTotalRange] = useState({ min: "", max: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const ventasPerPage = 10; // Número de ventas por página
+  const ventasPerPage = 10;
 
   useEffect(() => {
     fetchVentas();
@@ -28,7 +28,6 @@ const HistorySale = () => {
       setLoading(true);
       const response = await obtenerVentasPorTicket();
       
-      // Make sure we're accessing the data correctly
       const ventasData = response.data || [];
       setVentas(ventasData);
       setFilteredVentas(ventasData);
@@ -40,7 +39,6 @@ const HistorySale = () => {
     }
   };
 
-  // Filtrar ventas por nombre o código de barras
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchQuery(value);
@@ -56,12 +54,10 @@ const HistorySale = () => {
     setCurrentPage(1);
   };
 
-  // Manejar el cambio de ordenamiento
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
   };
 
-  // Limpiar filtros
   const handleClearFilters = () => {
     setSearchQuery("");
     setSortOption("");
@@ -72,7 +68,6 @@ const HistorySale = () => {
     setCurrentPage(1);
   };
 
-  // Filtrar por categoría
   const handleFilterByCategory = (e) => {
     const category = e.target.value;
     setCategoryFilter(category);
@@ -85,19 +80,16 @@ const HistorySale = () => {
     setCurrentPage(1);
   };
 
-  // Filtrar por rango de fechas
   const handleDateRangeChange = (e) => {
     const { name, value } = e.target;
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Filtrar por rango de total
   const handleTotalRangeChange = (e) => {
     const { name, value } = e.target;
     setTotalRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Aplicar filtros adicionales
   useEffect(() => {
     let filtered = ventas;
 
@@ -109,10 +101,10 @@ const HistorySale = () => {
 
     if (dateRange.start && dateRange.end) {
       const startDate = new Date(dateRange.start);
-      startDate.setUTCHours(0, 0, 0, 0); // Asegura que el inicio del día sea 00:00 UTC
+      startDate.setUTCHours(0, 0, 0, 0);
 
       const endDate = new Date(dateRange.end);
-      endDate.setUTCHours(23, 59, 59, 999); // Asegura que el final del día sea 23:59 UTC
+      endDate.setUTCHours(23, 59, 59, 999);
 
       filtered = filtered.filter((venta) => {
         const ventaFecha = new Date(venta.fecha);
@@ -137,7 +129,6 @@ const HistorySale = () => {
     setFilteredVentas(filtered);
   }, [categoryFilter, dateRange, totalRange, ventas]);
 
-  // Ordenar las ventas según la opción seleccionada
   const sortedVentas = [...filteredVentas].sort((a, b) => {
     if (sortOption === "date-asc") return new Date(a.fecha) - new Date(b.fecha);
     if (sortOption === "date-desc")
@@ -171,7 +162,7 @@ const HistorySale = () => {
     const doc = new jsPDF();
     doc.text("Historial de Ventas", 20, 10);
 
-    const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas; // 🔹 Si no hay filtro, exportamos todas las ventas
+    const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas;
 
     autoTable(doc, {
       head: [["Ticket", "Fecha", "Productos", "Total"]],
@@ -195,7 +186,7 @@ const HistorySale = () => {
   };
 
   const exportToExcel = () => {
-    const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas; // 🔹 Exporta todo si no hay filtro
+    const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas;
 
     const ws = XLSX.utils.json_to_sheet(
       dataToExport.map((venta) => ({
@@ -219,14 +210,12 @@ const HistorySale = () => {
     XLSX.writeFile(wb, "historial_ventas.xlsx");
   };
 
-  // Paginación
   const indexOfLastVenta = currentPage * ventasPerPage;
   const indexOfFirstVenta = indexOfLastVenta - ventasPerPage;
   const currentVentas = sortedVentas.slice(indexOfFirstVenta, indexOfLastVenta);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Añadir un spinner de carga
   if (loading) {
     return (
       <div className="loading-container">
@@ -242,7 +231,6 @@ const HistorySale = () => {
       <div className="history-sale-main-content">
         <h1>Historial de Ventas</h1>
         
-        {/* Add refresh button */}
         <button 
           onClick={fetchVentas}
           className="refresh-button"

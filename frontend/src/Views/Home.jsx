@@ -38,11 +38,10 @@ const Home = () => {
   const [deudores, setDeudores] = useState([]);
   const navigate = useNavigate();
   
-  // Estados para los gráficos
   const [ventasPorProducto, setVentasPorProducto] = useState(null);
   const [ventasPorCategoria, setVentasPorCategoria] = useState(null);
   const [topProductos, setTopProductos] = useState(null);
-  const [currentChart, setCurrentChart] = useState(0); // 0: top productos, 1: ventas por producto, 2: ventas por categoría
+  const [currentChart, setCurrentChart] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -77,7 +76,6 @@ const Home = () => {
   };
 
   const procesarDatos = (ventas) => {
-    // Ventas por producto
     const productos = {};
     ventas.forEach(({ nombre, cantidad }) => {
       productos[nombre] = (productos[nombre] || 0) + cantidad;
@@ -95,8 +93,6 @@ const Home = () => {
         },
       ],
     });
-
-    // Ventas por categoría
     const categorias = {};
     ventas.forEach(({ categoria, cantidad }) => {
       categorias[categoria] = (categorias[categoria] || 0) + cantidad;
@@ -114,7 +110,6 @@ const Home = () => {
       ],
     });
 
-    // Top 5 productos más vendidos
     const topProductosOrdenados = Object.entries(productos)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
@@ -131,12 +126,10 @@ const Home = () => {
     });
   };
 
-  // Cambiar al gráfico siguiente
   const nextChart = () => {
     setCurrentChart((prevChart) => (prevChart + 1) % 3);
   };
 
-  // Cambiar al gráfico anterior
   const prevChart = () => {
     setCurrentChart((prevChart) => (prevChart - 1 + 3) % 3);
   };
@@ -169,7 +162,6 @@ const Home = () => {
     },
   };
 
-  // Renderizar el gráfico actual
   const renderCurrentChart = () => {
     if (loading) return <p>Cargando datos...</p>;
     if (error) return <p className="error">{error}</p>;
