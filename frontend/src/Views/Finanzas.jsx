@@ -78,12 +78,8 @@ const Finanzas = () => {
     try {
       // Obtener todos los productos del inventario
       const response = await getProducts(1, Number.MAX_SAFE_INTEGER);
-      
-      // Verificar la estructura correcta de la respuesta
-      // A veces la API devuelve datos en diferentes formatos
+
       const productos = response.products || response.data?.products || response.data || [];
-      
-      console.log("Datos de inventario obtenidos:", productos);
       
       if (!productos || productos.length === 0) {
         console.warn("⚠️ No hay productos en inventario.");
@@ -148,8 +144,6 @@ const Finanzas = () => {
         inversionPorCategoria[categoria] += precioCompra * stock;
       }
     });
-    
-    console.log("Inversión por categoría calculada:", inversionPorCategoria);
     
     // Verificar si hay datos para mostrar
     if (Object.keys(inversionPorCategoria).length === 0) {

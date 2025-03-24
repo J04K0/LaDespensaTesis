@@ -1,4 +1,5 @@
 import Proveedor from '../models/proveedores.model.js';
+import Product from '../models/products.model.js'; // Asegúrate de que esta línea exista
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
 
 // Obtener todos los proveedores
@@ -53,13 +54,19 @@ export const createProveedor = async (req, res) => {
       return handleErrorClient(res, 400, 'Ya existe un proveedor con este email');
     }
     
+    // Extraer los productos del body (si existen)
+    const { productos, ...datosProveedor } = req.body;
+    
     const nuevoProveedor = new Proveedor({
-      nombre: req.body.nombre,
-      telefono: req.body.telefono,
-      email: req.body.email,
-      direccion: req.body.direccion || '',
-      categorias: req.body.categorias,
-      notas: req.body.notas || ''
+      nombre: datosProveedor.nombre,
+      telefono: datosProveedor.telefono,
+      email: datosProveedor.email,
+      direccion: datosProveedor.direccion || '',
+      categorias: datosProveedor.categorias,
+      notas: datosProveedor.notas || '',
+      contactoPrincipal: datosProveedor.contactoPrincipal || '',
+      sitioWeb: datosProveedor.sitioWeb || '',
+      productos: productos || [] // Añadir los productos si se proporcionaron
     });
     
     const proveedor = await nuevoProveedor.save();
@@ -101,7 +108,9 @@ export const updateProveedor = async (req, res) => {
         email: req.body.email,
         direccion: req.body.direccion || '',
         categorias: req.body.categorias,
-        notas: req.body.notas || ''
+        notas: req.body.notas || '',
+        contactoPrincipal: req.body.contactoPrincipal || '', // Agregar este campo
+        sitioWeb: req.body.sitioWeb || ''                   // Agregar este campo
       },
       { new: true }
     );
@@ -126,5 +135,60 @@ export const deleteProveedor = async (req, res) => {
     handleSuccess(res, 200, 'Proveedor eliminado', proveedor);
   } catch (err) {
     handleErrorServer(res, 500, 'Error al eliminar el proveedor', err.message);
+  }
+};
+
+// Obtener productos de un proveedor
+export const getProductosProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const proveedor = await Proveedor.findById(id);
+    if (!proveedor) {
+      return handleErrorClient(res, 404, 'Proveedor no encontrado');
+    }
+    
+    // Verificar si el proveedor tiene productos
+    if (!proveedor.productos || proveedor.productos.length === 0) {
+      return handleSuccess(res, 200, 'El proveedor no tiene productos vinculados', []);
+    }
+    
+    // Añadir un log para depuración
+    console.log('IDs de productos a buscar:', proveedor.productos);
+    
+    const productos = await Product.find({ _id: { $in: proveedor.productos } });
+    
+    // Añadir un log para ver qué productos se encontraron
+    console.log('Productos encontrados:', productos.length);
+    
+    handleSuccess(res, 200, 'Productos del proveedor obtenidos con éxito', productos);
+  } catch (err) {
+    console.error('Error específico al obtener productos:', err); // Log detallado
+    handleErrorServer(res, 500, 'Error al obtener los productos del proveedor', err.message);
+  }
+};
+
+// Vincular productos a un proveedor
+export const vincularProductos = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productos } = req.body;
+    
+    if (!Array.isArray(productos)) {
+      return handleErrorClient(res, 400, 'Se esperaba un array de IDs de productos');
+    }
+    
+    const proveedor = await Proveedor.findById(id);
+    if (!proveedor) {
+      return handleErrorClient(res, 404, 'Proveedor no encontrado');
+    }
+    
+    // Asignar productos al proveedor
+    proveedor.productos = productos;
+    await proveedor.save();
+    
+    handleSuccess(res, 200, 'Productos vinculados al proveedor con éxito', proveedor);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al vincular productos', err.message);
   }
 };

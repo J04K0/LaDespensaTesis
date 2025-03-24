@@ -12,24 +12,12 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-/**
- * Envía una alerta por correo electrónico cuando hay productos con bajo stock
- * @param {Array} productos - Lista de productos con bajo stock
- * @param {Boolean} hayProductosRecienAfectados - Indica si hay productos recién afectados por la venta actual
- * @param {Boolean} hayProductosAgotados - Indica si hay productos agotados en esta venta
- * @param {Boolean} hayProductosYaAgotados - Indica si hay productos que ya estaban agotados antes
- * @param {Array} productosVencidos - Lista de productos vencidos [NUEVO PARÁMETRO]
- * @returns {Promise} Resultado del envío
- */
 export const sendLowStockAlert = async (productos, hayProductosRecienAfectados = false, hayProductosAgotados = false, hayProductosYaAgotados = false, productosVencidos = []) => {
   const hayProductosVencidos = productosVencidos && productosVencidos.length > 0;
   
   if (!productos || productos.length === 0 && !hayProductosVencidos) {
-    console.log("No hay productos con stock bajo ni vencidos para alertar");
     return;
   }
-  
-  console.log(`Enviando alerta por correo para ${productos.length} productos ${hayProductosVencidos ? `y ${productosVencidos.length} productos vencidos` : ''}`);
   
   // Agrupar productos por sección
   const productosRecienAfectados = productos.filter(p => p.esRecienAfectado);
@@ -140,7 +128,7 @@ export const sendLowStockAlert = async (productos, hayProductosRecienAfectados =
       htmlContent += `
         <tr style="background-color: #fff0f0;">
           <td><strong>${producto.Nombre}</strong></td>
-          <td>${producto.Marca}</td>
+          <td>${producto.Marca}</strong></td>
           <td>${producto.Categoria}</td>
           <td style="text-align: center; color: red;"><strong>${producto.Stock}</strong></td>
         </tr>
@@ -203,7 +191,6 @@ export const sendLowStockAlert = async (productos, hayProductosRecienAfectados =
   
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email enviado: ${info.messageId}`);
     return info;
   } catch (error) {
     console.error('Error al enviar email:', error);
@@ -211,20 +198,11 @@ export const sendLowStockAlert = async (productos, hayProductosRecienAfectados =
   }
 };
 
-/**
- * Envía una alerta por correo electrónico para productos vencidos o próximos a vencer
- * @param {Array} productos - Lista de productos vencidos o por vencer
- * @param {String} tipo - Tipo de alerta ('vencidos' o 'porVencer')
- * @returns {Promise} Resultado del envío
- */
 export const sendExpirationAlert = async (productos, tipo) => {
   if (!productos || productos.length === 0) {
-    console.log(`No hay productos ${tipo} para alertar`);
     return;
   }
-  
-  console.log(`Enviando alerta por correo para ${productos.length} productos ${tipo}`);
-  
+
   const titulo = tipo === 'vencidos' ? 
     '🚨 ALERTA DE PRODUCTOS VENCIDOS 🚨' : 
     '⚠️ ALERTA DE PRODUCTOS PRÓXIMOS A VENCER ⚠️';
@@ -270,7 +248,22 @@ export const sendExpirationAlert = async (productos, tipo) => {
   
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email enviado: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error('Error al enviar email:', error);
+    throw error;
+  }
+};
+
+export const sendMail = async (options) => {
+  try {
+    const info = await transporter.sendMail({
+      from: options.from,
+      to: options.to,
+      subject: options.subject,
+      html: options.html
+    });
+    
     return info;
   } catch (error) {
     console.error('Error al enviar email:', error);

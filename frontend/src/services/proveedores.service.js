@@ -51,3 +51,23 @@ export const deleteProveedor = async (id) => {
     throw error;
   }
 };
+
+export const getProductosProveedor = async (id) => {
+  try {
+    const response = await axios.get(`/proveedores/productos/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al obtener productos del proveedor:', error);
+    throw error;
+  }
+};
+
+export const vincularProductos = async (id, productosIds) => {
+  try {
+    const response = await axios.post(`/proveedores/vincular-productos/${id}`, { productos: productosIds });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al vincular productos al proveedor:', error);
+    throw error;
+  }
+};

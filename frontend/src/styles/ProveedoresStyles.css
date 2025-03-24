@@ -52,7 +52,7 @@
 }
 
 .proveedores-search-bar {
-  flex: 1;
+  flex: a;
   min-width: 250px;
   position: relative;
 }
@@ -304,6 +304,414 @@
   background-color: #c82333;
 }
 
+/* Estilos para filtros adicionales */
+.proveedores-filter {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 16px;
+  min-width: 180px;
+}
+
+.proveedores-filter:focus {
+  border-color: #006EDF;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 110, 223, 0.3);
+}
+
+/* Contenedor de botones exportar/importar */
+.proveedores-export-import {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Botón exportar CSV */
+.proveedores-btn-export {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.proveedores-btn-export:hover {
+  background-color: #218838;
+}
+
+/* Botón importar CSV */
+.proveedores-btn-import {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.proveedores-btn-import:hover {
+  background-color: #0069d9;
+}
+
+/* Botones de contacto rápido */
+.proveedores-btn-contact, 
+.proveedores-btn-call {
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.proveedores-btn-contact {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.proveedores-btn-contact:hover {
+  background-color: #138496;
+}
+
+.proveedores-btn-call {
+  background-color: #28a745;
+  color: white;
+}
+
+.proveedores-btn-call:hover {
+  background-color: #218838;
+}
+
+/* Sección de productos del proveedor */
+.proveedores-productos {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.proveedores-productos h3 {
+  margin-top: 0;
+  color: #002651;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.proveedores-productos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.proveedores-producto-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.proveedores-producto-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 5px;
+}
+
+.proveedores-producto-item span {
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+}
+
+.proveedores-btn-link {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  transition: background-color 0.3s;
+}
+
+.proveedores-btn-link:hover {
+  background-color: #5a6268;
+}
+
+/* Modal de selección de productos */
+.products-modal {
+  max-width: 800px;
+  width: 90%;
+}
+
+.product-search {
+  margin-bottom: 20px;
+}
+
+.product-search input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.products-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.product-item:hover {
+  background-color: #f5f5f5;
+}
+
+.product-item.selected {
+  background-color: #e8f4ff;
+  border-color: #006EDF;
+}
+
+.product-image {
+  width: 80px;
+  margin-right: 15px;
+}
+
+.product-image img {
+  width: 100%;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.product-info p {
+  margin: 3px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.product-check {
+  margin-left: 10px;
+}
+
+.product-check input {
+  width: 20px;
+  height: 20px;
+}
+
+.proveedores-categories-selector {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.category-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.category-checkbox-item label {
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.category-checkbox-item input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.proveedores-badge {
+  display: inline-block;
+  background-color: #28a745;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.proveedores-badge-empty {
+  display: inline-block;
+  background-color: #e0e0e0;
+  color: #666;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Estilos para vista previa de productos en la tabla */
+.producto-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.producto-thumbnails {
+  display: flex;
+  align-items: center;
+}
+
+.producto-mini-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: -10px;
+  border: 1px solid #ddd;
+  background-color: white;
+}
+
+.more-productos {
+  font-size: 12px;
+  background-color: #e9ecef;
+  color: #555;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 5px;
+}
+
+.view-productos-btn {
+  padding: 2px 8px;
+  border: none;
+  background-color: #6c757d;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.view-productos-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Estilos para el modal de visualización de productos */
+.view-products-modal {
+  max-width: 900px;
+  width: 90%;
+  max-height: 85vh;
+}
+
+.provider-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  overflow-y: auto;
+  max-height: calc(85vh - 150px);
+  padding-right: 10px;
+}
+
+.provider-product-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.provider-product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.provider-product-image {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+.provider-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.provider-product-info {
+  padding: 15px;
+}
+
+.provider-product-info h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.provider-product-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.no-products-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.css */
+.producto-mini-thumb-placeholder {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  margin-right: -10px;
+  border: 1px solid #ddd;
+}
+
+/* Ajustes para pantallas pequeñas */
 @media (max-width: 768px) {
   .proveedores-controls {
     flex-direction: column;
@@ -316,5 +724,17 @@
   .proveedores-modal-content {
     width: 95%;
     padding: 20px;
+  }
+  
+  .proveedores-export-import {
+    flex-direction: column;
+  }
+  
+  .proveedores-filter {
+    width: 100%;
+  }
+  
+  .proveedores-producto-item {
+    width: 80px;
   }
 }

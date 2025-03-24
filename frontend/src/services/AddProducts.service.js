@@ -157,7 +157,6 @@ export const obtenerVentas = async () => {
 export const obtenerVentasPorTicket = async () => {
   try {
     const response = await axios.get("/products/ventas/tickets");
-    console.log("Respuesta del servidor:", response);
     return response.data;
   } catch (error) {
     console.error("❌ Error al obtener las ventas por ticket:", error);

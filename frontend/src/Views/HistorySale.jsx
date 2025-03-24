@@ -27,7 +27,6 @@ const HistorySale = () => {
     try {
       setLoading(true);
       const response = await obtenerVentasPorTicket();
-      console.log("Ventas response:", response);
       
       // Make sure we're accessing the data correctly
       const ventasData = response.data || [];

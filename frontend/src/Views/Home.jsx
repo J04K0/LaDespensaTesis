@@ -162,7 +162,6 @@ const Home = () => {
   };
 
   const handleDelete = async (id) => {
-    console.log('Deleting deudor with ID:', id);
     try {
       await deleteDeudor(id);
       setDeudores(deudores.filter(deudor => deudor._id !== id));
@@ -228,7 +227,6 @@ const Home = () => {
       </div>
       <div className="home-content">
         <div className="home-deudores-container">
-          <h2 className="home-section-title">Personas deudoras</h2>
           <div className="home-deudores-card">
             <div className="home-deudores-header">
               <h3>Personas deudoras</h3>
@@ -254,7 +252,6 @@ const Home = () => {
         </div>
         
         <div className="home-stats-container">
-          <h2 className="home-section-title">Estadísticas</h2>
           <div className="home-stats-card">
             <div className="home-stats-controls">
               <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>

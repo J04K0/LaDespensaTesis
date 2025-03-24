@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import '../styles/ProveedoresStyles.css';
+import Papa from 'papaparse';
 
-// Importar los servicios necesarios
+// Importar servicios
 import { 
   getProveedores, 
   getProveedorById, 
   createProveedor, 
   updateProveedor, 
-  deleteProveedor 
+  deleteProveedor,
+  getProductosProveedor,
+  vincularProductos
 } from '../services/proveedores.service.js';
+import { getProducts } from '../services/AddProducts.service.js';
 
 const Proveedores = () => {
-  // Estados existentes...
+  // Estados principales
   const [proveedores, setProveedores] = useState([]);
   const [filteredProveedores, setFilteredProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Estados para filtros y paginación
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState('');
   
-  // Estados para el modal
+  // Estados para el modal de creación/edición
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProveedor, setCurrentProveedor] = useState({
@@ -34,8 +41,20 @@ const Proveedores = () => {
     email: '',
     direccion: '',
     categorias: [],
-    notas: ''
+    notas: '',
+    contactoPrincipal: '',
+    sitioWeb: ''
   });
+  
+  // Estados para productos
+  const [allProducts, setAllProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [proveedorProductos, setProveedorProductos] = useState([]);
+  const [showProductsModal, setShowProductsModal] = useState(false);
+  
+  // Estados para visualización de productos
+  const [viewingProveedor, setViewingProveedor] = useState(null);
+  const [showViewProductsModal, setShowViewProductsModal] = useState(false);
 
   const proveedoresPorPagina = 8;
   const categorias = [
@@ -45,18 +64,21 @@ const Proveedores = () => {
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
 
-  // Cargar proveedores al montar el componente
+  // Carga inicial de datos
   useEffect(() => {
-    fetchProveedores();
+    const inicializarDatos = async () => {
+      await fetchProveedores();
+      await fetchAllProducts();
+    };
+    
+    inicializarDatos();
   }, []);
 
-  // Función para obtener proveedores (ahora usa la API real)
+  // Función para obtener proveedores
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      const data = await getProveedores(); // Llamada real a la API
-      
-      // Verificar estructura de la respuesta
+      const data = await getProveedores();
       const proveedoresArray = data.proveedores || data;
       
       setProveedores(proveedoresArray);
@@ -71,21 +93,64 @@ const Proveedores = () => {
     }
   };
 
-  // Las funciones de filtrado se mantienen igual
+  // Cargar todos los productos
+  const fetchAllProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await getProducts(1, 1000);
+      setAllProducts(response.products || response.data?.products || []);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar productos de un proveedor específico
+  const fetchProveedorProductos = async (proveedorId) => {
+    try {
+      setLoading(true);
+      const productos = await getProductosProveedor(proveedorId);
+      setProveedorProductos(productos);
+      setSelectedProducts(productos.map(p => p._id));
+    } catch (error) {
+      console.error('Error al obtener productos del proveedor:', error);
+      setProveedorProductos([]);
+      setSelectedProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handlers para filtros y búsqueda
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    filterProveedores(e.target.value, sortOption);
+    filterProveedores(e.target.value, sortOption, categoryFilter);
   };
 
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
-    filterProveedores(searchQuery, e.target.value);
+    filterProveedores(searchQuery, e.target.value, categoryFilter);
   };
 
-  const filterProveedores = (query, sortOpt) => {
+  const handleCategoryFilterChange = (e) => {
+    setCategoryFilter(e.target.value);
+    filterProveedores(searchQuery, sortOption, e.target.value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSortOption('');
+    setCategoryFilter('');
+    setFilteredProveedores(proveedores);
+    setTotalPages(Math.ceil(proveedores.length / proveedoresPorPagina));
+    setCurrentPage(1);
+  };
+
+  const filterProveedores = (query, sortOpt, category) => {
     let filtered = [...proveedores];
     
-    // Aplicar filtro de búsqueda
+    // Filtrar por búsqueda
     if (query) {
       filtered = filtered.filter(proveedor => 
         proveedor.nombre.toLowerCase().includes(query.toLowerCase()) ||
@@ -94,16 +159,20 @@ const Proveedores = () => {
       );
     }
     
-    // Aplicar ordenamiento
+    // Filtrar por categoría
+    if (category) {
+      filtered = filtered.filter(proveedor => 
+        proveedor.categorias.includes(category)
+      );
+    }
+    
+    // Ordenar
     if (sortOpt) {
       filtered.sort((a, b) => {
         switch (sortOpt) {
-          case 'nombre-asc':
-            return a.nombre.localeCompare(b.nombre);
-          case 'nombre-desc':
-            return b.nombre.localeCompare(a.nombre);
-          default:
-            return 0;
+          case 'nombre-asc': return a.nombre.localeCompare(b.nombre);
+          case 'nombre-desc': return b.nombre.localeCompare(a.nombre);
+          default: return 0;
         }
       });
     }
@@ -113,39 +182,47 @@ const Proveedores = () => {
     setCurrentPage(1);
   };
 
+  // Paginación
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSortOption('');
-    setFilteredProveedores(proveedores);
-    setTotalPages(Math.ceil(proveedores.length / proveedoresPorPagina));
-    setCurrentPage(1);
-  };
-
   // Funciones para gestionar proveedores
-  const handleAddProveedor = () => {
+  const handleAddProveedor = async () => {
     setCurrentProveedor({
       nombre: '',
       telefono: '',
       email: '',
       direccion: '',
       categorias: [],
-      notas: ''
+      notas: '',
+      contactoPrincipal: '',
+      sitioWeb: ''
     });
+    setProveedorProductos([]);
+    setSelectedProducts([]);
     setIsEditing(false);
+    
+    if (allProducts.length === 0) {
+      try {
+        await fetchAllProducts();
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      }
+    }
+    
     setShowModal(true);
   };
 
   const handleEditProveedor = async (id) => {
     try {
       setLoading(true);
-      const proveedor = await getProveedorById(id); // Obtener proveedor por ID
+      const proveedor = await getProveedorById(id);
       setCurrentProveedor(proveedor);
       setIsEditing(true);
       setShowModal(true);
+      
+      await fetchProveedorProductos(id);
     } catch (error) {
       console.error('Error al obtener proveedor para editar:', error);
       Swal.fire({
@@ -172,16 +249,10 @@ const Proveedores = () => {
       if (result.isConfirmed) {
         try {
           setLoading(true);
-          await deleteProveedor(id); // Llamada real a la API
+          await deleteProveedor(id);
+          fetchProveedores();
           
-          // Actualizar estado local
-          fetchProveedores(); // Recargar todos los proveedores
-          
-          Swal.fire(
-            'Eliminado',
-            'El proveedor ha sido eliminado.',
-            'success'
-          );
+          Swal.fire('Eliminado', 'El proveedor ha sido eliminado.', 'success');
         } catch (error) {
           console.error('Error al eliminar proveedor:', error);
           Swal.fire({
@@ -196,7 +267,7 @@ const Proveedores = () => {
     });
   };
 
-  // Funciones de manejo de formulario se mantienen igual
+  // Manejar cambios en el formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentProveedor({
@@ -205,20 +276,25 @@ const Proveedores = () => {
     });
   };
 
-  const handleCategoriaChange = (e) => {
-    const { options } = e.target;
-    const selectedCategorias = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedCategorias.push(options[i].value);
+  const handleCategoriaCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    
+    setCurrentProveedor(prevState => {
+      if (checked) {
+        return {
+          ...prevState,
+          categorias: [...prevState.categorias, name]
+        };
+      } else {
+        return {
+          ...prevState,
+          categorias: prevState.categorias.filter(cat => cat !== name)
+        };
       }
-    }
-    setCurrentProveedor({
-      ...currentProveedor,
-      categorias: selectedCategorias
     });
   };
 
+  // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -235,10 +311,21 @@ const Proveedores = () => {
         // Actualizar proveedor existente
         const { _id, ...proveedorData } = currentProveedor;
         await updateProveedor(_id, proveedorData);
+        
+        // Si hay productos seleccionados, vincularlos
+        if (selectedProducts.length > 0) {
+          await vincularProductos(_id, selectedProducts);
+        }
+        
         Swal.fire('Actualizado', 'Proveedor actualizado con éxito', 'success');
       } else {
-        // Crear nuevo proveedor
-        await createProveedor(currentProveedor);
+        // Crear nuevo proveedor con los productos seleccionados
+        const nuevoProveedorData = { 
+          ...currentProveedor, 
+          productos: selectedProducts 
+        };
+        
+        await createProveedor(nuevoProveedorData);
         Swal.fire('Agregado', 'Proveedor agregado con éxito', 'success');
       }
       
@@ -252,16 +339,160 @@ const Proveedores = () => {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: isEditing 
-          ? 'No se pudo actualizar el proveedor' 
-          : 'No se pudo crear el proveedor'
+        text: isEditing ? 'No se pudo actualizar el proveedor' : 'No se pudo crear el proveedor'
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Calcular proveedores para la página actual
+  // Función para importar proveedores desde CSV
+  const handleImportCSV = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      complete: async (results) => {
+        try {
+          setLoading(true);
+          
+          for (const proveedorData of results.data) {
+            // Convertir datos del CSV
+            const proveedor = {
+              nombre: proveedorData.Nombre,
+              telefono: proveedorData.Teléfono,
+              email: proveedorData.Email,
+              direccion: proveedorData.Dirección || '',
+              categorias: proveedorData.Categorías ? proveedorData.Categorías.split(',').map(c => c.trim()) : [],
+              notas: proveedorData.Notas || '',
+              contactoPrincipal: proveedorData['Persona de Contacto'] || '',
+              sitioWeb: proveedorData['Sitio Web'] || ''
+            };
+            
+            // Verificar que tenga al menos los campos requeridos
+            if (proveedor.nombre && proveedor.telefono && proveedor.email) {
+              await createProveedor(proveedor);
+            }
+          }
+          
+          // Recargar lista después de importar
+          await fetchProveedores();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Importación exitosa',
+            text: 'Los proveedores han sido importados correctamente'
+          });
+        } catch (error) {
+          console.error('Error al importar CSV:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al importar los proveedores'
+          });
+        } finally {
+          setLoading(false);
+          // Limpiar el input para poder seleccionar el mismo archivo de nuevo
+          e.target.value = '';
+        }
+      },
+      error: (error) => {
+        console.error('Error al procesar CSV:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'El archivo CSV no tiene el formato correcto'
+        });
+      }
+    });
+  };
+
+  // Funciones para productos
+  const handleLinkProducts = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    if (allProducts.length === 0) {
+      try {
+        await fetchAllProducts();
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+        Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+        return;
+      }
+    }
+    
+    setShowProductsModal(true);
+  };
+
+  const handleProductSelection = (productId) => {
+    setSelectedProducts(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
+  };
+  
+  const handleProductsSubmit = async () => {
+    try {
+      setLoading(true);
+      
+      if (!currentProveedor._id) {
+        // En modo creación, solo cerramos el modal
+        setShowProductsModal(false);
+        return;
+      }
+      
+      // En modo edición, vinculamos los productos
+      await vincularProductos(currentProveedor._id, selectedProducts);
+      await fetchProveedorProductos(currentProveedor._id);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: 'Productos vinculados correctamente al proveedor',
+      });
+      
+      setShowProductsModal(false);
+    } catch (error) {
+      console.error('Error al vincular productos:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron vincular los productos al proveedor',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewProveedorProductos = async (proveedorId) => {
+    try {
+      setLoading(true);
+      const productos = await getProductosProveedor(proveedorId);
+      const proveedor = proveedores.find(p => p._id === proveedorId);
+      
+      if (proveedor) {
+        setViewingProveedor({
+          ...proveedor,
+          productosDetalle: productos
+        });
+        setShowViewProductsModal(true);
+      }
+    } catch (error) {
+      console.error('Error al cargar productos del proveedor:', error);
+      Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calcular elementos para la página actual
   const indexOfLastProveedor = currentPage * proveedoresPorPagina;
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
@@ -270,6 +501,7 @@ const Proveedores = () => {
     <div className="proveedores-container">
       <Navbar />
       <div className="proveedores-content">
+        {/* Header */}
         <div className="proveedores-header">
           <h1>Gestión de Proveedores</h1>
           <button className="proveedores-btn-add" onClick={handleAddProveedor}>
@@ -277,6 +509,7 @@ const Proveedores = () => {
           </button>
         </div>
         
+        {/* Controles de filtrado y búsqueda */}
         <div className="proveedores-controls">
           <div className="proveedores-search-bar">
             <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
@@ -299,8 +532,33 @@ const Proveedores = () => {
               <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
             </button>
           </div>
+
+          <select 
+            value={categoryFilter} 
+            onChange={handleCategoryFilterChange}
+            className="proveedores-filter"
+          >
+            <option value="">Todas las categorías</option>
+            {categorias.map((cat, index) => (
+              <option key={index} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
 
+        {/* Botón de importación */}
+        <div className="proveedores-export-import">
+          <label className="proveedores-btn-import">
+            <FontAwesomeIcon icon={faFilter} /> Importar CSV
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              style={{ display: 'none' }}
+            />
+          </label>
+        </div>
+
+        {/* Contenido principal */}
         {loading ? (
           <p className="proveedores-loading-message">Cargando proveedores...</p>
         ) : error ? (
@@ -314,8 +572,10 @@ const Proveedores = () => {
                     <th>Nombre</th>
                     <th>Teléfono</th>
                     <th>Email</th>
+                    <th>Contacto Principal</th>
                     <th>Dirección</th>
                     <th>Categorías</th>
+                    <th>Productos</th>
                     <th>Notas</th>
                     <th>Acciones</th>
                   </tr>
@@ -327,8 +587,50 @@ const Proveedores = () => {
                         <td>{proveedor.nombre}</td>
                         <td>{proveedor.telefono}</td>
                         <td>{proveedor.email}</td>
+                        <td>{proveedor.contactoPrincipal || '—'}</td>
                         <td>{proveedor.direccion}</td>
                         <td>{proveedor.categorias.join(', ')}</td>
+                        <td>
+                          <div className="producto-preview-container">
+                            {proveedor.productos && proveedor.productos.length > 0 ? (
+                              <>
+                                <div className="producto-thumbnails">
+                                  {proveedor.productos.slice(0, 3).map((productoId, idx) => {
+                                    const producto = allProducts.find(p => p._id === productoId);
+                                    return producto ? (
+                                      <img 
+                                        key={idx} 
+                                        src={producto.image} 
+                                        alt={producto.Nombre} 
+                                        className="producto-mini-thumb"
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = 'https://via.placeholder.com/30?text=N/A';
+                                        }}
+                                      />
+                                    ) : (
+                                      <div key={idx} className="producto-mini-thumb-placeholder"></div>
+                                    );
+                                  })}
+                                  {proveedor.productos.length > 3 && (
+                                    <span className="more-productos">+{proveedor.productos.length - 3}</span>
+                                  )}
+                                </div>
+                                <button 
+                                  className="view-productos-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewProveedorProductos(proveedor._id);
+                                  }}
+                                >
+                                  Ver todos
+                                </button>
+                              </>
+                            ) : (
+                              <span className="proveedores-badge-empty">Sin productos</span>
+                            )}
+                          </div>
+                        </td>
                         <td>{proveedor.notas}</td>
                         <td className="proveedores-actions-cell">
                           <button 
@@ -348,13 +650,14 @@ const Proveedores = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="proveedores-no-data">No hay proveedores disponibles</td>
+                      <td colSpan="9" className="proveedores-no-data">No hay proveedores disponibles</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
             
+            {/* Paginación */}
             {totalPages > 1 && (
               <div className="proveedores-pagination">
                 {[...Array(totalPages).keys()].map(page => (
@@ -372,7 +675,7 @@ const Proveedores = () => {
         )}
       </div>
 
-      {/* Modal para agregar/editar proveedor */}
+      {/* Modal de creación/edición de proveedores */}
       {showModal && (
         <div 
           className="proveedores-modal-overlay" 
@@ -416,6 +719,7 @@ const Proveedores = () => {
                   name="email"
                   value={currentProveedor.email}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
               
@@ -431,20 +735,44 @@ const Proveedores = () => {
               </div>
               
               <div className="proveedores-form-group">
-                <label htmlFor="categorias">Categorías:</label>
-                <select
-                  id="categorias"
-                  name="categorias"
-                  multiple
-                  value={currentProveedor.categorias}
-                  onChange={handleCategoriaChange}
-                  className="proveedores-multi-select"
-                >
+                <label>Categorías:</label>
+                <div className="proveedores-categories-selector">
                   {categorias.map((cat, index) => (
-                    <option key={index} value={cat}>{cat}</option>
+                    <div key={index} className="category-checkbox-item">
+                      <input
+                        type="checkbox"
+                        id={`cat-${index}`}
+                        name={cat}
+                        checked={currentProveedor.categorias.includes(cat)}
+                        onChange={handleCategoriaCheckboxChange}
+                      />
+                      <label htmlFor={`cat-${index}`}>{cat}</label>
+                    </div>
                   ))}
-                </select>
-                <small>Mantén presionado Ctrl (o Cmd en Mac) para seleccionar múltiples categorías</small>
+                </div>
+              </div>
+              
+              <div className="proveedores-form-group">
+                <label htmlFor="contactoPrincipal">Persona de Contacto:</label>
+                <input
+                  type="text"
+                  id="contactoPrincipal"
+                  name="contactoPrincipal"
+                  value={currentProveedor.contactoPrincipal || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="proveedores-form-group">
+                <label htmlFor="sitioWeb">Sitio Web:</label>
+                <input
+                  type="url"
+                  id="sitioWeb"
+                  name="sitioWeb"
+                  value={currentProveedor.sitioWeb || ''}
+                  onChange={handleInputChange}
+                  placeholder="https://ejemplo.com"
+                />
               </div>
               
               <div className="proveedores-form-group">
@@ -456,6 +784,46 @@ const Proveedores = () => {
                   onChange={handleInputChange}
                   rows="3"
                 ></textarea>
+              </div>
+
+              <div className="proveedores-productos">
+                <h3>Productos que provee</h3>
+                <div className="proveedores-productos-list">
+                  {isEditing ? (
+                    proveedorProductos.length > 0 ? (
+                      proveedorProductos.map(producto => (
+                        <div key={producto._id} className="proveedores-producto-item">
+                          <img src={producto.image} alt={producto.nombre} />
+                          <span>{producto.nombre}</span>
+                          <span>{producto.marca}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No hay productos registrados de este proveedor</p>
+                    )
+                  ) : (
+                    selectedProducts.length > 0 ? (
+                      allProducts
+                        .filter(product => selectedProducts.includes(product._id))
+                        .map(producto => (
+                          <div key={producto._id} className="proveedores-producto-item">
+                            <img src={producto.image} alt={producto.Nombre} />
+                            <span>{producto.Nombre}</span>
+                            <span>{producto.Marca}</span>
+                          </div>
+                        ))
+                    ) : (
+                      <p>No hay productos seleccionados</p>
+                    )
+                  )}
+                </div>
+                <button 
+                  type="button"
+                  onClick={(e) => handleLinkProducts(e)}
+                  className="proveedores-btn-link"
+                >
+                  <FontAwesomeIcon icon={faLink} /> Vincular Productos
+                </button>
               </div>
               
               <div className="proveedores-modal-buttons">
@@ -471,6 +839,114 @@ const Proveedores = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de selección de productos */}
+      {showProductsModal && (
+        <div 
+          className="proveedores-modal-overlay" 
+          onClick={() => setShowProductsModal(false)}
+        >
+          <div 
+            className="proveedores-modal-content products-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Vincular Productos</h2>
+            
+            <div className="product-search">
+              <input 
+                type="text" 
+                placeholder="Buscar productos..." 
+              />
+            </div>
+            
+            <div className="products-list">
+              {allProducts.map(product => (
+                <div 
+                  key={product._id} 
+                  className={`product-item ${selectedProducts.includes(product._id) ? 'selected' : ''}`}
+                  onClick={() => handleProductSelection(product._id)}
+                >
+                  <div className="product-image">
+                    <img src={product.image} alt={product.Nombre} />
+                  </div>
+                  <div className="product-info">
+                    <h4>{product.Nombre}</h4>
+                    <p>Marca: {product.Marca}</p>
+                    <p>Categoría: {product.Categoria}</p>
+                  </div>
+                  <div className="product-check">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedProducts.includes(product._id)} 
+                      readOnly
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="proveedores-modal-buttons">
+              <button 
+                className="proveedores-btn-save"
+                onClick={handleProductsSubmit}
+              >
+                Guardar
+              </button>
+              <button 
+                className="proveedores-btn-cancel"
+                onClick={() => setShowProductsModal(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de visualización de productos */}
+      {showViewProductsModal && viewingProveedor && (
+        <div 
+          className="proveedores-modal-overlay" 
+          onClick={() => setShowViewProductsModal(false)}
+        >
+          <div 
+            className="proveedores-modal-content view-products-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Productos de {viewingProveedor.nombre}</h2>
+            
+            <div className="provider-products-grid">
+              {viewingProveedor.productosDetalle && viewingProveedor.productosDetalle.length > 0 ? (
+                viewingProveedor.productosDetalle.map(producto => (
+                  <div key={producto._id} className="provider-product-card">
+                    <div className="provider-product-image">
+                      <img src={producto.image} alt={producto.Nombre || producto.nombre} />
+                    </div>
+                    <div className="provider-product-info">
+                      <h4>{producto.Nombre || producto.nombre}</h4>
+                      <p>Marca: {producto.Marca || producto.marca}</p>
+                      <p>Categoría: {producto.Categoria || producto.categoria}</p>
+                      <p>Stock: {producto.Stock || producto.stock || '—'}</p>
+                      <p>Precio: ${producto.PrecioVenta || producto.precioVenta || '—'}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="no-products-message">Este proveedor no tiene productos asociados</p>
+              )}
+            </div>
+            
+            <div className="proveedores-modal-buttons">
+              <button 
+                className="proveedores-btn-cancel"
+                onClick={() => setShowViewProductsModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -14,4 +14,5 @@ router.use('/products', productRoutes);
 router.use('/files', fileRoutes);
 router.use('/deudores', deudoresRoutes);
 router.use('/proveedores', proveedoresRoutes);
+
 export default router;

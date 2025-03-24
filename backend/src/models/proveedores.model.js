@@ -25,6 +25,20 @@ const ProveedorSchema = new Schema({
   notas: {
     type: String,
     default: '',
+  },
+  contactoPrincipal: {  // Añadir este campo
+    type: String,
+    default: '',
+  },
+  sitioWeb: {  // Añadir este campo
+    type: String,
+    required: false,
+    default: '',
+  },
+  productos: {
+    type: [Schema.Types.ObjectId],
+    ref: 'Product',
+    default: []
   }
 }, 
 { 

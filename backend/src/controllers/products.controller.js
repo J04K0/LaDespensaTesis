@@ -3,8 +3,6 @@ import Venta from '../models/venta.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 import cron from 'node-cron';
-import { v4 as uuidv4 } from 'uuid';
-
 let ticketCounter = 0; // Variable global para el contador de tickets
 import { HOST, PORT } from '../config/configEnv.js';
 import { sendLowStockAlert, sendExpirationAlert } from '../services/email.service.js';
@@ -46,19 +44,15 @@ export const addProduct = async (req, res) => {
   try {
     const { value, error } = productSchema.validate(req.body);
     if (error) return handleErrorClient(res, 400, error.message);
-
-    console.log("Archivo recibido:", req.file); // Depuración
-
+    
     let imageUrl = null;
 
-    // Verifica si hay un archivo subido
     if (req.file) {
         imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
     }
 
     // Crear el producto con la imagen incluida
     const newProduct = new Product({ ...value, image: imageUrl });
-    console.log("Nuevo producto:", newProduct);
 
     const product = await newProduct.save();
 
@@ -178,7 +172,6 @@ export const verificarStock = async (req, res) => {
       try {
         // Usar el nuevo servicio de email en lugar de WhatsApp
         await sendLowStockAlert(productosFiltrados);
-        console.log("Alerta de stock bajo enviada por correo electrónico");
       } catch (emailError) {
         console.error("Error al enviar alerta por correo electrónico:", emailError);
         // Continuar con la ejecución aunque falle el envío de correo
@@ -213,7 +206,6 @@ export const getProductsExpiringSoon = async (req, res) => {
     if (productsExpiringSoon.length > 0) {
       try {
         await sendExpirationAlert(productsExpiringSoon, 'porVencer');
-        console.log("Alerta de productos por vencer enviada por correo electrónico");
       } catch (emailError) {
         console.error("Error al enviar alerta de productos por vencer:", emailError);
       }
@@ -242,7 +234,6 @@ export const getExpiredProducts = async (req, res) => {
     // Enviar alerta por correo de productos vencidos
     try {
       await sendExpirationAlert(expiredProducts, 'vencidos');
-      console.log("Alerta de productos vencidos enviada por correo electrónico");
     } catch (emailError) {
       console.error("Error al enviar alerta de productos vencidos:", emailError);
     }
@@ -391,17 +382,17 @@ export const actualizarStockVenta = async (req, res) => {
       fechaVencimiento: { $lt: today }
     });
     
-    // Enviar alerta por correo si hay productos con stock bajo, agotados o vencidos
+    // Cuando se detecten productos con stock bajo:
     if (productosEmailInfo.length > 0 || productosVencidos.length > 0) {
       try {
+        // Enviar correo automático directo (como antes)
         await sendLowStockAlert(
-          productosEmailInfo, 
-          productosAfectadosEnVenta.length > 0, 
+          productosEmailInfo,
+          productosAfectadosEnVenta.length > 0,
           productosAgotados.length > 0,
           productosYaAgotados.length > 0,
-          productosVencidos // Nuevo parámetro
+          productosVencidos
         );
-        console.log(`Alerta enviada para ${productosEmailInfo.length} productos (${productosAfectadosEnVenta.length} bajo stock, ${productosAgotados.length} agotados, ${productosYaAgotados.length} ya agotados) y ${productosVencidos.length} vencidos`);
       } catch (emailError) {
         console.error("Error al enviar alerta:", emailError);
       }
@@ -442,8 +433,6 @@ export const registrarVenta = async (req, res) => {
       ventasRegistradas.push(nuevaVenta);
     }
     
-    console.log(`Venta registrada con ticket ID: ${ticketId}`);
-    
     handleSuccess(res, 201, "Venta registrada correctamente", { 
       ticketId, 
       productos: ventasRegistradas 
@@ -478,9 +467,6 @@ export const obtenerVentasPorTicket = async (req, res) => {
       { $group: { _id: "$ticketId", ventas: { $push: "$$ROOT" }, fecha: { $first: "$fecha" } } },
       { $sort: { fecha: -1 } } // Ordenar por fecha descendente
     ]);
-
-    console.log("Ventas agrupadas por ticket:", ventasPorTicket);
-    
     handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasPorTicket);
   } catch (error) {
     console.error("Error al obtener ventas por ticket:", error);
@@ -579,7 +565,6 @@ export const eliminarProductosSinStock = async () => {
       if (existeOtroProducto) {
         // If another product with the same barcode has stock, delete this one
         await Product.findByIdAndDelete(producto._id);
-        console.log(`Producto sin stock eliminado: ${producto.Nombre} (${producto._id})`);
       }
     }
   } catch (error) {
@@ -591,40 +576,3 @@ cron.schedule('0 */5 * * *', async () => {
   await eliminarProductosSinStock();
 });
 
-export const testEmailAlert = async (req, res) => {
-  try {
-    console.log("Test manual de alerta por correo electrónico");
-    
-    // Get all products
-    const todosProductos = await Product.find();
-    
-    if (todosProductos.length === 0) {
-      return handleSuccess(res, 200, "No hay productos registrados", []);
-    }
-    
-    // Filter products with low stock
-    const productosBajoStock = todosProductos.filter(producto => {
-      const categoria = producto.Categoria;
-      if (!categoria) {
-        return false;
-      }
-
-      const stockMinimo = stockMinimoPorCategoria[categoria];
-      if (stockMinimo === undefined) {
-        return false;
-      }
-      
-      return producto.Stock <= stockMinimo;
-    });
-    
-    if (productosBajoStock.length > 0) {
-      await sendLowStockAlert(productosBajoStock);
-      handleSuccess(res, 200, `Alerta enviada para ${productosBajoStock.length} productos con stock bajo`, productosBajoStock);
-    } else {
-      handleSuccess(res, 200, "No hay productos con stock bajo para enviar alerta", []);
-    }
-  } catch (error) {
-    console.error("Error en test de correo:", error);
-    handleErrorServer(res, 500, "Error al probar alerta de correo", error.message);
-  }
-};

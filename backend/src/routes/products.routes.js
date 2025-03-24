@@ -16,7 +16,6 @@ import {
     getProductByBarcode,
     obtenerVentasPorTicket, 
     getProductForCreation,
-    testEmailAlert
 } from "../controllers/products.controller.js";
 
 import { 
@@ -42,7 +41,6 @@ router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpired
 router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get("/ventas/tickets", authorizeRoles([isEmpleado, isAdmin, isJefe]),obtenerVentasPorTicket);
-router.get('/test-email-alert', authorizeRoles([isAdmin, isJefe, isEmpleado]), testEmailAlert);
 
 router.post('/registrar-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), registrarVenta);
 router.get('/ventas/obtener', authorizeRoles([isEmpleado, isAdmin, isJefe]), obtenerVentas);
