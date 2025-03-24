@@ -161,15 +161,6 @@ const Home = () => {
     navigate('/products?filter=expired');
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteDeudor(id);
-      setDeudores(deudores.filter(deudor => deudor._id !== id));
-    } catch (error) {
-      console.error('Error deleting deudor:', error);
-    }
-  };
-
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -219,12 +210,6 @@ const Home = () => {
   return (
     <div className="home-container">
       <Navbar />
-      <div className="home-top-buttons-container">
-        <div className="home-top-buttons">
-          <button onClick={handleViewOutOfStock} className="home-btn-sin-stock">Ver productos sin stock</button>
-          <button onClick={handleViewExpiredProducts} className="home-btn-vencidos">Ver productos vencidos</button>
-        </div>
-      </div>
       <div className="home-content">
         <div className="home-deudores-container">
           <div className="home-deudores-card">
