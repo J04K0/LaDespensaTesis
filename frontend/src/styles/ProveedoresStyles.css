@@ -327,8 +327,8 @@
   margin-bottom: 20px;
 }
 
-/* Botón exportar CSV */
-.proveedores-btn-export {
+/* Botón importar CSV */
+.proveedores-btn-import {
   background-color: #28a745;
   color: white;
   border: none;
@@ -342,27 +342,8 @@
   transition: background-color 0.3s;
 }
 
-.proveedores-btn-export:hover {
-  background-color: #218838;
-}
-
-/* Botón importar CSV */
-.proveedores-btn-import {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s;
-}
-
 .proveedores-btn-import:hover {
-  background-color: #0069d9;
+  background-color: #218838;
 }
 
 /* Botones de contacto rápido */
