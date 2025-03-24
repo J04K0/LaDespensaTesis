@@ -6,6 +6,7 @@ import { getProducts } from "../services/AddProducts.service.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../styles/FinanzasStyles.css";
+import FinanzasSkeleton from '../components/FinanzasSkeleton';
 
 import { 
   Chart as ChartJS, 
@@ -538,127 +539,133 @@ const Finanzas = () => {
     <div className="finanzas-page">
       <Navbar />
       <div className="chart-container">
-        <h1>📊 Finanzas</h1>
-        
-        <div className="filter-container">
-          <div className="filter-group">
-            <label>Periodo:</label>
-            <select value={timeRange} onChange={handleTimeRangeChange}>
-              <option value="semana">Última semana</option>
-              <option value="mes">Último mes</option>
-              <option value="año">Último año</option>
-            </select>
-          </div>
-          
-          <button onClick={descargarReporteFinanciero} className="download-button">
-            Descargar Reporte Financiero 📄
-          </button>
-        </div>
-
-                {/* Resumen financiero */}
-                {ingresosPorDia && comparacionIngresoCosto && (
-          <div className="finance-summary">
-            <div className="summary-card income">
-              <h3>Ingresos Totales</h3>
-              <p className="amount">
-                ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
-            </div>
+        {loading ? (
+          <FinanzasSkeleton />
+        ) : (
+          <>
+            <h1>📊 Finanzas</h1>
             
-            <div className="summary-card transactions">
-              <h3>Transacciones</h3>
-              <p className="amount">
-                {numeroTransacciones}
-              </p>
-            </div>
-            
-            <div className="summary-card" style={{ borderTop: '5px solid rgba(255, 99, 132, 1)' }}>
-              <h3>Costos Totales</h3>
-              <p className="amount" style={{ color: 'rgba(255, 99, 132, 1)' }}>
-                ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
-            </div>
-            
-            <div className="summary-card" style={{ borderTop: '5px solid rgba(54, 162, 235, 1)' }}>
-              <h3>Ganancias Totales</h3>
-              <p className="amount" style={{ color: 'rgba(54, 162, 235, 1)' }}>
-                ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </p>
+            <div className="filter-container">
+              <div className="filter-group">
+                <label>Periodo:</label>
+                <select value={timeRange} onChange={handleTimeRangeChange}>
+                  <option value="semana">Última semana</option>
+                  <option value="mes">Último mes</option>
+                  <option value="año">Último año</option>
+                </select>
+              </div>
+              
+              <button onClick={descargarReporteFinanciero} className="download-button">
+                Descargar Reporte Financiero 📄
+              </button>
             </div>
 
-            <div className="summary-card" style={{ borderTop: '5px solid #FF5733' }}>
-              <h3>Inversión en Mercadería</h3>
-              <p className="amount" style={{ color: '#FF5733' }}>
-                ${inversionMercaderiaPorCategoria ? 
-                  inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
-                  '0'}
-              </p>
+            {/* Resumen financiero */}
+            {ingresosPorDia && comparacionIngresoCosto && (
+              <div className="finance-summary">
+                <div className="summary-card income">
+                  <h3>Ingresos Totales</h3>
+                  <p className="amount">
+                    ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                  </p>
+                </div>
+                
+                <div className="summary-card transactions">
+                  <h3>Transacciones</h3>
+                  <p className="amount">
+                    {numeroTransacciones}
+                  </p>
+                </div>
+                
+                <div className="summary-card" style={{ borderTop: '5px solid rgba(255, 99, 132, 1)' }}>
+                  <h3>Costos Totales</h3>
+                  <p className="amount" style={{ color: 'rgba(255, 99, 132, 1)' }}>
+                    ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                  </p>
+                </div>
+                
+                <div className="summary-card" style={{ borderTop: '5px solid rgba(54, 162, 235, 1)' }}>
+                  <h3>Ganancias Totales</h3>
+                  <p className="amount" style={{ color: 'rgba(54, 162, 235, 1)' }}>
+                    ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="summary-card" style={{ borderTop: '5px solid #FF5733' }}>
+                  <h3>Inversión en Mercadería</h3>
+                  <p className="amount" style={{ color: '#FF5733' }}>
+                    ${inversionMercaderiaPorCategoria ? 
+                      inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
+                      '0'}
+                  </p>
+                </div>
+              </div>
+            )}
+      
+            {loading && <p className="loading-message">Cargando datos financieros...</p>}
+            {error && <p className="error-message">{error}</p>}
+      
+            {/* Ingresos por día */}
+            <div className="chart">
+              <h2>Ingresos por Día</h2>
+              {ingresosPorDia ? (
+                <Line data={ingresosPorDia} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
             </div>
-          </div>
+            
+            {/* Ingresos por Categoría */}
+            <div className="chart">
+              <h2>Ingresos por Categoría</h2>
+              {ingresosPorCategoria ? (
+                <Doughnut data={ingresosPorCategoria} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
+            </div>
+            
+            {/* Ventas por mes */}
+            <div className="chart">
+              <h2>Ventas por Mes (Año Actual)</h2>
+              {ventasPorMes ? (
+                <Bar data={ventasPorMes} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
+            </div>
+            
+            {/* Comparación de Ingresos y Costos */}
+            <div className="chart">
+              <h2>Comparación de Ingresos y Costos</h2>
+              {comparacionIngresoCosto ? (
+                <Bar data={comparacionIngresoCosto} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
+            </div>
+
+            {/* Nuevo gráfico de Inversión en Mercadería */}
+            <div className="chart">
+              <h2>Inversión Actual en Mercadería</h2>
+              {inversionMercaderiaPorCategoria ? (
+                <Pie data={inversionMercaderiaPorCategoria} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
+            </div>
+
+            {/* Productos Menos Vendidos */}
+            <div className="chart">
+              <h2>Productos Menos Vendidos</h2>
+              {productosPocoVendidos ? (
+                <Doughnut data={productosPocoVendidos} options={chartOptions} />
+              ) : (
+                <p className="no-data">No hay datos disponibles</p>
+              )}
+            </div>
+          </>
         )}
-  
-        {loading && <p className="loading-message">Cargando datos financieros...</p>}
-        {error && <p className="error-message">{error}</p>}
-  
-        {/* Ingresos por día */}
-        <div className="chart">
-          <h2>Ingresos por Día</h2>
-          {ingresosPorDia ? (
-            <Line data={ingresosPorDia} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
-        
-        {/* Ingresos por Categoría */}
-        <div className="chart">
-          <h2>Ingresos por Categoría</h2>
-          {ingresosPorCategoria ? (
-            <Doughnut data={ingresosPorCategoria} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
-        
-        {/* Ventas por mes */}
-        <div className="chart">
-          <h2>Ventas por Mes (Año Actual)</h2>
-          {ventasPorMes ? (
-            <Bar data={ventasPorMes} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
-        
-        {/* Comparación de Ingresos y Costos */}
-        <div className="chart">
-          <h2>Comparación de Ingresos y Costos</h2>
-          {comparacionIngresoCosto ? (
-            <Bar data={comparacionIngresoCosto} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
-
-        {/* Nuevo gráfico de Inversión en Mercadería */}
-        <div className="chart">
-          <h2>Inversión Actual en Mercadería</h2>
-          {inversionMercaderiaPorCategoria ? (
-            <Pie data={inversionMercaderiaPorCategoria} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
-
-          {/* Productos Menos Vendidos */}
-        <div className="chart">
-          <h2>Productos Menos Vendidos</h2>
-          {productosPocoVendidos ? (
-            <Doughnut data={productosPocoVendidos} options={chartOptions} />
-          ) : (
-            <p className="no-data">No hay datos disponibles</p>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import {
   vincularProductos
 } from '../services/proveedores.service.js';
 import { getProducts } from '../services/AddProducts.service.js';
+import ProveedoresSkeleton from '../components/ProveedoresSkeleton';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -454,166 +455,172 @@ const Proveedores = () => {
     <div className="proveedores-container">
       <Navbar />
       <div className="proveedores-content">
-        <div className="proveedores-header">
-          <h1>Gestión de Proveedores</h1>
-          <button className="proveedores-btn-add" onClick={handleAddProveedor}>
-            <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
-          </button>
-        </div>
-        <div className="proveedores-controls">
-          <div className="proveedores-search-bar">
-            <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
-            <input
-              type="text"
-              placeholder="Buscar proveedores..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
-          </div>
-          <div className="proveedores-sort-filter">
-            <select value={sortOption} onChange={handleSortChange}>
-              <option value="">Ordenar por</option>
-              <option value="nombre-asc">Nombre (A-Z)</option>
-              <option value="nombre-desc">Nombre (Z-A)</option>
-            </select>
-            <button onClick={handleClearFilters} className="proveedores-btn-clear-filters">
-              <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
-            </button>
-          </div>
-
-          <select 
-            value={categoryFilter} 
-            onChange={handleCategoryFilterChange}
-            className="proveedores-filter"
-          >
-            <option value="">Todas las categorías</option>
-            {categorias.map((cat, index) => (
-              <option key={index} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-        <div className="proveedores-export-import">
-          <label className="proveedores-btn-import">
-            <FontAwesomeIcon icon={faFilter} /> Importar CSV
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleImportCSV}
-              style={{ display: 'none' }}
-            />
-          </label>
-        </div>
         {loading ? (
-          <p className="proveedores-loading-message">Cargando proveedores...</p>
-        ) : error ? (
-          <p className="proveedores-error-message">{error}</p>
+          <ProveedoresSkeleton />
         ) : (
           <>
-            <div className="proveedores-table-container">
-              <table className="proveedores-table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Contacto Principal</th>
-                    <th>Dirección</th>
-                    <th>Categorías</th>
-                    <th>Productos</th>
-                    <th>Notas</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentProveedores.length > 0 ? (
-                    currentProveedores.map(proveedor => (
-                      <tr key={proveedor._id}>
-                        <td>{proveedor.nombre}</td>
-                        <td>{proveedor.telefono}</td>
-                        <td>{proveedor.email}</td>
-                        <td>{proveedor.contactoPrincipal || '—'}</td>
-                        <td>{proveedor.direccion}</td>
-                        <td>{proveedor.categorias.join(', ')}</td>
-                        <td>
-                          <div className="producto-preview-container">
-                            {proveedor.productos && proveedor.productos.length > 0 ? (
-                              <>
-                                <div className="producto-thumbnails">
-                                  {proveedor.productos.slice(0, 3).map((productoId, idx) => {
-                                    const producto = allProducts.find(p => p._id === productoId);
-                                    return producto ? (
-                                      <img 
-                                        key={idx} 
-                                        src={producto.image} 
-                                        alt={producto.Nombre} 
-                                        className="producto-mini-thumb"
-                                        onError={(e) => {
-                                          e.target.onerror = null;
-                                          e.target.src = 'https://via.placeholder.com/30?text=N/A';
-                                        }}
-                                      />
-                                    ) : (
-                                      <div key={idx} className="producto-mini-thumb-placeholder"></div>
-                                    );
-                                  })}
-                                  {proveedor.productos.length > 3 && (
-                                    <span className="more-productos">+{proveedor.productos.length - 3}</span>
-                                  )}
-                                </div>
-                                <button 
-                                  className="view-productos-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleViewProveedorProductos(proveedor._id);
-                                  }}
-                                >
-                                  Ver todos
-                                </button>
-                              </>
-                            ) : (
-                              <span className="proveedores-badge-empty">Sin productos</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>{proveedor.notas}</td>
-                        <td className="proveedores-actions-cell">
-                          <button 
-                            onClick={() => handleEditProveedor(proveedor._id)}
-                            className="proveedores-btn-edit"
-                          >
-                            <FontAwesomeIcon icon={faEdit} />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteProveedor(proveedor._id)}
-                            className="proveedores-btn-delete"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="9" className="proveedores-no-data">No hay proveedores disponibles</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <div className="proveedores-header">
+              <h1>Gestión de Proveedores</h1>
+              <button className="proveedores-btn-add" onClick={handleAddProveedor}>
+                <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
+              </button>
             </div>
-            
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div className="proveedores-pagination">
-                {[...Array(totalPages).keys()].map(page => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page + 1)}
-                    className={page + 1 === currentPage ? 'active' : ''}
-                  >
-                    {page + 1}
-                  </button>
-                ))}
+            <div className="proveedores-controls">
+              <div className="proveedores-search-bar">
+                <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Buscar proveedores..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
               </div>
+              <div className="proveedores-sort-filter">
+                <select value={sortOption} onChange={handleSortChange}>
+                  <option value="">Ordenar por</option>
+                  <option value="nombre-asc">Nombre (A-Z)</option>
+                  <option value="nombre-desc">Nombre (Z-A)</option>
+                </select>
+                <button onClick={handleClearFilters} className="proveedores-btn-clear-filters">
+                  <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
+                </button>
+              </div>
+
+              <select 
+                value={categoryFilter} 
+                onChange={handleCategoryFilterChange}
+                className="proveedores-filter"
+              >
+                <option value="">Todas las categorías</option>
+                {categorias.map((cat, index) => (
+                  <option key={index} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div className="proveedores-export-import">
+              <label className="proveedores-btn-import">
+                <FontAwesomeIcon icon={faFilter} /> Importar CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImportCSV}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+            {loading ? (
+              <p className="proveedores-loading-message">Cargando proveedores...</p>
+            ) : error ? (
+              <p className="proveedores-error-message">{error}</p>
+            ) : (
+              <>
+                <div className="proveedores-table-container">
+                  <table className="proveedores-table">
+                    <thead>
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Contacto Principal</th>
+                        <th>Dirección</th>
+                        <th>Categorías</th>
+                        <th>Productos</th>
+                        <th>Notas</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentProveedores.length > 0 ? (
+                        currentProveedores.map(proveedor => (
+                          <tr key={proveedor._id}>
+                            <td>{proveedor.nombre}</td>
+                            <td>{proveedor.telefono}</td>
+                            <td>{proveedor.email}</td>
+                            <td>{proveedor.contactoPrincipal || '—'}</td>
+                            <td>{proveedor.direccion}</td>
+                            <td>{proveedor.categorias.join(', ')}</td>
+                            <td>
+                              <div className="producto-preview-container">
+                                {proveedor.productos && proveedor.productos.length > 0 ? (
+                                  <>
+                                    <div className="producto-thumbnails">
+                                      {proveedor.productos.slice(0, 3).map((productoId, idx) => {
+                                        const producto = allProducts.find(p => p._id === productoId);
+                                        return producto ? (
+                                          <img 
+                                            key={idx} 
+                                            src={producto.image} 
+                                            alt={producto.Nombre} 
+                                            className="producto-mini-thumb"
+                                            onError={(e) => {
+                                              e.target.onerror = null;
+                                              e.target.src = 'https://via.placeholder.com/30?text=N/A';
+                                            }}
+                                          />
+                                        ) : (
+                                          <div key={idx} className="producto-mini-thumb-placeholder"></div>
+                                        );
+                                      })}
+                                      {proveedor.productos.length > 3 && (
+                                        <span className="more-productos">+{proveedor.productos.length - 3}</span>
+                                      )}
+                                    </div>
+                                    <button 
+                                      className="view-productos-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleViewProveedorProductos(proveedor._id);
+                                      }}
+                                    >
+                                      Ver todos
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="proveedores-badge-empty">Sin productos</span>
+                                )}
+                              </div>
+                            </td>
+                            <td>{proveedor.notas}</td>
+                            <td className="proveedores-actions-cell">
+                              <button 
+                                onClick={() => handleEditProveedor(proveedor._id)}
+                                className="proveedores-btn-edit"
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteProveedor(proveedor._id)}
+                                className="proveedores-btn-delete"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="9" className="proveedores-no-data">No hay proveedores disponibles</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className="proveedores-pagination">
+                    {[...Array(totalPages).keys()].map(page => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page + 1)}
+                        className={page + 1 === currentPage ? 'active' : ''}
+                      >
+                        {page + 1}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

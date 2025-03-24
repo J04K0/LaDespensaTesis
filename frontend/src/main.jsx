@@ -9,7 +9,6 @@ import Products from './Views/Products.jsx';
 import AddProducts from './Views/AddProducts.jsx';
 import DeudoresList from './Views/Deudores.jsx';
 import AddDeudor from './Views/AddDeudor.jsx';
-import ExpiringProducts from './Views/ExpiringProducts.jsx';
 import ProductScanner from './Views/ProductScanner.jsx';
 import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
@@ -44,10 +43,6 @@ const router = createBrowserRouter([
   {
   path: '/agregar-deudor',
   element: <AddDeudor />,
-  },
-  {
-  path: '/expiring-products',
-  element: <ExpiringProducts />,
   },
   {
   path: '/ProductScanner',

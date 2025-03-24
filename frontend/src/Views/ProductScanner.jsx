@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
 import { scanProducts, actualizarStockVenta, registrarVenta } from "../services/AddProducts.service.js";
 import "../styles/ProductScannerStyles.css";
+import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 
 const ProductScanner = () => {
   const navigate = useNavigate();
@@ -250,31 +251,37 @@ const ProductScanner = () => {
   return (
     <div className="scanner-container">
       <Navbar />
-      <SearchBar
-        codigoEscaneado={codigoEscaneado}
-        setCodigoEscaneado={setCodigoEscaneado}
-        handleScan={handleScan}
-      />
-      <div className="scanner-content">
-        <ProductInfo
-          producto={productoActual}
-          stockActual={productoActual ? stockPorProducto[productoActual.codigoBarras] || 0 : 0}
-          cantidad={cantidad}
-          disminuirCantidad={disminuirCantidad}
-          incrementarCantidad={incrementarCantidad}
-          agregarAlCarrito={() => productoActual && agregarAlCarrito(productoActual)}
-        />
-        <Cart
-          carrito={carrito}
-          stockPorProducto={stockPorProducto}
-          eliminarDelCarrito={eliminarDelCarrito}
-          incrementarCantidadCarrito={incrementarCantidadCarrito}
-          disminuirCantidadCarrito={disminuirCantidadCarrito}
-          finalizarVenta={finalizarVenta}
-        />
-      </div>
-      {loading && <p>Cargando...</p>}
-      {error && <p className="error">{error}</p>}
+      {loading ? (
+        <ProductScannerSkeleton />
+      ) : (
+        <>
+          <SearchBar
+            codigoEscaneado={codigoEscaneado}
+            setCodigoEscaneado={setCodigoEscaneado}
+            handleScan={handleScan}
+          />
+          <div className="scanner-content">
+            <ProductInfo
+              producto={productoActual}
+              stockActual={productoActual ? stockPorProducto[productoActual.codigoBarras] || 0 : 0}
+              cantidad={cantidad}
+              disminuirCantidad={disminuirCantidad}
+              incrementarCantidad={incrementarCantidad}
+              agregarAlCarrito={() => productoActual && agregarAlCarrito(productoActual)}
+            />
+            <Cart
+              carrito={carrito}
+              stockPorProducto={stockPorProducto}
+              eliminarDelCarrito={eliminarDelCarrito}
+              incrementarCantidadCarrito={incrementarCantidadCarrito}
+              disminuirCantidadCarrito={disminuirCantidadCarrito}
+              finalizarVenta={finalizarVenta}
+            />
+          </div>
+          {loading && <p>Cargando...</p>}
+          {error && <p className="error">{error}</p>}
+        </>
+      )}
     </div>
   );
 };

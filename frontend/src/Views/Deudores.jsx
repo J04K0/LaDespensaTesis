@@ -6,6 +6,7 @@ import { getDeudores, deleteDeudor, updateDeudor } from '../services/deudores.se
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 
 const DeudoresList = () => {
   const [allDeudores, setAllDeudores] = useState([]);
@@ -14,6 +15,7 @@ const DeudoresList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
+  const [loading, setLoading] = useState(true); // Añadir estado de loading
   const deudoresPerPage = 8;
   const navigate = useNavigate();
   
@@ -50,12 +52,15 @@ const DeudoresList = () => {
   useEffect(() => {
     const fetchAllDeudores = async () => {
       try {
+        setLoading(true); // Activar loading
         const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
         setAllDeudores(data.deudores);
         setFilteredDeudores(data.deudores);
         setTotalPages(Math.ceil(data.deudores.length / deudoresPerPage));
       } catch (error) {
         console.error('Error fetching deudores:', error);
+      } finally {
+        setLoading(false); // Desactivar loading
       }
     };
 
@@ -240,201 +245,207 @@ const DeudoresList = () => {
     <div className="deudores-list-container">
       <Navbar />
       <div className="main-content">
-        <div className="section-title-deudores">
-          Personas deudoras
-          <button className="add-deudor-button" onClick={handleAddDeudor}>
-            <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
-          </button>
-        </div>
-        <div className="search-sort-container">
-          <div className="search-bar-deudores">
-            <input
-              id="search"
-              type="text"
-              className="input search-input"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Buscar deudores..."
-            />
-          </div>
-          <div className="sort-bar">
-            <select onChange={handleSortChange} value={sortOption} className="sort-select">
-              <option value="">Ordenar por</option>
-              <option value="name-asc">Nombre (A-Z)</option>
-              <option value="name-desc">Nombre (Z-A)</option>
-              <option value="debt-asc">Deuda (Ascendente)</option>
-              <option value="debt-desc">Deuda (Descendente)</option>
-              <option value="date-asc">Fecha a Pagar (Ascendente)</option>
-              <option value="date-desc">Fecha a Pagar (Descendente)</option>
-            </select>
-          </div>
-          <button onClick={handleClearFilters} className="clear-filters-button">
-            Limpiar Filtros
-          </button>
-        </div>
-        <table className="deudores-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Fecha a pagar</th>
-              <th>Número de teléfono</th>
-              <th>Deuda total</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedDeudores.map((deudor, index) => (
-              <tr key={index}>
-                <td>{deudor.Nombre || 'Nombre desconocido'}</td>
-                <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
-                <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
-                <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
-                <td className="actions-cell">
-                  <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
-                    <FontAwesomeIcon icon={faMoneyBillWave} />
-                  </button>
-                  <button onClick={() => handleEdit(deudor)} className="edit-button">
-                    <FontAwesomeIcon icon={faEdit} />
-                  </button>
-                  <button onClick={() => handleDelete(deudor._id)} className="delete-button">
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="pagination">
-          {[...Array(totalPages).keys()].map(page => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page + 1)}
-              className={page + 1 === currentPage ? 'active' : ''}
-              disabled={page + 1 === currentPage}
-            >
-              {page + 1}
-            </button>
-          ))}
-        </div>
-        
-        {/* Modal para actualizar deuda */}
-        {showModal && selectedDeudor && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
-              <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
-              <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
-              
-              <div className="modal-form-group">
-                <label htmlFor="amount">Monto:</label>
-                <input
-                  type="number"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Ingrese el monto"
-                  min="0"
-                  required
-                />
-              </div>
-              
-              <div className="modal-form-group payment-type">
-                <label>
-                  <input
-                    type="radio"
-                    name="paymentType"
-                    checked={isPayment}
-                    onChange={() => setIsPayment(true)}
-                  />
-                  Registrar pago (restar de la deuda)
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="paymentType"
-                    checked={!isPayment}
-                    onChange={() => setIsPayment(false)}
-                  />
-                  Añadir a la deuda
-                </label>
-              </div>
-              
-              <div className="modal-buttons">
-                <button onClick={handleDebtUpdate} className="confirm-button">
-                  Confirmar
-                </button>
-                <button onClick={() => setShowModal(false)} className="cancel-button">
-                  Cancelar
-                </button>
-              </div>
+        {loading ? (
+          <DeudoresListSkeleton />
+        ) : (
+          <>
+            <div className="section-title-deudores">
+              Personas deudoras
+              <button className="add-deudor-button" onClick={handleAddDeudor}>
+                <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
+              </button>
             </div>
-          </div>
-        )}
-        
-        {/* Nuevo Modal para editar deudor */}
-        {showEditModal && (
-          <div className="modal-overlay">
-            <div className="modal-content edit-modal">
-              <h3>Editar Deudor</h3>
-              
-              <div className="modal-form-group">
-                <label htmlFor="Nombre">Nombre:</label>
+            <div className="search-sort-container">
+              <div className="search-bar-deudores">
                 <input
+                  id="search"
                   type="text"
-                  id="Nombre"
-                  name="Nombre"
-                  value={deudorToEdit.Nombre}
-                  onChange={handleEditChange}
-                  required
+                  className="input search-input"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder="Buscar deudores..."
                 />
               </div>
-              
-              <div className="modal-form-group">
-                <label htmlFor="fechaPaga">Fecha a Pagar:</label>
-                <input
-                  type="date"
-                  id="fechaPaga"
-                  name="fechaPaga"
-                  value={deudorToEdit.fechaPaga}
-                  onChange={handleEditChange}
-                  required
-                />
+              <div className="sort-bar">
+                <select onChange={handleSortChange} value={sortOption} className="sort-select">
+                  <option value="">Ordenar por</option>
+                  <option value="name-asc">Nombre (A-Z)</option>
+                  <option value="name-desc">Nombre (Z-A)</option>
+                  <option value="debt-asc">Deuda (Ascendente)</option>
+                  <option value="debt-desc">Deuda (Descendente)</option>
+                  <option value="date-asc">Fecha a Pagar (Ascendente)</option>
+                  <option value="date-desc">Fecha a Pagar (Descendente)</option>
+                </select>
               </div>
-              
-              <div className="modal-form-group">
-                <label htmlFor="numeroTelefono">Número de Teléfono:</label>
-                <input
-                  type="text"
-                  id="numeroTelefono"
-                  name="numeroTelefono"
-                  value={deudorToEdit.numeroTelefono}
-                  onChange={handleEditChange}
-                  required
-                />
-              </div>
-              
-              <div className="modal-form-group">
-                <label htmlFor="deudaTotal">Deuda Total:</label>
-                <input
-                  type="number"
-                  id="deudaTotal"
-                  name="deudaTotal"
-                  value={deudorToEdit.deudaTotal}
-                  onChange={handleEditChange}
-                  required
-                />
-              </div>
-              
-              <div className="modal-buttons">
-                <button onClick={handleEditSubmit} className="confirm-button">
-                  Guardar Cambios
-                </button>
-                <button onClick={() => setShowEditModal(false)} className="cancel-button">
-                  Cancelar
-                </button>
-              </div>
+              <button onClick={handleClearFilters} className="clear-filters-button">
+                Limpiar Filtros
+              </button>
             </div>
-          </div>
+            <table className="deudores-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Fecha a pagar</th>
+                  <th>Número de teléfono</th>
+                  <th>Deuda total</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedDeudores.map((deudor, index) => (
+                  <tr key={index}>
+                    <td>{deudor.Nombre || 'Nombre desconocido'}</td>
+                    <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
+                    <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
+                    <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                    <td className="actions-cell">
+                      <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
+                        <FontAwesomeIcon icon={faMoneyBillWave} />
+                      </button>
+                      <button onClick={() => handleEdit(deudor)} className="edit-button">
+                        <FontAwesomeIcon icon={faEdit} />
+                      </button>
+                      <button onClick={() => handleDelete(deudor._id)} className="delete-button">
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="pagination">
+              {[...Array(totalPages).keys()].map(page => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page + 1)}
+                  className={page + 1 === currentPage ? 'active' : ''}
+                  disabled={page + 1 === currentPage}
+                >
+                  {page + 1}
+                </button>
+              ))}
+            </div>
+            
+            {/* Modal para actualizar deuda */}
+            {showModal && selectedDeudor && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
+                  <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
+                  <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
+                  
+                  <div className="modal-form-group">
+                    <label htmlFor="amount">Monto:</label>
+                    <input
+                      type="number"
+                      id="amount"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="Ingrese el monto"
+                      min="0"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-form-group payment-type">
+                    <label>
+                      <input
+                        type="radio"
+                        name="paymentType"
+                        checked={isPayment}
+                        onChange={() => setIsPayment(true)}
+                      />
+                      Registrar pago (restar de la deuda)
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="paymentType"
+                        checked={!isPayment}
+                        onChange={() => setIsPayment(false)}
+                      />
+                      Añadir a la deuda
+                    </label>
+                  </div>
+                  
+                  <div className="modal-buttons">
+                    <button onClick={handleDebtUpdate} className="confirm-button">
+                      Confirmar
+                    </button>
+                    <button onClick={() => setShowModal(false)} className="cancel-button">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Nuevo Modal para editar deudor */}
+            {showEditModal && (
+              <div className="modal-overlay">
+                <div className="modal-content edit-modal">
+                  <h3>Editar Deudor</h3>
+                  
+                  <div className="modal-form-group">
+                    <label htmlFor="Nombre">Nombre:</label>
+                    <input
+                      type="text"
+                      id="Nombre"
+                      name="Nombre"
+                      value={deudorToEdit.Nombre}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-form-group">
+                    <label htmlFor="fechaPaga">Fecha a Pagar:</label>
+                    <input
+                      type="date"
+                      id="fechaPaga"
+                      name="fechaPaga"
+                      value={deudorToEdit.fechaPaga}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-form-group">
+                    <label htmlFor="numeroTelefono">Número de Teléfono:</label>
+                    <input
+                      type="text"
+                      id="numeroTelefono"
+                      name="numeroTelefono"
+                      value={deudorToEdit.numeroTelefono}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-form-group">
+                    <label htmlFor="deudaTotal">Deuda Total:</label>
+                    <input
+                      type="number"
+                      id="deudaTotal"
+                      name="deudaTotal"
+                      value={deudorToEdit.deudaTotal}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="modal-buttons">
+                    <button onClick={handleEditSubmit} className="confirm-button">
+                      Guardar Cambios
+                    </button>
+                    <button onClick={() => setShowEditModal(false)} className="cancel-button">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

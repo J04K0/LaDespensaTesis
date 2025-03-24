@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faChartLine, faChartPie, faChartBar, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import axios from "../services/root.service.js";
 import { Bar, Pie, Doughnut } from "react-chartjs-2";
+import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
+import ChartSkeleton from '../components/ChartSkeleton';
 
 import { 
   Chart as ChartJS, 
@@ -146,10 +148,6 @@ const Home = () => {
     navigate('/products?filter=unavailable');
   };
 
-  const handleViewExpiringProducts = () => {
-    navigate('/products?filter=expiring');
-  };
-
   const handleViewExpiredProducts = () => {
     navigate('/products?filter=expired');
   };
@@ -204,40 +202,48 @@ const Home = () => {
       <Navbar />
       <div className="home-content">
         <div className="home-deudores-container">
-          <div className="home-deudores-card">
-            <div className="home-deudores-header">
-              <h3>Personas deudoras</h3>
-              <button onClick={handleViewAllClick}>Ver todos</button>
-            </div>
-            <table className="home-deudores-table">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Deuda total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deudores.map((deudor, index) => (
-                  <tr key={index}>
-                    <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                    <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+          {loading ? (
+            <DeudoresTableSkeleton />
+          ) : (
+            <div className="home-deudores-card">
+              <div className="home-deudores-header">
+                <h3>Personas deudoras</h3>
+                <button onClick={handleViewAllClick}>Ver todos</button>
+              </div>
+              <table className="home-deudores-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Deuda total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {deudores.map((deudor, index) => (
+                    <tr key={index}>
+                      <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
+                      <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
         
         <div className="home-stats-container">
-          <div className="home-stats-card">
-            <div className="home-stats-controls">
-              <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>
-              <button onClick={nextChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowRight} /></button>
+          {loading ? (
+            <ChartSkeleton />
+          ) : (
+            <div className="home-stats-card">
+              <div className="home-stats-controls">
+                <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                <button onClick={nextChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowRight} /></button>
+              </div>
+              <div className="home-stats-content">
+                {renderCurrentChart()}
+              </div>
             </div>
-            <div className="home-stats-content">
-              {renderCurrentChart()}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
