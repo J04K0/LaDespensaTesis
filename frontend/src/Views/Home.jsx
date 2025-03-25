@@ -51,7 +51,25 @@ const Home = () => {
     const fetchDeudores = async () => {
       try {
         const data = await getDeudores(1, 8);
-        setDeudores(data.deudores);
+        
+        // Separar deudores con y sin deuda
+        const deudoresConDeuda = data.deudores.filter(deudor => {
+          const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+          return deudaValue > 0;
+        });
+        
+        const deudoresSinDeuda = data.deudores.filter(deudor => {
+          const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+          return deudaValue === 0;
+        });
+        
+        // Ordenar cada grupo (opcional, por nombre u otro criterio)
+        const deudoresOrdenados = [
+          ...deudoresConDeuda.sort((a, b) => a.Nombre.localeCompare(b.Nombre)),
+          ...deudoresSinDeuda.sort((a, b) => a.Nombre.localeCompare(b.Nombre))
+        ];
+        
+        setDeudores(deudoresOrdenados);
       } catch (error) {
         console.error('Error fetching deudores:', error);
       }
@@ -218,12 +236,17 @@ const Home = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {deudores.map((deudor, index) => (
-                    <tr key={index}>
-                      <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                      <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
-                    </tr>
-                  ))}
+                  {deudores.map((deudor, index) => {
+                    const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+                    const isZeroDebt = deudaValue === 0;
+                    
+                    return (
+                      <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
+                        <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
+                        <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

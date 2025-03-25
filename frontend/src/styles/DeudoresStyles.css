@@ -329,3 +329,21 @@
   gap: 10px;
   margin-top: 30px;
 }
+
+/* Estilo para deudores con deuda cero */
+.zero-debt-row {
+  background-color: #f0f0f0;  /* Gris claro en lugar de verde */
+  color: #888888;  /* Texto gris oscuro */
+  opacity: 0.85;  /* Ligera transparencia para efecto "apagado" */
+}
+
+.zero-debt-row td {
+  border-color: #dddddd;  /* Bordes más claros */
+}
+
+/* Mantener iconos y otros elementos dentro de la fila con el mismo efecto */
+.zero-debt-row button,
+.zero-debt-row svg {
+  opacity: 0.75;
+  color: #888888;
+}

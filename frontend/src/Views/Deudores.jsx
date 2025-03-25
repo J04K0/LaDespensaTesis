@@ -15,7 +15,7 @@ const DeudoresList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
-  const [loading, setLoading] = useState(true); // Añadir estado de loading
+  const [loading, setLoading] = useState(true);
   const deudoresPerPage = 8;
   const navigate = useNavigate();
   
@@ -76,7 +76,19 @@ const DeudoresList = () => {
   }, [searchQuery, allDeudores]);
 
   useEffect(() => {
-    const sortedDeudores = [...filteredDeudores].sort((a, b) => {
+    // Primero separamos los deudores con deuda 0 de los demás
+    const deudoresConDeuda = filteredDeudores.filter(deudor => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      return deudaValue > 0;
+    });
+    
+    const deudoresSinDeuda = filteredDeudores.filter(deudor => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      return deudaValue === 0;
+    });
+    
+    // Aplicamos el ordenamiento solo a los deudores con deuda
+    let sortedDeudoresConDeuda = [...deudoresConDeuda].sort((a, b) => {
       if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
       if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
       if (sortOption === 'debt-asc') {
@@ -94,8 +106,20 @@ const DeudoresList = () => {
       return 0;
     });
     
-    setFilteredDeudores(sortedDeudores);
-  }, [sortOption]);
+    // Ordenamos también los deudores sin deuda
+    let sortedDeudoresSinDeuda = [...deudoresSinDeuda].sort((a, b) => {
+      if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
+      if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
+      if (sortOption === 'date-asc') return new Date(a.fechaPaga) - new Date(b.fechaPaga);
+      if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
+      return 0;
+    });
+    
+    // Combinamos los resultados: primero los que tienen deuda, luego los sin deuda
+    const combinedDeudores = [...sortedDeudoresConDeuda, ...sortedDeudoresSinDeuda];
+    
+    setFilteredDeudores(combinedDeudores);
+  }, [sortOption, allDeudores, searchQuery]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -292,25 +316,30 @@ const DeudoresList = () => {
                 </tr>
               </thead>
               <tbody>
-                {displayedDeudores.map((deudor, index) => (
-                  <tr key={index}>
-                    <td>{deudor.Nombre || 'Nombre desconocido'}</td>
-                    <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
-                    <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
-                    <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
-                    <td className="actions-cell">
-                      <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
-                        <FontAwesomeIcon icon={faMoneyBillWave} />
-                      </button>
-                      <button onClick={() => handleEdit(deudor)} className="edit-button">
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                      <button onClick={() => handleDelete(deudor._id)} className="delete-button">
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {displayedDeudores.map((deudor, index) => {
+                  const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+                  const isZeroDebt = deudaValue === 0;
+                  
+                  return (
+                    <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
+                      <td>{deudor.Nombre || 'Nombre desconocido'}</td>
+                      <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
+                      <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
+                      <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                      <td className="actions-cell">
+                        <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
+                          <FontAwesomeIcon icon={faMoneyBillWave} />
+                        </button>
+                        <button onClick={() => handleEdit(deudor)} className="edit-button">
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                        <button onClick={() => handleDelete(deudor._id)} className="delete-button">
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             <div className="pagination">
