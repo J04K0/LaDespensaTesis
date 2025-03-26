@@ -31,15 +31,16 @@
     width: 50%;
 }
 
-form{
+form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 50%;
+    height: auto; /* Cambiado de 50% a auto para que se ajuste dinámicamente */
     background-color: #FFFFFF;
     border-radius: 30px;
     padding: 30px;
     width: 50%;
+    box-sizing: border-box; /* Asegura que el padding no afecte el tamaño total */
 }
 
 .titulo{
@@ -84,11 +85,13 @@ form{
     margin: 10px 0;
 }
 
-.containerOlvidaste{
+.containerOlvidaste {
     width: 100%;
     display: flex;
-    margin-top: 2px;
     justify-content: center;
+    margin-top: 10px; /* Ajusta el margen superior para evitar solapamientos */
+    padding: 0; /* Asegura que no haya padding adicional */
+    box-sizing: border-box;
 }
 
 .olvidaste{
