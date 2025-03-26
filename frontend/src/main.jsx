@@ -14,6 +14,7 @@ import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
 import Proveedores from './Views/Proveedores.jsx';
 import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
+import VirtualAssistant from './components/VirtualAssistant.jsx';
 
 const router = createBrowserRouter([
   {
@@ -27,45 +28,95 @@ const router = createBrowserRouter([
   },
   {
     path: '/home',
-    element: <App />,
+    element: (
+      <>
+        <App />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
     path: '/products',
-    element: <Products />,
+    element: (
+      <>
+        <Products />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
     path: '/add-product',
-    element: <AddProducts />,
+    element: (
+      <>
+        <AddProducts />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
     path: '/deudores',
-    element: <DeudoresList />,
+    element: (
+      <>
+        <DeudoresList />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/agregar-deudor',
-  element: <AddDeudor />,
+    path: '/agregar-deudor',
+    element: (
+      <>
+        <AddDeudor />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/ProductScanner',
-  element: <ProductScanner />,
+    path: '/ProductScanner',
+    element: (
+      <>
+        <ProductScanner />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/HistorySale',
-  element: <HistorySale />,
+    path: '/HistorySale',
+    element: (
+      <>
+        <HistorySale />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/finanzas',
-  element: <Finanzas />,
+    path: '/finanzas',
+    element: (
+      <>
+        <Finanzas />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/proveedores',
-  element: <Proveedores />,
+    path: '/proveedores',
+    element: (
+      <>
+        <Proveedores />
+        <VirtualAssistant />
+      </>
+    ),
   },
   {
-  path: '/cuentas-por-pagar',
-  element: <CuentasPorPagar />,
+    path: '/cuentas-por-pagar',
+    element: (
+      <>
+        <CuentasPorPagar />
+        <VirtualAssistant />
+      </>
+    ),
   },
-  ]);
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <RouterProvider router={router} />

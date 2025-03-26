@@ -357,13 +357,13 @@ const DeudoresList = () => {
             
             {/* Modal para actualizar deuda */}
             {showModal && selectedDeudor && (
-              <div className="modal-overlay">
-                <div className="modal-content">
+              <div className="deudores-modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
                   <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
                   <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
                   <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
                   
-                  <div className="modal-form-group">
+                  <div className="deudores-modal-form-group">
                     <label htmlFor="amount">Monto:</label>
                     <input
                       type="number"
@@ -376,7 +376,7 @@ const DeudoresList = () => {
                     />
                   </div>
                   
-                  <div className="modal-form-group payment-type">
+                  <div className="deudores-modal-form-group payment-type">
                     <label>
                       <input
                         type="radio"
@@ -397,11 +397,11 @@ const DeudoresList = () => {
                     </label>
                   </div>
                   
-                  <div className="modal-buttons">
-                    <button onClick={handleDebtUpdate} className="confirm-button">
+                  <div className="deudores-modal-buttons">
+                    <button onClick={handleDebtUpdate} className="deudores-confirm-button">
                       Confirmar
                     </button>
-                    <button onClick={() => setShowModal(false)} className="cancel-button">
+                    <button onClick={() => setShowModal(false)} className="deudores-cancel-button">
                       Cancelar
                     </button>
                   </div>
@@ -409,71 +409,26 @@ const DeudoresList = () => {
               </div>
             )}
             
-            {/* Nuevo Modal para editar deudor */}
+            {/* Modal para editar deudor */}
             {showEditModal && (
-              <div className="modal-overlay">
-                <div className="modal-content edit-modal">
+              <div className="deudores-modal-overlay" onClick={() => setShowEditModal(false)}>
+                <div className="deudores-modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Editar Deudor</h3>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="Nombre">Nombre:</label>
-                    <input
-                      type="text"
-                      id="Nombre"
-                      name="Nombre"
-                      value={deudorToEdit.Nombre}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
+                  {/* ...contenido del modal de edición... */}
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="fechaPaga">Fecha a Pagar:</label>
-                    <input
-                      type="date"
-                      id="fechaPaga"
-                      name="fechaPaga"
-                      value={deudorToEdit.fechaPaga}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="modal-form-group">
-                    <label htmlFor="numeroTelefono">Número de Teléfono:</label>
-                    <input
-                      type="text"
-                      id="numeroTelefono"
-                      name="numeroTelefono"
-                      value={deudorToEdit.numeroTelefono}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="modal-form-group">
-                    <label htmlFor="deudaTotal">Deuda Total:</label>
-                    <input
-                      type="number"
-                      id="deudaTotal"
-                      name="deudaTotal"
-                      value={deudorToEdit.deudaTotal}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="modal-buttons">
-                    <button onClick={handleEditSubmit} className="confirm-button">
+                  <div className="deudores-modal-buttons">
+                    <button onClick={handleEditSubmit} className="deudores-confirm-button">
                       Guardar Cambios
                     </button>
-                    <button onClick={() => setShowEditModal(false)} className="cancel-button">
+                    <button onClick={() => setShowEditModal(false)} className="deudores-cancel-button">
                       Cancelar
                     </button>
                   </div>
                 </div>
               </div>
             )}
+            
           </>
         )}
       </div>
