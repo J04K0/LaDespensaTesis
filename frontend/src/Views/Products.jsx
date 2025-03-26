@@ -4,11 +4,10 @@ import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById, obtenerVentas } from '../services/AddProducts.service';
-import Swal from 'sweetalert2';
+import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 
 const Products = () => {
-  // Estados existentes
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,8 +18,7 @@ const Products = () => {
   const [sortOption, setSortOption] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Nuevos estados para el modal de edición
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [productToEdit, setProductToEdit] = useState({
     Nombre: '',
@@ -34,8 +32,7 @@ const Products = () => {
     precioAntiguo: 0
   });
   const [editImage, setEditImage] = useState(null);
-  
-  // Nuevos estados para el modal de información
+
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [productInfo, setProductInfo] = useState(null);
   const [productStats, setProductStats] = useState({
@@ -44,12 +41,11 @@ const Products = () => {
     ultimaVenta: null,
     ventasPorMes: []
   });
-  
+
   const productsPerPage = 9;
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Categorías existentes sin cambios
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
     'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
@@ -57,12 +53,10 @@ const Products = () => {
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
 
-  // 🔹 Función para manejar el ordenamiento
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
   };
 
-  // 🔹 Aplica el ordenamiento según la opción seleccionada
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
     if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
@@ -73,7 +67,6 @@ const Products = () => {
     return 0;
   });
 
-  // 🔹 Filtra por búsqueda y paginación
   const filteredAndSearchedProducts = sortedProducts.filter(product =>
     product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -160,7 +153,7 @@ const Products = () => {
   const fetchLowStockProducts = async () => {
     try {
       const data = await getLowStockProducts();
-      const filteredData = data.filter(product => product.Stock > 0); // Filtrar productos con stock 0
+      const filteredData = data.filter(product => product.Stock > 0);
       setFilteredProducts(filteredData);
       setTotalPages(Math.ceil(filteredData.length / productsPerPage));
     } catch (error) {
@@ -226,33 +219,22 @@ const Products = () => {
       setAllProducts(updatedProducts);
       setFilteredProducts(updatedProducts);
       setTotalPages(Math.ceil(updatedProducts.length / productsPerPage));
-      Swal.fire({
-        icon: 'success',
-        title: 'Producto eliminado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      showSuccessAlert('Producto eliminado con éxito', '');
     } catch (error) {
       console.error('Error deleting product:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al eliminar el producto',
-        text: 'Ocurrió un error al intentar eliminar el producto.',
-      });
+      showErrorAlert('Error al eliminar el producto', 'Ocurrió un error al intentar eliminar el producto.');
     }
   };
 
-  // Modificar la función handleEdit para usar el modal en lugar de navegar
   const handleEdit = async (id) => {
     try {
       setLoading(true);
       const data = await getProductById(id);
-      
-      // Formatear la fecha para el input type="date"
-      const formattedDate = data.fechaVencimiento 
-        ? new Date(data.fechaVencimiento).toISOString().split('T')[0] 
+
+      const formattedDate = data.fechaVencimiento
+        ? new Date(data.fechaVencimiento).toISOString().split('T')[0]
         : '';
-      
+
       setProductToEdit({
         _id: id,
         Nombre: data.Nombre || '',
@@ -265,22 +247,17 @@ const Products = () => {
         fechaVencimiento: formattedDate,
         precioAntiguo: Number(data.precioAntiguo) || 0,
       });
-      
+
       setEditImage(data.image || null);
       setShowEditModal(true);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching product:', error);
       setLoading(false);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al cargar el producto',
-        text: 'No se pudo cargar la información del producto para editar.',
-      });
+      showErrorAlert('Error al cargar el producto', 'No se pudo cargar la información del producto para editar.');
     }
   };
-  
-  // Función para manejar los cambios en el formulario
+
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setProductToEdit({
@@ -290,117 +267,90 @@ const Products = () => {
         : value
     });
   };
-  
-  // Función para manejar el cambio de imagen
+
   const handleImageChange = (e) => {
     setEditImage(e.target.files[0]);
   };
-  
-  // Función para guardar los cambios
+
   const handleEditSubmit = async () => {
     try {
       setLoading(true);
-      
+
       const formData = new FormData();
       const { _id, ...productData } = productToEdit;
-      
-      // Añadir datos del producto al FormData
+
       Object.keys(productData).forEach(key => {
         formData.append(key, productData[key]);
       });
-      
-      // Añadir imagen solo si se seleccionó una nueva
+
       if (editImage instanceof File) {
         formData.append('image', editImage);
       }
-      
-      // No añadir ningún campo de imagen si se mantiene la existente
-      // El backend debe mantener la imagen anterior si no se proporciona una nueva
-      
+
       await updateProduct(_id, formData);
-      
-      // Resto del código sin cambios
+
       const updatedProductsList = await getProducts(1, Number.MAX_SAFE_INTEGER);
-      const productsArray = Array.isArray(updatedProductsList.products) 
-        ? updatedProductsList.products 
+      const productsArray = Array.isArray(updatedProductsList.products)
+        ? updatedProductsList.products
         : updatedProductsList.data.products;
-      
+
       setAllProducts(productsArray);
       setFilteredProducts(productsArray);
-      
+
       setShowEditModal(false);
       setLoading(false);
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Producto actualizado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+
+      showSuccessAlert('Producto actualizado con éxito', '');
     } catch (error) {
       console.error('Error updating product:', error);
       setLoading(false);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar el producto',
-        text: 'Ocurrió un error al intentar actualizar el producto.',
-      });
+      showErrorAlert('Error al actualizar el producto', 'Ocurrió un error al intentar actualizar el producto.');
     }
   };
 
-  // Nueva función para obtener estadísticas del producto
   const handleProductInfo = async (product) => {
     setLoading(true);
     setProductInfo(product);
-    
+
     try {
-      // Obtener todas las ventas
       const response = await obtenerVentas();
       const ventas = response.data || [];
-      
-      // Filtra ventas por el producto seleccionado
-      const ventasProducto = ventas.filter(venta => 
+
+      const ventasProducto = ventas.filter(venta =>
         venta.nombre === product.Nombre && venta.codigoBarras === product.codigoBarras
       );
-      
-      // Calcular estadísticas
+
       const totalVentas = ventasProducto.reduce((sum, venta) => sum + venta.cantidad, 0);
       const ingresos = ventasProducto.reduce((sum, venta) => sum + (venta.cantidad * venta.precioVenta), 0);
-      
-      // Encontrar última venta
+
       let ultimaVenta = null;
       if (ventasProducto.length > 0) {
         const fechas = ventasProducto.map(v => new Date(v.fecha));
         ultimaVenta = new Date(Math.max(...fechas));
       }
-      
-      // Agrupar ventas por mes
+
       const ventasPorMes = {};
       ventasProducto.forEach(venta => {
         const fecha = new Date(venta.fecha);
         const mes = `${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
-        
+
         if (!ventasPorMes[mes]) {
           ventasPorMes[mes] = 0;
         }
         ventasPorMes[mes] += venta.cantidad;
       });
-      
+
       setProductStats({
         totalVentas,
         ingresos,
         ultimaVenta,
         ventasPorMes: Object.entries(ventasPorMes).map(([mes, cantidad]) => ({ mes, cantidad }))
       });
-      
+
       setShowInfoModal(true);
     } catch (error) {
       console.error('Error fetching product statistics:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudieron cargar las estadísticas del producto'
-      });
+      showErrorAlert('Error', 'No se pudieron cargar las estadísticas del producto');
     } finally {
       setLoading(false);
     }
@@ -464,7 +414,6 @@ const Products = () => {
         </div>
         {loading ? (
           <div className="product-list">
-            {/* Mostramos 9 skeletons (igual que productsPerPage) */}
             {Array.from({ length: productsPerPage }).map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
@@ -505,7 +454,6 @@ const Products = () => {
           ))}
         </div>
       </div>
-      {/* Modal para mostrar información del producto */}
       {showInfoModal && productInfo && (
         <div 
           className="modal-overlay" 
@@ -573,15 +521,14 @@ const Products = () => {
         </div>
       )}
       
-      {/* Modal para editar producto */}
       {showEditModal && (
         <div 
           className="modal-overlay" 
-          onClick={() => setShowEditModal(false)} // Cerrar al hacer clic en el fondo
+          onClick={() => setShowEditModal(false)}
         >
           <div 
             className="modal-content edit-modal product-edit-modal"
-            onClick={(e) => e.stopPropagation()} // Evitar que clics dentro del modal lo cierren
+            onClick={(e) => e.stopPropagation()}
           >
             <h3>Editar Producto</h3>
             

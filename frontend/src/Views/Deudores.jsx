@@ -5,7 +5,7 @@ import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
+import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 
 const DeudoresList = () => {
@@ -135,19 +135,10 @@ const DeudoresList = () => {
       );
       setFilteredDeudores(filtered);
       setTotalPages(Math.ceil(filtered.length / deudoresPerPage));
-      Swal.fire({
-        icon: 'success',
-        title: 'Deudor eliminado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      showSuccessAlert('Deudor eliminado con éxito', '');
     } catch (error) {
       console.error('Error deleting deudor:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al eliminar el deudor',
-        text: 'Ocurrió un error al intentar eliminar el deudor.',
-      });
+      showErrorAlert('Error al eliminar el deudor', 'Ocurrió un error al intentar eliminar el deudor.');
     }
   };
 
@@ -180,11 +171,7 @@ const DeudoresList = () => {
   };
   const handleDebtUpdate = async () => {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Monto inválido',
-        text: 'Por favor ingrese un monto válido mayor a cero.',
-      });
+      showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
       return;
     }
 
@@ -209,19 +196,13 @@ const DeudoresList = () => {
       ));
       
       setShowModal(false);
-      Swal.fire({
-        icon: 'success',
-        title: isPayment ? 'Pago registrado con éxito' : 'Deuda actualizada con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      showSuccessAlert(
+        isPayment ? 'Pago registrado con éxito' : 'Deuda actualizada con éxito',
+        ''
+      );
     } catch (error) {
       console.error('Error al actualizar la deuda:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar la deuda',
-        text: 'Ocurrió un error al intentar actualizar la deuda.',
-      });
+      showErrorAlert('Error al actualizar la deuda', 'Ocurrió un error al intentar actualizar la deuda.');
     }
   };
 
@@ -249,19 +230,10 @@ const DeudoresList = () => {
       ));
       
       setShowEditModal(false);
-      Swal.fire({
-        icon: 'success',
-        title: 'Deudor actualizado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      showSuccessAlert('Deudor actualizado con éxito', '');
     } catch (error) {
       console.error('Error updating deudor:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar el deudor',
-        text: 'Ocurrió un error al intentar actualizar el deudor.',
-      });
+      showErrorAlert('Error al actualizar el deudor', 'Ocurrió un error al intentar actualizar el deudor.');
     }
   };
 

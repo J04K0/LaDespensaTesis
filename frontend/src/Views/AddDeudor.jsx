@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/AddDeudorStyles.css';
 import { addDeudor } from '../services/deudores.service.js';
-import Swal from 'sweetalert2';
+import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 
 const AddDeudor = () => {
   const [nombre, setNombre] = useState('');
@@ -22,20 +22,11 @@ const AddDeudor = () => {
     };
     try {
       await addDeudor(newDeudor);
-      Swal.fire({
-        icon: 'success',
-        title: 'Deudor creado con éxito',
-        showConfirmButton: false,
-        timer: 1500
-      });
+      showSuccessAlert('Deudor creado con éxito', '');
       navigate('/deudores');
     } catch (error) {
       console.error('Error creando deudor:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al crear el deudor',
-        text: 'Ocurrió un error al intentar crear el deudor.',
-      });
+      showErrorAlert('Error al crear el deudor', 'Ocurrió un error al intentar crear el deudor.');
     }
   };
 

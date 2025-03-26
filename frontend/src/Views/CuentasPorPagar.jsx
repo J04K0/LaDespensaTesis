@@ -5,7 +5,7 @@ import '../styles/CuentasPorPagarStyles.css';
 import axios from "../services/root.service.js";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faCheckCircle, faSearch, faFilter, faEraser, faCheck, faTimes, faFilePdf } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
+import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import CuentasPorPagarSkeleton from '../components/CuentasPorPagarSkeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -128,18 +128,10 @@ const CuentasPorPagar = () => {
           setCuentasAgrupadas({});
           setTotalPages(1);
         } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error al cargar las cuentas',
-            text: error.response.data?.message || 'Error en el servidor'
-          });
+          showErrorAlert('Error al cargar las cuentas', error.response.data?.message || 'Error en el servidor');
         }
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: 'No se pudo conectar con el servidor'
-        });
+        showErrorAlert('Error de conexión', 'No se pudo conectar con el servidor');
       }
     } finally {
       setLoading(false);
@@ -257,73 +249,47 @@ const CuentasPorPagar = () => {
 
   // Eliminar cuenta
   const handleDelete = async (id) => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: "Esta acción no se puede revertir",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await axios.delete(`/cuentasPorPagar/eliminar/${id}`);
-          
-          if (response.data.status === "success") {
-            await fetchCuentas();
-            
-            Swal.fire({
-              icon: 'success',
-              title: 'Cuenta eliminada con éxito',
-              showConfirmButton: false,
-              timer: 1500
-            });
-          } else {
-            throw new Error(response.data.message);
-          }
-        } catch (error) {
-          console.error('Error deleting cuenta:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error al eliminar la cuenta',
-            text: 'Ocurrió un error al intentar eliminar la cuenta.',
-          });
+    const result = await showConfirmationAlert(
+      '¿Estás seguro?',
+      'Esta acción no se puede revertir',
+      'Sí, eliminar',
+      'Cancelar'
+    );
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.delete(`/cuentasPorPagar/eliminar/${id}`);
+        if (response.data.status === "success") {
+          await fetchCuentas();
+          showSuccessAlert('Cuenta eliminada con éxito', '');
+        } else {
+          throw new Error(response.data.message);
         }
+      } catch (error) {
+        console.error('Error deleting cuenta:', error);
+        showErrorAlert('Error al eliminar la cuenta', 'Ocurrió un error al intentar eliminar la cuenta.');
       }
-    });
+    }
   };
 
   // Marcar como pagada
   const handleTogglePaid = async (id, estadoActual) => {
+    if (estadoActual === 'Pagado') {
+      showWarningAlert('Advertencia', 'La cuenta ya está marcada como pagada.');
+      return;
+    }
+
     try {
-      if (estadoActual === 'Pagado') {
-        // No hacemos nada si ya está pagada
-        return;
-      }
-      
       const response = await axios.patch(`/cuentasPorPagar/pagar/${id}`);
-      
       if (response.data.status === "success") {
         await fetchCuentas();
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Cuenta marcada como pagada',
-          showConfirmButton: false,
-          timer: 1500
-        });
+        showSuccessAlert('Cuenta marcada como pagada', '');
       } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
       console.error('Error marking as paid:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al marcar como pagada',
-        text: 'Ocurrió un error al intentar marcar la cuenta como pagada.',
-      });
+      showErrorAlert('Error al marcar como pagada', 'Ocurrió un error al intentar marcar la cuenta como pagada.');
     }
   };
 
@@ -341,11 +307,7 @@ const CuentasPorPagar = () => {
     try {
       if (!currentCuenta.Nombre || !currentCuenta.numeroVerificador || !currentCuenta.Mes || 
           !currentCuenta.Monto || !currentCuenta.Estado || !currentCuenta.Categoria) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Campos incompletos',
-          text: 'Por favor complete todos los campos requeridos.'
-        });
+        showErrorAlert('Campos incompletos', 'Por favor complete todos los campos requeridos.');
         return;
       }
 
@@ -361,23 +323,16 @@ const CuentasPorPagar = () => {
       if (response.data.status === "success") {
         await fetchCuentas();
         setShowModal(false);
-        
-        Swal.fire({
-          icon: 'success',
-          title: isEditing ? 'Cuenta actualizada con éxito' : 'Cuenta creada con éxito',
-          showConfirmButton: false,
-          timer: 1500
-        });
+        showSuccessAlert(isEditing ? 'Cuenta actualizada con éxito' : 'Cuenta creada con éxito', '');
       } else {
         throw new Error(response.data.message || 'Error desconocido');
       }
     } catch (error) {
       console.error('Error saving cuenta:', error);
-      Swal.fire({
-        icon: 'error',
-        title: isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
-        text: 'Ocurrió un error al intentar guardar la cuenta.',
-      });
+      showErrorAlert(
+        isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
+        'Ocurrió un error al intentar guardar la cuenta.'
+      );
     }
   };
   

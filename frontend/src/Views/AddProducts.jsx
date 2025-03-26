@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Swal from 'sweetalert2';
 import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
+import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import '../styles/AddProductStyles.css';
 
 const AddProducts = () => {
@@ -24,40 +24,39 @@ const AddProducts = () => {
   const handleCodigoBarrasChange = async (e) => {
     const value = e.target.value;
     setCodigoBarras(value);
-  
+
     if (value.length === 13) {
       try {
         const product = await getProductByBarcodeForCreation(value);
-  
+
         if (product) {
           setNombre(product.nombre);
           setMarca(product.marca);
           setCategoria(product.categoria);
-  
+
           if (product.image) {
             setImage(product.image);
           } else {
             setImage(null);
           }
         } else {
-          Swal.fire('Error', 'Producto no encontrado', 'error');
+          showErrorAlert('Error', 'Producto no encontrado');
         }
       } catch (error) {
         console.error('Error fetching product by barcode:', error);
-        Swal.fire('Error', 'Ocurrió un error al buscar el producto.', 'error');
+        showErrorAlert('Error', 'Ocurrió un error al buscar el producto.');
       }
     }
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (Categoria === '') {
-      Swal.fire('Error', 'Por favor, seleccione una categoría válida.', 'error');
+      showErrorAlert('Error', 'Por favor, seleccione una categoría válida.');
       return;
     }
-  
+
     const formData = new FormData();
     formData.append('Nombre', Nombre);
     formData.append('codigoBarras', codigoBarras);
@@ -67,25 +66,22 @@ const AddProducts = () => {
     formData.append('PrecioCompra', PrecioCompra);
     formData.append('fechaVencimiento', fechaVencimiento);
     formData.append('PrecioVenta', PrecioVenta);
-  
+
     if (image instanceof File) {
       formData.append('image', image);
     } else if (typeof image === 'string' && image.startsWith('http')) {
       formData.append('imageUrl', image);
     }
-  
+
     try {
       await addProducts(formData);
-      Swal.fire('Éxito', 'Producto creado con éxito', 'success');
+      showSuccessAlert('Éxito', 'Producto creado con éxito');
       navigate('/products');
     } catch (error) {
       console.error('Error al añadir el producto', error);
-      Swal.fire('Error', 'Ocurrió un error al intentar crear el producto.', 'error');
+      showErrorAlert('Error', 'Ocurrió un error al intentar crear el producto.');
     }
   };
-  
-  
-  
 
   return (
     <div className="add-prod-page">
@@ -157,5 +153,6 @@ const AddProducts = () => {
       </div>
     </div>
   );
-}  
+};
+
 export default AddProducts;

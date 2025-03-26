@@ -16,6 +16,7 @@ import {
   vincularProductos
 } from '../services/proveedores.service.js';
 import { getProducts } from '../services/AddProducts.service.js';
+import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProveedoresSkeleton from '../components/ProveedoresSkeleton';
 
 const Proveedores = () => {
@@ -200,46 +201,33 @@ const Proveedores = () => {
       await fetchProveedorProductos(id);
     } catch (error) {
       console.error('Error al obtener proveedor para editar:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo cargar la información del proveedor',
-      });
+      showErrorAlert('Error', 'No se pudo cargar la información del proveedor');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteProveedor = (id) => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: "No podrás revertir esta acción",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          setLoading(true);
-          await deleteProveedor(id);
-          fetchProveedores();
-          
-          Swal.fire('Eliminado', 'El proveedor ha sido eliminado.', 'success');
-        } catch (error) {
-          console.error('Error al eliminar proveedor:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo eliminar el proveedor',
-          });
-        } finally {
-          setLoading(false);
-        }
+  const handleDeleteProveedor = async (id) => {
+    const result = await showConfirmationAlert(
+      '¿Estás seguro?',
+      'No podrás revertir esta acción',
+      'Sí, eliminar',
+      'Cancelar'
+    );
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await deleteProveedor(id);
+        fetchProveedores();
+        showSuccessAlert('Eliminado', 'El proveedor ha sido eliminado.');
+      } catch (error) {
+        console.error('Error al eliminar proveedor:', error);
+        showErrorAlert('Error', 'No se pudo eliminar el proveedor');
+      } finally {
+        setLoading(false);
       }
-    });
+    }
   };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -269,7 +257,7 @@ const Proveedores = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentProveedor.nombre || !currentProveedor.telefono) {
-      Swal.fire('Error', 'El nombre y teléfono son obligatorios', 'error');
+      showWarningAlert('Error', 'El nombre y teléfono son obligatorios');
       return;
     }
     
@@ -283,7 +271,7 @@ const Proveedores = () => {
           await vincularProductos(_id, selectedProducts);
         }
         
-        Swal.fire('Actualizado', 'Proveedor actualizado con éxito', 'success');
+        showSuccessAlert('Actualizado', 'Proveedor actualizado con éxito');
       } else {
         const nuevoProveedorData = { 
           ...currentProveedor, 
@@ -291,7 +279,7 @@ const Proveedores = () => {
         };
         
         await createProveedor(nuevoProveedorData);
-        Swal.fire('Agregado', 'Proveedor agregado con éxito', 'success');
+        showSuccessAlert('Agregado', 'Proveedor agregado con éxito');
       }
 
       fetchProveedores();
@@ -299,11 +287,10 @@ const Proveedores = () => {
       setShowModal(false);
     } catch (error) {
       console.error(isEditing ? 'Error al actualizar proveedor:' : 'Error al crear proveedor:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: isEditing ? 'No se pudo actualizar el proveedor' : 'No se pudo crear el proveedor'
-      });
+      showErrorAlert(
+        'Error',
+        isEditing ? 'No se pudo actualizar el proveedor' : 'No se pudo crear el proveedor'
+      );
     } finally {
       setLoading(false);
     }
@@ -338,18 +325,10 @@ const Proveedores = () => {
           
           await fetchProveedores();
           
-          Swal.fire({
-            icon: 'success',
-            title: 'Importación exitosa',
-            text: 'Los proveedores han sido importados correctamente'
-          });
+          showSuccessAlert('Importación exitosa', 'Los proveedores han sido importados correctamente');
         } catch (error) {
           console.error('Error al importar CSV:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al importar los proveedores'
-          });
+          showErrorAlert('Error', 'Ocurrió un error al importar los proveedores');
         } finally {
           setLoading(false);
           e.target.value = '';
@@ -357,11 +336,7 @@ const Proveedores = () => {
       },
       error: (error) => {
         console.error('Error al procesar CSV:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'El archivo CSV no tiene el formato correcto'
-        });
+        showErrorAlert('Error', 'El archivo CSV no tiene el formato correcto');
       }
     });
   };
@@ -377,7 +352,7 @@ const Proveedores = () => {
         await fetchAllProducts();
       } catch (error) {
         console.error('Error al cargar productos:', error);
-        Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+        showErrorAlert('Error', 'No se pudieron cargar los productos');
         return;
       }
     }
@@ -407,20 +382,12 @@ const Proveedores = () => {
       await vincularProductos(currentProveedor._id, selectedProducts);
       await fetchProveedorProductos(currentProveedor._id);
       
-      Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: 'Productos vinculados correctamente al proveedor',
-      });
+      showSuccessAlert('Éxito', 'Productos vinculados correctamente al proveedor');
       
       setShowProductsModal(false);
     } catch (error) {
       console.error('Error al vincular productos:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudieron vincular los productos al proveedor',
-      });
+      showErrorAlert('Error', 'No se pudieron vincular los productos al proveedor');
     } finally {
       setLoading(false);
     }
@@ -441,7 +408,7 @@ const Proveedores = () => {
       }
     } catch (error) {
       console.error('Error al cargar productos del proveedor:', error);
-      Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+      showErrorAlert('Error', 'No se pudieron cargar los productos');
     } finally {
       setLoading(false);
     }

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
-import { getDeudores, deleteDeudor } from '../services/deudores.service.js';
+import { getDeudores } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faChartLine, faChartPie, faChartBar, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import axios from "../services/root.service.js";
 import { Bar, Pie, Doughnut } from "react-chartjs-2";
 import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
@@ -36,7 +36,6 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const [showProductOptions, setShowProductOptions] = useState(false);
   const [deudores, setDeudores] = useState([]);
   const navigate = useNavigate();
   
@@ -154,20 +153,8 @@ const Home = () => {
     setCurrentChart((prevChart) => (prevChart - 1 + 3) % 3);
   };
 
-  const toggleProductOptions = () => {
-    setShowProductOptions(!showProductOptions);
-  };
-
   const handleViewAllClick = () => {
     navigate('/deudores');
-  };
-
-  const handleViewOutOfStock = () => {
-    navigate('/products?filter=unavailable');
-  };
-
-  const handleViewExpiredProducts = () => {
-    navigate('/products?filter=expired');
   };
 
   const chartOptions = {

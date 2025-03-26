@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import Swal from "sweetalert2";
 import { scanProducts, actualizarStockVenta, registrarVenta } from "../services/AddProducts.service.js";
+import { showSuccessAlert, showErrorAlert, showWarningAlert } from "../helpers/swaHelper";
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 
@@ -19,12 +19,7 @@ const ProductScanner = () => {
   const handleScan = async (e) => {
     e.preventDefault();
     if (!codigoEscaneado.trim()) {
-      Swal.fire({
-        title: "Código inválido",
-        text: "Ingrese un código de barras válido",
-        icon: "warning",
-        confirmButtonText: "Aceptar",
-      });
+      showWarningAlert("Código inválido", "Ingrese un código de barras válido");
       return;
     }
 
@@ -45,21 +40,11 @@ const ProductScanner = () => {
           agregarAlCarrito(productoEncontrado);
         } else {
           console.warn("⚠️ Producto agotado.");
-          Swal.fire({
-            title: "Stock insuficiente",
-            text: "No hay suficiente stock disponible para este producto.",
-            icon: "error",
-            confirmButtonText: "Aceptar",
-          });
+          showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para este producto.");
         }
       } else {
         setProductoActual(null);
-        Swal.fire({
-          title: "Producto no encontrado",
-          text: "No existe un producto con este código de barras en la base de datos.",
-          icon: "error",
-          confirmButtonText: "Aceptar",
-        });
+        showErrorAlert("Producto no encontrado", "No existe un producto con este código de barras en la base de datos.");
       }
       setCodigoEscaneado("");
       setCantidad(1);
@@ -89,24 +74,14 @@ const ProductScanner = () => {
 
   const agregarAlCarrito = (producto) => {
     if (!producto) {
-      Swal.fire({
-        title: "Error",
-        text: "Debes escanear un producto primero",
-        icon: "warning",
-        confirmButtonText: "Aceptar",
-      });
+      showWarningAlert("Error", "Debes escanear un producto primero");
       return;
     }
 
     const stockDisponible = stockPorProducto[producto.codigoBarras] || producto.stock;
     
     if (stockDisponible < cantidad) {
-      Swal.fire({
-        title: "Stock insuficiente",
-        text: "No hay suficiente stock disponible para esta cantidad.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
+      showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para esta cantidad.");
       return;
     }
     const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
@@ -197,12 +172,7 @@ const ProductScanner = () => {
 
   const finalizarVenta = async () => {
     if (carrito.length === 0) {
-      Swal.fire({
-        title: "Carrito vacío",
-        text: "Agrega productos antes de finalizar la venta.",
-        icon: "warning",
-        confirmButtonText: "Aceptar",
-      });
+      showWarningAlert("Carrito vacío", "Agrega productos antes de finalizar la venta.");
       return Promise.reject("Carrito vacío");
     }
   
@@ -210,12 +180,7 @@ const ProductScanner = () => {
     const montoEntregado = parseFloat(document.getElementById("montoEntregado").value);
   
     if (montoEntregado < total) {
-      Swal.fire({
-        title: "Monto insuficiente",
-        text: "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
+      showErrorAlert("Monto insuficiente", "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
       return Promise.reject("Monto insuficiente");
     }
   
@@ -224,29 +189,18 @@ const ProductScanner = () => {
     try {
       await actualizarStockVenta(carrito);
       await registrarVenta(carrito);
-      Swal.fire({
-        title: "Venta realizada",
-        text: "Los productos han sido vendidos con éxito y el stock ha sido actualizado.",
-        icon: "success",
-        confirmButtonText: "Aceptar",
-      });
+      showSuccessAlert("Venta realizada", "Los productos han sido vendidos con éxito y el stock ha sido actualizado.");
       resetState();
       return Promise.resolve();
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);
       setError("Hubo un problema al actualizar el stock y registrar la venta en la base de datos.");
-      Swal.fire({
-        title: "Error",
-        text: "Hubo un problema al registrar la venta en la base de datos.",
-        icon: "error",
-        confirmButtonText: "Aceptar",
-      });
+      showErrorAlert("Error", "Hubo un problema al registrar la venta en la base de datos.");
       return Promise.reject(error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="scanner-container">
