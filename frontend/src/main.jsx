@@ -13,6 +13,7 @@ import ProductScanner from './Views/ProductScanner.jsx';
 import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
 import Proveedores from './Views/Proveedores.jsx';
+import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
 
 const router = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
   path: '/proveedores',
   element: <Proveedores />,
+  },
+  {
+  path: '/cuentas-por-pagar',
+  element: <CuentasPorPagar />,
   },
   ]);
 

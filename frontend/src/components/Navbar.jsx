@@ -69,6 +69,10 @@ const Navbar = () => {
             <li onClick={() => handleNavigation('/proveedores')}>
               <FontAwesomeIcon icon={faTruck} /> <span>Proveedores</span>
             </li>
+
+            <li onClick={() => handleNavigation('/cuentas-por-pagar')}>
+              <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
+            </li>
             
             <li onClick={handleLogout} className="logout-item">
               <FontAwesomeIcon icon={faSignOutAlt} /> <span>Cerrar sesión</span>

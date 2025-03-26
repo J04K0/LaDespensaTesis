@@ -1,0 +1,524 @@
+/* Contenedor principal */
+.cuentas-pagar-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100vw;
+  padding: 0;
+  margin: 0;
+  padding-top: calc(var(--navbar-height) + 20px) !important; /* Añadir este padding para evitar solapamiento */
+}
+
+/* Contenido principal */
+.cuentas-pagar-content {
+  max-width: 95%; /* Increased from 1200px to use more screen width */
+  width: 100%;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px; /* Added to give some space at the top */
+}
+
+/* Título de la sección */
+.section-title-cuentas {
+  font-size: 28px;
+  color: #002651;
+  font-weight: bold;
+  margin-bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Botón para agregar */
+.add-cuenta-button {
+  background-color: #006EDF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s;
+}
+
+.add-cuenta-button:hover {
+  background-color: #005bb8;
+}
+
+/* Filtros y búsqueda */
+.filters-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.search-bar-cuentas {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.clear-filters-button {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.clear-filters-button:hover {
+  background-color: #b71c1c;
+}
+
+/* Contenedor de la tabla */
+.cuentas-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+/* Tabla de cuentas */
+.cuentas-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  table-layout: fixed;
+}
+
+.cuentas-table th, .cuentas-table td {
+  border: 1px solid #ddd;
+  padding: 15px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+}
+
+.cuentas-table th {
+  background-color: #002651;
+  color: white;
+}
+
+.cuentas-table td {
+  vertical-align: middle;
+}
+
+/* Estilos para estados */
+.estado-pendiente {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.estado-pagado {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.estado-vencido {
+  color: #f44336;
+  font-weight: bold;
+}
+
+/* Filas pagadas */
+.pagado-row {
+  background-color: #e8f5e9;
+  color: #666;
+}
+
+.pagado-row:hover {
+  background-color: #c8e6c9;
+}
+
+/* Celda de acciones */
+.actions-cell {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Botones de acción */
+.pay-button, .edit-button, .delete-button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+}
+
+.pay-button {
+  background-color: #4caf50;
+}
+
+.edit-button {
+  background-color: #006EDF;
+}
+
+.delete-button {
+  background-color: #f44336;
+}
+
+.pay-button:hover, .edit-button:hover, .delete-button:hover {
+  opacity: 0.8;
+}
+
+/* Paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  font-size: 16px;
+}
+
+.pagination button.active {
+  background-color: #006EDF;
+  color: white;
+}
+
+.pagination button:hover:not(.active) {
+  background-color: #f2f2f2;
+  color: #000;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h3 {
+  color: #002651;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.modal-form-group {
+  margin-bottom: 20px;
+}
+
+.modal-form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-form-group input, 
+.modal-form-group select, 
+.modal-form-group textarea {
+  width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.modal-form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.confirm-button, .cancel-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.confirm-button {
+  background-color: #006EDF;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #005bb8;
+}
+
+.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Estilos para la tabla anual */
+.cuentas-anual-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  max-height: 75vh; /* Added to make the table take more vertical space */
+  overflow-y: auto; /* Allow vertical scrolling if needed */
+}
+
+.cuentas-anual-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  table-layout: fixed;
+}
+
+/* Adjust column widths to optimize space */
+.proveedor-column {
+  width: 180px; /* Reduced slightly */
+  text-align: left;
+}
+
+.categoria-column {
+  width: 100px; /* Reduced slightly */
+}
+
+.mes-column {
+  width: 90px; /* Reduced slightly to fit more columns */
+}
+
+/* Adjust cell height */
+.mes-cell {
+  height: 70px; /* Reduced slightly */
+  padding: 5px; /* Added to give better spacing */
+}
+
+.proveedor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.proveedor-nombre {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.proveedor-id {
+  font-size: 12px;
+  color: #666;
+}
+
+.mes-cell {
+  cursor: pointer;
+  height: 70px; /* Reduced slightly */
+  padding: 5px; /* Added to give better spacing */
+  transition: background-color 0.2s;
+}
+
+.mes-cell:hover {
+  background-color: #f5f5f5;
+}
+
+.mes-cell.estado-pendiente {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.mes-cell.estado-pagado {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.mes-cell.estado-vencido {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.cuenta-mes-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.cuenta-monto {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.cuenta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.estado-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: white;
+}
+
+.estado-checkbox.checked {
+  background-color: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+.checkbox-empty {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.add-cuenta-placeholder {
+  color: #aaa;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.delete-mini-button {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-color: #f44336;
+  color: white;
+  font-size: 12px;
+}
+
+/* Responsive design for the annual table */
+@media (max-width: 1400px) {
+  .cuentas-anual-table {
+    min-width: 1400px;
+  }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .cuentas-table th, .cuentas-table td {
+    padding: 10px;
+  }
+}
+
+.cuentas-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.export-pdf-button {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s;
+}
+
+.export-pdf-button:hover {
+  background-color: #b71c1c;
+}

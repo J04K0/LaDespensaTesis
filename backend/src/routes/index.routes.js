@@ -5,6 +5,7 @@ import productRoutes from './products.routes.js';
 import fileRoutes from './file.routes.js';
 import deudoresRoutes from './deudores.routes.js';
 import proveedoresRoutes from './proveedores.routes.js';
+import cuentasPorPagarRoutes from './cuentasPorPagar.routes.js';
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.use('/products', productRoutes);
 router.use('/files', fileRoutes);
 router.use('/deudores', deudoresRoutes);
 router.use('/proveedores', proveedoresRoutes);
+router.use('/cuentasPorPagar', cuentasPorPagarRoutes);
 
 export default router;
