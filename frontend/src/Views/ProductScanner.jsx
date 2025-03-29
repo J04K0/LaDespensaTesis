@@ -441,7 +441,7 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
           <div className="cart-summary">
             <div className="cart-totals">
               <h3>Resumen</h3>
-              <p className="total-price">Total a pagar: <span>${total.toFixed(2)}</span></p>
+              <p className="total-price">Total a pagar: <span>${total}</span></p>
             </div>            
             <button 
               className="checkout-button" 

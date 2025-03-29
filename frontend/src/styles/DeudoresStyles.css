@@ -1,3 +1,19 @@
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --accent: #5e60ce;            /* Color de acento para elementos destacados */
+  --success: #28a745;           /* Verde para estados positivos */
+  --warning: #ffbe0b;           /* Amarillo para advertencias */
+  --danger: #dc3545;            /* Rojo para alertas y negativos */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray: #6c757d;              /* Gris para textos secundarios */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --white: #ffffff;             /* Blanco para fondos y textos */
+}
+
 /* Contenedor principal */
 .deudores-list-container {
   display: flex;
@@ -7,6 +23,7 @@
   width: 100vw; /* Ocupa todo el ancho de la ventana */
   padding: 0;
   margin: 0;
+  background-color: #f5f8fa;
 }
 
 /* Contenedor con scroll */
@@ -14,14 +31,20 @@
   max-width: 1200px;
   width: 100%;
   padding: 30px;
-  border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 12px; /* Más redondeado */
+  background-color: var(--white);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Sombra más sutil */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   max-height: 85vh;
+  overflow-y: auto;
+  transition: transform 0.3s ease; /* Efecto sutil al cargar */
+}
+
+.deudores-list-container .main-content:hover {
+  transform: translateY(-5px);
 }
 
 /* Contenido principal */
@@ -40,34 +63,38 @@
 
 /* Título de la sección */
 .section-title-deudores {
-  font-size: 28px; /* Tamaño de fuente más grande */
+  font-size: 26px;
   font-weight: bold;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--primary-dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
 }
 
 /* Botón "Agregar Deudor" */
 .add-deudor-button {
-  background-color: #006EDF;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 20px;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s, transform 0.3s;
-  font-size: 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(0, 110, 223, 0.2);
 }
 
 .add-deudor-button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 110, 223, 0.3);
 }
 
 .add-deudor-button:active {
@@ -119,19 +146,33 @@
   box-shadow: 0 0 5px rgba(0, 110, 223, 0.5);
 }
 
+/* Contenedor de tabla con altura fija y scroll */
+.deudores-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  background-color: var(--gray-light);
+  padding: 2px;
+  height: 500px;
+  max-height: 60vh;
+}
+
 /* Tabla de deudores */
 .deudores-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
+  height: 100%;
   margin-bottom: 20px;
 }
 
 /* Encabezados rediseñados */
 .deudores-table th {
-  background-color: #343a40;
-  color: white;
+  background-color: var(--gray-dark);
+  color: var(--white);
   font-weight: 600;
   text-align: left;
   padding: 16px;
@@ -197,25 +238,46 @@
 }
 
 /* Botones de acción */
-.edit-button, .delete-button {
-  padding: 10px 15px;
+.update-debt-button,
+.view-history-button,
+.edit-button,
+.delete-button {
+  width: 35px;
+  height: 35px;
   border: none;
-  border-radius: 5px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  font-size: 16px;
   color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.update-debt-button {
+  background-color: var(--success);
+}
+
+.view-history-button {
+  background-color: #17a2b8;
 }
 
 .edit-button {
-  background-color: #006EDF;
+  background-color: var(--primary);
 }
 
 .delete-button {
-  background-color: #f44336;
+  background-color: var(--danger);
 }
 
-.edit-button:hover, .delete-button:hover {
-  opacity: 0.8;
+.update-debt-button:hover,
+.view-history-button:hover,
+.edit-button:hover,
+.delete-button:hover {
+  opacity: 0.9;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* Paginación */
@@ -415,24 +477,37 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .deudores-modal-content {
   background-color: white;
-  padding: 25px;
-  border-radius: 8px;
+  padding: 30px;
+  border-radius: 12px;
   width: 90%;
-  max-width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
+  max-width: 550px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .deudores-modal-content h3 {
   margin-top: 0;
-  color: #002651;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
+  color: var(--primary-dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  font-size: 22px;
 }
 
 .deudores-modal-form-group {

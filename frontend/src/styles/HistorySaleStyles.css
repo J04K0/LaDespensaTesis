@@ -1,3 +1,19 @@
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --accent: #5e60ce;            /* Color de acento para elementos destacados */
+  --success: #28a745;           /* Verde para estados positivos */
+  --warning: #ffbe0b;           /* Amarillo para advertencias */
+  --danger: #dc3545;            /* Rojo para alertas y negativos */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray: #6c757d;              /* Gris para textos secundarios */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --white: #ffffff;             /* Blanco para fondos y textos */
+}
+
 /* Contenedor principal */
 .history-sale-container {
   display: flex;
@@ -5,17 +21,35 @@
   align-items: center;
   padding: 20px;
   min-height: 100vh;
+  background-color: #f5f8fa;
+  padding-top: calc(var(--navbar-height) + 20px) !important;
 }
 
 /* Contenido principal */
 .history-sale-main-content {
   width: 90%;
   max-width: 1200px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: var(--white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.history-sale-main-content:hover {
+  transform: translateY(-5px);
+}
+
+/* Título de sección */
+.history-sale-main-content h2 {
+  color: var(--primary-dark);
+  font-size: 26px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
 }
 
 /* Contenedor de búsqueda y filtros más compacto */
@@ -25,40 +59,47 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 10px; /* Reducido de 15px */
-  margin-bottom: 10px; /* Reducido de 20px */
-  padding-bottom: 8px; /* Reducido de 10px */
-  border-bottom: 1px solid #ddd; /* Más delgado */
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
 /* Barra de búsqueda */
 .history-sale-search-bar {
   flex: 1;
-  min-width: 180px; /* Reducido de 220px */
-  padding: 8px; /* Reducido de 12px */
+  min-width: 180px;
+  padding: 10px 15px;
   box-sizing: border-box;
   border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px; /* Reducido de 16px */
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.history-sale-search-bar:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
 }
 
 /* Estilo para select */
 .history-sale-sort-select,
 .history-sale-category-select {
-  padding: 8px; /* Reducido de 12px */
-  font-size: 14px; /* Reducido de 16px */
+  padding: 10px 15px;
+  font-size: 14px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: white;
   cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  min-width: 180px; /* Reducido de 220px */
+  transition: all 0.3s ease;
+  min-width: 180px;
 }
 
 .history-sale-sort-select:focus,
 .history-sale-category-select:focus {
-  border-color: #4A90E2;
-  box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
   outline: none;
 }
 
@@ -67,51 +108,66 @@
 .history-sale-total-range {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px; /* Reducido de 5px */
+  align-items: flex-start;
+  gap: 5px;
 }
 
 .history-sale-date-range input,
 .history-sale-total-range input {
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  width: 140px;
+  width: 150px;
+  transition: all 0.3s ease;
+}
+
+.history-sale-date-range input:focus,
+.history-sale-total-range input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
 }
 
 .history-sale-date-range label,
 .history-sale-total-range label {
-  font-size: 13px; /* Más pequeño */
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-dark);
 }
 
 /* Botón para limpiar filtros */
 .history-sale-clear-filters-button {
-  background-color: #d32f2f;
+  background: linear-gradient(45deg, var(--danger), #d32f2f);
   color: white;
-  padding: 8px 12px; /* Reducido de 10px 20px */
+  padding: 10px 15px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-  font-size: 14px; /* Reducido de 16px */
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(211, 47, 47, 0.2);
 }
 
 .history-sale-clear-filters-button:hover {
-  background-color: #b71c1c;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(211, 47, 47, 0.3);
 }
 
 /* Contenedor de tabla con altura fija y desplazamiento */
 .history-sale-table-container {
   overflow-x: auto;
-  margin-top: 10px; /* Reducido de 20px */
+  margin-top: 15px;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  background-color: #f8f9fa;
+  background-color: var(--gray-light);
   padding: 2px;
-  height: 500px; /* Altura fija para permitir más registros */
-  max-height: 60vh; /* Responsive */
+  height: 500px;
+  max-height: 60vh;
 }
 
 /* Nueva tabla con diseño mejorado */
@@ -120,19 +176,19 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  height: 100%; /* Garantizar que la tabla ocupe todo el alto disponible */
+  height: 100%;
 }
 
 /* Rediseño de encabezados */
 .history-sale-table th {
-  background-color: #343a40;
-  color: white;
+  background-color: var(--gray-dark);
+  color: var(--white);
   font-weight: 600;
   text-align: left;
   padding: 16px;
   position: sticky;
   top: 0;
-  z-index: 20; /* Encabezados fijos al hacer scroll */
+  z-index: 20;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-size: 13px;
@@ -160,12 +216,12 @@
 }
 
 .history-sale-table tr:nth-child(odd) {
-  background-color: #ffffff;
+  background-color: var(--white);
 }
 
 /* Hover para las filas */
 .history-sale-table tr:hover {
-  background-color: #e8f4ff;
+  background-color: var(--primary-light);
   transition: background-color 0.2s ease;
 }
 
@@ -177,7 +233,7 @@
 }
 
 .history-sale-table li {
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px dashed rgba(0,0,0,0.05);
   display: flex;
   align-items: center;
@@ -189,20 +245,13 @@
 }
 
 .history-sale-table li strong {
-  color: #343a40;
+  color: var(--gray-dark);
   font-weight: 600;
-}
-
-/* Organizar mejor cada elemento de producto */
-.history-sale-table li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 /* Separar el nombre del producto y el precio */
 .history-sale-table .product-price {
-  color: #0d6efd;
+  color: var(--primary);
   font-weight: 600;
   margin-left: auto;
 }
@@ -230,7 +279,7 @@
 /* Estilo para columna de total */
 .history-sale-table td:last-child {
   font-weight: bold;
-  color: #dc3545;
+  color: var(--danger);
   font-size: 16px;
   text-align: right;
 }
@@ -238,14 +287,14 @@
 /* Para casos sin datos */
 .history-sale-table .no-data {
   text-align: center;
-  color: #6c757d;
+  color: var(--gray);
   font-style: italic;
   padding: 30px;
 }
 
 /* Insignia para la cantidad */
 .quantity-badge {
-  background-color: #6c757d;
+  background-color: var(--gray);
   color: white;
   border-radius: 12px;
   padding: 2px 6px;
@@ -253,11 +302,9 @@
   margin-left: 8px;
 }
 
-/* Después de la clase .quantity-badge */
-
 .line-total {
   font-size: 13px;
-  color: #28a745;
+  color: var(--success);
   margin-left: 6px;
   font-weight: 600;
 }
@@ -277,33 +324,37 @@
 
 /* Paginación */
 .history-sale-pagination {
-  margin-top: 20px;
+  margin-top: 25px;
   display: flex;
   justify-content: center;
   gap: 5px;
 }
 
 .history-sale-pagination-button {
-  padding: 8px 12px;
+  padding: 10px 15px;
   border: none;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.3s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   font-size: 14px;
+  background-color: #f0f3f5;
+  color: #333;
 }
 
 .history-sale-pagination-button.active {
-  background-color: #006edf;
+  background-color: var(--primary);
   color: white;
+  box-shadow: 0 2px 5px rgba(0, 110, 223, 0.2);
 }
 
-.history-sale-pagination-button:hover {
-  background-color: #ddd;
+.history-sale-pagination-button:hover:not(.active) {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
 }
 
 /* Contenedor de botones de exportación */
 .history-sale-export-buttons {
-  margin-top: 20px;
+  margin-top: 25px;
   display: flex;
   justify-content: center;
   gap: 15px;
@@ -311,32 +362,38 @@
 
 /* Botones de exportación */
 .history-sale-export-buttons button {
-  padding: 10px 15px;
+  padding: 12px 24px;
   font-size: 14px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .history-sale-export-buttons button:nth-child(1) {
-  background-color: #d9534f;
+  background: linear-gradient(45deg, var(--danger), #d32f2f);
   color: white;
 }
 
 .history-sale-export-buttons button:nth-child(2) {
-  background-color: #5cb85c;
+  background: linear-gradient(45deg, var(--success), #1e7e34);
   color: white;
 }
 
 .history-sale-export-buttons button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Indicador de carga */
 .loading-spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #006edf;
+  border-left-color: var(--primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -346,5 +403,42 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Animación fade-in para los elementos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .history-sale-search-sort-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .history-sale-date-range,
+  .history-sale-total-range,
+  .history-sale-sort-select,
+  .history-sale-category-select {
+    width: 100%;
+  }
+  
+  .history-sale-export-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .history-sale-export-buttons button {
+    width: 100%;
+    max-width: 300px;
   }
 }

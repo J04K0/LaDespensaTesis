@@ -1,44 +1,104 @@
-.product-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin: 10px;
-  width: 200px;
-  text-align: center;
-  transition: background-color 0.3s, color 0.3s;
-  background-color: white;
-  position: relative;
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --accent: #5e60ce;            /* Color de acento para elementos destacados */
+  --success: #28a745;           /* Verde para estados positivos */
+  --warning: #ffbe0b;           /* Amarillo para advertencias */
+  --danger: #dc3545;            /* Rojo para alertas y negativos */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray: #6c757d;              /* Gris para textos secundarios */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --white: #ffffff;             /* Blanco para fondos y textos */
 }
 
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 12px;
+  width: 220px;
+  text-align: center;
+  transition: all 0.3s ease;
+  background-color: var(--white);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Estado de sin stock */
 .product-card.out-of-stock {
-  background-color: #f0f0f0 !important;
+  background-color: #f8f9fa !important;
   color: #a0a0a0 !important;
 }
 
+.product-card.out-of-stock::before {
+  content: "SIN STOCK";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--danger);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 10;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+/* Para productos próximos a vencer */
+.product-card.expiring-soon::before {
+  content: "POR VENCER";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--warning);
+  color: var(--gray-dark);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 10;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
 .product-info {
-  padding: 10px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
 }
 
 .image-container {
   position: relative;
   cursor: pointer;
   overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 10px;
+  border-radius: 8px;
+  margin: 12px 12px 6px 12px;
+  height: 180px;
+  display: flex;
   align-items: center;
-  
+  justify-content: center;
+  background-color: var(--white);
 }
 
 .product-image {
   width: 100%;
   height: 180px;
   object-fit: contain;
-  margin-bottom: 10px;
-  transition: transform 0.3s ease;
-
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .image-overlay {
@@ -47,39 +107,147 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
-  color: white;
+  background-color: rgba(0, 38, 81, 0.4);
+  color: var(--white);
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.image-overlay span {
+  background-color: var(--primary);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .image-container:hover .image-overlay {
   opacity: 1;
 }
 
-.image-container:hover .product-image {
-  transform: scale(1.05);
+.image-container:hover .image-overlay span {
+  transform: translateY(0);
 }
 
-.product-price {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 5px 0;
-  color: #006EDF;
+.image-container:hover .product-image {
+  transform: scale(1.08);
+}
+
+.product-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-brand {
-  font-size: 16px;
-  color: #757575;
-  margin: 5px 0;
+  font-size: 13px;
+  color: var(--gray);
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .product-name {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  margin: 5px 0 15px 0;
-  color: #333;
+  margin: 0 0 12px 0;
+  color: var(--gray-dark);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 42px;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 8px 0 0 0;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.product-price .old-price {
+  text-decoration: line-through;
+  color: var(--gray);
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.product-stock {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.product-stock.low {
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.product-footer {
+  display: flex;
+  margin-top: 14px;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-action-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.product-add-btn {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.product-add-btn:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.product-view-btn {
+  background-color: var(--gray-light);
+  color: var(--gray-dark);
+}
+
+.product-view-btn:hover {
+  background-color: var(--gray-dark);
+  color: var(--white);
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .product-card {
+    width: calc(50% - 24px);
+    margin: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-card {
+    width: 100%;
+    margin: 10px 0;
+  }
 }

@@ -1,6 +1,8 @@
+/* Variables de colores y configuración principal */
 :root {
   --primary-color: #006edf;
   --primary-hover-color: #0056b3;
+  --primary-dark: #002651;
   --background-color: #002651;
   --submenu-background-color: #003366;
   --text-color: white;
@@ -8,65 +10,96 @@
   --border-radius: 5px;
   --transition-duration: 0.3s;
   --navbar-height: 70px;
+  --shadow-small: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Submenú estándar */
 .submenu {
   background-color: var(--submenu-background-color);
   list-style-type: none;
   margin: 10px 0 0 0;
   text-align: left;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
 }
 
 .submenu li {
-  padding: 5px 10px;
+  padding: 10px 15px;
   cursor: pointer;
-  padding-top: 10px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+.submenu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(3px);
+}
+
+/* Botón para cerrar la barra de navegación en móvil */
 .toggle-navbar-btn {
   position: absolute;
-  top: 5px;
-  right: 5px; /* Mover la X a la derecha */
+  top: 15px;
+  right: 15px;
   background-color: transparent;
   color: var(--text-color);
   border: none;
-  font-size: var(--font-size);
+  font-size: 20px;
   cursor: pointer;
   z-index: 3;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
+.toggle-navbar-btn:hover {
+  transform: rotate(90deg);
+}
+
+/* Botón para abrir la barra de navegación en móvil */
 .open-navbar-btn {
   position: fixed;
   top: 20px;
-  right: 20px; /* Mantener el botón de abrir a la derecha */
-  background-color: var(--primary-color);
+  right: 20px;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
   color: var(--text-color);
   border: none;
-  padding: 10px;
-  border-radius: var(--border-radius);
+  padding: 12px;
+  border-radius: 50%;
   cursor: pointer;
-  z-index: 3;
-  transition: background var(--transition-duration) ease;
+  z-index: 1001;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-small);
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .open-navbar-btn:hover {
-  background-color: var(--primary-hover-color);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-medium);
 }
 
-/* Estilos para la barra de navegación */
+/* Contenedor principal de la barra de navegación */
 .navbar-container {
   width: 100%;
   height: var(--navbar-height);
-  background-color: var(--background-color);
+  background: linear-gradient(to right, var(--primary-dark), #003e7e);
   color: var(--text-color);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-medium);
 }
 
+/* Contenido de la barra de navegación */
 .navbar-content {
   display: flex;
   justify-content: space-between;
@@ -74,9 +107,10 @@
   height: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 15px;
 }
 
+/* Botón de alternar para móvil */
 .navbar-toggle-btn {
   display: none;
   background: transparent;
@@ -84,13 +118,22 @@
   color: var(--text-color);
   font-size: 24px;
   cursor: pointer;
+  transition: transform 0.2s ease;
+  width: 40px;
+  height: 40px;
 }
 
+.navbar-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Menú principal */
 .navbar-menu {
   height: 100%;
   width: 100%;
 }
 
+/* Lista de elementos de navegación */
 .navbar-items {
   display: flex;
   justify-content: space-between;
@@ -101,6 +144,7 @@
   width: 100%;
 }
 
+/* Elementos individuales de navegación */
 .navbar-items li {
   display: flex;
   align-items: center;
@@ -109,18 +153,49 @@
   padding: 0 15px;
   cursor: pointer;
   height: 100%;
-  font-size: 18px;
+  font-size: 16px;
   flex-grow: 1;
   text-align: center;
-  transition: background-color var(--transition-duration);
+  transition: all 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  position: relative;
+}
+
+.navbar-items li::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: var(--primary-color);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  opacity: 0;
 }
 
 .navbar-items li:hover {
-  background-color: var(--primary-hover-color);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-items li:hover::after {
+  width: 70%;
+  opacity: 1;
+}
+
+.navbar-items li:active {
+  transform: translateY(2px);
 }
 
 .navbar-items li span {
   margin-left: 8px;
+}
+
+/* Estilo para el ícono en los elementos de navegación */
+.navbar-items li svg {
+  font-size: 18px;
+  margin-right: 2px;
 }
 
 /* Estilos para dropdown */
@@ -132,43 +207,78 @@
   display: flex;
   align-items: center;
   height: 100%;
+  gap: 5px;
 }
 
 .caret-icon {
   margin-left: 5px;
+  transition: transform 0.2s ease;
 }
 
+.dropdown-trigger:hover .caret-icon {
+  transform: translateY(2px);
+}
+
+/* Menú desplegable */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--submenu-background-color);
-  width: 100%;
-  min-width: unset;
+  background: linear-gradient(135deg, var(--submenu-background-color), #002142);
+  width: 200px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   list-style: none;
-  padding: 0;
+  padding: 5px 0;
   margin: 0;
-  z-index: 10;
-  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  z-index: 100;
+  border-radius: 0 0 8px 8px;
+  animation: slideDown 0.2s ease-out;
+  transform-origin: top center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 .dropdown-menu li {
   display: block;
   width: 100%;
-  padding: 15px;
+  padding: 12px 20px;
   height: auto;
+  text-align: left;
+  font-size: 15px;
+  border-left: 3px solid transparent;
 }
 
 .dropdown-menu li:hover {
-  background-color: var(--primary-hover-color);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--primary-color);
 }
 
+.dropdown-menu li svg {
+  margin-right: 8px;
+}
+
+/* Botón de logout */
 .logout-item {
   margin-left: auto;
+  color: #ff7875;
+  font-weight: 500;
 }
 
-/* Estilos responsivos */
+.logout-item svg {
+  color: #ff7875;
+}
+
+/* Estilos responsivos para móviles */
 @media (max-width: 768px) {
   .navbar-toggle-btn {
     display: block;
@@ -182,40 +292,59 @@
     height: 0;
     overflow: hidden;
     background-color: var(--background-color);
-    transition: height 0.3s ease;
+    transition: height 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 999;
   }
   
   .navbar-menu.visible {
     height: calc(100vh - var(--navbar-height));
     overflow-y: auto;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   }
   
   .navbar-items {
     flex-direction: column;
     height: auto;
     width: 100%;
+    padding: 10px 0;
   }
   
   .navbar-items li {
     width: 100%;
-    padding: 15px;
-    border-bottom: 1px solid var(--submenu-background-color);
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-start;
+    font-size: 16px;
+  }
+  
+  .navbar-items li::after {
+    display: none;
+  }
+  
+  .navbar-items li:hover {
+    background-color: rgba(255, 255, 255, 0.05);
   }
   
   .dropdown-menu {
     position: static;
     box-shadow: none;
     width: 100%;
-    background-color: var(--submenu-background-color);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.3));
+    animation: none;
+    border-radius: 0;
+    padding: 0;
+    border-top: none;
   }
   
   .dropdown-menu li {
-    padding-left: 30px;
+    padding: 15px 30px;
+    font-size: 14px;
   }
   
   .logout-item {
-    margin-top: auto;
-    border-top: 1px solid var(--submenu-background-color);
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 0, 0, 0.1);
   }
 }
 

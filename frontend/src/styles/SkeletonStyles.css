@@ -1,38 +1,82 @@
+/* Variables de colores para mantener consistencia con el resto de la aplicación */
+:root {
+  --skeleton-base: #e0e0e0;
+  --skeleton-highlight: #f0f0f0;
+  --skeleton-shadow: rgba(0, 0, 0, 0.1);
+  --skeleton-bg: #ffffff;
+  --skeleton-border: #eeeeee;
+  --primary-dark: #002651;
+  --primary: #006EDF;
+}
+
+/* Animación base optimizada con will-change para mejor rendimiento */
+@keyframes skeletonPulse {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, 
+    var(--skeleton-base) 25%, 
+    var(--skeleton-highlight) 50%, 
+    var(--skeleton-base) 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+  will-change: background-position;
+}
+
+/* Tarjeta básica para skeleton loaders */
 .skeleton-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--skeleton-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px var(--skeleton-shadow);
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: transform 0.2s ease;
+  border: 1px solid var(--skeleton-border);
+  overflow: hidden;
 }
 
+/* Elementos comunes */
 .skeleton-image {
   width: 100%;
-  height: 160px;
-  background-color: #e0e0e0;
-  margin-bottom: 15px;
-  border-radius: 6px;
-  animation: pulse 1.5s infinite;
+  height: 180px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.skeleton-image::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--skeleton-base);
 }
 
 .skeleton-title {
   width: 80%;
-  height: 20px;
-  background-color: #e0e0e0;
-  margin-bottom: 15px;
+  height: 22px;
+  margin-bottom: 16px;
   border-radius: 4px;
-  animation: pulse 1.5s infinite;
 }
 
 .skeleton-text {
   width: 100%;
   height: 14px;
-  background-color: #e0e0e0;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   border-radius: 4px;
-  animation: pulse 1.5s infinite;
+}
+
+.skeleton-text.small {
+  height: 12px;
+  width: 60%;
 }
 
 .skeleton-text:nth-child(2) {
@@ -43,129 +87,119 @@
   width: 60%;
 }
 
+.skeleton-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Contenedores de acciones */
 .skeleton-actions {
   display: flex;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 15px;
+  padding-top: 20px;
+  gap: 12px;
 }
 
+/* Botones y controles */
 .skeleton-button {
   width: 45%;
-  height: 30px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
-
-/* Estilos para skeleton de deudores */
-.skeleton-deudores-table {
-  background-color: white;
+  height: 36px;
   border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 100%;
 }
 
+.skeleton-button-round {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-button-round.small {
+  width: 30px;
+  height: 30px;
+}
+
+/* Contenedor principal para deudores */
+.skeleton-deudores-list,
+.skeleton-proveedores,
+.skeleton-cuentas-pagar,
+.skeleton-history-sale,
+.skeleton-finanzas {
+  width: 100%;
+  background-color: var(--skeleton-bg);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px var(--skeleton-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Encabezado para secciones */
 .skeleton-header {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
-  background-color: #e0e0e0;
-  border-radius: 6px;
-  margin-bottom: 15px;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  border-bottom: 1px solid var(--skeleton-border);
+  margin-bottom: 20px;
 }
 
-.skeleton-title {
-  width: 40%;
-  height: 24px;
-  background-color: #c0c0c0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
+/* Controles comunes */
+.skeleton-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 25px;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--skeleton-border);
 }
 
-.skeleton-button {
-  width: 100px;
-  height: 24px;
-  background-color: #c0c0c0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
+.skeleton-search {
+  flex: 1;
+  min-width: 180px;
+  height: 42px;
+  border-radius: 8px;
 }
 
+.skeleton-dropdown {
+  width: 180px;
+  height: 42px;
+  border-radius: 8px;
+}
+
+/* Tabla y celdas */
 .skeleton-table {
   width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 .skeleton-row {
   display: flex;
-  padding: 12px 0;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--skeleton-border);
 }
 
 .skeleton-row.header {
-  background-color: #e0e0e0;
-  border-radius: 4px;
+  background-color: var(--skeleton-base);
+  border-radius: 8px 8px 0 0;
+  padding: 16px 0;
 }
 
 .skeleton-cell {
   flex: 1;
   height: 16px;
   margin: 0 10px;
-  background-color: #e0e0e0;
   border-radius: 4px;
-  animation: pulse 1.5s infinite;
-}
-
-/* Añadir al archivo SkeletonStyles.css */
-.skeleton-deudores-list {
-  width: 100%;
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.skeleton-controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.skeleton-search {
-  flex: 1;
-  height: 40px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
-}
-
-.skeleton-dropdown {
-  width: 180px;
-  height: 40px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
 }
 
 .skeleton-action-button {
-  width: 30px;
-  height: 30px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: inline-block;
   margin: 0 5px;
 }
@@ -173,86 +207,252 @@
 .skeleton-cell.actions {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
-/* Estilos para skeleton de gráficos */
-.skeleton-chart-container {
-  background-color: white;
+/* Paginación */
+.skeleton-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.skeleton-page-button {
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Gráficos */
+.skeleton-chart-container {
+  background-color: var(--skeleton-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px var(--skeleton-shadow);
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
 .skeleton-chart-controls {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 15px;
-}
-
-.skeleton-button-round {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #e0e0e0;
-  animation: pulse 1.5s infinite;
+  align-items: center;
 }
 
 .skeleton-chart-title {
   width: 70%;
   height: 24px;
-  background-color: #e0e0e0;
   border-radius: 4px;
-  margin: 0 auto 20px auto;
-  animation: pulse 1.5s infinite;
+  margin: 0 auto;
 }
 
 .skeleton-chart {
   flex-grow: 1;
   width: 100%;
-  min-height: 250px;
-  background-color: #e0e0e0;
+  min-height: 280px;
   border-radius: 8px;
-  animation: pulse 1.5s infinite;
 }
 
-/* Skeletons para otros componentes comunes */
-.skeleton-card-list {
+/* Tarjetas de resumen para finanzas */
+.skeleton-summary-cards {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
+.skeleton-summary-card {
+  flex: 1 1 calc(25% - 15px);
+  min-width: 200px;
+  background-color: var(--skeleton-bg);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px var(--skeleton-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-amount {
+  height: 30px;
+  width: 70%;
+  border-radius: 4px;
+}
+
+/* Formularios */
 .skeleton-form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 .skeleton-form-label {
-  width: 30%;
+  width: 40%;
   height: 16px;
-  background-color: #e0e0e0;
   border-radius: 4px;
-  margin-bottom: 8px;
-  animation: pulse 1.5s infinite;
+  margin-bottom: 10px;
 }
 
 .skeleton-form-input {
   width: 100%;
-  height: 36px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  animation: pulse 1.5s infinite;
+  height: 42px;
+  border-radius: 8px;
 }
 
-.skeleton-mini-thumb-placeholder {
-  width: 30px;
+/* Scanner */
+.skeleton-scanner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 20px;
+}
+
+.skeleton-search-bar {
+  width: 100%;
+  max-width: 500px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border-radius: 10px;
+}
+
+.skeleton-scanner-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.skeleton-product-info {
+  background-color: var(--skeleton-bg);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px var(--skeleton-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.skeleton-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.skeleton-cart {
+  background-color: var(--skeleton-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 5px 15px var(--skeleton-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.skeleton-cart-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background-color: var(--skeleton-base);
+  opacity: 0.7;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.skeleton-cart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-cart-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton-total {
   height: 30px;
+  width: 150px;
+  border-radius: 8px;
+  margin-left: auto;
+  margin-top: 10px;
+}
+
+/* Miniaturas para proveedores */
+.skeleton-mini-thumb-placeholder {
+  width: 32px;
+  height: 32px;
   border-radius: 4px;
-  background-color: #f0f0f0;
-  margin-right: -10px;
-  border: 1px solid #ddd;
-  animation: pulse 1.5s infinite;
+  background-color: var(--skeleton-base);
+  margin-right: -12px;
+  border: 1px solid var(--skeleton-border);
+  display: inline-block;
+}
+
+/* Estilos responsive */
+@media (max-width: 768px) {
+  .skeleton-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .skeleton-scanner-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .skeleton-summary-cards {
+    flex-direction: column;
+  }
+  
+  .skeleton-summary-card {
+    min-width: 100%;
+  }
+  
+  .skeleton-chart-container {
+    padding: 15px;
+  }
+}
+
+/* Aplicar la animación a todos los elementos skeleton */
+.skeleton-title, 
+.skeleton-text, 
+.skeleton-button, 
+.skeleton-button-round, 
+.skeleton-search, 
+.skeleton-dropdown, 
+.skeleton-cell, 
+.skeleton-action-button, 
+.skeleton-page-button,
+.skeleton-chart,
+.skeleton-chart-title,
+.skeleton-form-label,
+.skeleton-form-input,
+.skeleton-amount,
+.skeleton-cart-item,
+.skeleton-total,
+.skeleton-mini-thumb-placeholder {
+  background-color: var(--skeleton-base);
+}
+
+/* Estilos de elevación avanzados */
+.skeleton-deudores-list:hover,
+.skeleton-proveedores:hover,
+.skeleton-cuentas-pagar:hover,
+.skeleton-history-sale:hover,
+.skeleton-finanzas:hover,
+.skeleton-chart-container:hover,
+.skeleton-card:hover,
+.skeleton-product-info:hover,
+.skeleton-cart:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease;
 }

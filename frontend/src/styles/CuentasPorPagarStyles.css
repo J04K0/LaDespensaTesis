@@ -124,64 +124,89 @@
   background-color: #b71c1c;
 }
 
-/* Contenedor de la tabla */
+/* Contenedor de tabla con altura fija y scroll */
 .cuentas-table-container {
   width: 100%;
   overflow-x: auto;
   margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
+  padding: 2px;
+  height: 500px;
+  max-height: 60vh;
 }
 
-/* Tabla de cuentas */
+/* Tabla de cuentas modernizada */
 .cuentas-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  height: 100%;
   table-layout: fixed;
 }
 
-.cuentas-table th, .cuentas-table td {
-  border: 1px solid #ddd;
-  padding: 15px;
+/* Rediseño de encabezados */
+.cuentas-table th {
+  background-color: #343a40;
+  color: white;
+  font-weight: 600;
   text-align: left;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
+}
+
+.cuentas-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.cuentas-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+/* Celdas de datos */
+.cuentas-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+  text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 16px;
+  font-size: 14px;
+  border: none;
 }
 
-.cuentas-table th {
-  background-color: #002651;
-  color: white;
+/* Estilos para filas alternantes */
+.cuentas-table tr:nth-child(even) {
+  background-color: #f0f2f5;
 }
 
-.cuentas-table td {
-  vertical-align: middle;
+.cuentas-table tr:nth-child(odd) {
+  background-color: #ffffff;
 }
 
-/* Estilos para estados */
-.estado-pendiente {
-  color: #ff9800;
-  font-weight: bold;
+/* Hover para las filas */
+.cuentas-table tr:hover:not(.pagado-row) {
+  background-color: #e8f4ff;
+  transition: background-color 0.2s ease;
 }
 
-.estado-pagado {
-  color: #4caf50;
-  font-weight: bold;
-}
-
-.estado-vencido {
-  color: #f44336;
-  font-weight: bold;
-}
-
-/* Filas pagadas */
+/* Ajustes para filas pagadas */
 .pagado-row {
   background-color: #e8f5e9;
   color: #666;
 }
 
 .pagado-row:hover {
-  background-color: #c8e6c9;
+  background-color: #c8e6c9 !important;
 }
 
 /* Celda de acciones */
@@ -191,17 +216,19 @@
   gap: 10px;
 }
 
-/* Botones de acción */
+/* Botones de acción redondeados */
 .pay-button, .edit-button, .delete-button {
   width: 35px;
   height: 35px;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%; /* Circular en lugar de cuadrado */
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .pay-button {
@@ -217,7 +244,9 @@
 }
 
 .pay-button:hover, .edit-button:hover, .delete-button:hover {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* Paginación */
@@ -345,12 +374,17 @@
   margin-bottom: 20px;
   max-height: 75vh; /* Added to make the table take more vertical space */
   overflow-y: auto; /* Allow vertical scrolling if needed */
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
+  padding: 2px;
 }
 
 .cuentas-anual-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
   table-layout: fixed;
 }
 
@@ -475,6 +509,28 @@
   background-color: #f44336;
   color: white;
   font-size: 12px;
+}
+
+/* Encabezados fijos */
+.cuentas-anual-table th {
+  background-color: #343a40;
+  color: white;
+  font-weight: 600;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.cuentas-anual-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.cuentas-anual-table th:last-child {
+  border-top-right-radius: 10px;
 }
 
 /* Responsive design for the annual table */

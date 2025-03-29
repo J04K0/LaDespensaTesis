@@ -1,3 +1,15 @@
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --danger: #dc3545;            /* Rojo para cancelar/eliminar */
+  --danger-hover: #bd2130;      /* Rojo hover */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+}
+
 .add-prod-page {
   display: flex;
   justify-content: center;
@@ -6,6 +18,8 @@
   padding: 0;
   width: 100%;
   height: 100vh;
+  background-color: #f5f8fa; /* Fondo más suave */
+  padding-top: calc(var(--navbar-height) + 20px) !important; /* Ajuste para navbar */
 }
 
 .add-prod-container {
@@ -17,13 +31,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease; /* Efecto sutil al cargar */
+}
+
+.add-prod-container:hover {
+  transform: translateY(-5px);
 }
 
 .add-prod-container h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   font-size: 24px;
-  color: #4A4A4A;
+  color: var(--primary-dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  width: 100%;
 }
 
 .add-prod-form {
@@ -42,56 +66,104 @@
   flex-direction: column;
 }
 
+.add-prod-form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+}
+
 .add-prod-form-group input, .add-prod-form-group select {
   width: 100%;
-  padding: 15px;
-  border: 1px solid #ccc;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #EAEAEA;
-  font-size: 16px;
-  color: #4A4A4A;
+  background-color: white;
+  font-size: 15px;
+  color: #333;
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .add-prod-form-group input:focus, .add-prod-form-group select:focus {
-  border-color: #4A90E2;
+  border-color: var(--primary);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
 }
 
 .add-prod-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
+  justify-content: center;
+  margin-top: 30px;
   width: 100%;
   grid-column: span 2;
+  gap: 15px;
 }
 
 .add-prod-buttons button {
-  padding: 15px 30px;
-  background-color: #4A90E2;
-  color: white;
-  border: none;
+  padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  transition: background-color 0.3s;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  max-width: 200px;
+  flex: 1;
 }
 
-.add-prod-buttons button:hover {
-  background-color: #357ABD;
+.add-prod-buttons button:not(.cancel-button) {
+  background-color: var(--primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
+}
+
+.add-prod-buttons button:not(.cancel-button):hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
 }
 
 .add-prod-buttons .cancel-button {
-  background-color: #D0021B;
+  background-color: var(--danger);
+  color: white;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
 }
 
 .add-prod-buttons .cancel-button:hover {
-  background-color: #A00117;
+  background-color: var(--danger-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 .add-prod-buttons .icon {
-  margin-left: 10px;
+  margin-left: 8px;
+}
+
+/* Estilo para carga de imágenes */
+.image-upload-container {
+  width: 100%;
+  padding: 20px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: border-color 0.3s;
+  background-color: var(--gray-light);
+}
+
+.image-upload-container:hover {
+  border-color: var(--primary);
+}
+
+.image-preview {
+  max-width: 200px;
+  max-height: 200px;
+  margin-top: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }

@@ -1,3 +1,13 @@
+/* Definición de variables de colores para mantener consistencia */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --danger: #dc3545;            /* Rojo para cancelar/eliminar */
+  --danger-hover: #bd2130;      /* Rojo hover */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+}
 
 .add-deudor-container {
   display: flex;
@@ -7,35 +17,46 @@
   width: 100vw; 
   padding: 0;
   margin: 0;
+  padding-top: calc(var(--navbar-height) + 20px) !important; /* Ajuste para navbar */
+  background-color: #f5f8fa; /* Fondo más suave */
 }
 
 .add-deudor-main-content {
   max-width: 600px; 
   width: 100%; 
   padding: 30px;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: white;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
+  transition: transform 0.3s ease; /* Efecto sutil al cargar */
+}
+
+.add-deudor-main-content:hover {
+  transform: translateY(-5px);
 }
 
 .add-deudor-main-content h2 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 28px;
+  margin-bottom: 25px; /* Reducido de 30px */
+  font-size: 24px; /* Reducido de 28px */
   width: 100%;
+  color: var(--primary-dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
 }
 
 .add-deudor-form {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 20px;
+  gap: 15px; /* Reducido de 20px */
   max-width: 500px;
 }
+
 .add-deudor-form-group {
   display: flex;
   flex-direction: column;
@@ -43,58 +64,72 @@
 }
 
 .add-deudor-form-group label {
-  margin-bottom: 10px;
-  font-weight: bold;
-  font-size: 18px;
+  margin-bottom: 8px; /* Reducido de 10px */
+  font-weight: 600;
+  font-size: 16px; /* Reducido de 18px */
+  color: #333;
 }
-.add-deudor-form-group input {
 
+.add-deudor-form-group input {
   width: 100%;
-  padding: 15px;
+  padding: 12px; /* Reducido de 15px */
   border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 14px; /* Reducido de 16px */
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .add-deudor-form-group input:focus {
-  border-color: #006edf;
+  border-color: var(--primary);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
 }
 
 .add-deudor-button-group {
   display: flex;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 25px; /* Reducido de 30px */
   width: 100%;
+  gap: 15px;
 }
 
 .add-deudor-button-group .submit-button,
 .add-deudor-button-group .add-deudor-cancel-button {
   flex: 1;
-  padding: 15px 30px;
-  margin: 0 10px;
-  border-radius: 4px;
-  font-size: 18px;
+  padding: 12px 20px; /* Reducido de 15px 30px */
+  border-radius: 8px;
+  font-size: 16px; /* Reducido de 18px */
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
   color: white;
   border: none;
   max-width: 200px; 
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .add-deudor-button-group .submit-button {
-  background-color: #006edf;
+  background-color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
 }
 
 .add-deudor-button-group .submit-button:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
 }
 
 .add-deudor-button-group .add-deudor-cancel-button {
-  background-color: #f44336;
+  background-color: var(--danger);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
 }
 
 .add-deudor-button-group .add-deudor-cancel-button:hover {
-  background-color: #d32f2f;
+  background-color: var(--danger-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }

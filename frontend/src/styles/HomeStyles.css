@@ -1,10 +1,26 @@
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --accent: #5e60ce;            /* Color de acento para elementos destacados */
+  --success: #28a745;           /* Verde para estados positivos */
+  --warning: #ffbe0b;           /* Amarillo para advertencias */
+  --danger: #dc3545;            /* Rojo para alertas y negativos */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray: #6c757d;              /* Gris para textos secundarios */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --white: #ffffff;             /* Blanco para fondos y textos */
+}
+
 .home-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-
-  padding-top: calc(var(--navbar-height) + 20px) !important; /* Añadir padding para evitar solapamiento */
+  padding-top: calc(var(--navbar-height) + 20px) !important;
+  background-color: #f5f8fa;
 }
 
 #root {
@@ -14,43 +30,59 @@
 
 /* Contenedor de botones superiores */
 .home-top-buttons-container {
-  background-color: #002651;
-  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #004394 100%);
+  padding: 15px 25px;
   width: calc(100% - 250px);
   margin-right: 250px;
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
-  z-index: 1;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 0 0 12px 12px;
 }
 
 .home-top-buttons {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
 }
 
 .home-top-buttons button {
   flex-grow: 1;
-  padding: 20px;
-  color: white;
+  padding: 15px 20px;
+  color: var(--white);
   border: none;
   cursor: pointer;
   border-radius: 8px;
   text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .home-btn-sin-stock {
-  background-color: #B2DFFF;
-  color: black !important;
+  background: linear-gradient(45deg, var(--warning) 0%, #ffa000 100%);
+  color: var(--gray-dark) !important;
+  font-weight: 600;
 }
 
 .home-btn-vencidos {
-  background-color: #006EDF;
+  background: linear-gradient(45deg, var(--primary) 0%, #0055b6 100%);
+  font-weight: 600;
 }
 
 .home-top-buttons button:hover {
-  opacity: 0.9;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.home-top-buttons button:active {
+  transform: translateY(-1px);
 }
 
 /* Contenido principal */
@@ -58,8 +90,9 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  padding: 20px;
+  padding: 25px;
   box-sizing: border-box;
+  gap: 25px;
 }
 
 /* Secciones principales */
@@ -71,23 +104,32 @@
 
 /* Título de sección */
 .home-section-title {
-  font-size: 28px;
-  color: #002651;
+  font-size: 26px;
+  color: var(--primary-dark);
   text-align: left;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Tarjetas */
 .home-deudores-card, .home-stats-card {
   width: 100%;
   flex-grow: 1;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.home-deudores-card:hover, .home-stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 /* Contenedor de tabla con altura fija y desplazamiento */
@@ -106,38 +148,64 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #343a40;
-  color: white;
-  padding: 15px;
-  border-radius: 10px 10px 0 0;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  color: var(--white);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-deudores-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
 }
 
 .home-deudores-header h3 {
   margin: 0;
   font-size: 18px;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .home-deudores-header button {
-  background-color: white;
-  color: black;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--white);
   border: none;
   cursor: pointer;
   padding: 8px 15px;
   font-size: 14px;
-  border-radius: 5px;
-  transition: background-color 0.3s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
 }
 
 .home-deudores-header button:hover {
-  background-color: #f0f2f5;
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.home-deudores-header button:active {
+  transform: translateY(0);
 }
 
 /* Contenedor sin scroll para la tabla */
 .home-deudores-table-container {
   width: 100%;
   overflow: hidden;
+  padding: 5px;
 }
 
 /* Tabla de deudores ajustada para mostrar todos los elementos */
@@ -150,60 +218,76 @@
 
 /* Encabezados mejorados */
 .home-deudores-table th {
-  background-color: #343a40;
-  color: white;
+  background-color: var(--gray-dark);
+  color: var(--white);
   font-weight: 600;
   text-align: left;
-  padding: 12px 16px;
+  padding: 15px 16px;
   position: sticky;
   top: 0;
   z-index: 10;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
   font-size: 13px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-transform: uppercase;
+}
+
+.home-deudores-table th:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.home-deudores-table th:last-child {
+  border-radius: 0 8px 8px 0;
 }
 
 /* Celdas de datos */
 .home-deudores-table td {
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
+  transition: all 0.2s ease;
 }
 
 /* Estilos para filas alternantes */
 .home-deudores-table tr:nth-child(even) {
-  background-color: #f0f2f5;
+  background-color: var(--gray-light);
 }
 
 .home-deudores-table tr:nth-child(odd) {
-  background-color: #ffffff;
+  background-color: var(--white);
 }
 
 /* Hover para las filas */
 .home-deudores-table tr:hover {
-  background-color: #e8f4ff;
-  transition: background-color 0.2s ease;
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 /* Estilo para la columna de nombre */
 .home-deudores-table td:first-child {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 500;
+}
+
+.home-deudores-table td:first-child svg {
+  color: var(--primary);
+  font-size: 18px;
 }
 
 /* Estilo para la columna de deuda */
 .home-deudores-table td:last-child {
   font-weight: bold;
-  color: #dc3545;
+  color: var(--danger);
   text-align: right;
+  font-size: 16px;
 }
 
 /* Estilo para deudores con deuda cero */
 .zero-debt-row td {
-  color: #6c757d !important;
+  color: var(--gray) !important;
   background-color: #f2f2f2;
 }
 
@@ -216,24 +300,49 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
+  padding: 18px;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-stats-controls::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
 }
 
 .home-stats-nav-button {
-  background-color: #006EDF;
-  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  z-index: 5;
 }
 
 .home-stats-nav-button:hover {
-  background-color: #0056b3;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.home-stats-nav-button:active {
+  transform: translateY(-1px);
 }
 
 /* Contenido del gráfico */
@@ -243,12 +352,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
 .home-stats-content h2 {
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 25px;
+  color: var(--gray-dark);
   text-align: center;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .home-stats-content > div {
@@ -261,6 +373,36 @@
 
 .home-stats-content canvas {
   max-height: 300px !important;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Componentes de navegación del gráfico */
+.home-stats-nav-controls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.home-stats-nav-title {
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  z-index: 5;
 }
 
 /* Responsividad */
@@ -271,7 +413,7 @@
   
   .home-deudores-container, .home-stats-container {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
   }
   
   .home-stats-content canvas {
@@ -281,5 +423,29 @@
   .home-top-buttons-container {
     width: 100%;
     margin-right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-top-buttons {
+    flex-direction: column;
+  }
+  
+  .home-top-buttons button {
+    width: 100%;
+  }
+  
+  .home-content {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-deudores-table-container {
+    overflow-x: auto;
+  }
+  
+  .home-deudores-table {
+    min-width: 500px;
   }
 }

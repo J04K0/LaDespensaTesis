@@ -1,240 +1,255 @@
+/* Variables de colores para mantener consistencia en toda la aplicación */
+:root {
+  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
+  --primary: #006EDF;           /* Azul principal para botones y acentos */
+  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
+  --secondary: #3a86ff;         /* Azul secundario para variaciones */
+  --accent: #5e60ce;            /* Color de acento para elementos destacados */
+  --success: #28a745;           /* Verde para estados positivos */
+  --warning: #ffbe0b;           /* Amarillo para advertencias */
+  --danger: #dc3545;            /* Rojo para alertas y negativos */
+  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
+  --gray: #6c757d;              /* Gris para textos secundarios */
+  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --white: #ffffff;             /* Blanco para fondos y textos */
+}
+
 .finanzas-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Arial', sans-serif;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  padding-top: calc(var(--navbar-height) + 20px) !important;
+  background-color: #f5f8fa;
+}
+
+.chart-container {
+  width: 90%;
+  max-width: 1200px;
+  background: var(--white);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-5px);
+}
+
+.chart {
+  margin: 25px auto;
+  padding: 20px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  width: 80%;
+  max-width: 700px;
+  height: auto;
+}
+
+canvas {
+  max-width: 100% !important;
+  height: 300px !important;
+}
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 25px;
+  color: var(--primary-dark);
+  text-align: center;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--gray-dark);
+  margin-bottom: 20px;
+}
+
+/* Contenedor de filtros */
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-group label {
+  font-size: 16px;
+  color: var(--gray-dark);
+  font-weight: 500;
+}
+
+.filter-group select {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: var(--white);
+  font-size: 15px;
+  min-width: 150px;
+  transition: all 0.3s ease;
+}
+
+.filter-group select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+/* Botón de descarga */
+.download-button {
+  background: linear-gradient(45deg, var(--danger), #d32f2f);
+  color: var(--white);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 20px;
+  box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.download-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(211, 47, 47, 0.3);
+}
+
+/* Tarjetas resumen */
+.finance-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 30px 0;
+  gap: 20px;
+}
+
+.summary-card {
+  position: relative;
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+  min-width: 220px;
+  text-align: center;
+  flex: 1;
+  max-width: 300px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card.active {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.summary-card h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: var(--gray-dark);
+  font-weight: 600;
+}
+
+.summary-card small {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--gray);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.summary-card:hover small {
+  opacity: 1;
+}
+
+.amount {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+/* Mensajes de estado */
+.loading-message {
+  text-align: center;
+  color: var(--primary);
+  padding: 30px;
+  font-size: 16px;
+}
+
+.error-message {
+  text-align: center;
+  color: var(--danger);
+  padding: 30px;
+  font-size: 16px;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--gray);
+  font-style: italic;
+  padding: 30px;
+}
+
+/* Asegurar que la sección de gráficos tenga una transición suave */
+.chart-section {
+  margin-top: 35px;
+  width: 100%;
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .chart-container {
-    width: 90%;
-    max-width: 1200px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
   }
   
   .chart {
-    margin: 20px auto;
-    padding: 15px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 80%;
-    max-width: 600px;
-    height: auto;
+    width: 95%;
+    max-width: 100%;
   }
   
-  canvas {
-    max-width: 100% !important;
-    height: 300px !important;
-  }
-  
-  h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-    text-align: center;
-  }
-  
-  h2 {
-    font-size: 20px;
-    color: #333;
-    margin-bottom: 15px;
-  }
-  
-  /* Contenedor de filtros */
-  .filter-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #e0e0e0;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .filter-group label {
-    font-size: 16px;
-    color: #4A4A4A;
-  }
-  
-  .filter-group select {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: white;
-    font-size: 15px;
-    min-width: 150px;
-  }
-  
-  .filter-group select:focus {
-    border-color: #006EDF;
-    outline: none;
-    box-shadow: 0 0 4px rgba(0, 110, 223, 0.3);
-  }
-  
-  /* Botón de descarga */
-  .download-button {
-    background: #b71c1c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: background-color 0.3s;
-  }
-  
-  .download-button:hover {
-    background: #d9534f;
-  }
-  
-  /* Tarjetas resumen */
   .finance-summary {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin: 30px 0;
-    gap: 15px;
+    flex-direction: column;
+    align-items: center;
   }
   
   .summary-card {
-    position: relative;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    min-width: 220px;
-    text-align: center;
-    flex: 1;
-    max-width: 300px;
-    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100%;
   }
-  
-  .summary-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-  }
-  
-  .summary-card.active {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  }
-  
-  .summary-card small {
-    display: block;
-    margin-top: 8px;
-    font-size: 0.8rem;
-    color: #888;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .summary-card:hover small {
-    opacity: 1;
-  }
-  
-  .summary-card.income {
-    border-top: 5px solid #4CAF50;
-  }
-  
-  .summary-card.transactions {
-    border-top: 5px solid #2196F3;
-  }
-  
-  .summary-card.average {
-    border-top: 5px solid #FF9800;
-  }
-  
-  .amount {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .income .amount {
-    color: #4CAF50;
-  }
-  
-  .transactions .amount {
-    color: #2196F3;
-  }
-  
-  .average .amount {
-    color: #FF9800;
-  }
-  
-  /* Mensajes de estado */
-  .loading-message {
-    text-align: center;
-    color: #2196F3;
-    padding: 20px;
-    font-size: 16px;
-  }
-  
-  .error-message {
-    text-align: center;
-    color: #f44336;
-    padding: 20px;
-    font-size: 16px;
-  }
-  
-  .no-data {
-    text-align: center;
-    color: #757575;
-    font-style: italic;
-    padding: 20px;
-  }
-  
-  /* Responsividad */
-  @media (max-width: 768px) {
-    .filter-container {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .chart {
-      width: 95%;
-      max-width: 100%;
-    }
-    
-    .finance-summary {
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .summary-card {
-      width: 100%;
-      max-width: 100%;
-    }
-  }
-  
-  /* Asegurar que la sección de gráficos tenga una transición suave */
-  .chart-section {
-    margin-top: 30px;
-    animation: fadeIn 0.5s ease-out;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+}
