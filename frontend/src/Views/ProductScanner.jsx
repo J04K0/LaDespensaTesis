@@ -15,6 +15,23 @@ const ProductScanner = () => {
   const [carrito, setCarrito] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [montoEntregado, setMontoEntregado] = useState("");
+  const [errorMonto, setErrorMonto] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
+  const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (montoEntregado && parseFloat(montoEntregado) < total) {
+        setErrorMonto("El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
+      } else {
+        setErrorMonto("");
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [montoEntregado, total]);
 
   const handleScan = async (e) => {
     e.preventDefault();
@@ -202,6 +219,28 @@ const ProductScanner = () => {
     }
   };
 
+  const handleFinalizarVenta = async () => {
+    if (isProcessing) 
+      return;
+    
+    // Guardar el foco actual antes de procesar
+    const activeElement = document.activeElement;
+    document.activeElement.blur();
+    
+    setIsProcessing(true);
+    
+    try {
+      await finalizarVenta();
+    } finally {
+      setTimeout(() => {
+        setIsProcessing(false);
+        if (activeElement && document.contains(activeElement)) {
+          activeElement.focus();
+        }
+      }, 1500);
+    }
+  };
+
   return (
     <div className="scanner-container">
       <Navbar />
@@ -215,15 +254,7 @@ const ProductScanner = () => {
             handleScan={handleScan}
           />
           <div className="scanner-content">
-            <ProductInfo
-              producto={productoActual}
-              stockActual={productoActual ? stockPorProducto[productoActual.codigoBarras] || 0 : 0}
-              cantidad={cantidad}
-              disminuirCantidad={disminuirCantidad}
-              incrementarCantidad={incrementarCantidad}
-              agregarAlCarrito={() => productoActual && agregarAlCarrito(productoActual)}
-            />
-            <Cart
+            <Cart 
               carrito={carrito}
               stockPorProducto={stockPorProducto}
               eliminarDelCarrito={eliminarDelCarrito}
@@ -231,9 +262,51 @@ const ProductScanner = () => {
               disminuirCantidadCarrito={disminuirCantidadCarrito}
               finalizarVenta={finalizarVenta}
             />
+            <div className="sidebar-panel">
+              {productoActual && (
+                <div className="current-product-info">
+                  <h3>Producto Escaneado</h3>
+                  <div className="scanned-product-details">
+                    <h4>{productoActual.nombre}</h4>
+                    <p>Marca: <strong>{productoActual.marca}</strong></p>
+                    <p>Categoría: <strong>{productoActual.categoria}</strong></p>
+                    <p className="scanned-price">Precio: <strong>${productoActual.precioVenta}</strong></p>
+                    <p>Stock disponible: <strong>{stockPorProducto[productoActual.codigoBarras] || 0}</strong></p>
+                    <button 
+                      className="add-to-cart-button"
+                      onClick={() => productoActual && agregarAlCarrito(productoActual)}
+                    >
+                      Agregar al carrito
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Nueva sección de pago en el sidebar */}
+              <div className="sidebar-payment-section">
+                <h3>Detalles de Pago</h3>
+                <div className="payment-section">
+                  <label htmlFor="montoEntregado">
+                    <span className="payment-icon">💵</span> Efectivo entregado:
+                  </label>
+                  <input
+                    type="number"
+                    id="montoEntregado"
+                    value={montoEntregado}
+                    onChange={(e) => setMontoEntregado(e.target.value)}
+                    min={total}
+                    placeholder="Ingrese el monto"
+                    disabled={isProcessing}
+                  />
+                  {errorMonto && <p className="error-text">{errorMonto}</p>}
+                  
+                  {montoEntregado && vuelto >= 0 && (
+                    <p className="vuelto">Vuelto: <span>${vuelto.toFixed(2)}</span></p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          {loading && <p>Cargando...</p>}
-          {error && <p className="error">{error}</p>}
         </>
       )}
     </div>
@@ -244,7 +317,7 @@ const SearchBar = React.memo(({ codigoEscaneado, setCodigoEscaneado, handleScan 
   <div className="search-bar">
     <input
       type="text"
-      placeholder="Ingrese código de barras"
+      placeholder="Escanee código de barras"
       value={codigoEscaneado}
       onChange={(e) => setCodigoEscaneado(e.target.value)}
       onKeyPress={(e) => {
@@ -309,7 +382,6 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-        // Restaurar el foco si es apropiado
         if (activeElement && document.contains(activeElement)) {
           activeElement.focus();
         }
@@ -320,56 +392,70 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
   return (
     <div className="cart-section">
       <h2>Carrito de Compras</h2>
-      <ul className="cart-list">
-        {carrito.map((producto, index) => (
-          <li key={index}>
-            {producto.nombre} - Cantidad: {producto.cantidad} - Total: ${producto.precioVenta * producto.cantidad}
-            <div className="quantity-controls">
-              <button onClick={() => disminuirCantidadCarrito(index)} aria-label="Disminuir cantidad">-</button>
-              <span>{producto.cantidad}</span>
-              <button onClick={() => incrementarCantidadCarrito(index)} aria-label="Incrementar cantidad">+</button>
-              <button className="delete-product" onClick={() => eliminarDelCarrito(index)} aria-label="Eliminar producto">
-                🗑
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {carrito.length > 0 && (
+      {carrito.length === 0 ? (
+        <div className="empty-cart">
+          <p>No hay productos en el carrito</p>
+          <span className="empty-cart-icon">🛒</span>
+        </div>
+      ) : (
         <>
-          <p className="total-price">Total: ${total}</p>
-
-          {/* Campo para ingresar el monto entregado */}
-          <div className="payment-section">
-            <label htmlFor="montoEntregado">Efectivo entregado:</label>
-            <input
-              type="number"
-              id="montoEntregado"
-              value={montoEntregado}
-              onChange={(e) => setMontoEntregado(e.target.value)}
-              min={total}
-              placeholder="Ingrese el monto"
-              disabled={isProcessing}
-            />
-            {errorMonto && <p className="error-text">{errorMonto}</p>}
+          <div className="cart-items-container">
+            {carrito.map((producto, index) => (
+              <div key={index} className="cart-item-card">
+                <div className="cart-item-details">
+                  <h4>{producto.nombre}</h4>
+                  <p className="cart-item-marca">{producto.marca}</p>
+                  <p className="cart-item-price">
+                    Precio: <span>${producto.precioVenta}</span>
+                  </p>
+                </div>
+                <div className="cart-item-actions">
+                  <div className="cart-quantity-controls">
+                    <button 
+                      onClick={() => disminuirCantidadCarrito(index)} 
+                      className="quantity-btn"
+                      disabled={producto.cantidad <= 1}
+                    >−</button>
+                    <span className="quantity-display">{producto.cantidad}</span>
+                    <button 
+                      onClick={() => incrementarCantidadCarrito(index)}
+                      className="quantity-btn"
+                      disabled={!stockPorProducto[producto.codigoBarras]}
+                    >+</button>
+                  </div>
+                  <p className="cart-item-total">
+                    Subtotal: <span>${(producto.precioVenta * producto.cantidad).toFixed(2)}</span>
+                  </p>
+                  <button 
+                    className="delete-product-btn" 
+                    onClick={() => eliminarDelCarrito(index)}
+                    title="Eliminar producto"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
           
-          {montoEntregado && vuelto >= 0 && (
-            <p className="vuelto">Vuelto: ${vuelto}</p>
-          )}
-
-          <button 
-            className="checkout-button" 
-            onClick={handleFinalizarVenta} 
-            aria-label="Aceptar venta"
-            disabled={isProcessing}
-            style={{ 
-              opacity: isProcessing ? 0.7 : 1,
-              cursor: isProcessing ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {isProcessing ? 'Procesando...' : 'Aceptar Venta'}
-          </button>
+          <div className="cart-summary">
+            <div className="cart-totals">
+              <h3>Resumen</h3>
+              <p className="total-price">Total a pagar: <span>${total.toFixed(2)}</span></p>
+            </div>            
+            <button 
+              className="checkout-button" 
+              onClick={handleFinalizarVenta} 
+              aria-label="Aceptar venta"
+              disabled={isProcessing}
+              style={{ 
+                opacity: isProcessing ? 0.7 : 1,
+                cursor: isProcessing ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isProcessing ? 'Procesando...' : 'Finalizar Venta'}
+            </button>
+          </div>
         </>
       )}
     </div>

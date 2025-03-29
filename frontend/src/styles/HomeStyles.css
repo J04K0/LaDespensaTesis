@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+
   padding-top: calc(var(--navbar-height) + 20px) !important; /* Añadir padding para evitar solapamiento */
 }
 
@@ -89,46 +90,125 @@
   flex-direction: column;
 }
 
+/* Contenedor de tabla con altura fija y desplazamiento */
+.home-deudores-card {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
 /* Encabezado de la tarjeta de deudores */
 .home-deudores-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #002651;
+  background-color: #343a40;
   color: white;
-  padding: 10px;
+  padding: 15px;
   border-radius: 10px 10px 0 0;
 }
 
 .home-deudores-header h3 {
   margin: 0;
-  font-size: 24px;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .home-deudores-header button {
-  background-color: #001F3F;
-  color: white;
+  background-color: white;
+  color: black;
   border: none;
   cursor: pointer;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 8px 15px;
+  font-size: 14px;
   border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
-/* Tabla de deudores */
+.home-deudores-header button:hover {
+  background-color: #f0f2f5;
+}
+
+/* Contenedor sin scroll para la tabla */
+.home-deudores-table-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Tabla de deudores ajustada para mostrar todos los elementos */
 .home-deudores-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
 }
 
-.home-deudores-table th, .home-deudores-table td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
+/* Encabezados mejorados */
 .home-deudores-table th {
-  background-color: #002651;
+  background-color: #343a40;
   color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Celdas de datos */
+.home-deudores-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+}
+
+/* Estilos para filas alternantes */
+.home-deudores-table tr:nth-child(even) {
+  background-color: #f0f2f5;
+}
+
+.home-deudores-table tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Hover para las filas */
+.home-deudores-table tr:hover {
+  background-color: #e8f4ff;
+  transition: background-color 0.2s ease;
+}
+
+/* Estilo para la columna de nombre */
+.home-deudores-table td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Estilo para la columna de deuda */
+.home-deudores-table td:last-child {
+  font-weight: bold;
+  color: #dc3545;
+  text-align: right;
+}
+
+/* Estilo para deudores con deuda cero */
+.zero-debt-row td {
+  color: #6c757d !important;
+  background-color: #f2f2f2;
+}
+
+.zero-debt-row:hover {
+  background-color: #e9ecef !important;
 }
 
 /* Controles del gráfico */

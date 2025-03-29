@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import '../styles/ProveedoresStyles.css';
 import Papa from 'papaparse';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import { 
   getProveedores, 
@@ -296,51 +298,6 @@ const Proveedores = () => {
     }
   };
 
-  const handleImportCSV = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results) => {
-        try {
-          setLoading(true);
-          
-          for (const proveedorData of results.data) {
-            const proveedor = {
-              nombre: proveedorData.Nombre,
-              telefono: proveedorData.Teléfono,
-              email: proveedorData.Email,
-              direccion: proveedorData.Dirección || '',
-              categorias: proveedorData.Categorías ? proveedorData.Categorías.split(',').map(c => c.trim()) : [],
-              notas: proveedorData.Notas || '',
-              contactoPrincipal: proveedorData['Persona de Contacto'] || '',
-              sitioWeb: proveedorData['Sitio Web'] || ''
-            };
-          
-            if (proveedor.nombre && proveedor.telefono && proveedor.email) {
-              await createProveedor(proveedor);
-            }
-          }
-          
-          await fetchProveedores();
-          
-          showSuccessAlert('Importación exitosa', 'Los proveedores han sido importados correctamente');
-        } catch (error) {
-          console.error('Error al importar CSV:', error);
-          showErrorAlert('Error', 'Ocurrió un error al importar los proveedores');
-        } finally {
-          setLoading(false);
-          e.target.value = '';
-        }
-      },
-      error: (error) => {
-        console.error('Error al procesar CSV:', error);
-        showErrorAlert('Error', 'El archivo CSV no tiene el formato correcto');
-      }
-    });
-  };
-
   const handleLinkProducts = async (e) => {
     if (e) {
       e.preventDefault();
@@ -414,6 +371,56 @@ const Proveedores = () => {
     }
   };
 
+  const exportarPDF = () => {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    doc.text("Listado de Proveedores", 14, 15);
+    const currentDate = new Date().toLocaleDateString();
+    doc.text(`Fecha: ${currentDate}`, 14, 22);
+    
+    // Preparar datos para la tabla
+    const headers = [
+      'Nombre', 
+      'Teléfono', 
+      'Email',
+      'Contacto Principal',
+      'Dirección',
+      'Categorías',
+      'Notas'
+    ];
+    
+    const rows = filteredProveedores.map(proveedor => [
+      proveedor.nombre,
+      proveedor.telefono,
+      proveedor.email,
+      proveedor.contactoPrincipal || '—',
+      proveedor.direccion || '—',
+      proveedor.categorias.join(', '),
+      proveedor.notas || '—'
+    ]);
+    
+    // Generar tabla
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      margin: { top: 30 },
+      styles: { overflow: 'linebreak' },
+      headStyles: { fillColor: [0, 38, 81] }, // Color #002651
+      didDrawPage: (data) => {
+        // Agregar pie de página con fecha
+        doc.setFontSize(10);
+        doc.text(`La Despensa - Listado de Proveedores - ${currentDate}`, 14, doc.internal.pageSize.height - 10);
+      }
+    });
+    
+    // Guardar PDF
+    doc.save("Proveedores.pdf");
+  };
+
   const indexOfLastProveedor = currentPage * proveedoresPorPagina;
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
@@ -428,9 +435,14 @@ const Proveedores = () => {
           <>
             <div className="proveedores-header">
               <h1>Gestión de Proveedores</h1>
-              <button className="proveedores-btn-add" onClick={handleAddProveedor}>
-                <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
-              </button>
+              <div className="proveedores-header-buttons">
+                <button onClick={exportarPDF} className="proveedores-btn-export-pdf">
+                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
+                </button>
+                <button className="proveedores-btn-add" onClick={handleAddProveedor}>
+                  <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
+                </button>
+              </div>
             </div>
             <div className="proveedores-controls">
               <div className="proveedores-search-bar">
@@ -463,17 +475,6 @@ const Proveedores = () => {
                   <option key={index} value={cat}>{cat}</option>
                 ))}
               </select>
-            </div>
-            <div className="proveedores-export-import">
-              <label className="proveedores-btn-import">
-                <FontAwesomeIcon icon={faFilter} /> Importar CSV
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleImportCSV}
-                  style={{ display: 'none' }}
-                />
-              </label>
             </div>
             {loading ? (
               <p className="proveedores-loading-message">Cargando proveedores...</p>

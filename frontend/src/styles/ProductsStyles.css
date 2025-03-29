@@ -154,19 +154,21 @@
 }
 
 .clear-filters-button {
-  background-color: #d32f2f;
-  color: white;
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background var(--transition-duration);
-  margin-left: 20px;
-  font-size: 18px; 
+  background-color: #e0e0e0 !important;
+  color: black !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 10px 15px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 16px !important;
+  transition: background-color 0.3s !important;
 }
 
 .clear-filters-button:hover {
-  background-color: #b71c1c;
+  background-color: #d0d0d0 !important;
 }
 
 .error {

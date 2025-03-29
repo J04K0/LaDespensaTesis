@@ -112,6 +112,7 @@
   }
   
   .summary-card {
+    position: relative;
     background-color: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
@@ -120,17 +121,30 @@
     text-align: center;
     flex: 1;
     max-width: 300px;
-    transition: transform 0.3s;
+    transition: all 0.3s ease;
   }
   
   .summary-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   }
   
-  .summary-card h3 {
-    margin: 0 0 10px 0;
-    color: #666;
-    font-size: 16px;
+  .summary-card.active {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  }
+  
+  .summary-card small {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #888;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .summary-card:hover small {
+    opacity: 1;
   }
   
   .summary-card.income {
@@ -205,5 +219,22 @@
     .summary-card {
       width: 100%;
       max-width: 100%;
+    }
+  }
+  
+  /* Asegurar que la sección de gráficos tenga una transición suave */
+  .chart-section {
+    margin-top: 30px;
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }

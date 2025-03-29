@@ -100,26 +100,43 @@ const HistorySale = () => {
       );
     }
 
-    if (dateRange.start && dateRange.end) {
+    // Filtro de fecha de inicio independiente
+    if (dateRange.start) {
       const startDate = new Date(dateRange.start);
       startDate.setUTCHours(0, 0, 0, 0);
 
+      filtered = filtered.filter((venta) => {
+        const ventaFecha = new Date(venta.fecha);
+        return ventaFecha >= startDate;
+      });
+    }
+
+    // Filtro de fecha de fin independiente
+    if (dateRange.end) {
       const endDate = new Date(dateRange.end);
       endDate.setUTCHours(23, 59, 59, 999);
 
       filtered = filtered.filter((venta) => {
         const ventaFecha = new Date(venta.fecha);
-        return ventaFecha >= startDate && ventaFecha <= endDate;
+        return ventaFecha <= endDate;
       });
     }
 
-    if (totalRange.min && totalRange.max) {
+    // Aplicar filtro de monto mínimo independientemente del máximo
+    if (totalRange.min) {
       filtered = filtered.filter(
         (venta) =>
           venta.ventas.reduce(
             (acc, producto) => acc + producto.cantidad * producto.precioVenta,
             0
-          ) >= parseFloat(totalRange.min) &&
+          ) >= parseFloat(totalRange.min)
+      );
+    }
+
+    // Aplicar filtro de monto máximo independientemente del mínimo
+    if (totalRange.max) {
+      filtered = filtered.filter(
+        (venta) =>
           venta.ventas.reduce(
             (acc, producto) => acc + producto.cantidad * producto.precioVenta,
             0
@@ -317,10 +334,10 @@ const HistorySale = () => {
                   <table className="history-sale-table">
                     <thead>
                       <tr>
-                        <th>Ticket</th>
-                        <th>Fecha</th>
-                        <th>Productos</th>
-                        <th>Total</th>
+                        <th style={{width: "15%"}}>Código</th>
+                        <th style={{width: "15%"}}>Fecha</th>
+                        <th style={{width: "55%"}}>Detalle de Productos</th>
+                        <th style={{width: "15%"}}>Importe Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -333,25 +350,29 @@ const HistorySale = () => {
                               <ul>
                                 {venta.ventas.map((producto, i) => (
                                   <li key={i}>
-                                    {producto.nombre} - {producto.cantidad}x $
-                                    {producto.precioVenta}
+                                    <div>
+                                      <strong>{producto.nombre}</strong>
+                                      <div className="quantity-total-container">
+                                        <span className="quantity-badge">{producto.cantidad}x</span>
+                                        <span className="line-total">(${(producto.cantidad * producto.precioVenta).toLocaleString()})</span>
+                                      </div>
+                                    </div>
                                   </li>
                                 ))}
                               </ul>
                             </td>
                             <td>
-                              $
-                              {venta.ventas.reduce(
+                              ${venta.ventas.reduce(
                                 (acc, producto) =>
                                   acc + producto.cantidad * producto.precioVenta,
                                 0
-                              )}
+                              ).toLocaleString()}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="4">No hay ventas registradas.</td>
+                          <td colSpan="4" className="no-data">No hay ventas registradas.</td>
                         </tr>
                       )}
                     </tbody>
@@ -375,7 +396,6 @@ const HistorySale = () => {
                 </div>
                 <div className="history-sale-export-buttons">
                   <button onClick={exportToPDF}>📄 Exportar a PDF</button>
-                  <button onClick={exportToExcel}>📊 Exportar a Excel</button>
                 </div>
               </>
             )}

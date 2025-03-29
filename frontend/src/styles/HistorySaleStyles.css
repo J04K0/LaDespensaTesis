@@ -18,41 +18,41 @@
   text-align: center;
 }
 
-/* Contenedor de búsqueda y ordenamiento */
+/* Contenedor de búsqueda y filtros más compacto */
 .history-sale-search-sort-container {
   width: 100%;
   display: flex;
-  flex-wrap: wrap; /* Permite que los elementos bajen en pantallas pequeñas */
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #ddd; /* Separador visual */
+  gap: 10px; /* Reducido de 15px */
+  margin-bottom: 10px; /* Reducido de 20px */
+  padding-bottom: 8px; /* Reducido de 10px */
+  border-bottom: 1px solid #ddd; /* Más delgado */
 }
 
 /* Barra de búsqueda */
 .history-sale-search-bar {
   flex: 1;
-  min-width: 220px;
-  padding: 12px;
+  min-width: 180px; /* Reducido de 220px */
+  padding: 8px; /* Reducido de 12px */
   box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 14px; /* Reducido de 16px */
 }
 
 /* Estilo para select */
 .history-sale-sort-select,
 .history-sale-category-select {
-  padding: 12px;
-  font-size: 16px;
+  padding: 8px; /* Reducido de 12px */
+  font-size: 14px; /* Reducido de 16px */
   border: 1px solid #ddd;
   border-radius: 6px;
   background-color: white;
   cursor: pointer;
   transition: border-color 0.3s, box-shadow 0.3s;
-  min-width: 220px; /* Evita que se achique demasiado */
+  min-width: 180px; /* Reducido de 220px */
 }
 
 .history-sale-sort-select:focus,
@@ -68,7 +68,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px; /* Reducido de 5px */
 }
 
 .history-sale-date-range input,
@@ -80,16 +80,21 @@
   width: 140px;
 }
 
+.history-sale-date-range label,
+.history-sale-total-range label {
+  font-size: 13px; /* Más pequeño */
+}
+
 /* Botón para limpiar filtros */
 .history-sale-clear-filters-button {
   background-color: #d32f2f;
   color: white;
-  padding: 10px 20px;
+  padding: 8px 12px; /* Reducido de 10px 20px */
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.3s;
-  font-size: 16px;
+  font-size: 14px; /* Reducido de 16px */
 }
 
 .history-sale-clear-filters-button:hover {
@@ -97,38 +102,177 @@
   transform: translateY(-2px);
 }
 
-/* Contenedor de la tabla */
+/* Contenedor de tabla con altura fija y desplazamiento */
 .history-sale-table-container {
   overflow-x: auto;
-  margin-top: 20px;
+  margin-top: 10px; /* Reducido de 20px */
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
+  padding: 2px;
+  height: 500px; /* Altura fija para permitir más registros */
+  max-height: 60vh; /* Responsive */
 }
 
-/* Estilos de la tabla */
+/* Nueva tabla con diseño mejorado */
 .history-sale-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  height: 100%; /* Garantizar que la tabla ocupe todo el alto disponible */
 }
 
-.history-sale-table th,
-.history-sale-table td {
-  padding: 12px;
-  border: 1px solid #ddd;
-  text-align: left;
-  font-size: 15px;
-}
-
+/* Rediseño de encabezados */
 .history-sale-table th {
-  background-color: #002651;
+  background-color: #343a40;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20; /* Encabezados fijos al hacer scroll */
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.history-sale-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.history-sale-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+/* Celdas de datos */
+.history-sale-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  vertical-align: middle;
+}
+
+/* Estilos para filas alternantes */
 .history-sale-table tr:nth-child(even) {
-  background-color: #f2f2f2;
+  background-color: #f0f2f5;
 }
 
+.history-sale-table tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Hover para las filas */
 .history-sale-table tr:hover {
-  background-color: #ddd;
+  background-color: #e8f4ff;
+  transition: background-color 0.2s ease;
+}
+
+/* Estilos para productos dentro de la tabla */
+.history-sale-table ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-sale-table li {
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-sale-table li:last-child {
+  border-bottom: none;
+}
+
+.history-sale-table li strong {
+  color: #343a40;
+  font-weight: 600;
+}
+
+/* Organizar mejor cada elemento de producto */
+.history-sale-table li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Separar el nombre del producto y el precio */
+.history-sale-table .product-price {
+  color: #0d6efd;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* Estilo para columna de ticket */
+.history-sale-table td:first-child {
+  font-family: 'Consolas', monospace;
+  color: #495057;
+  font-size: 13px;
+  letter-spacing: -0.5px;
+  font-weight: 500;
+}
+
+/* Estilo para columna de fecha */
+.history-sale-table td:nth-child(2) {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Corrección para que la lista de productos use todo el espacio disponible */
+.history-sale-table td:nth-child(3) {
+  width: 50%;
+}
+
+/* Estilo para columna de total */
+.history-sale-table td:last-child {
+  font-weight: bold;
+  color: #dc3545;
+  font-size: 16px;
+  text-align: right;
+}
+
+/* Para casos sin datos */
+.history-sale-table .no-data {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 30px;
+}
+
+/* Insignia para la cantidad */
+.quantity-badge {
+  background-color: #6c757d;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* Después de la clase .quantity-badge */
+
+.line-total {
+  font-size: 13px;
+  color: #28a745;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/* Contenedor para agrupar la cantidad y el total */
+.quantity-total-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Para ajustar el layout de los elementos en cada producto */
+.history-sale-table li div {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 
 /* Paginación */

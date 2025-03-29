@@ -279,6 +279,7 @@ const DeudoresList = () => {
       
       // Obtener la versión más actualizada del deudor directamente del backend
       const deudorActualizado = await getDeudorById(deudor._id);
+
       if (deudorActualizado) {
         // Asegurarse de que historialPagos sea un array válido
         deudorActualizado.historialPagos = Array.isArray(deudorActualizado.historialPagos) 

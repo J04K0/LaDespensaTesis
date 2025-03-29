@@ -49,7 +49,7 @@ const Home = () => {
   useEffect(() => {
     const fetchDeudores = async () => {
       try {
-        const data = await getDeudores(1, 8);
+        const data = await getDeudores(1, 10); // Cambiado de 8 a 10
         
         // Separar deudores con y sin deuda
         const deudoresConDeuda = data.deudores.filter(deudor => {
@@ -215,27 +215,29 @@ const Home = () => {
                 <h3>Personas deudoras</h3>
                 <button onClick={handleViewAllClick}>Ver todos</button>
               </div>
-              <table className="home-deudores-table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Deuda total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deudores.map((deudor, index) => {
-                    const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-                    const isZeroDebt = deudaValue === 0;
-                    
-                    return (
-                      <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
-                        <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                        <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="home-deudores-table-container">
+                <table className="home-deudores-table">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Deuda total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deudores.map((deudor, index) => {
+                      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+                      const isZeroDebt = deudaValue === 0;
+                      
+                      return (
+                        <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
+                          <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
+                          <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

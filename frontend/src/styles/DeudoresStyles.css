@@ -9,6 +9,21 @@
   margin: 0;
 }
 
+/* Contenedor con scroll */
+.deudores-list-container .main-content {
+  max-width: 1200px;
+  width: 100%;
+  padding: 30px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 85vh;
+}
+
 /* Contenido principal */
 .main-content {
   max-width: 1200px; /* Ancho máximo ajustado */
@@ -107,35 +122,78 @@
 /* Tabla de deudores */
 .deudores-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
   margin-bottom: 20px;
-  table-layout: fixed;
 }
 
-.deudores-table th, .deudores-table td {
-  border: 1px solid #ddd;
-  padding: 15px; /* Aumentar el padding */
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 16px;
-}
-
+/* Encabezados rediseñados */
 .deudores-table th {
-  background-color: #002651;
+  background-color: #343a40;
   color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.deudores-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.deudores-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+/* Celdas de datos */
 .deudores-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
+}
+
+/* Estilos para filas alternantes */
+.deudores-table tbody tr:nth-child(even) {
+  background-color: #f0f2f5;
+}
+
+.deudores-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Hover para las filas */
+.deudores-table tbody tr:hover:not(.zero-debt-row) {
+  background-color: #e8f4ff;
+  transition: background-color 0.2s ease;
+}
+
+/* Estilo para deudores con deuda cero */
+.zero-debt-row {
+  background-color: #f2f2f2 !important;
+  color: #6c757d;
+  opacity: 0.85;
+}
+
+.zero-debt-row td {
+  border-color: #e0e0e0;
+}
+
+.zero-debt-row:hover {
+  background-color: #e9ecef !important;
 }
 
 /* Celda de acciones */
 .actions-cell {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Botones de acción */
@@ -332,13 +390,17 @@
 
 /* Estilo para deudores con deuda cero */
 .zero-debt-row {
-  background-color: #f0f0f0;  /* Gris claro en lugar de verde */
-  color: #888888;  /* Texto gris oscuro */
-  opacity: 0.85;  /* Ligera transparencia para efecto "apagado" */
+  background-color: #f2f2f2 !important;
+  color: #6c757d;
+  opacity: 0.85;
 }
 
 .zero-debt-row td {
-  border-color: #dddddd;  /* Bordes más claros */
+  border-color: #e0e0e0;
+}
+
+.zero-debt-row:hover {
+  background-color: #e9ecef !important;
 }
 
 /* Estilos específicos para modales de deudores */
@@ -517,47 +579,50 @@
   width: 35px;
   height: 35px;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  color: white;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 3px;
-  transition: opacity 0.3s, transform 0.2s;
+  margin: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 /* Colores específicos para cada botón */
 .update-debt-button {
-  background-color: #4CAF50;
+  background-color: #28a745;
+  color: white;
 }
 
 .update-debt-button:hover {
   background-color: #45a049;
   opacity: 0.9;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .view-history-button {
-  background-color: #2196F3;
+  background-color: #17a2b8;
+  color: white;
 }
 
 .view-history-button:hover {
   background-color: #0b7dda;
   opacity: 0.9;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .edit-button {
-  background-color: #006EDF;
+  background-color: #007bff;
+  color: white;
 }
 
 .delete-button {
-  background-color: #f44336;
+  background-color: #dc3545;
+  color: white;
 }
 
 .edit-button:hover, 
 .delete-button:hover {
   opacity: 0.9;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
