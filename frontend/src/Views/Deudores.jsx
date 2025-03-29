@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/DeudoresStyles.css';
-import { getDeudores, deleteDeudor, updateDeudor } from '../services/deudores.service.js';
+import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 
@@ -29,8 +29,12 @@ const DeudoresList = () => {
     Nombre: '',
     fechaPaga: '',
     numeroTelefono: '',
-    deudaTotal: ''
+    deudaTotal: '',
+    historialPagos: []
   });
+
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedHistoryDeudor, setSelectedHistoryDeudor] = useState(null);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -150,7 +154,8 @@ const DeudoresList = () => {
       Nombre: deudor.Nombre,
       fechaPaga: fechaFormateada,
       numeroTelefono: deudor.numeroTelefono,
-      deudaTotal: parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'))
+      deudaTotal: parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.')),
+      historialPagos: deudor.historialPagos || []
     });
     setShowEditModal(true);
   };
@@ -174,21 +179,51 @@ const DeudoresList = () => {
       showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
       return;
     }
-
+  
     try {
       const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
       const parsedAmount = parseFloat(amount);
-      let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
-    
-      newDebt = Math.max(0, newDebt);
       
-      await updateDeudor(selectedDeudor._id, {
-        Nombre: selectedDeudor.Nombre,
-        fechaPaga: selectedDeudor.fechaPaga,
-        numeroTelefono: selectedDeudor.numeroTelefono.toString(),
+      // Validar que no se pague más de lo que se debe
+      if (isPayment && parsedAmount > currentDebt) {
+        showErrorAlert(
+          'Monto excesivo', 
+          `El monto de pago (${parsedAmount}) no puede ser mayor que la deuda actual (${currentDebt}).`
+        );
+        return;
+      }
+      
+      let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
+      
+      // Crear nuevo registro para el historial de pagos
+      const nuevoPago = {
+        fecha: new Date(),
+        monto: parsedAmount,
+        tipo: isPayment ? 'pago' : 'deuda'
+      };
+      
+      // Obtener el deudor actualizado primero para tener el historial más reciente
+      const deudorActual = await getDeudorById(selectedDeudor._id);
+      
+      // Asegurar que historialPagos sea un array válido
+      const historialActual = Array.isArray(deudorActual.historialPagos) 
+        ? deudorActual.historialPagos 
+        : [];
+      
+      console.log("Historial actual:", historialActual); // Log para depuración
+      console.log("Nuevo pago:", nuevoPago); // Log para depuración
+      
+      const deudorActualizado = await updateDeudor(selectedDeudor._id, {
+        Nombre: deudorActual.Nombre,
+        fechaPaga: deudorActual.fechaPaga,
+        numeroTelefono: deudorActual.numeroTelefono.toString(),
         deudaTotal: newDebt,
+        historialPagos: [...historialActual, nuevoPago]
       });
       
+      console.log("Deudor actualizado:", deudorActualizado); // Log para depuración
+      
+      // Recargar los datos
       const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
       setAllDeudores(updatedDeudores.deudores);
       setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
@@ -205,6 +240,7 @@ const DeudoresList = () => {
       showErrorAlert('Error al actualizar la deuda', 'Ocurrió un error al intentar actualizar la deuda.');
     }
   };
+  
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -235,6 +271,46 @@ const DeudoresList = () => {
       console.error('Error updating deudor:', error);
       showErrorAlert('Error al actualizar el deudor', 'Ocurrió un error al intentar actualizar el deudor.');
     }
+  };
+
+  const handleViewHistory = async (deudor) => {
+    try {
+      setLoading(true);
+      
+      // Obtener la versión más actualizada del deudor directamente del backend
+      const deudorActualizado = await getDeudorById(deudor._id);
+      if (deudorActualizado) {
+        // Asegurarse de que historialPagos sea un array válido
+        deudorActualizado.historialPagos = Array.isArray(deudorActualizado.historialPagos) 
+          ? deudorActualizado.historialPagos 
+          : [];
+          
+        setSelectedHistoryDeudor(deudorActualizado);
+      } else {
+        // Si no se encuentra, usar los datos disponibles pero con array vacío
+        deudor.historialPagos = [];
+        setSelectedHistoryDeudor(deudor);
+      }
+      
+      setShowHistoryModal(true);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error al obtener historial actualizado:', error);
+      // Si hay error, usar los datos disponibles con array vacío
+      deudor.historialPagos = [];
+      setSelectedHistoryDeudor(deudor);
+      setShowHistoryModal(true);
+      setLoading(false);
+    }
+  };
+
+  // Agregar esta función para sanitizar los inputs numéricos
+  const sanitizeNumber = (value) => {
+    if (typeof value === 'string') {
+      // Elimina todos los caracteres no numéricos excepto el punto decimal
+      return value.replace(/[^\d.]/g, '');
+    }
+    return value;
   };
 
   return (
@@ -302,6 +378,9 @@ const DeudoresList = () => {
                         <button onClick={() => handleUpdateDebt(deudor)} className="update-debt-button">
                           <FontAwesomeIcon icon={faMoneyBillWave} />
                         </button>
+                        <button onClick={() => handleViewHistory(deudor)} className="view-history-button">
+                          <FontAwesomeIcon icon={faHistory} />
+                        </button>
                         <button onClick={() => handleEdit(deudor)} className="edit-button">
                           <FontAwesomeIcon icon={faEdit} />
                         </button>
@@ -341,7 +420,7 @@ const DeudoresList = () => {
                       type="number"
                       id="amount"
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      onChange={(e) => setAmount(sanitizeNumber(e.target.value))}
                       placeholder="Ingrese el monto"
                       min="0"
                       required
@@ -387,7 +466,82 @@ const DeudoresList = () => {
                 <div className="deudores-modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Editar Deudor</h3>
                   
-                  {/* ...contenido del modal de edición... */}
+                  <div className="deudores-modal-form-group">
+                    <label htmlFor="editNombre">Nombre:</label>
+                    <input
+                      type="text"
+                      id="editNombre"
+                      name="Nombre"
+                      value={deudorToEdit.Nombre}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="deudores-modal-form-group">
+                    <label htmlFor="editFechaPaga">Fecha a Pagar:</label>
+                    <input
+                      type="date"
+                      id="editFechaPaga"
+                      name="fechaPaga"
+                      value={deudorToEdit.fechaPaga}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="deudores-modal-form-group">
+                    <label htmlFor="editNumeroTelefono">Número de Teléfono:</label>
+                    <input
+                      type="text"
+                      id="editNumeroTelefono"
+                      name="numeroTelefono"
+                      value={deudorToEdit.numeroTelefono}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="deudores-modal-form-group">
+                    <label htmlFor="editDeudaTotal">Deuda Total:</label>
+                    <input
+                      type="number"
+                      id="editDeudaTotal"
+                      name="deudaTotal"
+                      value={deudorToEdit.deudaTotal}
+                      onChange={handleEditChange}
+                      required
+                    />
+                  </div>
+                  
+                  {/* Historial de Pagos */}
+                  <div className="deudores-payment-history">
+                    <h4>Historial de Pagos</h4>
+                    {deudorToEdit.historialPagos && deudorToEdit.historialPagos.length > 0 ? (
+                      <div className="deudores-payment-history-table-container">
+                        <table className="deudores-payment-history-table">
+                          <thead>
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Monto</th>
+                              <th>Tipo</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {deudorToEdit.historialPagos.map((pago, idx) => (
+                              <tr key={idx} className={pago.tipo === 'pago' ? 'payment-row' : 'debt-row'}>
+                                <td>{new Date(pago.fecha).toLocaleDateString()}</td>
+                                <td>${pago.monto.toLocaleString()}</td>
+                                <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="no-payment-history">No hay historial de pagos registrado</p>
+                    )}
+                  </div>
                   
                   <div className="deudores-modal-buttons">
                     <button onClick={handleEditSubmit} className="deudores-confirm-button">
@@ -395,6 +549,53 @@ const DeudoresList = () => {
                     </button>
                     <button onClick={() => setShowEditModal(false)} className="deudores-cancel-button">
                       Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Modal para ver historial de pagos */}
+            {showHistoryModal && selectedHistoryDeudor && (
+              <div className="deudores-modal-overlay" onClick={() => setShowHistoryModal(false)}>
+                <div className="deudores-modal-content history-modal" onClick={(e) => e.stopPropagation()}>
+                  <h3>Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h3>
+                  <p><strong>Deuda actual:</strong> ${typeof selectedHistoryDeudor.deudaTotal === 'number' ? 
+                    selectedHistoryDeudor.deudaTotal.toLocaleString() : 
+                    selectedHistoryDeudor.deudaTotal}</p>
+                  
+                  <div className="deudores-payment-history">
+                    {selectedHistoryDeudor.historialPagos && 
+                     Array.isArray(selectedHistoryDeudor.historialPagos) && 
+                     selectedHistoryDeudor.historialPagos.length > 0 ? (
+                      <div className="deudores-payment-history-table-container">
+                        <table className="deudores-payment-history-table">
+                          <thead>
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Monto</th>
+                              <th>Tipo</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedHistoryDeudor.historialPagos.map((pago, idx) => (
+                              <tr key={idx} className={pago.tipo === 'pago' ? 'payment-row' : 'debt-row'}>
+                                <td>{new Date(pago.fecha).toLocaleDateString()}</td>
+                                <td>${pago.monto.toLocaleString()}</td>
+                                <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="no-payment-history">No hay historial de pagos registrado</p>
+                    )}
+                  </div>
+                  
+                  <div className="deudores-modal-buttons">
+                    <button onClick={() => setShowHistoryModal(false)} className="deudores-cancel-button">
+                      Cerrar
                     </button>
                   </div>
                 </div>

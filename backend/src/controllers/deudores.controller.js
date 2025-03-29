@@ -64,25 +64,24 @@ export const addDeudor = async (req, res) => {
 export const updateDeudor = async (req, res) => {
   try {
     const { id } = req.params;
-
     const { value: validatedId, error: errorId } = idDeudorSchema.validate({ id });
-
     if (errorId) return handleErrorClient(res, 400, errorId.message);
 
     const deudor = await Deudores.findById(validatedId.id);
-
     if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
     const { body } = req;
-    const { value, error } = deudorSchema.validate(body);
-    if (error) return handleErrorClient(res, 400, error.message);
+    console.log("Datos recibidos:", body); // Log para depuración
+
+    // Si los datos contienen historialPagos, actualizar también
     const updatedDeudor = await Deudores.findByIdAndUpdate(
       validatedId.id,
       {
-        Nombre: value.Nombre,
-        fechaPaga: value.fechaPaga,
-        numeroTelefono: value.numeroTelefono,
-        deudaTotal: value.deudaTotal,
+        Nombre: body.Nombre,
+        fechaPaga: body.fechaPaga,
+        numeroTelefono: body.numeroTelefono,
+        deudaTotal: body.deudaTotal,
+        historialPagos: body.historialPagos // Incluir historialPagos en la actualización
       },
       { new: true }
     );

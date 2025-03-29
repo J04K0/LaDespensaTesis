@@ -8,6 +8,12 @@ const objectIdValidator = (value, helpers) => {
   return value;
 };
 
+const pagoSchema = Joi.object({
+  fecha: Joi.date().required(),
+  monto: Joi.number().positive().required(),
+  tipo: Joi.string().valid('pago', 'deuda').required()
+});
+
 export const deudorSchema = Joi.object({
   Nombre: Joi.string().required().messages({
     'string.base': 'El nombre debe ser una cadena de texto.',
@@ -33,6 +39,7 @@ export const deudorSchema = Joi.object({
     'number.base': 'La deuda total debe ser un número.',
     'any.required': 'La deuda total es un campo requerido.'
   }),
+  historialPagos: Joi.array().items(pagoSchema)
 });
 
 export const idDeudorSchema = Joi.object({

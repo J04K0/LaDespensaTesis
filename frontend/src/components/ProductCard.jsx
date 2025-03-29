@@ -2,32 +2,30 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onDelete, onEdit, onInfo }) => {
+const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onInfo }) => {
   return (
-    <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>
-      {/* Botón de info en la esquina superior derecha */}
-      <button className="info-button" onClick={onInfo}>
-        <FontAwesomeIcon icon={faInfoCircle} />
-      </button>
-      
+    <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>      
       <div className="product-info">
-        <img src={image ? `${image}` : "/default-image.jpg"} alt={name} className="product-image" />
-        <h3>{name}</h3>
-        <p>{marca}</p>
-        <p>Stock: {stock}</p>
-        <p>Precio: ${venta}</p>
-        {fechaVencimiento && <p>Caducidad: {new Date(fechaVencimiento).toLocaleDateString()}</p>}
-        <div className="button-group">
-          <button className="delete-button" onClick={onDelete}>Eliminar</button>
-          <button className="edit-button" onClick={onEdit}>Editar</button>
+        <div className="image-container" onClick={onInfo}>
+          <img 
+            src={image ? `${image}` : "/default-image.jpg"} 
+            alt={name} 
+            className="product-image" 
+          />
+          <div className="image-overlay">
+            <span>Ver detalles</span>
+          </div>
         </div>
+        <p className="product-price">${venta}</p>
+        <p className="product-brand">{marca}</p>
+        <h3 className="product-name">{name}</h3>
+        
       </div>
     </div>
   );
 };
-
 ProductCard.propTypes = {
   image: PropTypes.string,
   name: PropTypes.string.isRequired,
@@ -35,8 +33,6 @@ ProductCard.propTypes = {
   stock: PropTypes.number.isRequired,
   venta: PropTypes.number.isRequired,
   fechaVencimiento: PropTypes.string,
-  onDelete: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
   onInfo: PropTypes.func.isRequired
 };
 

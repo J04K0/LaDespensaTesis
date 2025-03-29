@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,6 +9,21 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [showProductOptions, setShowProductOptions] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProductOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -38,7 +53,7 @@ const Navbar = () => {
               <FontAwesomeIcon icon={faHome} /> <span>Inicio</span>
             </li>
             
-            <li className="dropdown">
+            <li className="dropdown" ref={dropdownRef}>
               <div className="dropdown-trigger" onClick={toggleProductOptions}>
                 <FontAwesomeIcon icon={faBoxOpen} /> <span>Productos</span>
                 <FontAwesomeIcon icon={showProductOptions ? faCaretUp : faCaretDown} className="caret-icon" />

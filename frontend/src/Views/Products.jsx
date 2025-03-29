@@ -42,6 +42,9 @@ const Products = () => {
     ventasPorMes: []
   });
 
+  const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
+  const [statsExpanded, setStatsExpanded] = useState(true);
+
   const productsPerPage = 9;
   const navigate = useNavigate();
   const location = useLocation();
@@ -312,6 +315,10 @@ const Products = () => {
     setLoading(true);
     setProductInfo(product);
 
+      // Asegurar que las secciones estén expandidas cuando se abre el modal
+    setCharacteristicsExpanded(false);
+    setStatsExpanded(false);
+
     try {
       const response = await obtenerVentas();
       const ventas = response.data || [];
@@ -460,62 +467,141 @@ const Products = () => {
           onClick={() => setShowInfoModal(false)}
         >
           <div 
-            className="modal-content info-modal product-info-modal"
+            className="product-detail-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>Información de Producto: {productInfo.Nombre}</h3>
-            
-            <div className="product-info-container">
-              <div className="product-basic-info">
+            <div className="product-detail-content">
+              {/* Columna de imagen */}
+              <div className="product-detail-image-container">
                 <img 
                   src={productInfo.image || "/default-image.jpg"} 
                   alt={productInfo.Nombre} 
-                  className="product-info-image" 
+                  className="product-detail-image" 
                 />
-                <div className="product-details">
-                  <p><strong>Código de Barras:</strong> {productInfo.codigoBarras}</p>
-                  <p><strong>Marca:</strong> {productInfo.Marca}</p>
-                  <p><strong>Categoría:</strong> {productInfo.Categoria}</p>
-                  <p><strong>Stock Actual:</strong> {productInfo.Stock} unidades</p>
-                  <p><strong>Precio de Venta:</strong> ${productInfo.PrecioVenta}</p>
-                  <p><strong>Precio de Compra:</strong> ${productInfo.PrecioCompra}</p>
-                  {productInfo.fechaVencimiento && (
-                    <p><strong>Fecha de Vencimiento:</strong> {new Date(productInfo.fechaVencimiento).toLocaleDateString()}</p>
-                  )}
-                </div>
               </div>
               
-              <div className="product-stats">
-                <h4>Estadísticas de Ventas</h4>
-                {productStats.totalVentas > 0 ? (
-                  <>
-                    <p><strong>Total de Unidades Vendidas:</strong> {productStats.totalVentas}</p>
-                    <p><strong>Ingresos Generados:</strong> ${productStats.ingresos}</p>
-                    {productStats.ultimaVenta && (
-                      <p><strong>Última Venta:</strong> {productStats.ultimaVenta.toLocaleDateString()}</p>
-                    )}
+              {/* Columna de detalles */}
+              <div className="product-detail-info">
+                <p className="product-detail-brand">{productInfo.Marca}</p>
+                <h2 className="product-detail-name">{productInfo.Nombre}</h2>
+                
+                <div className="product-detail-price-info">
+                  <p>Compra <span className="product-detail-old-price">${productInfo.PrecioCompra}</span></p>
+                  <p className="product-detail-current-price">${productInfo.PrecioVenta}</p>
+                </div>
+                <div className="product-detail-actions">
+                  <button onClick={() => { setShowInfoModal(false); handleEdit(productInfo._id); }} className="product-detail-edit-btn">
+                    Editar
+                  </button>
+                  <button onClick={() => { if(window.confirm('¿Estás seguro de eliminar este producto?')) { handleDelete(productInfo._id); setShowInfoModal(false); } }} className="product-detail-delete-btn">
+                    Eliminar
+                  </button>
+                </div>
+                
+                {/* Sección de Características */}
+                <div className="product-detail-characteristics">
+                  <h3 
+                    className="product-detail-section-title"
+                    onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      style={{ 
+                        transform: characteristicsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                        transition: 'transform 0.3s ease'
+                      }}
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                    Características
+                  </h3>
+                  
+                  {characteristicsExpanded && (
+                    <ul className="product-detail-characteristics-list">
+                      {productInfo.fechaVencimiento && (
+                        <li>
+                          <span className="characteristic-bullet">-</span>
+                          <span>Fecha vencimiento: {new Date(productInfo.fechaVencimiento).toLocaleDateString()}</span>
+                        </li>
+                      )}
+                      <li>
+                        <span className="characteristic-bullet">-</span>
+                        <span>Categoría: {productInfo.Categoria}</span>
+                      </li>
+                      <li>
+                        <span className="characteristic-bullet">-</span>
+                        <span>Stock: {productInfo.Stock} unidades</span>
+                      </li>
+                      <li>
+                        <span className="characteristic-bullet">-</span>
+                        <span>Código de Barras: {productInfo.codigoBarras}</span>
+                      </li>
+                    </ul>
+                  )}
+                </div>
+                
+                {/* Sección de Estadísticas de Venta */}
+                {productStats.totalVentas > 0 && (
+                  <div className="product-detail-sales">
+                    <h3 
+                      className="product-detail-section-title"
+                      onClick={() => setStatsExpanded(!statsExpanded)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="20" 
+                        height="20" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                        style={{ 
+                          transform: statsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                      Estadísticas de Venta
+                    </h3>
                     
-                    {productStats.ventasPorMes.length > 0 && (
-                      <div className="sales-by-month">
-                        <h5>Ventas por Mes</h5>
-                        <ul>
-                          {productStats.ventasPorMes.map((item, index) => (
-                            <li key={index}>{item.mes}: {item.cantidad} unidades</li>
-                          ))}
-                        </ul>
-                      </div>
+                    {statsExpanded && (
+                      <ul className="product-detail-characteristics-list">
+                        <li>
+                          <span className="characteristic-bullet">-</span>
+                          <span>Total de Unidades Vendidas: {productStats.totalVentas}</span>
+                        </li>
+                        <li>
+                          <span className="characteristic-bullet">-</span>
+                          <span>Ingresos Generados: ${productStats.ingresos}</span>
+                        </li>
+                        {productStats.ultimaVenta && (
+                          <li>
+                            <span className="characteristic-bullet">-</span>
+                            <span>Última Venta: {productStats.ultimaVenta.toLocaleDateString()}</span>
+                          </li>
+                        )}
+                      </ul>
                     )}
-                  </>
-                ) : (
-                  <p>Este producto aún no tiene registros de ventas</p>
+                  </div>
                 )}
+                
+                <button onClick={() => setShowInfoModal(false)} className="product-detail-close-btn">
+                  Cerrar
+                </button>
               </div>
-            </div>
-            
-            <div className="modal-buttons">
-              <button onClick={() => setShowInfoModal(false)} className="cancel-button">
-                Cerrar
-              </button>
             </div>
           </div>
         </div>
@@ -527,13 +613,13 @@ const Products = () => {
           onClick={() => setShowEditModal(false)}
         >
           <div 
-            className="modal-content edit-modal product-edit-modal"
+            className="modal-content product-edit-modal"
             onClick={(e) => e.stopPropagation()}
           >
             <h3>Editar Producto</h3>
             
             <div className="modal-form-group">
-              <label htmlFor="Nombre">Nombre:</label>
+              <label htmlFor="Nombre">Nombre del producto</label>
               <input
                 type="text"
                 id="Nombre"
@@ -545,7 +631,7 @@ const Products = () => {
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="codigoBarras">Código de Barras:</label>
+              <label htmlFor="codigoBarras">Código de Barras</label>
               <input
                 type="text"
                 id="codigoBarras"
@@ -557,7 +643,7 @@ const Products = () => {
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="Marca">Marca:</label>
+              <label htmlFor="Marca">Marca</label>
               <input
                 type="text"
                 id="Marca"
@@ -569,9 +655,9 @@ const Products = () => {
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="Stock">Stock:</label>
+              <label htmlFor="Stock">Stock</label>
               <input
-                type="text"
+                type="number"
                 id="Stock"
                 name="Stock"
                 value={productToEdit.Stock}
@@ -581,7 +667,7 @@ const Products = () => {
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="Categoria">Categoría:</label>
+              <label htmlFor="Categoria">Categoría</label>
               <select
                 id="Categoria"
                 name="Categoria"
@@ -596,44 +682,47 @@ const Products = () => {
               </select>
             </div>
             
-            <div className="modal-form-group">
-              <label htmlFor="PrecioCompra">Precio de Compra:</label>
-              <input
-                type="number"
-                id="PrecioCompra"
-                name="PrecioCompra"
-                value={productToEdit.PrecioCompra}
-                onChange={handleEditChange}
-                required
-              />
+            {/* Grid de 3 columnas para los valores numéricos y fecha */}
+            <div className="form-grid">
+              <div className="modal-form-group">
+                <label htmlFor="PrecioCompra">Precio de Compra</label>
+                <input
+                  type="number"
+                  id="PrecioCompra"
+                  name="PrecioCompra"
+                  value={productToEdit.PrecioCompra}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group">
+                <label htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
+                <input
+                  type="date"
+                  id="fechaVencimiento"
+                  name="fechaVencimiento"
+                  value={productToEdit.fechaVencimiento}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              
+              <div className="modal-form-group">
+                <label htmlFor="PrecioVenta">Precio de Venta</label>
+                <input
+                  type="number"
+                  id="PrecioVenta"
+                  name="PrecioVenta"
+                  value={productToEdit.PrecioVenta}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="PrecioVenta">Precio de Venta:</label>
-              <input
-                type="number"
-                id="PrecioVenta"
-                name="PrecioVenta"
-                value={productToEdit.PrecioVenta}
-                onChange={handleEditChange}
-                required
-              />
-            </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="fechaVencimiento">Fecha de Vencimiento:</label>
-              <input
-                type="date"
-                id="fechaVencimiento"
-                name="fechaVencimiento"
-                value={productToEdit.fechaVencimiento}
-                onChange={handleEditChange}
-                required
-              />
-            </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="precioAntiguo">Precio Antiguo (opcional):</label>
+              <label htmlFor="precioAntiguo">Precio Antiguo (opcional)</label>
               <input
                 type="number"
                 id="precioAntiguo"
@@ -644,28 +733,40 @@ const Products = () => {
             </div>
             
             <div className="modal-form-group">
-              <label htmlFor="image">Imagen:</label>
-              <input
-                type="file"
-                id="image"
-                name="image"
-                onChange={handleImageChange}
-                accept="image/*"
-              />
+              <label htmlFor="image">Imagen</label>
+              <div className="file-input-wrapper">
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+              </div>
               {typeof editImage === 'string' && (
                 <div className="current-image">
                   <p>Imagen actual:</p>
-                  <img src={editImage} alt="Imagen actual del producto" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                  <img src={editImage} alt="Imagen actual del producto" />
                 </div>
               )}
             </div>
             
             <div className="modal-buttons">
               <button onClick={handleEditSubmit} className="confirm-button">
-                Guardar Cambios
+                Editar producto
+                <svg className="edit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12.9 7.5C12.2 6.8 11.1 6.3 10 6.3C7.6 6.3 5.7 8.2 5.7 10.6C5.7 13 7.6 14.9 10 14.9C12.4 14.9 14.3 13 14.3 10.6" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M16.2 2.43L14.1 4.53C13.8 4.83 13.5 5.41 13.5 5.85V7.29C13.5 8.06 14.14 8.7 14.91 8.7H16.35C16.79 8.7 17.38 8.4 17.67 8.11L19.77 6.01C20.74 5.04 21.2 3.95 19.77 2.52C18.34 1.07 17.25 1.45 16.2 2.43Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
               <button onClick={() => setShowEditModal(false)} className="cancel-button">
                 Cancelar
+                <svg className="cancel-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 5.97998C17.67 5.64998 14.32 5.47998 10.98 5.47998C9 5.47998 7.02 5.57998 5.04 5.77998L3 5.97998" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M8.5 4.97L8.72 3.66C8.88 2.71 9 2 10.69 2H13.31C15 2 15.13 2.75 15.28 3.67L15.5 4.97" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.85 9.14001L18.2 19.21C18.09 20.78 18 22 15.21 22H8.79002C6.00002 22 5.91002 20.78 5.80002 19.21L5.15002 9.14001" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
             </div>
           </div>

@@ -297,6 +297,11 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
   const handleFinalizarVenta = async () => {
     if (isProcessing) 
       return;
+    
+    // Guardar el foco actual antes de procesar
+    const activeElement = document.activeElement;
+    document.activeElement.blur();
+    
     setIsProcessing(true);
     
     try {
@@ -304,6 +309,10 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
+        // Restaurar el foco si es apropiado
+        if (activeElement && document.contains(activeElement)) {
+          activeElement.focus();
+        }
       }, 1500);
     }
   };

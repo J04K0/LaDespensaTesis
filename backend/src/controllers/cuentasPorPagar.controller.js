@@ -146,6 +146,32 @@ export const marcarComoPagada = async (req, res) => {
   }
 };
 
+// Desmarcar una cuenta como pagada
+export const desmarcarComoPagada = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const cuenta = await CuentasPorPagar.findById(id);
+    if (!cuenta) {
+      return handleErrorClient(res, 404, 'Cuenta por pagar no encontrada');
+    }
+    
+    if (cuenta.Estado !== 'Pagado') {
+      return handleErrorClient(res, 400, 'Esta cuenta no está marcada como pagada');
+    }
+    
+    const cuentaActualizada = await CuentasPorPagar.findByIdAndUpdate(
+      id,
+      { Estado: 'Pendiente' },
+      { new: true }
+    );
+    
+    handleSuccess(res, 200, 'Cuenta por pagar desmarcada como pagada', cuentaActualizada);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al desmarcar la cuenta como pagada', err.message);
+  }
+};
+
 // Filtrar cuentas por categoría
 export const getCuentasPorCategoria = async (req, res) => {
   try {

@@ -3,7 +3,6 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: #B2DFFF;
   padding-top: calc(var(--navbar-height) + 20px) !important; /* Añadir padding para evitar solapamiento */
 }
 

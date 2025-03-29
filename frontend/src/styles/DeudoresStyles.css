@@ -341,13 +341,6 @@
   border-color: #dddddd;  /* Bordes más claros */
 }
 
-/* Mantener iconos y otros elementos dentro de la fila con el mismo efecto */
-.zero-debt-row button,
-.zero-debt-row svg {
-  opacity: 0.75;
-  color: #888888;
-}
-
 /* Estilos específicos para modales de deudores */
 .deudores-modal-overlay {
   position: fixed;
@@ -443,4 +436,128 @@
 
 .payment-type input[type="radio"] {
   margin-right: 10px;
+}
+
+/* Estilos para el historial de pagos */
+.deudores-payment-history {
+  margin-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 15px;
+}
+
+.deudores-payment-history h4 {
+  margin-top: 0;
+  color: #002651;
+  margin-bottom: 15px;
+}
+
+.deudores-payment-history-table-container {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.deudores-payment-history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deudores-payment-history-table th,
+.deudores-payment-history-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.deudores-payment-history-table th {
+  background-color: #f2f2f2;
+  position: sticky;
+  top: 0;
+}
+
+.payment-row {
+  background-color: #e8f5e9; /* Verde claro para pagos */
+}
+
+.debt-row {
+  background-color: #ffebee; /* Rojo claro para deudas */
+}
+
+.no-payment-history {
+  color: #666;
+  font-style: italic;
+  text-align: center;
+}
+
+.view-history-button {
+  background-color: #2196F3;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  color: white;
+}
+
+.view-history-button:hover {
+  background-color: #0b7dda;
+}
+
+.history-modal {
+  max-width: 600px;
+}
+
+/* Estilos comunes para todos los botones de acción */
+.update-debt-button,
+.view-history-button,
+.edit-button,
+.delete-button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 3px;
+  transition: opacity 0.3s, transform 0.2s;
+}
+
+/* Colores específicos para cada botón */
+.update-debt-button {
+  background-color: #4CAF50;
+}
+
+.update-debt-button:hover {
+  background-color: #45a049;
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.view-history-button {
+  background-color: #2196F3;
+}
+
+.view-history-button:hover {
+  background-color: #0b7dda;
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.edit-button {
+  background-color: #006EDF;
+}
+
+.delete-button {
+  background-color: #f44336;
+}
+
+.edit-button:hover, 
+.delete-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
 }

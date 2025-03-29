@@ -5,8 +5,7 @@ export const getDeudores = async (page = 1, limit = 6) => {
     const response = await axios.get('/deudores', {
       params: { page, limit }
     });
-    const deudores = response.data.data;
-    return deudores;
+    return response.data.data;
   } catch (error) {
     console.error('Error fetching deudores:', error);
     throw error;
@@ -18,13 +17,14 @@ export const getDeudorById = async (id) => {
     const response = await axios.get(`/deudores/getbyid/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error('Error fetching deudor by id:', error);
+    console.error('Error fetching deudor by ID:', error);
     throw error;
   }
 };
 
 export const updateDeudor = async (id, deudorData) => {
   try {
+    console.log("Enviando al backend:", deudorData); // Log para depuración
     const response = await axios.patch(`/deudores/actualizar/${id}`, deudorData);
     return response.data.data;
   } catch (error) {

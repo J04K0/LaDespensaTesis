@@ -225,24 +225,7 @@ const HistorySale = () => {
           <HistorySaleSkeleton />
         ) : (
           <>
-            <h1>Historial de Ventas</h1>
-            
-            <button 
-              onClick={fetchVentas}
-              className="refresh-button"
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginBottom: '16px'
-              }}
-            >
-              Actualizar Ventas
-            </button>
-            
+            <h1>Historial de Ventas</h1>       
             <div className="history-sale-search-sort-container">
               <input
                 type="text"

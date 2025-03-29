@@ -272,13 +272,36 @@ const CuentasPorPagar = () => {
     }
   };
 
-  // Marcar como pagada
-  const handleTogglePaid = async (id, estadoActual) => {
-    if (estadoActual === 'Pagado') {
-      showWarningAlert('Advertencia', 'La cuenta ya está marcada como pagada.');
-      return;
+  // Marcar/desmarcar como pagada
+const handleTogglePaid = async (id, estadoActual) => {
+  // Si ya está pagado, pedir confirmación para desmarcar
+  if (estadoActual === 'Pagado') {
+    const result = await showConfirmationAlert(
+      '¿Desmarcar pago?',
+      'Esta acción cambiará el estado de la cuenta de "Pagado" a "Pendiente"',
+      'Sí, desmarcar',
+      'Cancelar'
+    );
+    
+    if (!result.isConfirmed) {
+      return; // Si el usuario cancela, no hacer nada
     }
-
+    
+    try {
+      // Llamar al endpoint para desmarcar como pagada
+      const response = await axios.patch(`/cuentasPorPagar/desmarcar/${id}`);
+      if (response.data.status === "success") {
+        await fetchCuentas();
+        showSuccessAlert('Cuenta desmarcada como pagada', '');
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error unmarking as paid:', error);
+      showErrorAlert('Error al desmarcar pago', 'Ocurrió un error al intentar desmarcar la cuenta como pagada.');
+    }
+  } else {
+    // Comportamiento original: marcar como pagada
     try {
       const response = await axios.patch(`/cuentasPorPagar/pagar/${id}`);
       if (response.data.status === "success") {
@@ -291,7 +314,8 @@ const CuentasPorPagar = () => {
       console.error('Error marking as paid:', error);
       showErrorAlert('Error al marcar como pagada', 'Ocurrió un error al intentar marcar la cuenta como pagada.');
     }
-  };
+  }
+};
 
   // Manejar cambios en el formulario
   const handleInputChange = (e) => {

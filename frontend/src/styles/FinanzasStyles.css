@@ -86,7 +86,7 @@
   
   /* Botón de descarga */
   .download-button {
-    background: #4CAF50;
+    background: #b71c1c;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -99,7 +99,7 @@
   }
   
   .download-button:hover {
-    background: #388E3C;
+    background: #d9534f;
   }
   
   /* Tarjetas resumen */

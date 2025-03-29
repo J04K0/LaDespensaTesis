@@ -8,6 +8,7 @@
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
   background-color: white;
+  position: relative;
 }
 
 .product-card.out-of-stock {
@@ -17,64 +18,68 @@
 
 .product-info {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
-.product-info h3 {
-  margin: 10px 0;
+.image-container {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  align-items: center;
+  
 }
 
-.product-info p {
+.product-image {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-container:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-container:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-price {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 5px 0;
+  color: #006EDF;
+}
+
+.product-brand {
+  font-size: 16px;
+  color: #757575;
   margin: 5px 0;
 }
 
-.button-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 5px;
-  margin-top: 10px;
-}
-
-.button-group button {
-  flex: 1;
-  margin: 0 5px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: white;
-}
-
-.button-group .info-button {
-  grid-column: span 2;
-}
-
-.delete-button {
-  background-color: red !important;
-}
-
-.edit-button {
-  background-color: #0275d8;
-}
-
-.delete-button:hover {
-  background-color: #900c3f !important;
-}
-
-.edit-button:hover {
-  background-color: #025aa5;
-}
-
-.info-button {
-  background-color: #17a2b8 !important;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 5px;
-  width: 100%;
-}
-
-.info-button:hover {
-  background-color: #138496 !important;
+.product-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 5px 0 15px 0;
+  color: #333;
 }
