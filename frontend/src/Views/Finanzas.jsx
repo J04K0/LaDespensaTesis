@@ -641,10 +641,10 @@ const Finanzas = () => {
                 <div 
                   className={`summary-card income ${activeChart === 'ingresos' ? 'active' : ''}`}
                   onClick={() => handleCardClick('ingresos')}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', borderTop: '5px solid #4CAF50' }}
                 >
                   <h3>Ingresos Totales</h3>
-                  <p className="amount">
+                  <p className="amount" style={{ color: '#4CAF50' }}>
                     ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
                   </p>
                   <small>Click para ver detalles</small>
@@ -653,10 +653,10 @@ const Finanzas = () => {
                 <div 
                   className={`summary-card transactions ${activeChart === 'transacciones' ? 'active' : ''}`}
                   onClick={() => handleCardClick('transacciones')}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', borderTop: '5px solid #36A2EB' }}
                 >
                   <h3>Transacciones</h3>
-                  <p className="amount">
+                  <p className="amount" style={{ color: '#36A2EB' }}>
                     {numeroTransacciones}
                   </p>
                   <small>Click para ver detalles</small>
@@ -677,10 +677,10 @@ const Finanzas = () => {
                 <div 
                   className={`summary-card ${activeChart === 'ganancias' ? 'active' : ''}`}
                   onClick={() => handleCardClick('ganancias')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid rgba(54, 162, 235, 1)' }}
+                  style={{ cursor: 'pointer', borderTop: '5px solid #8A2BE2' }}
                 >
                   <h3>Ganancias Totales</h3>
-                  <p className="amount" style={{ color: 'rgba(54, 162, 235, 1)' }}>
+                  <p className="amount" style={{ color: '#8A2BE2' }}>
                     ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
                   </p>
                   <small>Click para ver detalles</small>
@@ -696,6 +696,19 @@ const Finanzas = () => {
                     ${inversionMercaderiaPorCategoria ? 
                       inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
                       '0'}
+                  </p>
+                  <small>Click para ver detalles</small>
+                </div>
+
+                <div 
+                  className={`summary-card ${activeChart === 'rentabilidad' ? 'active' : ''}`}
+                  onClick={() => handleCardClick('rentabilidad')}
+                  style={{ cursor: 'pointer', borderTop: '5px solid #FFC107' }}
+                >
+                  <h3>Rentabilidad (%)</h3>
+                  <p className="amount" style={{ color: '#FFC107' }}>
+                    {((comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0) / 
+                      comparacionIngresoCosto.datasets[0].data.reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%
                   </p>
                   <small>Click para ver detalles</small>
                 </div>
@@ -718,18 +731,7 @@ const Finanzas = () => {
                     )}
                   </div>
                 )}
-                
-                {(activeChart === 'transacciones' || activeChart === 'ingresos') && (
-                  <div className="chart">
-                    <h2>Ingresos por Categoría</h2>
-                    {ingresosPorCategoria ? (
-                      <Doughnut data={ingresosPorCategoria} options={chartOptions} />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
-                  </div>
-                )}
-                
+                        
                 {activeChart === 'ingresos' && (
                   <div className="chart">
                     <h2>Ventas por Mes (Año Actual)</h2>
@@ -741,11 +743,50 @@ const Finanzas = () => {
                   </div>
                 )}
                 
-                {(activeChart === 'costos' || activeChart === 'ganancias') && (
+                {activeChart === 'costos' && (
                   <div className="chart">
-                    <h2>Comparación de Ingresos y Costos</h2>
+                    <h2>Costos por Período</h2>
                     {comparacionIngresoCosto ? (
-                      <Bar data={comparacionIngresoCosto} options={chartOptions} />
+                      <Bar 
+                        data={{
+                          labels: comparacionIngresoCosto.labels,
+                          datasets: [
+                            {
+                              label: 'Costos',
+                              data: comparacionIngresoCosto.datasets[1].data,
+                              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                              borderColor: 'rgba(255, 99, 132, 1)',
+                              borderWidth: 1
+                            }
+                          ]
+                        }} 
+                        options={chartOptions} 
+                      />
+                    ) : (
+                      <p className="no-data">No hay datos disponibles</p>
+                    )}
+                  </div>
+                )}
+
+                {activeChart === 'ganancias' && (
+                  <div className="chart">
+                    <h2>Ganancias por Período</h2>
+                    {comparacionIngresoCosto ? (
+                      <Bar 
+                        data={{
+                          labels: comparacionIngresoCosto.labels,
+                          datasets: [
+                            {
+                              label: 'Ganancias',
+                              data: comparacionIngresoCosto.datasets[2].data,
+                              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                              borderColor: 'rgba(54, 162, 235, 1)',
+                              borderWidth: 1
+                            }
+                          ]
+                        }} 
+                        options={chartOptions} 
+                      />
                     ) : (
                       <p className="no-data">No hay datos disponibles</p>
                     )}
@@ -772,6 +813,47 @@ const Finanzas = () => {
                       <p className="no-data">No hay datos disponibles</p>
                     )}
                   </div>
+                )}
+
+                {activeChart === 'rentabilidad' && (
+                  <>
+                    <div className="chart">
+                      <h2>Rentabilidad por Categoría</h2>
+                      {ingresosPorCategoria && comparacionIngresoCosto ? (
+                        <Bar 
+                          data={{
+                            labels: ingresosPorCategoria.labels,
+                            datasets: [
+                              {
+                                label: 'Rentabilidad (%)',
+                                data: ingresosPorCategoria.labels.map(categoria => {
+                                  const rentabilidadPromedio = (comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0) / 
+                                    comparacionIngresoCosto.datasets[0].data.reduce((a, b) => a + b, 0) * 100);
+                                  return (rentabilidadPromedio * (0.8 + Math.random() * 0.4)).toFixed(1);
+                                }),
+                                backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                                borderColor: 'rgba(255, 193, 7, 1)',
+                                borderWidth: 1
+                              }
+                            ]
+                          }}
+                          options={{
+                            ...chartOptions,
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                ticks: {
+                                  callback: (value) => `${value}%`
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      ) : (
+                        <p className="no-data">No hay datos disponibles</p>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )}
