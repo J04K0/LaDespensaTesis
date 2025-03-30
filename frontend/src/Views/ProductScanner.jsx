@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { scanProducts, actualizarStockVenta, registrarVenta } from "../services/AddProducts.service.js";
-import { showSuccessAlert, showErrorAlert, showWarningAlert } from "../helpers/swaHelper";
+import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 
@@ -61,7 +61,12 @@ const ProductScanner = () => {
         }
       } else {
         setProductoActual(null);
-        showErrorAlert("Producto no encontrado", "No existe un producto con este código de barras en la base de datos.");
+        showProductNotFoundAlert(codigoEscaneado).then((result) => {
+          if (result.isConfirmed) {
+            // Navigate to add product page with the barcode pre-filled
+            navigate(`/addproduct?barcode=${codigoEscaneado}`);
+          }
+        });
       }
       setCodigoEscaneado("");
       setCantidad(1);
@@ -301,7 +306,7 @@ const ProductScanner = () => {
                   {errorMonto && <p className="error-text">{errorMonto}</p>}
                   
                   {montoEntregado && vuelto >= 0 && (
-                    <p className="vuelto">Vuelto: <span>${vuelto.toFixed(2)}</span></p>
+                    <p className="vuelto">Vuelto: <span>${vuelto}</span></p>
                   )}
                 </div>
               </div>
@@ -424,7 +429,7 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
                     >+</button>
                   </div>
                   <p className="cart-item-total">
-                    Subtotal: <span>${(producto.precioVenta * producto.cantidad).toFixed(2)}</span>
+                    Subtotal: <span>${(producto.precioVenta * producto.cantidad)}</span>
                   </p>
                   <button 
                     className="delete-product-btn" 

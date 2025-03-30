@@ -10,11 +10,9 @@ export const showSuccessAlert = (title, text) => {
     icon: "success",
     confirmButtonText: "Aceptar",
     didOpen: () => {
-      // Enfoca el botón de confirmación cuando se abre el modal
       document.querySelector('.swal2-confirm').focus();
     },
     didClose: () => {
-      // Restaura el foco al elemento original cuando se cierra
       if (previouslyFocused) {
         previouslyFocused.focus();
       }
@@ -70,6 +68,29 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
     showCancelButton: true,
     confirmButtonText,
     cancelButtonText,
+    didOpen: () => {
+      document.querySelector('.swal2-confirm').focus();
+    },
+    didClose: () => {
+      if (previouslyFocused) {
+        previouslyFocused.focus();
+      }
+    }
+  });
+};
+
+export const showProductNotFoundAlert = (barcode) => {
+  const previouslyFocused = document.activeElement;
+  
+  return Swal.fire({
+    title: "Producto no encontrado",
+    text: `No existe un producto con el código de barras ${barcode} en la base de datos. ¿Desea agregarlo?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, agregar producto",
+    cancelButtonText: "No, cancelar",
+    confirmButtonColor: "#28a745",
+    cancelButtonColor: "#dc3545",
     didOpen: () => {
       document.querySelector('.swal2-confirm').focus();
     },

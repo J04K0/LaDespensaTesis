@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faCaretDown, faCaretUp, faAdd, faHome, faBoxOpen, faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode } from '@fortawesome/free-solid-svg-icons';
+import {  faCaretDown, faPerson,faCaretUp, faAdd, faHome, faBoxOpen, faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode } from '@fortawesome/free-solid-svg-icons';
 import { logout } from '../services/auth.service';
 
 const Navbar = () => {
@@ -87,6 +87,10 @@ const Navbar = () => {
 
             <li onClick={() => handleNavigation('/cuentas-por-pagar')}>
               <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
+            </li>
+
+            <li onClick={() => handleNavigation('/deudores')}>
+              <FontAwesomeIcon icon={faPerson} /> <span>Deudores</span>
             </li>
             
             <li onClick={handleLogout} className="logout-item">

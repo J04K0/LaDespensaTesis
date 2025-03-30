@@ -47,8 +47,8 @@ const Finanzas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState("semana");
-  const [productosPocoVendidos, setProductosPocoVendidos] = useState(null);
   const [activeChart, setActiveChart] = useState(null);
+  const [valorPromedioTransaccion, setValorPromedioTransaccion] = useState(null);
 
   useEffect(() => {
     obtenerDatosFinancieros();
@@ -116,7 +116,7 @@ const Finanzas = () => {
     procesarVentasPorMes(ventas);
     procesarIngresosPorCategoria(ventasFiltradas);
     procesarComparacionIngresoCosto(ventasFiltradas);
-    procesarProductosPocoVendidos(ventas);
+    procesarValorPromedioTransaccion(ventasFiltradas);
   };
 
   const procesarDatosInventario = (productos) => {
@@ -410,32 +410,96 @@ const Finanzas = () => {
     });
   };
 
-  const procesarProductosPocoVendidos = (ventas) => {
-    const productoVentas = {};
+  const procesarValorPromedioTransaccion = (ventas) => {
+    const valoresPorPeriodo = {};
+    const transaccionesPorPeriodo = {};
+    const hoy = new Date();
+    const fechaInicio = new Date();
     
+    if (timeRange === "semana") {
+      fechaInicio.setDate(hoy.getDate() - 7);
+    } else if (timeRange === "mes") {
+      fechaInicio.setMonth(hoy.getMonth() - 1);
+    } else if (timeRange === "año") {
+      fechaInicio.setFullYear(hoy.getFullYear() - 1);
+    }
+    
+    // Preparar periodos según timeRange
+    const labels = [];
+    
+    if (timeRange === "semana") {
+      const fechaActual = new Date(fechaInicio);
+      while (fechaActual <= hoy) {
+        const fechaStr = fechaActual.toISOString().split('T')[0];
+        labels.push(fechaStr);
+        valoresPorPeriodo[fechaStr] = 0;
+        transaccionesPorPeriodo[fechaStr] = 0;
+        fechaActual.setDate(fechaActual.getDate() + 1);
+      }
+    } else {
+      // Para mes y año, usar periodos diferentes
+      const periodos = timeRange === "mes" ? 4 : 12;
+      for (let i = 0; i < periodos; i++) {
+        const label = timeRange === "mes" ? `Semana ${i+1}` : `Mes ${i+1}`;
+        labels.push(label);
+        valoresPorPeriodo[label] = 0;
+        transaccionesPorPeriodo[label] = 0;
+      }
+    }
+    
+    // Sumar valores por periodo
     ventas.forEach(venta => {
-      venta.ventas.forEach(producto => {
-        if (!productoVentas[producto.nombre]) {
-          productoVentas[producto.nombre] = 0;
+      const fecha = new Date(venta.fecha);
+      
+      if (fecha >= fechaInicio && fecha <= hoy) {
+        let valorTotal = venta.ventas.reduce(
+          (acc, producto) => acc + producto.precioVenta * producto.cantidad, 0
+        );
+        
+        if (timeRange === "semana") {
+          const fechaStr = fecha.toISOString().split('T')[0];
+          valoresPorPeriodo[fechaStr] += valorTotal;
+          transaccionesPorPeriodo[fechaStr] += 1;
+        } else {
+          // Para mes y año, calcular el índice del periodo
+          const tiempoTranscurrido = fecha - fechaInicio;
+          const duracionPeriodo = (hoy - fechaInicio) / labels.length;
+          const periodoIndex = Math.min(Math.floor(tiempoTranscurrido / duracionPeriodo), labels.length - 1);
+          
+          valoresPorPeriodo[labels[periodoIndex]] += valorTotal;
+          transaccionesPorPeriodo[labels[periodoIndex]] += 1;
         }
-        productoVentas[producto.nombre] += producto.cantidad;
-      });
+      }
     });
-
-    const productosOrdenados = Object.entries(productoVentas)
-      .sort((a, b) => a[1] - b[1])
-      .slice(0, 5);
     
-    setProductosPocoVendidos({
-      labels: productosOrdenados.map(([nombre]) => nombre),
+    // Calcular promedios
+    const promedios = labels.map(periodo => {
+      const transacciones = transaccionesPorPeriodo[periodo];
+      return transacciones > 0 ? valoresPorPeriodo[periodo] / transacciones : 0;
+    });
+    
+    setValorPromedioTransaccion({
+      labels,
       datasets: [
         {
-          label: "Productos Menos Vendidos",
-          data: productosOrdenados.map(([, cantidad]) => cantidad),
-          backgroundColor: ["#C0C0C0", "#A9A9A9", "#808080", "#696969", "#778899"],
-          borderColor: "#fff",
+          label: "Valor Promedio por Transacción",
+          data: promedios,
+          backgroundColor: "rgba(255, 159, 64, 0.6)",
+          borderColor: "rgba(255, 159, 64, 1)",
+          borderWidth: 2,
+          type: 'line',
+          fill: false,
+          pointRadius: 4
         },
-      ],
+        {
+          label: "Cantidad de Transacciones",
+          data: labels.map(periodo => transaccionesPorPeriodo[periodo]),
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
+          borderColor: "rgba(54, 162, 235, 1)",
+          borderWidth: 1,
+          type: 'bar'
+        }
+      ]
     });
   };
 
@@ -701,9 +765,9 @@ const Finanzas = () => {
 
                 {activeChart === 'transacciones' && (
                   <div className="chart">
-                    <h2>Productos Menos Vendidos</h2>
-                    {productosPocoVendidos ? (
-                      <Doughnut data={productosPocoVendidos} options={chartOptions} />
+                    <h2>Valor Promedio por Transacción</h2>
+                    {valorPromedioTransaccion ? (
+                      <Bar data={valorPromedioTransaccion} options={chartOptions} />
                     ) : (
                       <p className="no-data">No hay datos disponibles</p>
                     )}

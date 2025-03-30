@@ -23,7 +23,7 @@ async function setupServer() {
     server.use("/api", indexRoutes);
 
     server.listen(PORT, () => {
-      console.log(`=> Servidor corriendo en ${HOST}:5000/api`);
+      console.log(`=> Servidor corriendo en ${HOST}:4000/api`);
     });
   } catch (err) {
     handleErrorServer(res, 500, 'Error al iniciar el servidor');

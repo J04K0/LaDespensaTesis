@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
@@ -16,6 +16,16 @@ const AddProducts = () => {
   const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [PrecioVenta, setPrecioVenta] = useState('');
   const [image, setImage] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const barcode = params.get('barcode');
+    
+    if (barcode) {
+      setCodigoBarras(barcode);
+      handleCodigoBarrasChange({ target: { value: barcode } });
+    }
+  }, []);
 
   const handleImageChange = (e) => setImage(e.target.files[0]);
   const handleCategoriaChange = (e) => setCategoria(e.target.value);
@@ -43,8 +53,6 @@ const AddProducts = () => {
           showErrorAlert('Error', 'Producto no encontrado');
         }
       } catch (error) {
-        console.error('Error fetching product by barcode:', error);
-        showErrorAlert('Error', 'Ocurrió un error al buscar el producto.');
       }
     }
   };
@@ -89,11 +97,11 @@ const AddProducts = () => {
       <div className="add-prod-container">
         <h2>Añadir producto</h2>
         <form onSubmit={handleSubmit} className="add-prod-form">
-          <div className="add-prod-form-group add-prod-form-group-full">
-            <input type="text" placeholder="Nombre del producto" value={Nombre} onChange={(e) => setNombre(e.target.value)} required />
+        <div className="add-prod-form-group add-prod-form-group-full">
+            <input type="text" placeholder="Código de Barras" value={codigoBarras} onChange={handleCodigoBarrasChange} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
-            <input type="text" placeholder="Código de Barras" value={codigoBarras} onChange={handleCodigoBarrasChange} required />
+            <input type="text" placeholder="Nombre del producto" value={Nombre} onChange={(e) => setNombre(e.target.value)} required />
           </div>
           <div className="add-prod-form-group add-prod-form-group-full">
             <input type="text" placeholder="Marca del producto" value={Marca} onChange={(e) => setMarca(e.target.value)} required />

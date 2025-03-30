@@ -14,7 +14,6 @@ import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
 import Proveedores from './Views/Proveedores.jsx';
 import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
-import VirtualAssistant from './components/VirtualAssistant.jsx';
 
 const router = createBrowserRouter([
   {
@@ -28,93 +27,43 @@ const router = createBrowserRouter([
   },
   {
     path: '/home',
-    element: (
-      <>
-        <App />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <App />,
   },
   {
     path: '/products',
-    element: (
-      <>
-        <Products />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <Products />,
   },
   {
     path: '/add-product',
-    element: (
-      <>
-        <AddProducts />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <AddProducts />,
   },
   {
     path: '/deudores',
-    element: (
-      <>
-        <DeudoresList />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <DeudoresList />,
   },
   {
     path: '/agregar-deudor',
-    element: (
-      <>
-        <AddDeudor />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <AddDeudor />,
   },
   {
     path: '/ProductScanner',
-    element: (
-      <>
-        <ProductScanner />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <ProductScanner />,
   },
   {
     path: '/HistorySale',
-    element: (
-      <>
-        <HistorySale />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <HistorySale />,
   },
   {
     path: '/finanzas',
-    element: (
-      <>
-        <Finanzas />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <Finanzas />,
   },
   {
     path: '/proveedores',
-    element: (
-      <>
-        <Proveedores />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <Proveedores />,
   },
   {
     path: '/cuentas-por-pagar',
-    element: (
-      <>
-        <CuentasPorPagar />
-        <VirtualAssistant />
-      </>
-    ),
+    element: <CuentasPorPagar />,
   },
 ]);
 

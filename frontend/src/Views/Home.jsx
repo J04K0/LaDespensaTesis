@@ -42,6 +42,7 @@ const Home = () => {
   const [ventasPorProducto, setVentasPorProducto] = useState(null);
   const [ventasPorCategoria, setVentasPorCategoria] = useState(null);
   const [topProductos, setTopProductos] = useState(null);
+  const [productosPocoVendidos, setProductosPocoVendidos] = useState(null);
   const [currentChart, setCurrentChart] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -123,7 +124,8 @@ const Home = () => {
         {
           label: "Ventas por Categoría",
           data: Object.values(categorias),
-          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40"],
+          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", 
+            "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#FF9F40", "#FF6384", "#36A2EB"],
           borderColor: "#fff",
         },
       ],
@@ -143,14 +145,44 @@ const Home = () => {
         },
       ],
     });
+
+    procesarProductosPocoVendidos(ventas);
+  };
+
+  const procesarProductosPocoVendidos = (ventas) => {
+    const productoVentas = {};
+    
+    // Use the same structure as procesarDatos
+    ventas.forEach(({ nombre, cantidad }) => {
+      if (!productoVentas[nombre]) {
+        productoVentas[nombre] = 0;
+      }
+      productoVentas[nombre] += cantidad;
+    });
+  
+    const productosOrdenados = Object.entries(productoVentas)
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5);
+    
+    setProductosPocoVendidos({
+      labels: productosOrdenados.map(([nombre]) => nombre),
+      datasets: [
+        {
+          label: "Productos Menos Vendidos",
+          data: productosOrdenados.map(([, cantidad]) => cantidad),
+          backgroundColor: ["#C0C0C0", "#A9A9A9", "#808080", "#696969", "#778899"],
+          borderColor: "#fff",
+        },
+      ],
+    });
   };
 
   const nextChart = () => {
-    setCurrentChart((prevChart) => (prevChart + 1) % 3);
+    setCurrentChart((prevChart) => (prevChart + 1) % 4);
   };
 
   const prevChart = () => {
-    setCurrentChart((prevChart) => (prevChart - 1 + 3) % 3);
+    setCurrentChart((prevChart) => (prevChart - 1 + 4) % 4);
   };
 
   const handleViewAllClick = () => {
@@ -193,6 +225,15 @@ const Home = () => {
           <div>
             <h2>Ventas por Categoría</h2>
             <Pie data={ventasPorCategoria} options={chartOptions} />
+          </div>
+        ) : (
+          <p>No hay datos disponibles</p>
+        );
+      case 3:
+        return productosPocoVendidos ? (
+          <div>
+            <h2>Productos Menos Vendidos</h2>
+            <Doughnut data={productosPocoVendidos} options={chartOptions} />
           </div>
         ) : (
           <p>No hay datos disponibles</p>

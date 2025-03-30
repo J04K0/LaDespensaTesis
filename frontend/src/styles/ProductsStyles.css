@@ -578,6 +578,35 @@
   background-color: #ffe0e0;
 }
 
+.add-product-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-product-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+}
+
+.add-product-button svg {
+  transition: transform 0.3s ease;
+}
+
+.add-product-button:hover svg {
+  transform: rotate(90deg);
+}
+
 .product-detail-characteristics, .product-detail-sales {
   border-top: 1px solid #ddd;
   padding-top: 16px;

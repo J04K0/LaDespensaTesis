@@ -187,7 +187,6 @@ export const getProductByBarcodeForCreation = async (barcode) => {
       throw new Error('Respuesta inesperada del servidor');
     }
   } catch (error) {
-    console.error('Error fetching product by barcode:', error.response?.data || error.message);
     throw error;
   }
 };
