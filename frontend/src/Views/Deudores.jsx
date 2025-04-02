@@ -23,6 +23,7 @@ const DeudoresList = () => {
   const [selectedDeudor, setSelectedDeudor] = useState(null);
   const [amount, setAmount] = useState('');
   const [isPayment, setIsPayment] = useState(true);
+  const [comment, setComment] = useState('');
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [deudorToEdit, setDeudorToEdit] = useState({
@@ -174,72 +175,85 @@ const DeudoresList = () => {
     setIsPayment(true);
     setShowModal(true);
   };
-  const handleDebtUpdate = async () => {
-    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
-      return;
-    }
-  
-    try {
-      const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-      const parsedAmount = parseFloat(amount);
-      
-      // Validar que no se pague más de lo que se debe
-      if (isPayment && parsedAmount > currentDebt) {
-        showErrorAlert(
-          'Monto excesivo', 
-          `El monto de pago (${parsedAmount}) no puede ser mayor que la deuda actual (${currentDebt}).`
-        );
-        return;
-      }
-      
-      let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
-      
-      // Crear nuevo registro para el historial de pagos
-      const nuevoPago = {
-        fecha: new Date(),
-        monto: parsedAmount,
-        tipo: isPayment ? 'pago' : 'deuda'
-      };
-      
-      // Obtener el deudor actualizado primero para tener el historial más reciente
-      const deudorActual = await getDeudorById(selectedDeudor._id);
-      
-      // Asegurar que historialPagos sea un array válido
-      const historialActual = Array.isArray(deudorActual.historialPagos) 
-        ? deudorActual.historialPagos 
-        : [];
-      
-      console.log("Historial actual:", historialActual); // Log para depuración
-      console.log("Nuevo pago:", nuevoPago); // Log para depuración
-      
-      const deudorActualizado = await updateDeudor(selectedDeudor._id, {
-        Nombre: deudorActual.Nombre,
-        fechaPaga: deudorActual.fechaPaga,
-        numeroTelefono: deudorActual.numeroTelefono.toString(),
-        deudaTotal: newDebt,
-        historialPagos: [...historialActual, nuevoPago]
-      });
-      
-      console.log("Deudor actualizado:", deudorActualizado); // Log para depuración
-      
-      // Recargar los datos
-      const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-      setAllDeudores(updatedDeudores.deudores);
-      setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
-        deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
-      
-      setShowModal(false);
-      showSuccessAlert(
-        isPayment ? 'Pago registrado con éxito' : 'Deuda actualizada con éxito',
-        ''
+  // Función para validar el formulario de deuda antes de enviar
+const validateDebtForm = () => {
+  // Validar monto
+  if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+    showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
+    return false;
+  }
+
+  // Validar que el comentario no sea demasiado largo
+  if (comment && comment.length > 500) {
+    showErrorAlert('Comentario demasiado largo', 'El comentario no puede exceder los 500 caracteres.');
+    return false;
+  }
+
+  // Validar que si es un pago, no exceda la deuda actual
+  if (isPayment) {
+    const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+    const parsedAmount = parseFloat(amount);
+    
+    if (parsedAmount > currentDebt) {
+      showErrorAlert(
+        'Monto excesivo', 
+        `El monto de pago (${parsedAmount}) no puede ser mayor que la deuda actual (${currentDebt}).`
       );
-    } catch (error) {
-      console.error('Error al actualizar la deuda:', error);
-      showErrorAlert('Error al actualizar la deuda', 'Ocurrió un error al intentar actualizar la deuda.');
+      return false;
     }
-  };
+  }
+
+  return true;
+};
+
+// Modificar la función handleDebtUpdate para usar la validación
+const handleDebtUpdate = async () => {
+  if (!validateDebtForm()) {
+    return;
+  }
+
+  try {
+    const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+    const parsedAmount = parseFloat(amount);
+    
+    let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
+    
+    // Crear nuevo registro para el historial de pagos con comentario opcional
+    const nuevoPago = {
+      fecha: new Date(),
+      monto: parsedAmount,
+      tipo: isPayment ? 'pago' : 'deuda',
+      comentario: comment.trim() || '' // Usar cadena vacía en lugar de null
+    };
+    
+    console.log("Enviando comentario:", nuevoPago.comentario); // Log para depuración
+    
+    // Resto de tu código para la petición API...
+    const response = await axios.put(`${import.meta.env.VITE_API_URL}/deudores/${selectedDeudor._id}/pagos`, {
+      pago: nuevoPago,
+      nuevaDeuda: newDebt
+    });
+    
+    // Una vez actualizado correctamente
+    setComment('');
+    setAmount('');
+    setShowModal(false);
+    fetchDeudores(); // Recargar datos
+    
+    showSuccessAlert(
+      isPayment ? 'Pago registrado' : 'Deuda actualizada',
+      isPayment 
+        ? `Se ha registrado el pago de $${parsedAmount} correctamente.`
+        : `Se ha añadido $${parsedAmount} a la deuda correctamente.`
+    );
+  } catch (error) {
+    console.error("Error al actualizar deuda:", error);
+    showErrorAlert(
+      'Error al actualizar',
+      error.response?.data?.message || 'Ha ocurrido un error al procesar la operación.'
+    );
+  }
+};
   
 
   const handleEditChange = (e) => {
@@ -428,6 +442,18 @@ const DeudoresList = () => {
                     />
                   </div>
                   
+                  {/* Nuevo campo para comentarios */}
+                  <div className="deudores-modal-form-group">
+                    <label htmlFor="comment">Comentario (opcional):</label>
+                    <textarea
+                      id="comment"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Añada un comentario opcional"
+                      rows="3"
+                    />
+                  </div>
+                  
                   <div className="deudores-modal-form-group payment-type">
                     <label>
                       <input
@@ -526,6 +552,7 @@ const DeudoresList = () => {
                               <th>Fecha</th>
                               <th>Monto</th>
                               <th>Tipo</th>
+                              <th>Comentario</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -534,6 +561,16 @@ const DeudoresList = () => {
                                 <td>{new Date(pago.fecha).toLocaleDateString()}</td>
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
+                                <td className="comment-cell">
+                                  {pago.comentario ? 
+                                    <>
+                                      {pago.comentario.length > 20 ? pago.comentario.substring(0, 20) + '...' : pago.comentario}
+                                      {pago.comentario.length > 20 && 
+                                        <div className="comment-tooltip">{pago.comentario}</div>
+                                      }
+                                    </> 
+                                    : '-'}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -576,6 +613,7 @@ const DeudoresList = () => {
                               <th>Fecha</th>
                               <th>Monto</th>
                               <th>Tipo</th>
+                              <th>Comentario</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -584,6 +622,7 @@ const DeudoresList = () => {
                                 <td>{new Date(pago.fecha).toLocaleDateString()}</td>
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
+                                <td>{pago.comentario || '-'}</td>
                               </tr>
                             ))}
                           </tbody>

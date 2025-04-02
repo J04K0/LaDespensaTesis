@@ -7,6 +7,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../styles/FinanzasStyles.css";
 import FinanzasSkeleton from '../components/FinanzasSkeleton';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
   Chart as ChartJS, 
@@ -610,6 +612,26 @@ const Finanzas = () => {
     }
   };
 
+  // Add this function to provide chart explanations based on chart type
+  const getChartExplanation = (chartType, subType) => {
+    const explanations = {
+      ingresos: {
+        daily: "Muestra los ingresos diarios durante el período seleccionado. Útil para identificar tendencias de ventas y días con mayor actividad comercial.",
+        monthly: "Visualiza las ventas mensuales durante el año actual, permitiendo comparar el rendimiento entre diferentes meses y detectar patrones estacionales."
+      },
+      costos: "Detalla los costos operativos por período, ayudando a identificar cuándo ocurren los gastos más significativos y monitorear la eficiencia de los recursos.",
+      ganancias: "Presenta las ganancias netas por período, calculadas como ingresos menos costos, permitiendo evaluar la rentabilidad del negocio a lo largo del tiempo.",
+      inversion: "Muestra la distribución de la inversión actual en mercadería por categoría, ayudando a identificar dónde está concentrado el capital del inventario.",
+      transacciones: "Compara el valor promedio por transacción y la cantidad de transacciones por período, útil para entender los hábitos de compra de los clientes.",
+      rentabilidad: "Analiza la rentabilidad porcentual por categoría de producto, ayudando a identificar qué líneas de productos generan mayores márgenes de ganancia."
+    };
+    
+    if (subType) {
+      return explanations[chartType][subType];
+    }
+    return explanations[chartType];
+  };
+
   return (
     <div className="finanzas-page">
       <Navbar />
@@ -724,6 +746,12 @@ const Finanzas = () => {
                 {activeChart === 'ingresos' && (
                   <div className="chart">
                     <h2>Ingresos por Día</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('ingresos', 'daily')}
+                    </div>
                     {ingresosPorDia ? (
                       <Line data={ingresosPorDia} options={chartOptions} />
                     ) : (
@@ -735,6 +763,12 @@ const Finanzas = () => {
                 {activeChart === 'ingresos' && (
                   <div className="chart">
                     <h2>Ventas por Mes (Año Actual)</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('ingresos', 'monthly')}
+                    </div>
                     {ventasPorMes ? (
                       <Bar data={ventasPorMes} options={chartOptions} />
                     ) : (
@@ -746,6 +780,12 @@ const Finanzas = () => {
                 {activeChart === 'costos' && (
                   <div className="chart">
                     <h2>Costos por Período</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('costos')}
+                    </div>
                     {comparacionIngresoCosto ? (
                       <Bar 
                         data={{
@@ -771,6 +811,12 @@ const Finanzas = () => {
                 {activeChart === 'ganancias' && (
                   <div className="chart">
                     <h2>Ganancias por Período</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('ganancias')}
+                    </div>
                     {comparacionIngresoCosto ? (
                       <Bar 
                         data={{
@@ -796,6 +842,12 @@ const Finanzas = () => {
                 {activeChart === 'inversion' && (
                   <div className="chart">
                     <h2>Inversión Actual en Mercadería</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('inversion')}
+                    </div>
                     {inversionMercaderiaPorCategoria ? (
                       <Pie data={inversionMercaderiaPorCategoria} options={chartOptions} />
                     ) : (
@@ -807,6 +859,12 @@ const Finanzas = () => {
                 {activeChart === 'transacciones' && (
                   <div className="chart">
                     <h2>Valor Promedio por Transacción</h2>
+                    <button className="chart-info-button">
+                      <FontAwesomeIcon icon={faInfoCircle} />
+                    </button>
+                    <div className="chart-tooltip">
+                      {getChartExplanation('transacciones')}
+                    </div>
                     {valorPromedioTransaccion ? (
                       <Bar data={valorPromedioTransaccion} options={chartOptions} />
                     ) : (
@@ -819,6 +877,12 @@ const Finanzas = () => {
                   <>
                     <div className="chart">
                       <h2>Rentabilidad por Categoría</h2>
+                      <button className="chart-info-button">
+                        <FontAwesomeIcon icon={faInfoCircle} />
+                      </button>
+                      <div className="chart-tooltip">
+                        {getChartExplanation('rentabilidad')}
+                      </div>
                       {ingresosPorCategoria && comparacionIngresoCosto ? (
                         <Bar 
                           data={{

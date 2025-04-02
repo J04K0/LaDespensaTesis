@@ -76,21 +76,21 @@ const Navbar = () => {
                 </ul>
               )}
             </li>
-            
-            <li onClick={() => handleNavigation('/finanzas')}>
-              <FontAwesomeIcon icon={faChartLine} /> <span>Estadísticas</span>
-            </li>
+
+            <li onClick={() => handleNavigation('/deudores')}>
+              <FontAwesomeIcon icon={faPerson} /> <span>Deudores</span>
+            </li>          
             
             <li onClick={() => handleNavigation('/proveedores')}>
               <FontAwesomeIcon icon={faTruck} /> <span>Proveedores</span>
             </li>
 
-            <li onClick={() => handleNavigation('/cuentas-por-pagar')}>
-              <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
+            <li onClick={() => handleNavigation('/finanzas')}>
+              <FontAwesomeIcon icon={faChartLine} /> <span>Estadísticas</span>
             </li>
 
-            <li onClick={() => handleNavigation('/deudores')}>
-              <FontAwesomeIcon icon={faPerson} /> <span>Deudores</span>
+            <li onClick={() => handleNavigation('/cuentas-por-pagar')}>
+              <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
             </li>
             
             <li onClick={handleLogout} className="logout-item">

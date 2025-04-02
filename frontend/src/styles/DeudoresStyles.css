@@ -530,6 +530,24 @@
   font-size: 16px;
 }
 
+.deudores-modal-form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.3s;
+  font-family: inherit;
+}
+
+.deudores-modal-form-group textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.1);
+}
+
 .deudores-modal-buttons {
   display: flex;
   justify-content: flex-end;
@@ -612,6 +630,13 @@
   background-color: #f2f2f2;
   position: sticky;
   top: 0;
+}
+
+.deudores-payment-history-table td:nth-child(4) {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .payment-row {
@@ -700,4 +725,29 @@
 .delete-button:hover {
   opacity: 0.9;
   transform: translateY(-3px);
+}
+
+/* Tooltip para ver el comentario completo al hacer hover */
+.comment-cell {
+  position: relative;
+  cursor: pointer;
+}
+
+.comment-cell:hover .comment-tooltip {
+  display: block;
+}
+
+.comment-tooltip {
+  display: none;
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  z-index: 100;
+  width: 250px;
+  white-space: normal;
+  bottom: 100%;
+  left: 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
