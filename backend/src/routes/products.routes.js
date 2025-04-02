@@ -11,10 +11,7 @@ import {
     getExpiredProducts,
     scanProducts,
     actualizarStockVenta,
-    registrarVenta,
-    obtenerVentas,
     getProductByBarcode,
-    obtenerVentasPorTicket, 
     getProductForCreation,
 } from "../controllers/products.controller.js";
 
@@ -40,10 +37,6 @@ router.get('/expiringsoon', authorizeRoles([isEmpleado, isAdmin, isJefe]), getPr
 router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpiredProducts);
 router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
-router.get("/ventas/tickets", authorizeRoles([isEmpleado, isAdmin, isJefe]),obtenerVentasPorTicket);
-
-router.post('/registrar-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), registrarVenta);
-router.get('/ventas/obtener', authorizeRoles([isEmpleado, isAdmin, isJefe]), obtenerVentas);
 
 
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);

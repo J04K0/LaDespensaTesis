@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { obtenerVentasPorTicket } from "../services/AddProducts.service.js";
+import { obtenerVentasPorTicket } from "../services/venta.service.js";
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";

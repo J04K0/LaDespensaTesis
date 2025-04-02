@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { scanProducts, actualizarStockVenta, registrarVenta } from "../services/AddProducts.service.js";
+import { scanProducts, actualizarStockVenta } from "../services/AddProducts.service.js";
+import { registrarVenta } from "../services/venta.service.js";
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';

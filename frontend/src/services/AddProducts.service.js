@@ -134,7 +134,7 @@ export const actualizarStockVenta = async (productosVendidos) => {
   }
 };
 
-export const registrarVenta = async (productosVendidos) => {
+/*export const registrarVenta = async (productosVendidos) => {
   try {
     const response = await axios.post("/products/registrar-venta", { productosVendidos });
     return response.data;
@@ -142,9 +142,9 @@ export const registrarVenta = async (productosVendidos) => {
     console.error("❌ Error al registrar la venta:", error);
     throw error;
   }
-};
+}; */
 
-export const obtenerVentas = async () => {
+/*export const obtenerVentas = async () => {
   try {
     const response = await axios.get("/products/ventas/obtener");
     return response.data;
@@ -153,7 +153,8 @@ export const obtenerVentas = async () => {
     throw error;
   }
 }
-
+*/
+/*
 export const obtenerVentasPorTicket = async () => {
   try {
     const response = await axios.get("/products/ventas/tickets");
@@ -162,7 +163,7 @@ export const obtenerVentasPorTicket = async () => {
     console.error("❌ Error al obtener las ventas por ticket:", error);
     throw error;
   }
-};
+};*/
 
 export const getProductByBarcode = async (barcode) => {
   try {

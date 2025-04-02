@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Bar, Line, Pie, Doughnut } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
-import { obtenerVentasPorTicket } from "../services/AddProducts.service.js";
+import { obtenerVentasPorTicket } from "../services/venta.service.js";
 import { getProducts } from "../services/AddProducts.service.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";

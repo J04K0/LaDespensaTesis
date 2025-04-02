@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
-import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById, obtenerVentas } from '../services/AddProducts.service';
+import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
+import { obtenerVentas } from '../services/venta.service';
 import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 
