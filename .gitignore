@@ -33,10 +33,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Docker
+docker-compose.yml
+Dockerfile
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
 
 # Logs
 logs
@@ -83,7 +86,6 @@ jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
-
 
 # Optional npm cache directory
 .npm
