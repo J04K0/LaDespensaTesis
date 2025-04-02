@@ -81,7 +81,7 @@ const Home = () => {
 
   const obtenerVentas = async () => {
     try {
-      const response = await axios.get("/products/ventas/obtener");
+      const response = await axios.get("/ventas/ventas/obtener");
       const ventas = response.data.data;
 
       if (ventas && ventas.length > 0) {
