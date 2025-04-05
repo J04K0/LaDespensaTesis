@@ -256,34 +256,44 @@ const Proveedores = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Mostrar confirmación antes de añadir el proveedor
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      isEditing
+        ? "¿Deseas actualizar este proveedor?"
+        : "¿Deseas añadir este proveedor?",
+      isEditing ? "Sí, actualizar" : "Sí, añadir",
+      "No, cancelar"
+    );
+
+    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
     if (!currentProveedor.nombre || !currentProveedor.telefono) {
       showWarningAlert('Error', 'El nombre y teléfono son obligatorios');
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       if (isEditing) {
         const { _id, ...proveedorData } = currentProveedor;
         await updateProveedor(_id, proveedorData);
         if (selectedProducts.length > 0) {
           await vincularProductos(_id, selectedProducts);
         }
-        
         showSuccessAlert('Actualizado', 'Proveedor actualizado con éxito');
       } else {
         const nuevoProveedorData = { 
           ...currentProveedor, 
           productos: selectedProducts 
         };
-        
         await createProveedor(nuevoProveedorData);
         showSuccessAlert('Agregado', 'Proveedor agregado con éxito');
       }
 
       fetchProveedores();
-
       setShowModal(false);
     } catch (error) {
       console.error(isEditing ? 'Error al actualizar proveedor:' : 'Error al crear proveedor:', error);
@@ -415,6 +425,20 @@ const Proveedores = () => {
     
     // Guardar PDF
     doc.save("Proveedores.pdf");
+  };
+
+  const handleCancel = async () => {
+    // Mostrar confirmación antes de cancelar
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas cancelar esta acción? Los cambios no se guardarán.",
+      "Sí, cancelar",
+      "No, volver"
+    );
+  
+    if (result.isConfirmed) {
+      setShowModal(false); // Cerrar el modal si el usuario confirma
+    }
   };
 
   const indexOfLastProveedor = currentPage * proveedoresPorPagina;
@@ -748,7 +772,7 @@ const Proveedores = () => {
                 <button 
                   type="button" 
                   className="proveedores-btn-cancel"
-                  onClick={() => setShowModal(false)}
+                  onClick={handleCancel}
                 >
                   Cancelar
                 </button>

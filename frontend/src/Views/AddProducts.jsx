@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
-import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import '../styles/AddProductStyles.css';
 
 const AddProducts = () => {
@@ -60,6 +60,16 @@ const AddProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Mostrar confirmación antes de añadir el producto
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas añadir este producto?",
+      "Sí, añadir",
+      "No, cancelar"
+    );
+
+    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
     if (Categoria === '') {
       showErrorAlert('Error', 'Por favor, seleccione una categoría válida.');
       return;
@@ -88,6 +98,20 @@ const AddProducts = () => {
     } catch (error) {
       console.error('Error al añadir el producto', error);
       showErrorAlert('Error', 'Ocurrió un error al intentar crear el producto.');
+    }
+  };
+
+  const handleCancel = async () => {
+    // Mostrar confirmación antes de cancelar
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas cancelar la creación del producto? Los cambios no se guardarán.",
+      "Sí, cancelar",
+      "No, volver"
+    );
+
+    if (result.isConfirmed) {
+      navigate('/products'); // Redirigir al usuario si confirma
     }
   };
 
@@ -155,7 +179,7 @@ const AddProducts = () => {
           </div>
           <div className="add-prod-buttons">
             <button type="submit" className="add-button">Añadir producto 🛒</button>
-            <button type="button" className="cancel-button" onClick={() => navigate('/products')}>Cancelar ❌</button>
+            <button type="button" className="cancel-button" onClick={handleCancel}>Cancelar ❌</button>
           </div>
         </form>
       </div>

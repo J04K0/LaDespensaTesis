@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/AddDeudorStyles.css';
 import { addDeudor } from '../services/deudores.service.js';
-import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 
 const AddDeudor = () => {
   const [nombre, setNombre] = useState('');
@@ -14,12 +14,24 @@ const AddDeudor = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Mostrar confirmación antes de agregar el deudor
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas agregar este deudor?",
+      "Sí, agregar",
+      "No, cancelar"
+    );
+
+    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
     const newDeudor = {
       Nombre: nombre,
       fechaPaga,
       numeroTelefono,
       deudaTotal: parseFloat(deudaTotal),
     };
+
     try {
       await addDeudor(newDeudor);
       showSuccessAlert('Deudor creado con éxito', '');
@@ -27,6 +39,20 @@ const AddDeudor = () => {
     } catch (error) {
       console.error('Error creando deudor:', error);
       showErrorAlert('Error al crear el deudor', 'Ocurrió un error al intentar crear el deudor.');
+    }
+  };
+
+  const handleCancel = async () => {
+    // Mostrar confirmación antes de cancelar
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas cancelar la creación del deudor? Los cambios no se guardarán.",
+      "Sí, cancelar",
+      "No, volver"
+    );
+
+    if (result.isConfirmed) {
+      navigate('/deudores'); // Redirigir al usuario si confirma
     }
   };
 
@@ -78,7 +104,7 @@ const AddDeudor = () => {
           </div>
           <div className="add-deudor-button-group">
             <button type="submit" className="submit-button">Agregar Deudor</button>
-            <button type="button" className="add-deudor-cancel-button" onClick={() => navigate('/deudores')}>
+            <button type="button" className="add-deudor-cancel-button" onClick={handleCancel}>
               Cancelar
             </button>
           </div>

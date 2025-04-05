@@ -274,46 +274,51 @@ const CuentasPorPagar = () => {
 
   // Marcar/desmarcar como pagada
 const handleTogglePaid = async (id, estadoActual) => {
-  // Si ya está pagado, pedir confirmación para desmarcar
-  if (estadoActual === 'Pagado') {
-    const result = await showConfirmationAlert(
-      '¿Desmarcar pago?',
-      'Esta acción cambiará el estado de la cuenta de "Pagado" a "Pendiente"',
-      'Sí, desmarcar',
-      'Cancelar'
+  // Mostrar confirmación antes de marcar/desmarcar como pagada
+  const result = await showConfirmationAlert(
+    estadoActual === 'Pagado'
+      ? '¿Desmarcar como pagada?'
+      : '¿Marcar como pagada?',
+    estadoActual === 'Pagado'
+      ? 'Esta acción cambiará el estado de la cuenta a "Pendiente".'
+      : 'Esta acción marcará la cuenta como "Pagada".',
+    estadoActual === 'Pagado' ? 'Sí, desmarcar' : 'Sí, marcar',
+    'No, cancelar'
+  );
+
+  if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
+  try {
+    const endpoint =
+      estadoActual === 'Pagado'
+        ? `/cuentasPorPagar/desmarcar/${id}`
+        : `/cuentasPorPagar/pagar/${id}`;
+    const response = await axios.patch(endpoint);
+
+    if (response.data.status === 'success') {
+      await fetchCuentas();
+      showSuccessAlert(
+        estadoActual === 'Pagado'
+          ? 'Cuenta desmarcada como pagada'
+          : 'Cuenta marcada como pagada',
+        ''
+      );
+    } else {
+      throw new Error(response.data.message);
+    }
+  } catch (error) {
+    console.error(
+      estadoActual === 'Pagado'
+        ? 'Error al desmarcar como pagada:'
+        : 'Error al marcar como pagada:',
+      error
     );
-    
-    if (!result.isConfirmed) {
-      return; // Si el usuario cancela, no hacer nada
-    }
-    
-    try {
-      // Llamar al endpoint para desmarcar como pagada
-      const response = await axios.patch(`/cuentasPorPagar/desmarcar/${id}`);
-      if (response.data.status === "success") {
-        await fetchCuentas();
-        showSuccessAlert('Cuenta desmarcada como pagada', '');
-      } else {
-        throw new Error(response.data.message);
-      }
-    } catch (error) {
-      console.error('Error unmarking as paid:', error);
-      showErrorAlert('Error al desmarcar pago', 'Ocurrió un error al intentar desmarcar la cuenta como pagada.');
-    }
-  } else {
-    // Comportamiento original: marcar como pagada
-    try {
-      const response = await axios.patch(`/cuentasPorPagar/pagar/${id}`);
-      if (response.data.status === "success") {
-        await fetchCuentas();
-        showSuccessAlert('Cuenta marcada como pagada', '');
-      } else {
-        throw new Error(response.data.message);
-      }
-    } catch (error) {
-      console.error('Error marking as paid:', error);
-      showErrorAlert('Error al marcar como pagada', 'Ocurrió un error al intentar marcar la cuenta como pagada.');
-    }
+    showErrorAlert(
+      estadoActual === 'Pagado'
+        ? 'Error al desmarcar como pagada'
+        : 'Error al marcar como pagada',
+      'Ocurrió un error al intentar cambiar el estado de la cuenta.'
+    );
   }
 };
 
@@ -327,38 +332,52 @@ const handleTogglePaid = async (id, estadoActual) => {
   };
 
   // Enviar formulario
-  const handleSubmit = async () => {
-    try {
-      if (!currentCuenta.Nombre || !currentCuenta.numeroVerificador || !currentCuenta.Mes || 
-          !currentCuenta.Monto || !currentCuenta.Estado || !currentCuenta.Categoria) {
-        showErrorAlert('Campos incompletos', 'Por favor complete todos los campos requeridos.');
-        return;
-      }
+const handleSubmit = async () => {
+  // Mostrar confirmación antes de añadir la cuenta
+  const result = await showConfirmationAlert(
+    "¿Estás seguro?",
+    isEditing
+      ? "¿Deseas guardar los cambios realizados a esta cuenta?"
+      : "¿Deseas añadir esta nueva cuenta?",
+    isEditing ? "Sí, guardar" : "Sí, añadir",
+    "No, cancelar"
+  );
 
-      let response;
-      
-      if (isEditing) {
-        const { _id, ...cuentaData } = currentCuenta;
-        response = await axios.patch(`/cuentasPorPagar/actualizar/${_id}`, cuentaData);
-      } else {
-        response = await axios.post('/cuentasPorPagar/agregar', currentCuenta);
-      }
-      
-      if (response.data.status === "success") {
-        await fetchCuentas();
-        setShowModal(false);
-        showSuccessAlert(isEditing ? 'Cuenta actualizada con éxito' : 'Cuenta creada con éxito', '');
-      } else {
-        throw new Error(response.data.message || 'Error desconocido');
-      }
-    } catch (error) {
-      console.error('Error saving cuenta:', error);
-      showErrorAlert(
-        isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
-        'Ocurrió un error al intentar guardar la cuenta.'
-      );
+  if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
+  try {
+    if (!currentCuenta.Nombre || !currentCuenta.numeroVerificador || !currentCuenta.Mes || 
+        !currentCuenta.Monto || !currentCuenta.Estado || !currentCuenta.Categoria) {
+      showErrorAlert('Campos incompletos', 'Por favor complete todos los campos requeridos.');
+      return;
     }
-  };
+
+    let response;
+    if (isEditing) {
+      const { _id, ...cuentaData } = currentCuenta;
+      response = await axios.patch(`/cuentasPorPagar/actualizar/${_id}`, cuentaData);
+    } else {
+      response = await axios.post('/cuentasPorPagar/agregar', currentCuenta);
+    }
+
+    if (response.data.status === "success") {
+      await fetchCuentas();
+      setShowModal(false);
+      showSuccessAlert(
+        isEditing ? 'Cuenta actualizada con éxito' : 'Cuenta creada con éxito',
+        ''
+      );
+    } else {
+      throw new Error(response.data.message || 'Error desconocido');
+    }
+  } catch (error) {
+    console.error('Error al guardar la cuenta:', error);
+    showErrorAlert(
+      isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
+      'Ocurrió un error al intentar guardar la cuenta.'
+    );
+  }
+};
   
   // Generar años para el selector (5 años atrás y 5 años adelante)
   const generateYearOptions = () => {
@@ -426,6 +445,20 @@ const exportarPDF = () => {
   
   // Guardar PDF
   doc.save(`Cuentas_por_Pagar_${yearSelected}.pdf`);
+};
+
+const handleCancel = async () => {
+  // Mostrar confirmación antes de cancelar
+  const result = await showConfirmationAlert(
+    "¿Estás seguro?",
+    "¿Deseas cancelar esta acción? Los cambios no se guardarán.",
+    "Sí, cancelar",
+    "No, volver"
+  );
+
+  if (result.isConfirmed) {
+    setShowModal(false); // Cerrar el modal si el usuario confirma
+  }
 };
 
   return (
@@ -696,7 +729,7 @@ const exportarPDF = () => {
                     </button>
                     <button 
                       className="cancel-button"
-                      onClick={() => setShowModal(false)}
+                      onClick={handleCancel}
                     >
                       Cancelar
                     </button>

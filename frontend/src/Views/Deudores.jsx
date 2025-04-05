@@ -5,7 +5,7 @@ import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
 
@@ -132,6 +132,16 @@ const DeudoresList = () => {
   };
 
   const handleDelete = async (id) => {
+    // Mostrar confirmación antes de eliminar el deudor
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "Esta acción no se puede deshacer. ¿Deseas eliminar este deudor?",
+      "Sí, eliminar",
+      "No, cancelar"
+    );
+  
+    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+  
     try {
       await deleteDeudor(id);
       const updatedDeudores = allDeudores.filter(deudor => deudor._id !== id);
@@ -143,7 +153,7 @@ const DeudoresList = () => {
       setTotalPages(Math.ceil(filtered.length / deudoresPerPage));
       showSuccessAlert('Deudor eliminado con éxito', '');
     } catch (error) {
-      console.error('Error deleting deudor:', error);
+      console.error('Error eliminando deudor:', error);
       showErrorAlert('Error al eliminar el deudor', 'Ocurrió un error al intentar eliminar el deudor.');
     }
   };
@@ -276,6 +286,16 @@ const handleDebtUpdate = async () => {
   };
 
   const handleEditSubmit = async () => {
+    // Mostrar confirmación antes de guardar los cambios
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas guardar los cambios realizados a este deudor?",
+      "Sí, guardar",
+      "No, cancelar"
+    );
+
+    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+
     try {
       await updateDeudor(deudorToEdit._id, {
         Nombre: deudorToEdit.Nombre,
@@ -283,13 +303,13 @@ const handleDebtUpdate = async () => {
         numeroTelefono: deudorToEdit.numeroTelefono.toString(),
         deudaTotal: parseFloat(deudorToEdit.deudaTotal)
       });
-      
+
       const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
       setAllDeudores(updatedDeudores.deudores);
       setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
         deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
       ));
-      
+
       setShowEditModal(false);
       showSuccessAlert('Deudor actualizado con éxito', '');
     } catch (error) {
@@ -337,6 +357,20 @@ const handleDebtUpdate = async () => {
       return value.replace(/[^\d.]/g, '');
     }
     return value;
+  };
+
+  const handleCancelEdit = async () => {
+    // Mostrar confirmación antes de cancelar la edición
+    const result = await showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
+      "Sí, cancelar",
+      "No, volver"
+    );
+
+    if (result.isConfirmed) {
+      setShowEditModal(false); // Cerrar el modal si el usuario confirma
+    }
   };
 
   return (
@@ -596,7 +630,7 @@ const handleDebtUpdate = async () => {
                     <button onClick={handleEditSubmit} className="deudores-confirm-button">
                       Guardar Cambios
                     </button>
-                    <button onClick={() => setShowEditModal(false)} className="deudores-cancel-button">
+                    <button onClick={handleCancelEdit} className="deudores-cancel-button">
                       Cancelar
                     </button>
                   </div>
