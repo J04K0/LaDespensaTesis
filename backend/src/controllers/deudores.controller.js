@@ -4,8 +4,8 @@ import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/re
 
 export const getDeudores = async (req, res) => {
   try {
-    const { page = 1, limit = 2 } = req.query;
-
+    const { page = 1, limit = 10 } = req.query;
+    
     const deudores = await Deudores.find()
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -16,11 +16,9 @@ export const getDeudores = async (req, res) => {
     if (deudores.length === 0) {
       return handleErrorClient(res, 404, 'No hay deudores registrados');
     }
-
-    // Formatear el monto de la deuda con separadores de miles
     const deudoresFormateados = deudores.map(deudor => ({
-      ...deudor.toObject(), // Convertimos el documento de MongoDB a objeto JSON
-      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-CL")}` // Formateo de moneda
+      ...deudor.toObject(),
+      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-CL")}`
     }));
 
     handleSuccess(res, 200, 'Deudores encontrados', {

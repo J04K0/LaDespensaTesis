@@ -110,9 +110,9 @@
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   background-color: #f8f9fa;
-  padding: 2px;
-  height: 500px; /* Altura fija para permitir más registros */
-  max-height: 60vh; /* Responsive */
+  padding: 2px 2px 20px 2px; /* Añadido padding inferior */
+  min-height: 200px; /* Altura mínima */
+  max-height: 60vh; /* Altura máxima responsive */
 }
 
 /* Nueva tabla con diseño mejorado */
@@ -121,7 +121,7 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  height: 100%; /* Garantizar que la tabla ocupe todo el alto disponible */
+  height: auto; /* Cambiado de 100% a auto */
 }
 
 /* Rediseño de encabezados */
@@ -153,6 +153,14 @@
   padding: 14px 16px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
+  height: 60px; /* Altura fija para las celdas */
+}
+
+/* Espacio en blanco después de la última fila */
+.proveedores-table tbody:after {
+  content: "";
+  display: block;
+  height: 10px;
 }
 
 /* Estilos para filas alternantes */

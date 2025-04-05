@@ -1,6 +1,6 @@
 import axios from './root.service.js';
 
-export const getProveedores = async (page = 1, limit = 8) => {
+export const getProveedores = async (page = 1, limit = 10) => {
   try {
     const response = await axios.get('/proveedores', {
       params: { page, limit }

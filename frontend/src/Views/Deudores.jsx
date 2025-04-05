@@ -16,7 +16,7 @@ const DeudoresList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
   const [loading, setLoading] = useState(true);
-  const deudoresPerPage = 8;
+  const deudoresPerPage =10;
   const navigate = useNavigate();
   
   const [showModal, setShowModal] = useState(false);

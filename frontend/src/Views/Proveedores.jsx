@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink, faFilePdf } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
 import '../styles/ProveedoresStyles.css';
-import Papa from 'papaparse';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -52,7 +50,7 @@ const Proveedores = () => {
   const [viewingProveedor, setViewingProveedor] = useState(null);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
 
-  const proveedoresPorPagina = 8;
+  const proveedoresPorPagina = 10;
   const categorias = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
     'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
@@ -70,7 +68,7 @@ const Proveedores = () => {
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      const data = await getProveedores();
+      const data = await getProveedores(1, 10000);
       const proveedoresArray = data.proveedores || data;
       
       setProveedores(proveedoresArray);
@@ -382,7 +380,6 @@ const Proveedores = () => {
     const currentDate = new Date().toLocaleDateString();
     doc.text(`Fecha: ${currentDate}`, 14, 22);
     
-    // Preparar datos para la tabla
     const headers = [
       'Nombre', 
       'Teléfono', 
@@ -411,7 +408,6 @@ const Proveedores = () => {
       styles: { overflow: 'linebreak' },
       headStyles: { fillColor: [0, 38, 81] }, // Color #002651
       didDrawPage: (data) => {
-        // Agregar pie de página con fecha
         doc.setFontSize(10);
         doc.text(`La Despensa - Listado de Proveedores - ${currentDate}`, 14, doc.internal.pageSize.height - 10);
       }
