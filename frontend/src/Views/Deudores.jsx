@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
+import axios from '../services/root.service.js';
 
 const DeudoresList = () => {
   const [allDeudores, setAllDeudores] = useState([]);
@@ -218,27 +219,37 @@ const handleDebtUpdate = async () => {
     
     let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
     
-    // Crear nuevo registro para el historial de pagos con comentario opcional
+    // Crear nuevo registro para el historial de pagos
     const nuevoPago = {
       fecha: new Date(),
       monto: parsedAmount,
       tipo: isPayment ? 'pago' : 'deuda',
-      comentario: comment.trim() || '' // Usar cadena vacía en lugar de null
+      comentario: comment.trim() || ''
     };
     
-    console.log("Enviando comentario:", nuevoPago.comentario); // Log para depuración
+    // Obtener historial actual (es necesario obtener el deudor actualizado primero)
+    const deudorActual = await getDeudorById(selectedDeudor._id);
+    const historialActual = deudorActual.historialPagos || [];
     
-    // Resto de tu código para la petición API...
-    const response = await axios.put(`${import.meta.env.VITE_API_URL}/deudores/${selectedDeudor._id}/pagos`, {
-      pago: nuevoPago,
-      nuevaDeuda: newDebt
+    // Usar la ruta existente de actualización
+    const response = await axios.patch(`/deudores/actualizar/${selectedDeudor._id}`, {
+      deudaTotal: newDebt,
+      // Mantener los demás datos igual y solo actualizar deuda e historial
+      Nombre: selectedDeudor.Nombre,
+      fechaPaga: selectedDeudor.fechaPaga,
+      numeroTelefono: selectedDeudor.numeroTelefono,
+      historialPagos: [...historialActual, nuevoPago]
     });
     
-    // Una vez actualizado correctamente
     setComment('');
     setAmount('');
     setShowModal(false);
-    fetchDeudores(); // Recargar datos
+    const fetchDeudores = async () => {
+      const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+      setAllDeudores(data.deudores);
+      setFilteredDeudores(data.deudores);
+    };
+    await fetchDeudores();
     
     showSuccessAlert(
       isPayment ? 'Pago registrado' : 'Deuda actualizada',

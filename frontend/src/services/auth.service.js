@@ -9,6 +9,7 @@ export const login = async ({ email, password }) => {
     if (status === 200) {
       const { email, roles } = await jwtDecode(data.data.accessToken);
       localStorage.setItem('user', JSON.stringify({ email, roles }));
+      localStorage.setItem('sessionStartTime', new Date().toISOString()); // Registrar inicio de sesión
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.data.accessToken}`;
       cookies.set('jwt-auth', data.data.accessToken, { path: '/' });
     }
@@ -23,6 +24,7 @@ export const login = async ({ email, password }) => {
 
 export const logout = () => {
   localStorage.removeItem('user');
+  // No eliminamos 'sessionStartTime' porque lo necesitamos para el reporte
   delete axios.defaults.headers.common['Authorization'];
   cookies.remove('jwt');
   cookies.remove('jwt-auth');

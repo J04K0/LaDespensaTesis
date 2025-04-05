@@ -4,7 +4,8 @@ import {
     getDeudorById, 
     updateDeudor, 
     deleteDeudor,
-    addDeudor 
+    addDeudor,
+    updateDeudorPagos
 } from '../controllers/deudores.controller.js';
 
 import { 
@@ -25,5 +26,6 @@ router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudores);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudorById);
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudor); // Cambiado a PATCH
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteDeudor);
+router.put('/:id/pagos', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudorPagos);
 
 export default router;

@@ -106,3 +106,24 @@ export const deleteDeudor = async (req, res) => {
     handleErrorServer(res, 500, 'Error al eliminar un deudor', err.message);
   }
 };
+
+export const updateDeudorPagos = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { pago, nuevaDeuda } = req.body;
+    
+    const deudor = await Deudores.findById(id);
+    if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
+    
+    // Agregar el nuevo pago al historial
+    deudor.historialPagos.push(pago);
+    // Actualizar la deuda total
+    deudor.deudaTotal = nuevaDeuda;
+    
+    const updatedDeudor = await deudor.save();
+    
+    handleSuccess(res, 200, 'Pago registrado exitosamente', updatedDeudor);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al registrar el pago', err.message);
+  }
+};
