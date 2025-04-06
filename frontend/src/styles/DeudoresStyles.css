@@ -150,13 +150,13 @@
 .deudores-table-container {
   width: 100%;
   overflow-x: auto;
-  margin-bottom: 20px;
+  margin-top: 10px;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   background-color: var(--gray-light);
-  padding: 2px;
-  height: 500px;
-  max-height: 60vh;
+  padding: 2px 2px 20px 2px; /* Added bottom padding */
+  min-height: 200px; /* Minimum height instead of fixed height */
+  max-height: 60vh; /* Maximum responsive height */
 }
 
 /* Tabla de deudores */
@@ -165,14 +165,14 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  height: 100%;
-  margin-bottom: 20px;
+  height: auto; /* Changed from 100% to auto */
+  margin-bottom: 0; /* Remove bottom margin */
 }
 
 /* Encabezados rediseñados */
 .deudores-table th {
-  background-color: var(--gray-dark);
-  color: var(--white);
+  background-color: #343a40; /* Match the exact color from providers */
+  color: white;
   font-weight: 600;
   text-align: left;
   padding: 16px;
@@ -198,6 +198,7 @@
   padding: 14px 16px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
+  height: 60px; /* Fixed height for cells like in providers table */
 }
 
 /* Estilos para filas alternantes */
@@ -750,4 +751,10 @@
   bottom: 100%;
   left: 0;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.deudores-table tbody:after {
+  content: "";
+  display: block;
+  height: 10px;
 }
