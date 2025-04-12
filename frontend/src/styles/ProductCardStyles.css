@@ -237,6 +237,207 @@
   color: var(--white);
 }
 
+.price-history-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+}
+
+.price-history-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.price-history-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.price-history-btn svg {
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.price-history-btn:hover svg {
+  transform: scale(1.1);
+}
+
+.price-history-modal {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.current-prices {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.current-prices h3 {
+  color: #1e293b;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.price-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.price-label {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.price-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.price-value.sale {
+  color: #16a34a;
+}
+
+.price-value.purchase {
+  color: #2563eb;
+}
+
+.history-table {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.history-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem;
+}
+
+.history-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estilos específicos para el historial de precios */
+.price-history-modal h2 {
+  color: #1a1a1a;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.price-history-modal .bg-blue-50 {
+  background-color: #f0f7ff;
+}
+
+.price-history-modal .bg-white {
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.price-history-modal .bg-white:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.price-history-modal table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.price-history-modal th {
+  color: #4a5568;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  padding: 1rem;
+  background: transparent;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.price-history-modal td {
+  padding: 1rem;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.price-history-modal tr:last-child td {
+  border-bottom: none;
+}
+
+.price-history-modal .text-green-600 {
+  color: #059669;
+}
+
+.price-history-modal .text-blue-600 {
+  color: #2563eb;
+}
+
 /* Responsividad */
 @media (max-width: 768px) {
   .product-card {

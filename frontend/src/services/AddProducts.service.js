@@ -191,3 +191,17 @@ export const getProductByBarcodeForCreation = async (barcode) => {
     throw error;
   }
 };
+
+export const getProductPriceHistory = async (id) => {
+  try {
+    const response = await axios.get(`/products/historial-precios/${id}`);
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error('No se recibieron datos del historial de precios');
+    }
+  } catch (error) {
+    console.error('Error al obtener el historial de precios:', error);
+    throw error.response?.data || error;
+  }
+};

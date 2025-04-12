@@ -449,6 +449,7 @@ const Products = () => {
                   onDelete={() => handleDelete(product._id)}
                   onEdit={() => handleEdit(product._id)}
                   onInfo={() => handleProductInfo(product)}
+                  productId={product._id}
                 />
               ))
             ) : (

@@ -62,8 +62,6 @@ export const addProduct = async (req, res) => {
   }
 };
 
-
-
 export const updateProduct = async (req, res) => { 
   try {
     const { value, error } = productSchema.validate(req.body);
@@ -78,13 +76,27 @@ export const updateProduct = async (req, res) => {
 
     // Verifica si hay un archivo subido y actualiza la imagen
     if (req.file) {
-      imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
+      imageUrl = `http://${HOST}:${PORT}/api/src/upload/${req.file.filename}`;
+    }
+
+    // Verifica si los precios han cambiado
+    if (value.PrecioVenta !== product.PrecioVenta || value.PrecioCompra !== product.PrecioCompra) {
+      // Guarda el precio anterior en el historial
+      product.historialPrecios.push({
+        precioVenta: product.PrecioVenta,
+        precioCompra: product.PrecioCompra,
+        fecha: new Date()
+      });
     }
 
     // Actualizar los datos del producto
     const updatedProduct = await Product.findByIdAndUpdate(
       id, 
-      { ...value, image: imageUrl }, 
+      { 
+        ...value, 
+        image: imageUrl,
+        historialPrecios: product.historialPrecios 
+      }, 
       { new: true, runValidators: true }
     );
 
@@ -93,7 +105,6 @@ export const updateProduct = async (req, res) => {
     handleErrorServer(res, 500, 'Error al actualizar el producto', err.message);
   }
 };
-
 
 export const deleteProduct = async (req, res) => {
   try {
@@ -274,7 +285,6 @@ export const scanProducts = async (req, res) => {
     handleErrorServer(res, 500, "Error al escanear producto", err.message);
   }
 };
-
 
 export const actualizarStockVenta = async (req, res) => {
   try {
@@ -494,4 +504,31 @@ export const eliminarProductosSinStock = async () => {
 cron.schedule('0 */5 * * *', async () => {
   await eliminarProductosSinStock();
 });
+
+export const getProductPriceHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Ordenar el historial por fecha, del más reciente al más antiguo
+    const historialOrdenado = product.historialPrecios.sort((a, b) => b.fecha - a.fecha);
+
+    // Crear respuesta con información actual e historial
+    const respuesta = {
+      productoActual: {
+        nombre: product.Nombre,
+        precioVentaActual: product.PrecioVenta,
+        precioCompraActual: product.PrecioCompra,
+        ultimaActualizacion: product.updatedAt
+      },
+      historialPrecios: historialOrdenado
+    };
+
+    handleSuccess(res, 200, 'Historial de precios encontrado', respuesta);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al obtener el historial de precios', err.message);
+  }
+};
 

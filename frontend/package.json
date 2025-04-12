@@ -18,6 +18,7 @@
     "axios": "^1.5.1",
     "chart.js": "^4.4.8",
     "classnames": "^2.5.1",
+    "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.0",

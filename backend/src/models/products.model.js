@@ -1,5 +1,20 @@
 import { Schema, model } from "mongoose";
 
+const PrecioHistorialSchema = new Schema({
+  precioVenta: {
+    type: Number,
+    required: true,
+  },
+  precioCompra: {
+    type: Number,
+    required: true,
+  },
+  fecha: {
+    type: Date,
+    default: Date.now,
+  }
+});
+
 const ProductSchema = new Schema({
   Nombre: {
     type: String,
@@ -25,6 +40,7 @@ const ProductSchema = new Schema({
     type: Number,
     required: true,
   },
+  historialPrecios: [PrecioHistorialSchema],
   fechaVencimiento: {
     type: Date,
     required: true,
@@ -41,8 +57,7 @@ const ProductSchema = new Schema({
 { 
   versionKey: false,
   timestamps: true,
-  }
-);
+});
 
 const Product = model('Product', ProductSchema);
 export default Product;
