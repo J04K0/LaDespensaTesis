@@ -728,18 +728,7 @@ const Products = () => {
                 />
               </div>
             </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="precioAntiguo">Precio Antiguo (opcional)</label>
-              <input
-                type="number"
-                id="precioAntiguo"
-                name="precioAntiguo"
-                value={productToEdit.precioAntiguo}
-                onChange={handleEditChange}
-              />
-            </div>
-            
+                    
             <div className="modal-form-group">
               <label htmlFor="image">Imagen</label>
               <div className="file-input-wrapper">
