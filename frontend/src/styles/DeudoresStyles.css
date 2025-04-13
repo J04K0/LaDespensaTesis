@@ -203,7 +203,7 @@
 
 /* Estilos para filas alternantes */
 .deudores-table tbody tr:nth-child(even) {
-  background-color: #f0f2f5;
+  background-color: #f8f9fa;
 }
 
 .deudores-table tbody tr:nth-child(odd) {
@@ -211,24 +211,9 @@
 }
 
 /* Hover para las filas */
-.deudores-table tbody tr:hover:not(.zero-debt-row) {
+.deudores-table tbody tr:hover {
   background-color: #e8f4ff;
   transition: background-color 0.2s ease;
-}
-
-/* Estilo para deudores con deuda cero */
-.zero-debt-row {
-  background-color: #f2f2f2 !important;
-  color: #6c757d;
-  opacity: 0.85;
-}
-
-.zero-debt-row td {
-  border-color: #e0e0e0;
-}
-
-.zero-debt-row:hover {
-  background-color: #e9ecef !important;
 }
 
 /* Celda de acciones */
@@ -451,21 +436,6 @@
   margin-top: 30px;
 }
 
-/* Estilo para deudores con deuda cero */
-.zero-debt-row {
-  background-color: #f2f2f2 !important;
-  color: #6c757d;
-  opacity: 0.85;
-}
-
-.zero-debt-row td {
-  border-color: #e0e0e0;
-}
-
-.zero-debt-row:hover {
-  background-color: #e9ecef !important;
-}
-
 /* Estilos específicos para modales de deudores */
 .deudores-modal-overlay {
   position: fixed;
@@ -628,9 +598,18 @@
 }
 
 .deudores-payment-history-table th {
-  background-color: #f2f2f2;
+  background-color: var(--gray-dark);
+  color: var(--white);
+  font-weight: 600;
+  text-align: left;
+  padding: 16px;
   position: sticky;
   top: 0;
+  z-index: 20;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .deudores-payment-history-table td:nth-child(4) {

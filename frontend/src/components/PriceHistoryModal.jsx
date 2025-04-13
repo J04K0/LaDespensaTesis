@@ -10,6 +10,13 @@ const PriceHistoryModal = ({ isOpen, onClose, productId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Manejar la clase modal-open en el body
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+
     const fetchHistorial = async () => {
       if (isOpen && productId) {
         try {
@@ -31,6 +38,11 @@ const PriceHistoryModal = ({ isOpen, onClose, productId }) => {
     };
 
     fetchHistorial();
+
+    // Limpiar la clase cuando el componente se desmonte
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
   }, [isOpen, productId]);
 
   if (!isOpen) return null;

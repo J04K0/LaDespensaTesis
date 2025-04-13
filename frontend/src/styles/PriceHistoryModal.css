@@ -10,6 +10,11 @@
   --white: #ffffff;
 }
 
+/* Clase para prevenir scroll en el body cuando el modal está abierto */
+body.modal-open {
+  overflow: hidden;
+}
+
 /* Overlay del modal */
 .price-history-modal-overlay {
   position: fixed;
@@ -23,6 +28,7 @@
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(2px);
+  overflow-y: auto; /* Permitir scroll en el overlay si es necesario */
 }
 
 /* Contenedor del modal */
@@ -37,6 +43,7 @@
   width: 90%;
   max-width: 800px;
   animation: modalFadeIn 0.3s ease-out;
+  margin: 2rem auto; /* Agregar margen arriba y abajo */
 }
 
 @keyframes modalFadeIn {
@@ -65,6 +72,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
+  color: white;
 }
 
 .close-button {
