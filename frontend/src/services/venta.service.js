@@ -29,3 +29,23 @@ export const registrarVenta = async (productosVendidos) => {
       throw error;
     }
   };
+
+  export const eliminarTicket = async (ticketId) => {
+    try {
+      const response = await axios.delete(`/ventas/ticket/${ticketId}`);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Error al eliminar el ticket:", error);
+      throw error;
+    }
+  };
+
+  export const editarTicket = async (ticketId, productos) => {
+    try {
+      const response = await axios.put(`/ventas/ticket/${ticketId}`, { productos });
+      return response.data;
+    } catch (error) {
+      console.error("❌ Error al editar el ticket:", error);
+      throw error;
+    }
+  };

@@ -418,6 +418,260 @@
   }
 }
 
+/* Estilos para botones de acción en la tabla de ventas */
+.history-sale-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-sale-edit-btn, 
+.history-sale-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.history-sale-edit-btn {
+  background-color: var(--primary);
+}
+
+.history-sale-delete-btn {
+  background-color: var(--danger);
+}
+
+.history-sale-edit-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.history-sale-delete-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+/* Estilos para el modal de edición/devolución */
+.history-sale-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.history-sale-modal-content {
+  background-color: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.history-sale-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--primary-dark);
+  color: white;
+}
+
+.history-sale-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.history-sale-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.history-sale-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-sale-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 130px);
+}
+
+.history-sale-modal-footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-top: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.history-sale-confirm-button,
+.history-sale-cancel-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-sale-confirm-button {
+  background-color: var(--success);
+  color: white;
+}
+
+.history-sale-cancel-button {
+  background-color: #f0f0f0;
+  color: var(--gray-dark);
+}
+
+.history-sale-confirm-button:hover {
+  background-color: #218838;
+}
+
+.history-sale-cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.history-sale-confirm-button:disabled {
+  background-color: #a8d5ba;
+  cursor: not-allowed;
+}
+
+/* Estilos para la tabla dentro del modal */
+.history-sale-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.history-sale-modal-table th {
+  background-color: #f8f9fa;
+  color: var(--gray-dark);
+  text-align: left;
+  padding: 10px;
+  border-bottom: 2px solid #ddd;
+}
+
+.history-sale-modal-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-sale-modal-table tbody tr:hover {
+  background-color: #f5f8ff;
+}
+
+.history-sale-modal-table tfoot tr {
+  background-color: #f0f8f0;
+}
+
+.history-sale-modal-table tfoot td {
+  padding: 15px 10px;
+}
+
+.history-sale-modal-instructions {
+  background-color: #fff9e6;
+  border: 1px solid #ffe0b2;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Estilos para los controles de cantidad */
+.quantity-cell {
+  width: 120px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.quantity-controls button {
+  width: 30px;
+  height: 30px;
+  background-color: #f0f0f0;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quantity-controls button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.quantity-controls button:disabled {
+  background-color: #f0f0f0;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.quantity-controls span {
+  flex: 1;
+  text-align: center;
+  padding: 3px 0;
+  font-weight: 600;
+}
+
+.refund-amount {
+  color: var(--danger);
+  font-size: 16px;
+}
+
+/* Responsividad para el modal */
+@media (max-width: 768px) {
+  .history-sale-modal-content {
+    width: 95%;
+    margin: 0 10px;
+  }
+  
+  .history-sale-modal-table {
+    font-size: 13px;
+  }
+  
+  .quantity-controls {
+    width: 90px;
+  }
+}
+
 /* Responsividad */
 @media (max-width: 768px) {
   .history-sale-search-sort-container {

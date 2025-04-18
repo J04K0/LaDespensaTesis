@@ -83,3 +83,77 @@ export const registrarVenta = async (req, res) => {
       handleErrorServer(res, 500, "Error al obtener las ventas por ticket", error.message);
     }
   };
+
+export const deleteTicket = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    
+    if (!ticketId) {
+      return handleErrorClient(res, 400, "ID de ticket es requerido");
+    }
+
+    // Encontrar y eliminar todas las ventas asociadas a este ticket
+    const result = await Venta.deleteMany({ ticketId });
+    
+    if (result.deletedCount === 0) {
+      return handleErrorClient(res, 404, "Ticket no encontrado o ya fue eliminado");
+    }
+    
+    handleSuccess(res, 200, "Ticket eliminado correctamente", { ticketId, deletedCount: result.deletedCount });
+  } catch (error) {
+    console.error("Error al eliminar ticket:", error);
+    handleErrorServer(res, 500, "Error al eliminar el ticket", error.message);
+  }
+};
+
+export const editTicket = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const { productos } = req.body;
+    
+    if (!ticketId) {
+      return handleErrorClient(res, 400, "ID de ticket es requerido");
+    }
+    
+    if (!productos || !Array.isArray(productos)) {
+      return handleErrorClient(res, 400, "Lista de productos es requerida");
+    }
+
+    // Primero eliminamos todas las ventas asociadas a este ticket
+    await Venta.deleteMany({ ticketId });
+    
+    // Luego creamos nuevos registros con los productos actualizados
+    const ventasActualizadas = [];
+    for (const producto of productos) {
+      // Solo crear registros para productos con cantidad > 0
+      if (producto.cantidad > 0) {
+        const nuevaVenta = new Venta({
+          ticketId,
+          nombre: producto.nombre,
+          codigoBarras: producto.codigoBarras,
+          categoria: producto.categoria,
+          cantidad: producto.cantidad,
+          precioVenta: producto.precioVenta,
+          precioCompra: producto.precioCompra,
+          fecha: new Date()
+        });
+        
+        await nuevaVenta.save();
+        ventasActualizadas.push(nuevaVenta);
+      }
+    }
+    
+    // Si no quedan productos, eliminamos completamente el ticket
+    if (ventasActualizadas.length === 0) {
+      handleSuccess(res, 200, "Ticket eliminado ya que no quedan productos", { ticketId });
+    } else {
+      handleSuccess(res, 200, "Ticket actualizado correctamente", { 
+        ticketId, 
+        productos: ventasActualizadas 
+      });
+    }
+  } catch (error) {
+    console.error("Error al editar ticket:", error);
+    handleErrorServer(res, 500, "Error al editar el ticket", error.message);
+  }
+};
