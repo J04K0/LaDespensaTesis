@@ -17,9 +17,9 @@ const DeudoresList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
   const [loading, setLoading] = useState(true);
-  const deudoresPerPage =10;
+  const deudoresPerPage = 10;
   const navigate = useNavigate();
-  
+
   const [showModal, setShowModal] = useState(false);
   const [selectedDeudor, setSelectedDeudor] = useState(null);
   const [amount, setAmount] = useState('');
@@ -39,7 +39,21 @@ const DeudoresList = () => {
   const [selectedHistoryDeudor, setSelectedHistoryDeudor] = useState(null);
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim() === '') {
+      setFilteredDeudores(allDeudores);
+    } else {
+      const searchTermLower = value.toLowerCase().trim();
+      const results = allDeudores.filter(deudor => {
+        const nameMatch = deudor.Nombre && deudor.Nombre.toLowerCase().includes(searchTermLower);
+        const phoneMatch = deudor.numeroTelefono && deudor.numeroTelefono.toString().includes(searchTermLower);
+        return nameMatch || phoneMatch;
+      });
+      setFilteredDeudores(results);
+    }
+
     setCurrentPage(1);
   };
 
@@ -58,15 +72,24 @@ const DeudoresList = () => {
   useEffect(() => {
     const fetchAllDeudores = async () => {
       try {
-        setLoading(true); // Activar loading
+        setLoading(true);
         const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-        setAllDeudores(data.deudores);
-        setFilteredDeudores(data.deudores);
-        setTotalPages(Math.ceil(data.deudores.length / deudoresPerPage));
+
+        const sortedDeudores = [...data.deudores].sort((a, b) => {
+          const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+          const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+          if (deudaA === 0 && deudaB !== 0) return 1;
+          if (deudaB === 0 && deudaA !== 0) return -1;
+          return 0;
+        });
+
+        setAllDeudores(sortedDeudores);
+        setFilteredDeudores(sortedDeudores);
+        setTotalPages(Math.ceil(sortedDeudores.length / deudoresPerPage));
       } catch (error) {
         console.error('Error fetching deudores:', error);
       } finally {
-        setLoading(false); // Desactivar loading
+        setLoading(false);
       }
     };
 
@@ -74,27 +97,19 @@ const DeudoresList = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = allDeudores.filter(deudor =>
-      deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredDeudores(filtered);
-    setTotalPages(Math.ceil(filtered.length / deudoresPerPage));
-  }, [searchQuery, allDeudores]);
+    if (!sortOption) {
+      const filtered = [...filteredDeudores].sort((a, b) => {
+        const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        if (deudaA === 0 && deudaB !== 0) return 1;
+        if (deudaB === 0 && deudaA !== 0) return -1;
+        return 0;
+      });
+      setFilteredDeudores(filtered);
+      return;
+    }
 
-  useEffect(() => {
-    // Primero separamos los deudores con deuda 0 de los demás
-    const deudoresConDeuda = filteredDeudores.filter(deudor => {
-      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-      return deudaValue > 0;
-    });
-    
-    const deudoresSinDeuda = filteredDeudores.filter(deudor => {
-      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-      return deudaValue === 0;
-    });
-    
-    // Aplicamos el ordenamiento solo a los deudores con deuda
-    let sortedDeudoresConDeuda = [...deudoresConDeuda].sort((a, b) => {
+    let sortedDeudores = [...filteredDeudores].sort((a, b) => {
       if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
       if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
       if (sortOption === 'debt-asc') {
@@ -111,37 +126,24 @@ const DeudoresList = () => {
       if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
       return 0;
     });
-    
-    // Ordenamos también los deudores sin deuda
-    let sortedDeudoresSinDeuda = [...deudoresSinDeuda].sort((a, b) => {
-      if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
-      if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
-      if (sortOption === 'date-asc') return new Date(a.fechaPaga) - new Date(b.fechaPaga);
-      if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
-      return 0;
-    });
-    
-    // Combinamos los resultados: primero los que tienen deuda, luego los sin deuda
-    const combinedDeudores = [...sortedDeudoresConDeuda, ...sortedDeudoresSinDeuda];
-    
-    setFilteredDeudores(combinedDeudores);
-  }, [sortOption, allDeudores, searchQuery]);
+
+    setFilteredDeudores(sortedDeudores);
+  }, [sortOption]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
   const handleDelete = async (id) => {
-    // Mostrar confirmación antes de eliminar el deudor
     const result = await showConfirmationAlert(
       "¿Estás seguro?",
       "Esta acción no se puede deshacer. ¿Deseas eliminar este deudor?",
       "Sí, eliminar",
       "No, cancelar"
     );
-  
-    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
-  
+
+    if (!result.isConfirmed) return;
+
     try {
       await deleteDeudor(id);
       const updatedDeudores = allDeudores.filter(deudor => deudor._id !== id);
@@ -160,7 +162,7 @@ const DeudoresList = () => {
 
   const handleEdit = (deudor) => {
     const fechaFormateada = new Date(deudor.fechaPaga).toISOString().split('T')[0];
-    
+
     setDeudorToEdit({
       _id: deudor._id,
       Nombre: deudor.Nombre,
@@ -186,96 +188,87 @@ const DeudoresList = () => {
     setIsPayment(true);
     setShowModal(true);
   };
-  // Función para validar el formulario de deuda antes de enviar
-const validateDebtForm = () => {
-  // Validar monto
-  if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-    showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
-    return false;
-  }
 
-  // Validar que el comentario no sea demasiado largo
-  if (comment && comment.length > 500) {
-    showErrorAlert('Comentario demasiado largo', 'El comentario no puede exceder los 500 caracteres.');
-    return false;
-  }
-
-  // Validar que si es un pago, no exceda la deuda actual
-  if (isPayment) {
-    const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-    const parsedAmount = parseFloat(amount);
-    
-    if (parsedAmount > currentDebt) {
-      showErrorAlert(
-        'Monto excesivo', 
-        `El monto de pago (${parsedAmount}) no puede ser mayor que la deuda actual (${currentDebt}).`
-      );
+  const validateDebtForm = () => {
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      showErrorAlert('Monto inválido', 'Por favor ingrese un monto válido mayor a cero.');
       return false;
     }
-  }
 
-  return true;
-};
+    if (comment && comment.length > 500) {
+      showErrorAlert('Comentario demasiado largo', 'El comentario no puede exceder los 500 caracteres.');
+      return false;
+    }
 
-// Modificar la función handleDebtUpdate para usar la validación
-const handleDebtUpdate = async () => {
-  if (!validateDebtForm()) {
-    return;
-  }
+    if (isPayment) {
+      const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      const parsedAmount = parseFloat(amount);
 
-  try {
-    const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-    const parsedAmount = parseFloat(amount);
-    
-    let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
-    
-    // Crear nuevo registro para el historial de pagos
-    const nuevoPago = {
-      fecha: new Date(),
-      monto: parsedAmount,
-      tipo: isPayment ? 'pago' : 'deuda',
-      comentario: comment.trim() || ''
-    };
-    
-    // Obtener historial actual (es necesario obtener el deudor actualizado primero)
-    const deudorActual = await getDeudorById(selectedDeudor._id);
-    const historialActual = deudorActual.historialPagos || [];
-    
-    // Usar la ruta existente de actualización
-    const response = await axios.patch(`/deudores/actualizar/${selectedDeudor._id}`, {
-      deudaTotal: newDebt,
-      // Mantener los demás datos igual y solo actualizar deuda e historial
-      Nombre: selectedDeudor.Nombre,
-      fechaPaga: selectedDeudor.fechaPaga,
-      numeroTelefono: selectedDeudor.numeroTelefono,
-      historialPagos: [...historialActual, nuevoPago]
-    });
-    
-    setComment('');
-    setAmount('');
-    setShowModal(false);
-    const fetchDeudores = async () => {
-      const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-      setAllDeudores(data.deudores);
-      setFilteredDeudores(data.deudores);
-    };
-    await fetchDeudores();
-    
-    showSuccessAlert(
-      isPayment ? 'Pago registrado' : 'Deuda actualizada',
-      isPayment 
-        ? `Se ha registrado el pago de $${parsedAmount} correctamente.`
-        : `Se ha añadido $${parsedAmount} a la deuda correctamente.`
-    );
-  } catch (error) {
-    console.error("Error al actualizar deuda:", error);
-    showErrorAlert(
-      'Error al actualizar',
-      error.response?.data?.message || 'Ha ocurrido un error al procesar la operación.'
-    );
-  }
-};
-  
+      if (parsedAmount > currentDebt) {
+        showErrorAlert(
+          'Monto excesivo',
+          `El monto de pago (${parsedAmount}) no puede ser mayor que la deuda actual (${currentDebt}).`
+        );
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleDebtUpdate = async () => {
+    if (!validateDebtForm()) {
+      return;
+    }
+
+    try {
+      const currentDebt = parseFloat(selectedDeudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      const parsedAmount = parseFloat(amount);
+
+      let newDebt = isPayment ? currentDebt - parsedAmount : currentDebt + parsedAmount;
+
+      const nuevoPago = {
+        fecha: new Date(),
+        monto: parsedAmount,
+        tipo: isPayment ? 'pago' : 'deuda',
+        comentario: comment.trim() || ''
+      };
+
+      const deudorActual = await getDeudorById(selectedDeudor._id);
+      const historialActual = deudorActual.historialPagos || [];
+
+      const response = await axios.patch(`/deudores/actualizar/${selectedDeudor._id}`, {
+        deudaTotal: newDebt,
+        Nombre: selectedDeudor.Nombre,
+        fechaPaga: selectedDeudor.fechaPaga,
+        numeroTelefono: selectedDeudor.numeroTelefono,
+        historialPagos: [...historialActual, nuevoPago]
+      });
+
+      setComment('');
+      setAmount('');
+      setShowModal(false);
+      const fetchDeudores = async () => {
+        const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+        setAllDeudores(data.deudores);
+        setFilteredDeudores(data.deudores);
+      };
+      await fetchDeudores();
+
+      showSuccessAlert(
+        isPayment ? 'Pago registrado' : 'Deuda actualizada',
+        isPayment
+          ? `Se ha registrado el pago de $${parsedAmount} correctamente.`
+          : `Se ha añadido $${parsedAmount} a la deuda correctamente.`
+      );
+    } catch (error) {
+      console.error("Error al actualizar deuda:", error);
+      showErrorAlert(
+        'Error al actualizar',
+        error.response?.data?.message || 'Ha ocurrido un error al procesar la operación.'
+      );
+    }
+  };
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -286,7 +279,6 @@ const handleDebtUpdate = async () => {
   };
 
   const handleEditSubmit = async () => {
-    // Mostrar confirmación antes de guardar los cambios
     const result = await showConfirmationAlert(
       "¿Estás seguro?",
       "¿Deseas guardar los cambios realizados a este deudor?",
@@ -294,7 +286,7 @@ const handleDebtUpdate = async () => {
       "No, cancelar"
     );
 
-    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+    if (!result.isConfirmed) return;
 
     try {
       await updateDeudor(deudorToEdit._id, {
@@ -321,28 +313,24 @@ const handleDebtUpdate = async () => {
   const handleViewHistory = async (deudor) => {
     try {
       setLoading(true);
-      
-      // Obtener la versión más actualizada del deudor directamente del backend
+
       const deudorActualizado = await getDeudorById(deudor._id);
 
       if (deudorActualizado) {
-        // Asegurarse de que historialPagos sea un array válido
-        deudorActualizado.historialPagos = Array.isArray(deudorActualizado.historialPagos) 
-          ? deudorActualizado.historialPagos 
+        deudorActualizado.historialPagos = Array.isArray(deudorActualizado.historialPagos)
+          ? deudorActualizado.historialPagos
           : [];
-          
+
         setSelectedHistoryDeudor(deudorActualizado);
       } else {
-        // Si no se encuentra, usar los datos disponibles pero con array vacío
         deudor.historialPagos = [];
         setSelectedHistoryDeudor(deudor);
       }
-      
+
       setShowHistoryModal(true);
       setLoading(false);
     } catch (error) {
       console.error('Error al obtener historial actualizado:', error);
-      // Si hay error, usar los datos disponibles con array vacío
       deudor.historialPagos = [];
       setSelectedHistoryDeudor(deudor);
       setShowHistoryModal(true);
@@ -350,17 +338,14 @@ const handleDebtUpdate = async () => {
     }
   };
 
-  // Agregar esta función para sanitizar los inputs numéricos
   const sanitizeNumber = (value) => {
     if (typeof value === 'string') {
-      // Elimina todos los caracteres no numéricos excepto el punto decimal
       return value.replace(/[^\d.]/g, '');
     }
     return value;
   };
 
   const handleCancelEdit = async () => {
-    // Mostrar confirmación antes de cancelar la edición
     const result = await showConfirmationAlert(
       "¿Estás seguro?",
       "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
@@ -369,7 +354,7 @@ const handleDebtUpdate = async () => {
     );
 
     if (result.isConfirmed) {
-      setShowEditModal(false); // Cerrar el modal si el usuario confirma
+      setShowEditModal(false);
     }
   };
 
@@ -427,7 +412,7 @@ const handleDebtUpdate = async () => {
                 {displayedDeudores.map((deudor, index) => {
                   const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
                   const isZeroDebt = deudaValue === 0;
-                  
+
                   return (
                     <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
                       <td>{deudor.Nombre || 'Nombre desconocido'}</td>
@@ -465,15 +450,14 @@ const handleDebtUpdate = async () => {
                 </button>
               ))}
             </div>
-            
-            {/* Modal para actualizar deuda */}
+
             {showModal && selectedDeudor && (
               <div className="deudores-modal-overlay" onClick={() => setShowModal(false)}>
                 <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
                   <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
                   <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
                   <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
-                  
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="amount">Monto:</label>
                     <input
@@ -486,8 +470,7 @@ const handleDebtUpdate = async () => {
                       required
                     />
                   </div>
-                  
-                  {/* Nuevo campo para comentarios */}
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="comment">Comentario (opcional):</label>
                     <textarea
@@ -498,7 +481,7 @@ const handleDebtUpdate = async () => {
                       rows="3"
                     />
                   </div>
-                  
+
                   <div className="deudores-modal-form-group payment-type">
                     <label>
                       <input
@@ -519,7 +502,7 @@ const handleDebtUpdate = async () => {
                       Añadir a la deuda
                     </label>
                   </div>
-                  
+
                   <div className="deudores-modal-buttons">
                     <button onClick={handleDebtUpdate} className="deudores-confirm-button">
                       Confirmar
@@ -531,13 +514,12 @@ const handleDebtUpdate = async () => {
                 </div>
               </div>
             )}
-            
-            {/* Modal para editar deudor */}
+
             {showEditModal && (
               <div className="deudores-modal-overlay" onClick={() => setShowEditModal(false)}>
                 <div className="deudores-modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Editar Deudor</h3>
-                  
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="editNombre">Nombre:</label>
                     <input
@@ -549,7 +531,7 @@ const handleDebtUpdate = async () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="editFechaPaga">Fecha a Pagar:</label>
                     <input
@@ -561,7 +543,7 @@ const handleDebtUpdate = async () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="editNumeroTelefono">Número de Teléfono:</label>
                     <input
@@ -573,7 +555,7 @@ const handleDebtUpdate = async () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="deudores-modal-form-group">
                     <label htmlFor="editDeudaTotal">Deuda Total:</label>
                     <input
@@ -585,8 +567,7 @@ const handleDebtUpdate = async () => {
                       required
                     />
                   </div>
-                  
-                  {/* Historial de Pagos */}
+
                   <div className="deudores-payment-history">
                     <h4>Historial de Pagos</h4>
                     {deudorToEdit.historialPagos && deudorToEdit.historialPagos.length > 0 ? (
@@ -607,13 +588,13 @@ const handleDebtUpdate = async () => {
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
                                 <td className="comment-cell">
-                                  {pago.comentario ? 
+                                  {pago.comentario ?
                                     <>
                                       {pago.comentario.length > 20 ? pago.comentario.substring(0, 20) + '...' : pago.comentario}
-                                      {pago.comentario.length > 20 && 
+                                      {pago.comentario.length > 20 &&
                                         <div className="comment-tooltip">{pago.comentario}</div>
                                       }
-                                    </> 
+                                    </>
                                     : '-'}
                                 </td>
                               </tr>
@@ -625,7 +606,7 @@ const handleDebtUpdate = async () => {
                       <p className="no-payment-history">No hay historial de pagos registrado</p>
                     )}
                   </div>
-                  
+
                   <div className="deudores-modal-buttons">
                     <button onClick={handleEditSubmit} className="deudores-confirm-button">
                       Guardar Cambios
@@ -637,20 +618,19 @@ const handleDebtUpdate = async () => {
                 </div>
               </div>
             )}
-            
-            {/* Modal para ver historial de pagos */}
+
             {showHistoryModal && selectedHistoryDeudor && (
               <div className="deudores-modal-overlay" onClick={() => setShowHistoryModal(false)}>
                 <div className="deudores-modal-content history-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h3>
-                  <p><strong>Deuda actual:</strong> ${typeof selectedHistoryDeudor.deudaTotal === 'number' ? 
-                    selectedHistoryDeudor.deudaTotal.toLocaleString() : 
+                  <p><strong>Deuda actual:</strong> ${typeof selectedHistoryDeudor.deudaTotal === 'number' ?
+                    selectedHistoryDeudor.deudaTotal.toLocaleString() :
                     selectedHistoryDeudor.deudaTotal}</p>
-                  
+
                   <div className="deudores-payment-history">
-                    {selectedHistoryDeudor.historialPagos && 
-                     Array.isArray(selectedHistoryDeudor.historialPagos) && 
-                     selectedHistoryDeudor.historialPagos.length > 0 ? (
+                    {selectedHistoryDeudor.historialPagos &&
+                      Array.isArray(selectedHistoryDeudor.historialPagos) &&
+                      selectedHistoryDeudor.historialPagos.length > 0 ? (
                       <div className="deudores-payment-history-table-container">
                         <table className="deudores-payment-history-table">
                           <thead>
@@ -677,7 +657,7 @@ const handleDebtUpdate = async () => {
                       <p className="no-payment-history">No hay historial de pagos registrado</p>
                     )}
                   </div>
-                  
+
                   <div className="deudores-modal-buttons">
                     <button onClick={() => setShowHistoryModal(false)} className="deudores-cancel-button">
                       Cerrar
@@ -686,7 +666,7 @@ const handleDebtUpdate = async () => {
                 </div>
               </div>
             )}
-            
+
           </>
         )}
       </div>

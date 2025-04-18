@@ -1,5 +1,5 @@
 import React from "react";
-import DeudoresList from "../Views/DeudoresList.jsx";
+import DeudoresList from "../Views/Deudores.jsx";
 
 const DeudoresRoute = () => {
     return (
