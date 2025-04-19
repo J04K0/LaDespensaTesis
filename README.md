@@ -138,12 +138,6 @@ npm install
 
 3. Configurar variables de entorno:
    - Crear un archivo `.env` en la carpeta `backend` con las siguientes variables:
-```
-PORT=4000
-MONGODB_URI=mongodb://localhost:27017/ladespensa
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRATION=24h
-```
 
 4. Iniciar el servidor de desarrollo:
 ```bash
