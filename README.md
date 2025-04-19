@@ -222,4 +222,4 @@ El sistema implementa diversas medidas de seguridad:
 
 ---
 
-Desarrollado por Joaco y Pablo © 2025
+Desarrollado por @J04K0 y @PabloCastilloFer © 2025
