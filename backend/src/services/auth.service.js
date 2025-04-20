@@ -26,7 +26,11 @@ export async function login(user) {
     }
 
     const accessToken = jwt.sign(
-      { email: userFound.email, roles: userFound.roles },
+      { 
+        email: userFound.email, 
+        roles: userFound.roles,
+        id: userFound._id // Incluir ID del usuario en el token
+      },
       ACCESS_JWT_SECRET,
       {
         expiresIn: "1d",
@@ -34,7 +38,10 @@ export async function login(user) {
     );
 
     const refreshToken = jwt.sign(
-      { email: userFound.email },
+      { 
+        email: userFound.email,
+        id: userFound._id // Incluir ID del usuario también en el refresh token
+      },
       REFRESH_JWT_SECRET,
       {
         expiresIn: "7d", // 7 días
@@ -67,7 +74,11 @@ export async function refresh(cookies) {
         if (!userFound) return [null, "No usuario no autorizado"];
 
         const accessToken = jwt.sign(
-          { email: userFound.email, roles: userFound.roles },
+          { 
+            email: userFound.email, 
+            roles: userFound.roles,
+            id: userFound._id // Incluir ID del usuario al refrescar el token
+          },
           ACCESS_JWT_SECRET,
           {
             expiresIn: "1d",

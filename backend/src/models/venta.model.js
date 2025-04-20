@@ -8,7 +8,8 @@ const VentaSchema = new mongoose.Schema({
   categoria: { type: String, required: true },
   precioVenta: { type: Number, required: true },
   precioCompra: { type: Number, required: true },
-  fecha: { type: Date, default: Date.now }
+  fecha: { type: Date, default: Date.now },
+  usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
 const Venta = mongoose.model("Venta", VentaSchema);

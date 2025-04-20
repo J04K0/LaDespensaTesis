@@ -1,4 +1,5 @@
 import Venta from '../models/venta.model.js';
+import mongoose from 'mongoose';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 let ticketCounter = 0; // Variable global para el contador de tickets
 
@@ -15,6 +16,9 @@ export const registrarVenta = async (req, res) => {
       ticketCounter++;
       const ticketId = `TK-${ticketCounter.toString().padStart(6, '0')}`;
       
+      // Obtener el ID del usuario que está realizando la venta
+      const userId = req.userId;
+      
       // Crear registros de venta para cada producto
       const ventasRegistradas = [];
       for (const producto of productosVendidos) {
@@ -26,7 +30,8 @@ export const registrarVenta = async (req, res) => {
           cantidad: producto.cantidad,
           precioVenta: producto.precioVenta,
           precioCompra: producto.precioCompra,
-          fecha: new Date()
+          fecha: new Date(),
+          usuario: userId // Guardar el ID del usuario que realizó la venta
         });
         
         await nuevaVenta.save();
@@ -73,11 +78,40 @@ export const registrarVenta = async (req, res) => {
 
   export const obtenerVentasPorTicket = async (req, res) => {
     try {
+      // Primero obtenemos el primer registro de cada ticketId para conseguir el ID del usuario
       const ventasPorTicket = await Venta.aggregate([
-        { $group: { _id: "$ticketId", ventas: { $push: "$$ROOT" }, fecha: { $first: "$fecha" } } },
-        { $sort: { fecha: -1 } } // Ordenar por fecha descendente
+        // Agrupar por ticketId
+        { 
+          $group: { 
+            _id: "$ticketId", 
+            ventas: { $push: "$$ROOT" }, 
+            fecha: { $first: "$fecha" },
+            usuarioId: { $first: "$usuario" } // Obtener el ID del usuario
+          } 
+        },
+        // Ordenar por fecha descendente
+        { $sort: { fecha: -1 } }
       ]);
-      handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasPorTicket);
+
+      // Poblar la información del usuario para cada grupo de ventas
+      const ventasConUsuario = await Promise.all(ventasPorTicket.map(async (grupo) => {
+        if (grupo.usuarioId) {
+          // Importar el modelo de Usuario
+          const User = mongoose.model('User');
+          
+          // Buscar el usuario por ID
+          const usuario = await User.findById(grupo.usuarioId).select('nombre username');
+          
+          // Añadir la información del usuario al grupo
+          return {
+            ...grupo,
+            usuario: usuario
+          };
+        }
+        return grupo;
+      }));
+
+      handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasConUsuario);
     } catch (error) {
       console.error("Error al obtener ventas por ticket:", error);
       handleErrorServer(res, 500, "Error al obtener las ventas por ticket", error.message);
@@ -119,6 +153,10 @@ export const editTicket = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos es requerida");
     }
 
+    // Obtener una venta original para preservar el usuario
+    const ventaOriginal = await Venta.findOne({ ticketId });
+    const usuarioOriginal = ventaOriginal ? ventaOriginal.usuario : null;
+
     // Primero eliminamos todas las ventas asociadas a este ticket
     await Venta.deleteMany({ ticketId });
     
@@ -135,7 +173,8 @@ export const editTicket = async (req, res) => {
           cantidad: producto.cantidad,
           precioVenta: producto.precioVenta,
           precioCompra: producto.precioCompra,
-          fecha: new Date()
+          fecha: new Date(),
+          usuario: usuarioOriginal // Mantener el usuario original que hizo la venta
         });
         
         await nuevaVenta.save();

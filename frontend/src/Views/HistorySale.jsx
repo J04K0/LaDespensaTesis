@@ -386,7 +386,6 @@ const HistorySale = () => {
                 <input
                   type="number"
                   name="max"
-                  value={totalRange.max}
                   onChange={handleTotalRangeChange}
                 />
               </div>
@@ -408,7 +407,8 @@ const HistorySale = () => {
                       <tr>
                         <th style={{width: "15%"}}>Código</th>
                         <th style={{width: "10%"}}>Fecha</th>
-                        <th style={{width: "45%"}}>Detalle de Productos</th>
+                        <th style={{width: "10%"}}>Usuario</th>
+                        <th style={{width: "35%"}}>Detalle de Productos</th>
                         <th style={{width: "15%"}}>Importe Total</th>
                         <th style={{width: "15%"}}>Acciones</th>
                       </tr>
@@ -419,6 +419,7 @@ const HistorySale = () => {
                           <tr key={index}>
                             <td>{venta._id}</td>
                             <td>{new Date(venta.fecha).toLocaleDateString()}</td>
+                            <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
                             <td>
                               <ul>
                                 {venta.ventas.map((producto, i) => (
@@ -461,7 +462,7 @@ const HistorySale = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="5" className="no-data">No hay ventas registradas.</td>
+                          <td colSpan="6" className="no-data">No hay ventas registradas.</td>
                         </tr>
                       )}
                     </tbody>

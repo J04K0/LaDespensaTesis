@@ -191,6 +191,8 @@ const ProductScanner = () => {
     setStockPorProducto({});
     setLoading(false);
     setError(null);
+    setMontoEntregado(""); // Resetear el monto entregado
+    setErrorMonto(""); // Resetear el error del monto
   };
 
   const finalizarVenta = async () => {
@@ -229,20 +231,17 @@ const ProductScanner = () => {
     if (isProcessing) 
       return;
     
-    // Guardar el foco actual antes de procesar
-    const activeElement = document.activeElement;
-    document.activeElement.blur();
-    
     setIsProcessing(true);
     
     try {
+      // Focus a non-input element before processing
+      document.getElementById('root').setAttribute('inert', '');
       await finalizarVenta();
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-        if (activeElement && document.contains(activeElement)) {
-          activeElement.focus();
-        }
+        // Remove the inert attribute when done
+        document.getElementById('root').removeAttribute('inert');
       }, 1500);
     }
   };
@@ -377,20 +376,17 @@ const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, increm
     if (isProcessing) 
       return;
     
-    // Guardar el foco actual antes de procesar
-    const activeElement = document.activeElement;
-    document.activeElement.blur();
-    
     setIsProcessing(true);
     
     try {
+      // Focus a non-input element before processing to prevent aria-hidden issues
+      document.getElementById('root').setAttribute('inert', '');
       await finalizarVenta();
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-        if (activeElement && document.contains(activeElement)) {
-          activeElement.focus();
-        }
+        // Remove the inert attribute when done
+        document.getElementById('root').removeAttribute('inert');
       }, 1500);
     }
   };

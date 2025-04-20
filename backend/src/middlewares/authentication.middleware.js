@@ -18,6 +18,7 @@ const verifyJWT = (req, res, next) => {
       if (err) return handleErrorClient(res, 403, "No autorizado", err.message);
       req.email = decoded.email;
       req.roles = decoded.roles;
+      req.userId = decoded.id; // Guardar el ID del usuario
       next();
     });
   } catch (error) {

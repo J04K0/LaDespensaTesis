@@ -51,6 +51,9 @@ const Navbar = () => {
 
   const generarReporteDiario = async () => {
     try {
+      // Obtener la información del usuario actual
+      const usuarioActual = JSON.parse(localStorage.getItem('user')) || { email: 'Usuario desconocido' };
+      
       // Obtener la hora de inicio de sesión (si existe) o usar el inicio del día actual
       const sessionStartTime = localStorage.getItem('sessionStartTime') 
         ? new Date(localStorage.getItem('sessionStartTime'))
@@ -92,11 +95,12 @@ const Navbar = () => {
       doc.setFontSize(20);
       doc.text(`Reporte de Sesión - ${fechaFormateada}`, 20, 15);
       doc.setFontSize(12);
-      doc.text(`Período: ${horaInicioFormateada} - ${horaFinFormateada}`, 20, 25);
+      doc.text(`Usuario: ${usuarioActual.email}`, 20, 25);
+      doc.text(`Período: ${horaInicioFormateada} - ${horaFinFormateada}`, 20, 32);
       
       // Sección de ventas
       doc.setFontSize(16);
-      doc.text("Ventas de la sesión", 20, 35);
+      doc.text("Ventas de la sesión", 20, 42);
       
       if (ventasSesion.length > 0) {
         const ventasData = ventasSesion.map(venta => [
@@ -108,7 +112,7 @@ const Navbar = () => {
         ]);
         
         autoTable(doc, {
-          startY: 40,
+          startY: 47,
           head: [["Ticket", "Hora", "Productos", "Total"]],
           body: ventasData,
         });
@@ -121,11 +125,11 @@ const Navbar = () => {
         const ventasY = doc.lastAutoTable.finalY + 10;
         doc.text(`Total de ventas: $${totalVentas.toLocaleString()}`, 20, ventasY);
       } else {
-        doc.text("No se registraron ventas durante esta sesión", 20, 45);
+        doc.text("No se registraron ventas durante esta sesión", 20, 52);
       }
       
       // Sección de deudores
-      const deudoresY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 65;
+      const deudoresY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 72;
       doc.setFontSize(16);
       doc.text("Movimientos de deudores", 20, deudoresY);
       
@@ -158,9 +162,13 @@ const Navbar = () => {
         doc.text("No hubo movimientos de deudores durante esta sesión", 20, deudoresY + 10);
       }
       
+      // Agregar pie de página con información del usuario
+      doc.setFontSize(10);
+      doc.text(`Reporte generado por: ${usuarioActual.email}`, 14, doc.internal.pageSize.height - 10);
+      
       // Guardar el PDF
       const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
-      doc.save(`Reporte_Sesion_${timestamp}.pdf`);
+      doc.save(`Reporte_Sesion_${usuarioActual.email}_${timestamp}.pdf`);
     } catch (error) {
       console.error("Error al generar reporte de sesión:", error);
     }
