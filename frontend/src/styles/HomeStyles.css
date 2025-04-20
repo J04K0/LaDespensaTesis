@@ -66,13 +66,13 @@
 }
 
 .home-btn-sin-stock {
-  background: linear-gradient(45deg, var(--warning) 0%, #ffa000 100%);
+  background: var(--warning);
   color: var(--gray-dark) !important;
   font-weight: 600;
 }
 
 .home-btn-vencidos {
-  background: linear-gradient(45deg, var(--primary) 0%, #0055b6 100%);
+  background: var(--primary);
   font-weight: 600;
 }
 
@@ -148,7 +148,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  background: var(--primary);
   color: var(--white);
   padding: 18px 20px;
   position: relative;
@@ -156,14 +156,7 @@
 }
 
 .home-deudores-header::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-  pointer-events: none;
+  display: none;
 }
 
 .home-deudores-header h3 {
@@ -301,21 +294,14 @@
   justify-content: space-between;
   margin-bottom: 20px;
   padding: 18px;
-  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  background: var(--primary);
   border-radius: 0;
   position: relative;
   overflow: hidden;
 }
 
 .home-stats-controls::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-  pointer-events: none;
+  display: none;
 }
 
 .home-stats-nav-button {
@@ -403,6 +389,18 @@
   gap: 8px;
   margin: 0;
   z-index: 5;
+}
+
+/* Sección de bienvenida */
+.home-welcome-section {
+  background: var(--primary-dark);
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+  color: var(--white);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Responsividad */

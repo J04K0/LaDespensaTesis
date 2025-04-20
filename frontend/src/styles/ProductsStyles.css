@@ -579,32 +579,20 @@
 }
 
 .add-product-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
-  color: white;
+  padding: 12px 20px;
+  background: var(--primary);
+  color: var(--white);
   border: none;
-  padding: 10px 15px;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.add-product-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  background: linear-gradient(45deg, var(--primary), var(--secondary));
-}
-
-.add-product-button svg {
-  transition: transform 0.3s ease;
-}
-
-.add-product-button:hover svg {
-  transform: rotate(90deg);
 }
 
 .product-detail-characteristics, .product-detail-sales {

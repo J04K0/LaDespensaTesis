@@ -456,3 +456,23 @@
   transform: translateY(-5px);
   transition: transform 0.3s ease;
 }
+
+/* Efecto de carga simplificado */
+.skeleton {
+  background-color: #e0e0e0;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--skeleton-border-radius, 4px);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #e0e0e0;
+  opacity: 0.8;
+  animation: skeleton-loading 1.5s infinite;
+}

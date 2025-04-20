@@ -64,7 +64,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+  background: var(--primary-color);
   color: var(--text-color);
   border: none;
   padding: 12px;
@@ -89,7 +89,7 @@
 .navbar-container {
   width: 100%;
   height: var(--navbar-height);
-  background: linear-gradient(to right, var(--primary-dark), #003e7e);
+  background: var(--primary-dark);
   color: var(--text-color);
   position: fixed;
   top: 0;
@@ -224,7 +224,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background: linear-gradient(135deg, var(--submenu-background-color), #002142);
+  background: var(--submenu-background-color);
   width: 200px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   list-style: none;
@@ -329,7 +329,7 @@
     position: static;
     box-shadow: none;
     width: 100%;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.3));
+    background: rgba(0, 0, 0, 0.2);
     animation: none;
     border-radius: 0;
     padding: 0;

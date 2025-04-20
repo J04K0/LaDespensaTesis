@@ -59,7 +59,7 @@ body.modal-open {
 
 /* Encabezado del modal */
 .price-history-header {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  background: var(--primary);
   color: var(--white);
   padding: 1.5rem;
   position: relative;

@@ -15,7 +15,7 @@
 }
 
 .containerLogin {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #004394 100%);
+  background: var(--primary-dark);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,15 +27,9 @@
   overflow: hidden;
 }
 
+/* Removing the gradient overlay */
 .containerLogin::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 30% 60%, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%);
-  pointer-events: none;
+  display: none;
 }
 
 .containerImagen {
@@ -128,7 +122,7 @@ form:hover {
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: linear-gradient(to right, var(--primary-dark), var(--primary));
+  background: var(--primary);
   border-radius: 3px;
 }
 
@@ -165,7 +159,7 @@ form:hover {
 
 .boton {
   width: 100%;
-  background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+  background: var(--primary);
   color: var(--white);
   font-weight: 600;
   font-size: 18px;
@@ -179,7 +173,7 @@ form:hover {
 }
 
 .boton:hover {
-  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+  background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(0, 110, 223, 0.4);
 }

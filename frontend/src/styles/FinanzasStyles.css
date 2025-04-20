@@ -112,7 +112,7 @@ h2 {
 
 /* Botón de descarga */
 .download-button {
-  background: linear-gradient(45deg, var(--danger), #d32f2f);
+  background: var(--danger);
   color: var(--white);
   border: none;
   padding: 12px 24px;
@@ -131,6 +131,22 @@ h2 {
 .download-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(211, 47, 47, 0.3);
+}
+
+.finanzas-export-button {
+  background: var(--danger);
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(211, 47, 47, 0.2);
 }
 
 /* Tarjetas resumen */

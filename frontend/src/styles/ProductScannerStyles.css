@@ -96,7 +96,7 @@ body {
 
 /* 🔹 Sección del escáner */
 .scanner-section {
-  background: linear-gradient(to bottom, var(--white), #f9fbff);
+  background: var(--white);
   padding: 30px;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -148,7 +148,7 @@ body {
   transform: translateX(-50%);
   width: 60%;
   height: 2px;
-  background: linear-gradient(to right, transparent, var(--primary), transparent);
+  background: var(--primary);
 }
 
 .product-image {
@@ -180,7 +180,7 @@ body {
   width: 45px;
   height: 45px;
   border: none;
-  background: linear-gradient(145deg, var(--primary), var(--secondary));
+  background: var(--primary);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -216,7 +216,7 @@ body {
 .add-to-cart-button {
   width: 100%;
   padding: 15px 20px;
-  background: linear-gradient(45deg, var(--success), #2ebd4e);
+  background: var(--success);
   color: white;
   border: none;
   border-radius: 10px;
@@ -236,7 +236,7 @@ body {
 .add-to-cart-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 7px 20px rgba(40, 167, 69, 0.3);
-  background: linear-gradient(45deg, #2ebd4e, var(--success));
+  background: var(--success-hover);
 }
 
 .add-to-cart-button:active {
@@ -245,7 +245,7 @@ body {
 
 /* 🔹 Sección del carrito */
 .cart-section {
-  background: linear-gradient(to bottom, var(--white), #f9fbff);
+  background: var(--white);
   padding: 25px;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -379,7 +379,7 @@ body {
 .checkout-button {
   width: 100%;
   padding: 15px 20px;
-  background: linear-gradient(45deg, var(--success), #2ebd4e);
+  background: var(--success);
   color: white;
   border: none;
   border-radius: 10px;
@@ -398,7 +398,7 @@ body {
 .checkout-button:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: 0 7px 20px rgba(40, 167, 69, 0.3);
-  background: linear-gradient(45deg, #2ebd4e, var(--success));
+  background: var(--success-hover);
 }
 
 .checkout-button:disabled {
@@ -592,7 +592,7 @@ body {
 }
 
 .delete-product-btn {
-  background: linear-gradient(45deg, var(--danger), #f64c59);
+  background: var(--danger);
   color: white;
   border: none;
   border-radius: 50%;
@@ -608,13 +608,13 @@ body {
 }
 
 .delete-product-btn:hover {
-  background: linear-gradient(45deg, #f64c59, var(--danger));
+  background: var(--danger-hover);
   transform: rotate(90deg);
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 .cart-summary {
-  background: linear-gradient(145deg, #f0f3f5, #e9eef2);
+  background: #f0f3f5;
   border-radius: 12px;
   padding: 18px;
   margin-top: 15px;
@@ -713,7 +713,7 @@ body {
 
 /* Estilos para el producto escaneado sin imagen */
 .current-product-info {
-  background: linear-gradient(to bottom, var(--white), #f9fbff);
+  background: var(--white);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
