@@ -32,7 +32,7 @@ const PagoSchema = new Schema({
   },
   comentario: {
     type: String,
-    maxlength: [500, "El comentario no puede exceder los 500 caracteres"]
+    maxlength: [50, "El comentario no puede exceder los 50 caracteres"]
   }
 });
 

@@ -4,10 +4,34 @@ import Navbar from '../components/Navbar';
 import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
+
+// Función para controlar el scroll del body
+const controlBodyScroll = (disable) => {
+  if (disable) {
+    // Guardar la posición actual del scroll antes de bloquear
+    const scrollY = window.scrollY;
+    
+    // Aplicar clase modal-open que bloquea el scroll
+    document.body.classList.add('modal-open');
+    
+    // Guardar la posición para poder restaurarla después
+    document.body.style.top = `-${scrollY}px`;
+    document.body.setAttribute('data-scroll-position', scrollY);
+  } else {
+    // Eliminar la clase que bloquea el scroll
+    document.body.classList.remove('modal-open');
+    
+    // Restaurar la posición del scroll
+    const scrollY = document.body.getAttribute('data-scroll-position') || 0;
+    document.body.style.top = '';
+    window.scrollTo(0, parseInt(scrollY));
+    document.body.removeAttribute('data-scroll-position');
+  }
+};
 
 const DeudoresList = () => {
   const [allDeudores, setAllDeudores] = useState([]);
@@ -37,6 +61,81 @@ const DeudoresList = () => {
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedHistoryDeudor, setSelectedHistoryDeudor] = useState(null);
+
+  const [expandedComments, setExpandedComments] = useState({});
+
+  const toggleCommentExpansion = (commentId) => {
+    setExpandedComments(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId]
+    }));
+  };
+
+  const resetExpandedComments = () => {
+    setExpandedComments({});
+  };
+
+  const handleCloseHistoryModal = () => {
+    // Restaurar el scroll
+    controlBodyScroll(false);
+
+    setShowHistoryModal(false);
+    resetExpandedComments();
+  };
+
+  const handleCloseEditModal = () => {
+    const result = showConfirmationAlert(
+      "¿Estás seguro?",
+      "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
+      "Sí, cancelar",
+      "No, volver"
+    ).then(result => {
+      if (result.isConfirmed) {
+        // Restaurar el scroll
+        controlBodyScroll(false);
+
+        setShowEditModal(false);
+        resetExpandedComments();
+      }
+    });
+  };
+
+  const renderComment = (comment, commentId) => {
+    if (!comment) return '-';
+
+    if (comment.length <= 20) {
+      return comment;
+    }
+
+    const isExpanded = expandedComments[commentId] || false;
+
+    return (
+      <div className="comment-container">
+        <div className="comment-text">
+          {isExpanded ? comment : `${comment.substring(0, 20)}...`}
+        </div>
+        <button
+          className="expand-comment-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleCommentExpansion(commentId);
+          }}
+        >
+          {isExpanded ? (
+            <>
+              <span>Mostrar menos</span>
+              <FontAwesomeIcon icon={faChevronUp} />
+            </>
+          ) : (
+            <>
+              <span>Mostrar más</span>
+              <FontAwesomeIcon icon={faChevronDown} />
+            </>
+          )}
+        </button>
+      </div>
+    );
+  };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -75,11 +174,17 @@ const DeudoresList = () => {
         setLoading(true);
         const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
 
+        // Siempre ordenamos para asegurar que los deudores con deuda aparezcan primero
         const sortedDeudores = [...data.deudores].sort((a, b) => {
           const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
           const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-          if (deudaA === 0 && deudaB !== 0) return 1;
-          if (deudaB === 0 && deudaA !== 0) return -1;
+          // Si ambos tienen deuda cero o ambos tienen deuda, mantener orden alfabético
+          if ((deudaA === 0 && deudaB === 0) || (deudaA > 0 && deudaB > 0)) {
+            return a.Nombre.localeCompare(b.Nombre);
+          }
+          // Los que tienen deuda cero van al final
+          if (deudaA === 0) return 1;
+          if (deudaB === 0) return -1;
           return 0;
         });
 
@@ -129,6 +234,21 @@ const DeudoresList = () => {
 
     setFilteredDeudores(sortedDeudores);
   }, [sortOption]);
+
+  useEffect(() => {
+    if (showModal || showEditModal || showHistoryModal) {
+      // Usar la función controlBodyScroll para bloquear el scroll
+      controlBodyScroll(true);
+    } else {
+      // Restaurar el scroll
+      controlBodyScroll(false);
+    }
+
+    // Limpiar el efecto cuando se desmonta el componente
+    return () => {
+      controlBodyScroll(false);
+    };
+  }, [showModal, showEditModal, showHistoryModal]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -195,8 +315,8 @@ const DeudoresList = () => {
       return false;
     }
 
-    if (comment && comment.length > 500) {
-      showErrorAlert('Comentario demasiado largo', 'El comentario no puede exceder los 500 caracteres.');
+    if (comment && comment.length > 100) {
+      showErrorAlert('Comentario demasiado largo', 'El comentario no puede exceder los 100 caracteres.');
       return false;
     }
 
@@ -248,12 +368,29 @@ const DeudoresList = () => {
       setComment('');
       setAmount('');
       setShowModal(false);
-      const fetchDeudores = async () => {
-        const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-        setAllDeudores(data.deudores);
-        setFilteredDeudores(data.deudores);
-      };
-      await fetchDeudores();
+      
+      // Restaurar el scroll
+      controlBodyScroll(false);
+      
+      // Obtener la lista actualizada de deudores
+      const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+      
+      // Ordenar para mantener los deudores con deuda cero al final
+      const sortedDeudores = [...data.deudores].sort((a, b) => {
+        const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        // Si ambos tienen deuda cero o ambos tienen deuda, mantener orden alfabético
+        if ((deudaA === 0 && deudaB === 0) || (deudaA > 0 && deudaB > 0)) {
+          return a.Nombre.localeCompare(b.Nombre);
+        }
+        // Los que tienen deuda cero van al final
+        if (deudaA === 0) return 1;
+        if (deudaB === 0) return -1;
+        return 0;
+      });
+      
+      setAllDeudores(sortedDeudores);
+      setFilteredDeudores(sortedDeudores);
 
       showSuccessAlert(
         isPayment ? 'Pago registrado' : 'Deuda actualizada',
@@ -296,11 +433,38 @@ const DeudoresList = () => {
         deudaTotal: parseFloat(deudorToEdit.deudaTotal)
       });
 
-      const updatedDeudores = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-      setAllDeudores(updatedDeudores.deudores);
-      setFilteredDeudores(updatedDeudores.deudores.filter(deudor =>
-        deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
+      // Obtener la lista actualizada de deudores
+      const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
+      
+      // Ordenar para mantener los deudores con deuda cero al final
+      const sortedDeudores = [...data.deudores].sort((a, b) => {
+        const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        // Si ambos tienen deuda cero o ambos tienen deuda, mantener orden alfabético
+        if ((deudaA === 0 && deudaB === 0) || (deudaA > 0 && deudaB > 0)) {
+          return a.Nombre.localeCompare(b.Nombre);
+        }
+        // Los que tienen deuda cero van al final
+        if (deudaA === 0) return 1;
+        if (deudaB === 0) return -1;
+        return 0;
+      });
+      
+      // Aplicar el ordenamiento
+      setAllDeudores(sortedDeudores);
+      
+      // Si hay una búsqueda activa, filtrar por ella
+      if (searchQuery.trim() !== '') {
+        const searchResults = sortedDeudores.filter(deudor =>
+          deudor.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredDeudores(searchResults);
+      } else {
+        setFilteredDeudores(sortedDeudores);
+      }
+
+      // Restaurar el scroll
+      controlBodyScroll(false);
 
       setShowEditModal(false);
       showSuccessAlert('Deudor actualizado con éxito', '');
@@ -354,6 +518,9 @@ const DeudoresList = () => {
     );
 
     if (result.isConfirmed) {
+      // Restaurar el scroll
+      controlBodyScroll(false);
+
       setShowEditModal(false);
     }
   };
@@ -452,7 +619,14 @@ const DeudoresList = () => {
             </div>
 
             {showModal && selectedDeudor && (
-              <div className="deudores-modal-overlay" onClick={() => setShowModal(false)}>
+              <div className="deudores-modal-overlay" onClick={() => {
+                // Restaurar el scroll
+                controlBodyScroll(false);
+
+                setShowModal(false);
+                setComment('');
+                setAmount('');
+              }}>
                 <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
                   <h3>{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h3>
                   <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
@@ -479,6 +653,7 @@ const DeudoresList = () => {
                       onChange={(e) => setComment(e.target.value)}
                       placeholder="Añada un comentario opcional"
                       rows="3"
+                      maxLength={50}
                     />
                   </div>
 
@@ -507,7 +682,17 @@ const DeudoresList = () => {
                     <button onClick={handleDebtUpdate} className="deudores-confirm-button">
                       Confirmar
                     </button>
-                    <button onClick={() => setShowModal(false)} className="deudores-cancel-button">
+                    <button 
+                      onClick={() => {
+                        // Restaurar el scroll
+                        controlBodyScroll(false);
+
+                        setShowModal(false);
+                        setComment('');
+                        setAmount('');
+                      }} 
+                      className="deudores-cancel-button"
+                    >
                       Cancelar
                     </button>
                   </div>
@@ -516,7 +701,7 @@ const DeudoresList = () => {
             )}
 
             {showEditModal && (
-              <div className="deudores-modal-overlay" onClick={() => setShowEditModal(false)}>
+              <div className="deudores-modal-overlay" onClick={handleCloseEditModal}>
                 <div className="deudores-modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Editar Deudor</h3>
 
@@ -588,14 +773,7 @@ const DeudoresList = () => {
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
                                 <td className="comment-cell">
-                                  {pago.comentario ?
-                                    <>
-                                      {pago.comentario.length > 20 ? pago.comentario.substring(0, 20) + '...' : pago.comentario}
-                                      {pago.comentario.length > 20 &&
-                                        <div className="comment-tooltip">{pago.comentario}</div>
-                                      }
-                                    </>
-                                    : '-'}
+                                  {renderComment(pago.comentario, `edit-${idx}`)}
                                 </td>
                               </tr>
                             ))}
@@ -620,7 +798,7 @@ const DeudoresList = () => {
             )}
 
             {showHistoryModal && selectedHistoryDeudor && (
-              <div className="deudores-modal-overlay" onClick={() => setShowHistoryModal(false)}>
+              <div className="deudores-modal-overlay" onClick={handleCloseHistoryModal}>
                 <div className="deudores-modal-content history-modal" onClick={(e) => e.stopPropagation()}>
                   <h3>Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h3>
                   <p><strong>Deuda actual:</strong> ${typeof selectedHistoryDeudor.deudaTotal === 'number' ?
@@ -647,7 +825,7 @@ const DeudoresList = () => {
                                 <td>{new Date(pago.fecha).toLocaleDateString()}</td>
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>{pago.tipo === 'pago' ? 'Pago' : 'Deuda'}</td>
-                                <td>{pago.comentario || '-'}</td>
+                                <td>{renderComment(pago.comentario, `history-${idx}`)}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -659,7 +837,7 @@ const DeudoresList = () => {
                   </div>
 
                   <div className="deudores-modal-buttons">
-                    <button onClick={() => setShowHistoryModal(false)} className="deudores-cancel-button">
+                    <button onClick={handleCloseHistoryModal} className="deudores-cancel-button">
                       Cerrar
                     </button>
                   </div>

@@ -32,7 +32,7 @@
     "react-hook-form": "^7.47.0",
     "react-router-dom": "^6.17.0",
     "react-toastify": "^10.0.5",
-    "sweetalert2": "^11.12.3",
+    "sweetalert2": "^11.6.13",
     "tailwind-variants": "^0.3.1",
     "twilio": "^5.5.1",
     "xlsx": "^0.18.5"
@@ -45,6 +45,6 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
-    "vite": "^4.4.5"
+    "vite": "^6.3.2"
   }
 }

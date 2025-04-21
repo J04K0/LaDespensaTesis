@@ -11,7 +11,10 @@ const objectIdValidator = (value, helpers) => {
 const pagoSchema = Joi.object({
   fecha: Joi.date().required(),
   monto: Joi.number().positive().required(),
-  tipo: Joi.string().valid('pago', 'deuda').required()
+  tipo: Joi.string().valid('pago', 'deuda').required(),
+  comentario: Joi.string().max(50).optional().messages({
+    'string.max': 'El comentario no puede exceder los 100 caracteres.'
+  })
 });
 
 export const deudorSchema = Joi.object({
