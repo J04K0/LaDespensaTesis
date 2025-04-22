@@ -1,0 +1,25 @@
+/* Estilos para el componente Footer */
+.footer {
+  background-color: var(--primary-dark);
+  color: var(--white);
+  padding: 20px 0;
+  width: 100%;
+  margin-top: auto;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.footer-bottom {
+  width: 100%;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  color: var(--gray-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-bottom {
+    padding: 15px;
+    font-size: 0.85rem;
+  }
+}

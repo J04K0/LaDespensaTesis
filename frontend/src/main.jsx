@@ -14,6 +14,7 @@ import HistorySale from './Views/HistorySale.jsx';
 import Finanzas from './Views/Finanzas.jsx';
 import Proveedores from './Views/Proveedores.jsx';
 import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
+import FooterLayout from './components/FooterLayout';
 
 const router = createBrowserRouter([
   {
@@ -27,43 +28,43 @@ const router = createBrowserRouter([
   },
   {
     path: '/home',
-    element: <App />,
+    element: <FooterLayout><App /></FooterLayout>,
   },
   {
     path: '/products',
-    element: <Products />,
+    element: <FooterLayout><Products /></FooterLayout>,
   },
   {
     path: '/add-product',
-    element: <AddProducts />,
+    element: <FooterLayout><AddProducts /></FooterLayout>,
   },
   {
     path: '/deudores',
-    element: <DeudoresList />,
+    element: <FooterLayout><DeudoresList /></FooterLayout>,
   },
   {
     path: '/agregar-deudor',
-    element: <AddDeudor />,
+    element: <FooterLayout><AddDeudor /></FooterLayout>,
   },
   {
     path: '/ProductScanner',
-    element: <ProductScanner />,
+    element: <FooterLayout><ProductScanner /></FooterLayout>,
   },
   {
     path: '/HistorySale',
-    element: <HistorySale />,
+    element: <FooterLayout><HistorySale /></FooterLayout>,
   },
   {
     path: '/finanzas',
-    element: <Finanzas />,
+    element: <FooterLayout><Finanzas /></FooterLayout>,
   },
   {
     path: '/proveedores',
-    element: <Proveedores />,
+    element: <FooterLayout><Proveedores /></FooterLayout>,
   },
   {
     path: '/cuentas-por-pagar',
-    element: <CuentasPorPagar />,
+    element: <FooterLayout><CuentasPorPagar /></FooterLayout>,
   },
 ]);
 
