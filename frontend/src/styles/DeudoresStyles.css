@@ -76,7 +76,7 @@
 }
 
 /* Botón "Agregar Deudor" */
-.agregar-deudor-button {
+.add-deudor-button {
   padding: 12px 20px;
   background: var(--primary);
   color: var(--white);

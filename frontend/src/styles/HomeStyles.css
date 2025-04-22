@@ -211,8 +211,7 @@
 
 /* Encabezados mejorados */
 .home-deudores-table th {
-  background-color: var(--gray-dark);
-  color: var(--white);
+  background-color: var(--primary) !important;
   font-weight: 600;
   text-align: left;
   padding: 15px 16px;
@@ -231,6 +230,7 @@
 
 .home-deudores-table th:last-child {
   border-radius: 0 8px 8px 0;
+  text-align: center;
 }
 
 /* Celdas de datos */
@@ -273,15 +273,18 @@
 /* Estilo para la columna de deuda */
 .home-deudores-table td:last-child {
   font-weight: bold;
-  color: var(--danger);
+  color: var(--gray);
   text-align: right;
   font-size: 16px;
+  text-align: center !important;
 }
 
 /* Estilo para deudores con deuda cero */
 .zero-debt-row td {
   color: var(--gray) !important;
   background-color: #f2f2f2;
+  font-weight: 500 !important;
+  text-align: center !important;
 }
 
 .zero-debt-row:hover {
