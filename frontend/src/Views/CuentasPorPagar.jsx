@@ -193,6 +193,8 @@ const CuentasPorPagar = () => {
   // Manejar paginación
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Desplazar la ventana hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Mostrar proveedores/categorías según la página actual

@@ -163,6 +163,8 @@ const Proveedores = () => {
   };
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Desplazar la ventana hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const handleAddProveedor = async () => {
     setCurrentProveedor({

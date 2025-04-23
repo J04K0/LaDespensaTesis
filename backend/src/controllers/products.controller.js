@@ -11,6 +11,8 @@ export const getProducts = async (req, res) => {
   try {
     const { page = 1, limit = 5 } = req.query;
     const products = await Product.find()
+      .collation({ locale: 'es', strength: 2 }) // Ordenación insensible a mayúsculas/minúsculas
+      .sort({ Nombre: 1 }) 
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();

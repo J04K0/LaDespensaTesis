@@ -252,6 +252,8 @@ const DeudoresList = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Desplazar la ventana hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {

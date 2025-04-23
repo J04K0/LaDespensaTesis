@@ -27,6 +27,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  height: auto; /* Asegurar que la altura se ajuste al contenido */
+  min-height: 350px; /* Altura mínima para consistencia */
 }
 
 .product-card:hover {
@@ -46,6 +48,28 @@
   top: 10px;
   right: 10px;
   background-color: var(--danger);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 10;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+/* Estado de producto vencido */
+.product-card.expired-product {
+  background-color: #fff0f0 !important;
+  color: #a0a0a0 !important;
+}
+
+.product-card.expired-product::before {
+  content: "VENCIDO";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #8B0000; /* Rojo oscuro para diferenciarlo del "SIN STOCK" */
   color: var(--white);
   padding: 4px 10px;
   border-radius: 20px;
@@ -160,10 +184,11 @@
   margin: 0 0 12px 0;
   color: var(--gray-dark);
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  height: 42px;
+  /* Eliminar restricciones de líneas */
+  word-wrap: break-word;
+  overflow-wrap: break-word; 
+  height: auto;
+  /* Eliminar max-height y configuraciones de truncamiento */
 }
 
 .product-price {

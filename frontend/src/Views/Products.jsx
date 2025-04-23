@@ -20,6 +20,9 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [productsByCategory, setProductsByCategory] = useState([]);
+  const [categoryFilterActive, setCategoryFilterActive] = useState(false);
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [productToEdit, setProductToEdit] = useState({
     Nombre: '',
@@ -49,6 +52,20 @@ const Products = () => {
   const productsPerPage = 9;
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Efecto para controlar el scroll cuando se abren modales
+  useEffect(() => {
+    if (showInfoModal || showEditModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Limpieza al desmontar
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showInfoModal, showEditModal]);
 
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
@@ -80,6 +97,22 @@ const Products = () => {
     currentPage * productsPerPage
   );
 
+  useEffect(() => {
+    // Calcular el número real de páginas basado en los productos filtrados por nombre
+    const filteredBySearch = sortedProducts.filter(product =>
+      product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const calculatedPages = Math.max(1, Math.ceil(filteredBySearch.length / productsPerPage));
+    
+    // Ajustar el número de páginas
+    setTotalPages(calculatedPages);
+    
+    // Si la página actual es mayor que el total de páginas calculadas, resetear a la página 1
+    if (currentPage > calculatedPages) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, filteredProducts, sortOption]);
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
@@ -92,18 +125,55 @@ const Products = () => {
 
     try {
       if (selectedCategory && selectedCategory !== 'Todos') {
+        setCategoryFilterActive(true);
         const response = await getProductsByCategory(selectedCategory);
         const productsArray = Array.isArray(response) ? response : [];
-        setFilteredProducts(productsArray);
-        setTotalPages(Math.ceil(productsArray.length / productsPerPage));
+        setProductsByCategory(productsArray);
+
+        applyAvailabilityFilter(productsArray, availabilityFilter);
       } else {
-        setFilteredProducts(allProducts);
-        setTotalPages(Math.ceil(allProducts.length / productsPerPage));
+        setCategoryFilterActive(false);
+        setProductsByCategory([]);
+
+        applyAvailabilityFilter(allProducts, availabilityFilter);
       }
     } catch (error) {
       console.error('Error fetching products by category:', error);
       setFilteredProducts([]);
+      setProductsByCategory([]);
       setTotalPages(1);
+    }
+  };
+
+  const applyAvailabilityFilter = (productsToFilter, filter) => {
+    let result = [];
+
+    switch (filter) {
+      case 'Por vencer':
+        setFilteredProducts(productsToFilter);
+        setTotalPages(Math.ceil(productsToFilter.length / productsPerPage));
+        fetchExpiringProducts(categoryFilterActive ? category : null);
+        break;
+      case 'Vencidos':
+        fetchExpiredProducts(categoryFilterActive ? category : null);
+        break;
+      case 'Poco stock':
+        fetchLowStockProducts(categoryFilterActive ? category : null);
+        break;
+      case 'Disponibles':
+        result = productsToFilter.filter(product => product.Stock > 0);
+        setFilteredProducts(result);
+        setTotalPages(Math.ceil(result.length / productsPerPage));
+        break;
+      case 'No disponibles':
+        result = productsToFilter.filter(product => product.Stock === 0);
+        setFilteredProducts(result);
+        setTotalPages(Math.ceil(result.length / productsPerPage));
+        break;
+      default:
+        setFilteredProducts(productsToFilter);
+        setTotalPages(Math.ceil(productsToFilter.length / productsPerPage));
+        break;
     }
   };
 
@@ -112,58 +182,71 @@ const Products = () => {
     setAvailabilityFilter(filter);
     setCurrentPage(1);
 
-    if (filter === 'Por vencer') {
-      fetchExpiringProducts();
-    } else if (filter === 'Vencidos') {
-      fetchExpiredProducts();
-    } else if (filter === 'Poco stock') {
-      fetchLowStockProducts();
-    } else if (filter === 'Disponibles') {
-      setFilteredProducts(allProducts.filter(product => product.Stock > 0));
-      setTotalPages(Math.ceil(allProducts.filter(product => product.Stock > 0).length / productsPerPage));
-    } else if (filter === 'No disponibles') {
-      setFilteredProducts(allProducts.filter(product => product.Stock === 0));
-      setTotalPages(Math.ceil(allProducts.filter(product => product.Stock === 0).length / productsPerPage));
-    } else {
-      setFilteredProducts(allProducts);
-      setTotalPages(Math.ceil(allProducts.length / productsPerPage));
-    }
+    const baseProducts = categoryFilterActive ? productsByCategory : allProducts;
+    applyAvailabilityFilter(baseProducts, filter);
   };
 
-  const fetchExpiringProducts = async () => {
+  const fetchExpiringProducts = async (categoryName = null) => {
     try {
+      setLoading(true);
       const data = await getProductsExpiringSoon();
-      setFilteredProducts(data);
-      setTotalPages(Math.ceil(data.length / productsPerPage));
+
+      let filteredData = data;
+      if (categoryName) {
+        filteredData = data.filter(product => product.Categoria === categoryName);
+      }
+
+      setFilteredProducts(filteredData);
+      setTotalPages(Math.ceil(filteredData.length / productsPerPage));
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching expiring products:', error);
       setFilteredProducts([]);
       setTotalPages(1);
+      setLoading(false);
     }
   };
 
-  const fetchExpiredProducts = async () => {
+  const fetchExpiredProducts = async (categoryName = null) => {
     try {
+      setLoading(true);
       const data = await getExpiredProducts();
-      setFilteredProducts(data);
-      setTotalPages(Math.ceil(data.length / productsPerPage));
+
+      let filteredData = data;
+      if (categoryName) {
+        filteredData = data.filter(product => product.Categoria === categoryName);
+      }
+
+      setFilteredProducts(filteredData);
+      setTotalPages(Math.ceil(filteredData.length / productsPerPage));
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching expired products:', error);
       setFilteredProducts([]);
       setTotalPages(1);
+      setLoading(false);
     }
   };
 
-  const fetchLowStockProducts = async () => {
+  const fetchLowStockProducts = async (categoryName = null) => {
     try {
+      setLoading(true);
       const data = await getLowStockProducts();
-      const filteredData = data.filter(product => product.Stock > 0);
+      const productsWithStock = data.filter(product => product.Stock > 0);
+
+      let filteredData = productsWithStock;
+      if (categoryName) {
+        filteredData = productsWithStock.filter(product => product.Categoria === categoryName);
+      }
+
       setFilteredProducts(filteredData);
       setTotalPages(Math.ceil(filteredData.length / productsPerPage));
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching low stock products:', error);
       setFilteredProducts([]);
       setTotalPages(1);
+      setLoading(false);
     }
   };
 
@@ -221,8 +304,15 @@ const Products = () => {
       await deleteProduct(id);
       const updatedProducts = allProducts.filter(product => product._id !== id);
       setAllProducts(updatedProducts);
-      setFilteredProducts(updatedProducts);
-      setTotalPages(Math.ceil(updatedProducts.length / productsPerPage));
+
+      if (categoryFilterActive) {
+        const updatedCategoryProducts = productsByCategory.filter(product => product._id !== id);
+        setProductsByCategory(updatedCategoryProducts);
+        applyAvailabilityFilter(updatedCategoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(updatedProducts, availabilityFilter);
+      }
+
       showSuccessAlert('Producto eliminado con éxito', '');
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -316,7 +406,6 @@ const Products = () => {
     setLoading(true);
     setProductInfo(product);
 
-      // Asegurar que las secciones estén expandidas cuando se abre el modal
     setCharacteristicsExpanded(false);
     setStatsExpanded(false);
 
@@ -366,11 +455,14 @@ const Products = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleClearFilters = () => {
     setSearchQuery('');
     setCategory('');
+    setCategoryFilterActive(false);
+    setProductsByCategory([]);
     setAvailabilityFilter('Todos');
     setSortOption('');
     setFilteredProducts(allProducts);
@@ -479,7 +571,6 @@ const Products = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="product-detail-content">
-              {/* Columna de imagen */}
               <div className="product-detail-image-container">
                 <img 
                   src={productInfo.image || "/default-image.jpg"} 
@@ -488,7 +579,6 @@ const Products = () => {
                 />
               </div>
               
-              {/* Columna de detalles */}
               <div className="product-detail-info">
                 <p className="product-detail-brand">{productInfo.Marca}</p>
                 <h2 className="product-detail-name">{productInfo.Nombre}</h2>
@@ -506,7 +596,6 @@ const Products = () => {
                   </button>
                 </div>
                 
-                {/* Sección de Características */}
                 <div className="product-detail-characteristics">
                   <h3 
                     className="product-detail-section-title"
@@ -557,7 +646,6 @@ const Products = () => {
                   )}
                 </div>
                 
-                {/* Sección de Estadísticas de Venta */}
                 {productStats.totalVentas > 0 && (
                   <div className="product-detail-sales">
                     <h3 
@@ -690,7 +778,6 @@ const Products = () => {
               </select>
             </div>
             
-            {/* Grid de 3 columnas para los valores numéricos y fecha */}
             <div className="form-grid">
               <div className="modal-form-group">
                 <label htmlFor="PrecioCompra">Precio de Compra</label>

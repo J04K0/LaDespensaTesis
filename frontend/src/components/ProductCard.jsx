@@ -7,10 +7,13 @@ import PriceHistoryModal from './PriceHistoryModal';
 
 const ProductCard = ({ image, name, marca, stock, venta, fechaVencimiento, onInfo, productId }) => {
   const [showPriceHistory, setShowPriceHistory] = useState(false);
+  
+  // Verificar si el producto está vencido
+  const isExpired = fechaVencimiento ? new Date(fechaVencimiento) < new Date() : false;
 
   return (
     <>
-      <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''}`}>      
+      <div className={`product-card ${stock === 0 ? 'out-of-stock' : ''} ${isExpired ? 'expired-product' : ''}`}>      
         <div className="product-info">
           <div className="image-container" onClick={onInfo}>
             <img 
