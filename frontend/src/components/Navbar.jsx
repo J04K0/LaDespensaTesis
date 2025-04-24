@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faCaretDown, faPerson,faCaretUp, faAdd, faHome, faBoxOpen, faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode } from '@fortawesome/free-solid-svg-icons';
+import { faCaretDown, faPerson, faCaretUp, faAdd, faHome, faBoxOpen, faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { logout } from '../services/auth.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -32,6 +32,7 @@ const Navbar = () => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsNavVisible(false); // Cerrar menú en móvil después de navegar
+    setShowProductOptions(false); // Cerrar el menú desplegable de productos
   };
 
   const toggleProductOptions = (e) => {
@@ -181,35 +182,54 @@ const Navbar = () => {
   return (
     <header className="navbar-container">
       <div className="navbar-content">
+        <button className="navbar-toggle-btn" onClick={toggleNavbar}>
+          <FontAwesomeIcon icon={isNavVisible ? faTimes : faBars} />
+        </button>
         <nav className={`navbar-menu ${isNavVisible ? 'visible' : ''}`}>
           <ul className="navbar-items">
             <li onClick={() => handleNavigation('/home')}>
               <FontAwesomeIcon icon={faHome} /> <span>Inicio</span>
             </li>
             
-            <li className="dropdown" ref={dropdownRef}>
-              <div className="dropdown-trigger" onClick={toggleProductOptions}>
-                <FontAwesomeIcon icon={faBoxOpen} /> <span>Productos</span>
-                <FontAwesomeIcon icon={showProductOptions ? faCaretUp : faCaretDown} className="caret-icon" />
-              </div>
+            <div className="productos-container" ref={dropdownRef}>
+              <li className="dropdown">
+                <div className="dropdown-trigger" onClick={toggleProductOptions}>
+                  <FontAwesomeIcon icon={faBoxOpen} /> <span>Productos</span>
+                  <FontAwesomeIcon icon={showProductOptions ? faCaretUp : faCaretDown} className="caret-icon" />
+                </div>
+              </li>
               
               {showProductOptions && (
-                <ul className="dropdown-menu">
-                  <li onClick={() => handleNavigation('/products')}>
-                    <FontAwesomeIcon icon={faBoxOpen} /> Ver productos
-                  </li>
-                  <li onClick={() => handleNavigation('/add-product')}>
-                    <FontAwesomeIcon icon={faAdd} /> Añadir productos
-                  </li>
-                  <li onClick={() => handleNavigation('/ProductScanner')}>
-                    <FontAwesomeIcon icon={faBarcode} /> Vender producto
-                  </li>
-                  <li onClick={() => handleNavigation('/HistorySale')}>
-                    <FontAwesomeIcon icon={faHistory} /> Historial de ventas
-                  </li>
-                </ul>
+                <div className="product-submenu">
+                  <ul className="dropdown-menu">
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/products');
+                    }}>
+                      <FontAwesomeIcon icon={faBoxOpen} /> Ver productos
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/add-product');
+                    }}>
+                      <FontAwesomeIcon icon={faAdd} /> Añadir productos
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/ProductScanner');
+                    }}>
+                      <FontAwesomeIcon icon={faBarcode} /> Vender producto
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/HistorySale');
+                    }}>
+                      <FontAwesomeIcon icon={faHistory} /> Historial de ventas
+                    </li>
+                  </ul>
+                </div>
               )}
-            </li>
+            </div>
 
             <li onClick={() => handleNavigation('/deudores')}>
               <FontAwesomeIcon icon={faPerson} /> <span>Deudores</span>

@@ -36,6 +36,47 @@
   transform: translateX(3px);
 }
 
+/* Producto submenu específico para el diseño preferido */
+.product-submenu {
+  width: 100%;
+  position: relative;
+}
+
+.product-submenu .dropdown-menu {
+  position: static;
+  width: 100%;
+  margin: 0;
+  background-color: rgba(0, 51, 102, 0.9);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenedor específico para Productos y su submenú */
+.productos-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.productos-container .dropdown {
+  height: var(--navbar-height);
+}
+
+.product-submenu {
+  position: absolute;
+  top: var(--navbar-height);
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.product-submenu .dropdown-menu {
+  position: relative;
+  top: 0;
+  left: 0;
+  animation: slideDown 0.2s ease-out;
+}
+
 /* Botón para cerrar la barra de navegación en móvil */
 .toggle-navbar-btn {
   position: absolute;
@@ -108,6 +149,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 15px;
+  position: relative;
 }
 
 /* Botón de alternar para móvil */
@@ -121,10 +163,15 @@
   transition: transform 0.2s ease;
   width: 40px;
   height: 40px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1100;
 }
 
 .navbar-toggle-btn:hover {
-  transform: scale(1.1);
+  color: var(--primary-color);
 }
 
 /* Menú principal */
@@ -224,11 +271,12 @@
   position: absolute;
   top: 100%;
   left: 0;
+  right: 0;
   background: var(--submenu-background-color);
-  width: 200px;
+  width: 100%;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   list-style: none;
-  padding: 5px 0;
+  padding: 0;
   margin: 0;
   z-index: 100;
   border-radius: 0 0 8px 8px;
@@ -249,22 +297,28 @@
 }
 
 .dropdown-menu li {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 12px 20px;
+  padding: 15px 20px;
   height: auto;
   text-align: left;
   font-size: 15px;
-  border-left: 3px solid transparent;
+  border-left: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu li:last-child {
+  border-bottom: none;
 }
 
 .dropdown-menu li:hover {
   background-color: rgba(255, 255, 255, 0.1);
-  border-left: 3px solid var(--primary-color);
 }
 
 .dropdown-menu li svg {
-  margin-right: 8px;
+  margin-right: 12px;
+  width: 20px;
 }
 
 /* Botón de logout */
@@ -281,7 +335,9 @@
 /* Estilos responsivos para móviles */
 @media (max-width: 768px) {
   .navbar-toggle-btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .navbar-menu {
@@ -292,14 +348,18 @@
     height: 0;
     overflow: hidden;
     background-color: var(--background-color);
-    transition: height 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: height 0.3s ease;
     z-index: 999;
   }
   
   .navbar-menu.visible {
-    height: calc(100vh - var(--navbar-height));
+    /* Cambiado para que no ocupe toda la pantalla, solo una parte */
+    height: auto;
+    max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-bottom: 3px solid var(--primary-color);
+    border-radius: 0 0 10px 10px;
   }
   
   .navbar-items {
@@ -325,26 +385,79 @@
     background-color: rgba(255, 255, 255, 0.05);
   }
   
+  /* Estilo rediseñado para el dropdown en modo móvil */
   .dropdown-menu {
     position: static;
-    box-shadow: none;
     width: 100%;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 51, 102, 0.5);
     animation: none;
     border-radius: 0;
+    margin: 0;
     padding: 0;
-    border-top: none;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    max-height: none;
+    overflow: visible;
+  }
+
+  .dropdown-menu li {
+    padding: 15px 40px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 0;
+    border-radius: 0;
+    background-color: rgba(0, 38, 77, 0.7);
   }
   
-  .dropdown-menu li {
-    padding: 15px 30px;
-    font-size: 14px;
+  .dropdown-menu li svg {
+    width: 18px;
+    margin-right: 10px;
+  }
+  
+  .dropdown-trigger {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .caret-icon {
+    margin-left: auto;
   }
   
   .logout-item {
-    margin-top: 20px;
+    margin-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     background-color: rgba(255, 0, 0, 0.1);
+  }
+
+  .product-submenu {
+    width: 100%;
+    order: 1; /* Asegura que aparezca justo después del elemento Productos */
+    margin: 0;
+    position: static;
+  }
+  
+  .product-submenu .dropdown-menu {
+    background-color: rgba(0, 38, 77, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .product-submenu .dropdown-menu li {
+    padding-left: 40px;
+    background-color: rgba(0, 38, 77, 0.7);
+  }
+
+  .productos-container {
+    width: 100%;
+    position: relative;
+    flex-direction: column;
+  }
+  
+  .productos-container .dropdown {
+    width: 100%;
+    height: auto;
   }
 }
 
