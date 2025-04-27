@@ -17,10 +17,11 @@
 .home-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100vh; /* Asegura que ocupe al menos el 100% de la altura visible */
   width: 100%;
   padding-top: calc(var(--navbar-height) + 20px) !important;
   background-color: #f5f8fa;
+  position: relative; /* Añadido position relative */
 }
 
 #root {
@@ -93,6 +94,8 @@
   padding: 25px;
   box-sizing: border-box;
   gap: 25px;
+  margin-bottom: 100px; /* Espacio adicional al final del contenido */
+  flex: 1; /* Hace que este contenedor crezca para ocupar espacio disponible */
 }
 
 /* Secciones principales */
@@ -125,6 +128,11 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease;
+}
+
+.home-stats-card {
+  position: relative; /* Añadir posición relativa */
+  z-index: 1; /* Añadir z-index bajo para evitar conflictos con la navbar */
 }
 
 .home-deudores-card:hover, .home-stats-card:hover {
@@ -241,7 +249,7 @@
   transition: all 0.2s ease;
 }
 
-/* Estilos para filas alternantes */
+/* Estilo para filas alternantes */
 .home-deudores-table tr:nth-child(even) {
   background-color: var(--gray-light);
 }
@@ -268,6 +276,12 @@
 .home-deudores-table td:first-child svg {
   color: var(--primary);
   font-size: 18px;
+}
+
+/* Color de icono específico para deudores sin deuda */
+.zero-debt-row td:first-child svg {
+  color: var(--gray);
+  opacity: 0.7;
 }
 
 /* Estilo para la columna de deuda */
@@ -301,6 +315,7 @@
   border-radius: 0;
   position: relative;
   overflow: hidden;
+  z-index: 2; /* Ajustar z-index para que esté por encima del contenido del gráfico pero por debajo de la navbar */
 }
 
 .home-stats-controls::after {
@@ -324,13 +339,32 @@
   z-index: 5;
 }
 
-.home-stats-nav-button:hover {
+.home-stats-download-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.home-stats-nav-button:hover, .home-stats-download-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
   background: rgba(255, 255, 255, 0.35);
 }
 
-.home-stats-nav-button:active {
+.home-stats-nav-button:active, .home-stats-download-button:active {
   transform: translateY(-1px);
 }
 
@@ -342,6 +376,8 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+  width: 100%;
+  height: 100%;
 }
 
 .home-stats-content h2 {
@@ -358,11 +394,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .home-stats-content canvas {
   max-height: 300px !important;
   animation: fadeIn 0.6s ease-out;
+  width: 100% !important;
+  margin: 0 auto;
+  /* Este padding ayuda a evitar que los bordes de los gráficos se corten */
+  padding: 10px;
 }
 
 @keyframes fadeIn {

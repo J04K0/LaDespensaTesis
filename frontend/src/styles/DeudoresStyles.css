@@ -207,6 +207,27 @@
   transition: background-color 0.2s ease;
 }
 
+/* Color específico para iconos de deudores sin deuda */
+.zero-debt-row .actions-cell button {
+  background-color: var(--gray);
+  opacity: 0.7;
+}
+
+/* Estilos para filas alternantes */
+.deudores-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.deudores-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Hover para las filas */
+.deudores-table tbody tr:hover {
+  background-color: #e8f4ff;
+  transition: background-color 0.2s ease;
+}
+
 /* Celda de acciones */
 .actions-cell {
   display: flex;

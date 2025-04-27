@@ -1,13 +1,16 @@
 // filepath: /Users/joaco/Desktop/LaDespensaTesis/frontend/src/components/FooterLayout/FooterLayout.jsx
 import React from 'react';
 import Footer from '../Footer/Footer';
+import './FooterLayout.css';
 
 const FooterLayout = ({ children }) => {
   return (
-    <>
-      {children}
+    <div className="footer-layout-container">
+      <div className="footer-layout-content">
+        {children}
+      </div>
       <Footer />
-    </>
+    </div>
   );
 };
 
