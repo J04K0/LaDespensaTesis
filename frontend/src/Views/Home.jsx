@@ -9,10 +9,8 @@ import axios from "../services/root.service.js";
 import { Bar, Pie, Doughnut } from "react-chartjs-2";
 import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
 import ChartSkeleton from '../components/ChartSkeleton';
-import jspdf from "jspdf";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import html2canvas from 'html2canvas';
 
 import { 
   Chart as ChartJS, 
@@ -81,14 +79,21 @@ const Home = () => {
           a.Nombre.localeCompare(b.Nombre)
         );
         
-        // Calcular cuántos deudores sin deuda podemos mostrar
-        const espacioDisponible = 10 - deudoresConDeudaOrdenados.length;
+        // Mostrar más deudores para que el panel sea más grande
+        // Ahora mostraremos al menos 15 deudores en total o más si hay suficientes con deuda
+        const minDeudoresTotales = 20;
         
-        // Crear la lista final limitada a 10 en total
-        const deudoresFinales = [
-          ...deudoresConDeudaOrdenados,
-          ...(espacioDisponible > 0 ? deudoresSinDeudaOrdenados.slice(0, espacioDisponible) : [])
-        ];
+        // Si hay suficientes deudores con deuda, mostrar todos ellos
+        let deudoresFinales = [...deudoresConDeudaOrdenados];
+        
+        // Si necesitamos más deudores para llenar el panel, añadir deudores sin deuda
+        if (deudoresFinales.length < minDeudoresTotales) {
+          const espacioDisponible = minDeudoresTotales - deudoresFinales.length;
+          deudoresFinales = [
+            ...deudoresFinales,
+            ...deudoresSinDeudaOrdenados.slice(0, espacioDisponible)
+          ];
+        }
         
         setDeudores(deudoresFinales);
       } catch (error) {
@@ -418,27 +423,144 @@ const Home = () => {
     switch (currentChart) {
       case 0:
         return topProductos ? (
-          <div>
+          <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faStar} style={{marginRight: '10px'}}/> Top 5 Productos Más Vendidos</h2>
-            <Doughnut data={topProductos} options={chartOptions} />
+            
+            {/* Leyenda del gráfico */}
+            <div className="chart-legend">
+              {topProductos.labels.map((label, index) => (
+                <div key={index} className="legend-item">
+                  <span className="color-indicator" style={{backgroundColor: topProductos.datasets[0].backgroundColor[index]}}></span>
+                  <span className="legend-label">{label}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Área del gráfico */}
+            <div className="chart-area">
+              <Doughnut data={topProductos} options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: {
+                    display: false
+                  }
+                }
+              }} />
+            </div>
+            
+            {/* Tabla de datos */}
+            <div className="chart-data-table">
+              <div className="chart-data-header">
+                <span>Producto</span>
+                <span>Cantidad</span>
+              </div>
+              {topProductos.labels.map((label, index) => (
+                <div key={index} className="chart-data-row">
+                  <span className="product-name">
+                    <span className="color-indicator" style={{backgroundColor: topProductos.datasets[0].backgroundColor[index]}}></span>
+                    {label}
+                  </span>
+                  <span className="product-value">{topProductos.datasets[0].data[index]}</span>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <p>No hay datos disponibles</p>
         );
       case 1:
         return ventasPorCategoria ? (
-          <div>
+          <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faChartPie} style={{marginRight: '10px'}}/> Ventas por Categoría</h2>
-            <Pie data={ventasPorCategoria} options={chartOptions} />
+            
+            {/* Leyenda del gráfico */}
+            <div className="chart-legend">
+              {ventasPorCategoria.labels.map((label, index) => (
+                <div key={index} className="legend-item">
+                  <span className="color-indicator" style={{backgroundColor: ventasPorCategoria.datasets[0].backgroundColor[index]}}></span>
+                  <span className="legend-label">{label}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Área del gráfico */}
+            <div className="chart-area">
+              <Pie data={ventasPorCategoria} options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: {
+                    display: false
+                  }
+                }
+              }} />
+            </div>
+            
+            {/* Tabla de datos */}
+            <div className="chart-data-table">
+              <div className="chart-data-header">
+                <span>Categoría</span>
+                <span>Cantidad</span>
+              </div>
+              {ventasPorCategoria.labels.map((label, index) => (
+                <div key={index} className="chart-data-row">
+                  <span className="product-name">
+                    <span className="color-indicator" style={{backgroundColor: ventasPorCategoria.datasets[0].backgroundColor[index]}}></span>
+                    {label}
+                  </span>
+                  <span className="product-value">{ventasPorCategoria.datasets[0].data[index]}</span>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <p>No hay datos disponibles</p>
         );
       case 2:
         return productosPocoVendidos ? (
-          <div>
+          <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faChartPie} style={{marginRight: '10px'}}/> Productos Menos Vendidos</h2>
-            <Doughnut data={productosPocoVendidos} options={chartOptions} />
+            
+            {/* Leyenda del gráfico */}
+            <div className="chart-legend">
+              {productosPocoVendidos.labels.map((label, index) => (
+                <div key={index} className="legend-item">
+                  <span className="color-indicator" style={{backgroundColor: productosPocoVendidos.datasets[0].backgroundColor[index]}}></span>
+                  <span className="legend-label">{label}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Área del gráfico */}
+            <div className="chart-area">
+              <Doughnut data={productosPocoVendidos} options={{
+                ...chartOptions,
+                plugins: {
+                  ...chartOptions.plugins,
+                  legend: {
+                    display: false
+                  }
+                }
+              }} />
+            </div>
+            
+            {/* Tabla de datos */}
+            <div className="chart-data-table">
+              <div className="chart-data-header">
+                <span>Producto</span>
+                <span>Cantidad</span>
+              </div>
+              {productosPocoVendidos.labels.map((label, index) => (
+                <div key={index} className="chart-data-row">
+                  <span className="product-name">
+                    <span className="color-indicator" style={{backgroundColor: productosPocoVendidos.datasets[0].backgroundColor[index]}}></span>
+                    {label}
+                  </span>
+                  <span className="product-value">{productosPocoVendidos.datasets[0].data[index]}</span>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <p>No hay datos disponibles</p>
