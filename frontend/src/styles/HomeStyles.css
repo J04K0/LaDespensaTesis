@@ -665,6 +665,43 @@
   min-width: 80px;
 }
 
+/* Selector de filtro temporal */
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 15px;
+}
+
+.time-filter-container select {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.time-filter-container select:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+.time-filter-container label {
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-filter-container label svg {
+  font-size: 16px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .chart-area {
@@ -681,7 +718,6 @@
   }
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .chart-container {
     flex-direction: column;
@@ -690,6 +726,19 @@
   .chart-area, .chart-data-table {
     max-width: 100%;
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-stats-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .time-filter-container {
+    width: 100%;
+    order: -1;
+    margin-bottom: 10px;
   }
 }
 

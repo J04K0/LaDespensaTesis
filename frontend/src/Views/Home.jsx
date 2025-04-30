@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
 import { getDeudores } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faArrowRight, faArrowLeft, faChartPie, faStar, faDownload, faFilePdf, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faArrowRight, faArrowLeft, faChartPie, faStar, faDownload, faFilePdf, faSpinner, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import axios from "../services/root.service.js";
 import { Bar, Pie, Doughnut } from "react-chartjs-2";
 import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
@@ -49,6 +49,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  // Nuevo estado para el filtro temporal
+  const [timeRange, setTimeRange] = useState("todo"); // Opciones: "semana", "mes", "año", "todo"
 
   // Referencia al contenedor del gráfico
   const chartRef = useRef(null);
@@ -105,13 +107,23 @@ const Home = () => {
     obtenerVentas();
   }, []);
 
+  // Efecto para recargar los datos cuando cambia el filtro de tiempo
+  useEffect(() => {
+    if (!loading) {
+      obtenerVentas();
+    }
+  }, [timeRange]);
+
   const obtenerVentas = async () => {
     try {
+      setLoading(true);
       const response = await axios.get("/ventas/ventas/obtener");
-      const ventas = response.data.data;
+      const todasLasVentas = response.data.data;
 
-      if (ventas && ventas.length > 0) {
-        procesarDatos(ventas);
+      if (todasLasVentas && todasLasVentas.length > 0) {
+        // Filtrar las ventas según el período seleccionado
+        const ventasFiltradas = filtrarVentasPorPeriodo(todasLasVentas);
+        procesarDatos(ventasFiltradas);
       }
       setLoading(false);
     } catch (error) {
@@ -119,6 +131,31 @@ const Home = () => {
       setError("Error al obtener los datos de ventas.");
       setLoading(false);
     }
+  };
+
+  // Función para filtrar ventas según el período seleccionado
+  const filtrarVentasPorPeriodo = (ventas) => {
+    if (timeRange === "todo") {
+      return ventas; // Devolver todas las ventas sin filtrar
+    }
+
+    const fechaActual = new Date();
+    const fechaInicio = new Date();
+    
+    // Configurar la fecha de inicio según el período seleccionado
+    if (timeRange === "semana") {
+      fechaInicio.setDate(fechaActual.getDate() - 7);
+    } else if (timeRange === "mes") {
+      fechaInicio.setMonth(fechaActual.getMonth() - 1);
+    } else if (timeRange === "año") {
+      fechaInicio.setFullYear(fechaActual.getFullYear() - 1);
+    }
+
+    // Filtrar ventas que estén dentro del rango de fechas
+    return ventas.filter(venta => {
+      const fechaVenta = new Date(venta.fecha);
+      return fechaVenta >= fechaInicio && fechaVenta <= fechaActual;
+    });
   };
 
   const procesarDatos = (ventas) => {
@@ -616,6 +653,21 @@ const Home = () => {
           ) : (
             <div className="home-stats-card">
               <div className="home-stats-controls">
+                <div className="time-filter-container">
+                  <label htmlFor="timeRange">
+                    <FontAwesomeIcon icon={faCalendarAlt} /> Período:
+                  </label>
+                  <select 
+                    id="timeRange" 
+                    value={timeRange} 
+                    onChange={(e) => setTimeRange(e.target.value)}
+                  >
+                    <option value="todo">Todo el tiempo</option>
+                    <option value="semana">Última semana</option>
+                    <option value="mes">Último mes</option>
+                    <option value="año">Último año</option>
+                  </select>
+                </div>
                 <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>
                 <button onClick={nextChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowRight} /></button>
                 <button 

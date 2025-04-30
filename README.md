@@ -29,10 +29,12 @@ La Despensa es un sistema completo de gestión para almacenes y tiendas minorist
 - Cálculo automático de totales incluyendo descuentos e impuestos
 - Registro detallado de todas las transacciones realizadas
 - Agrupación de ventas por ticket para fácil seguimiento
-- Capacidad de edición y eliminación de tickets completos
+- Sistema de devoluciones parciales o completas con actualización automática de inventario
 - Visualización cronológica con ordenamiento por fecha y hora
 - Búsqueda avanzada de ventas por fecha, producto o número de ticket
-- Exportación a PDF de reportes diarios, semanales y mensuales
+- Filtrado por categorías de productos para análisis detallado
+- Cálculo automático del importe a devolver en devoluciones parciales
+- Exportación a PDF y Excel de reportes de ventas
 - Generación de estadísticas de productos más vendidos
 
 ### Gestión de Deudores
@@ -44,6 +46,8 @@ La Despensa es un sistema completo de gestión para almacenes y tiendas minorist
 - Panel de control con visualización general e individual de deudores
 - Filtros avanzados por nombre, monto y antigüedad de deuda
 - Indicadores visuales para deudas próximas a vencer o vencidas
+- Sistema de comentarios expandibles para cada transacción en el historial
+- Interfaz intuitiva para visualizar pagos y deudas con distinción visual
 - Edición y eliminación de registros de deudores
 
 ### Proveedores
@@ -65,8 +69,11 @@ La Despensa es un sistema completo de gestión para almacenes y tiendas minorist
 - Cálculo de ganancias basado en costo vs. precio de venta
 - Seguimiento de gastos categorizados por tipo
 - Balance de ingresos y egresos con visualización clara
-- Proyecciones basadas en datos históricos
-- Exportación a múltiples formatos (PDF) para análisis externos
+- Tarjetas de resumen con métricas de ingresos, costos y transacciones
+- Filtros de período (semana, mes, año) para análisis temporal
+- Descarga de informes financieros en PDF con formato profesional
+- Exportación a múltiples formatos para análisis externos
+- Explicaciones integradas sobre la interpretación de cada gráfico
 - Reportes personalizables por período, categoría o producto
 
 ### Cuentas por Pagar
@@ -89,20 +96,23 @@ La Despensa es un sistema completo de gestión para almacenes y tiendas minorist
 - **React**: Biblioteca principal para la interfaz de usuario
 - **React Router**: Navegación entre componentes
 - **Chart.js**: Visualización de datos y estadísticas
-- **FontAwesome**: Iconografía
+- **FontAwesome**: Iconografía para interfaces intuitivas
 - **CSS personalizado**: Estilos específicos para cada componente
 - **Axios**: Cliente HTTP para comunicación con el backend
-- **jsPDF & xlsx**: Generación de reportes en PDF y Excel
-- **SweetAlert**: Notificaciones interactivas
+- **jsPDF & AutoTable**: Generación de reportes en PDF con tablas formateadas
+- **XLSX**: Exportación de datos a formato Excel
+- **SweetAlert2**: Notificaciones interactivas y diálogos de confirmación
+- **Vite**: Herramienta de construcción y servidor de desarrollo
 
 ### Backend
 - **Node.js**: Entorno de ejecución
 - **Express**: Framework para API RESTful
 - **MongoDB**: Base de datos NoSQL
-- **Mongoose**: ODM para modelado de datos
+- **Mongoose**: ODM para modelado de datos y validaciones
 - **JWT**: Autenticación basada en tokens
-- **Multer**: Gestión de carga de archivos
+- **Multer**: Gestión de carga de archivos e imágenes
 - **Express-validator**: Validación de datos en el backend
+- **Dotenv**: Gestión de variables de entorno
 
 ## Arquitectura del Sistema
 
@@ -138,6 +148,13 @@ npm install
 
 3. Configurar variables de entorno:
    - Crear un archivo `.env` en la carpeta `backend` con las siguientes variables:
+   ```
+   HOST=localhost
+   PORT=3000
+   DB_URL=mongodb://localhost:27017/ladespensa
+   ACCESS_JWT_SECRET=tu_secret_key_para_access_token
+   REFRESH_JWT_SECRET=tu_secret_key_para_refresh_token
+   ```
 
 4. Iniciar el servidor de desarrollo:
 ```bash
@@ -167,18 +184,31 @@ http://localhost:5173
 1. Construir la aplicación frontend:
 ```bash
 cd frontend
-npm run start
+npm run build
 ```
 
 2. Configurar el backend para servir los archivos estáticos:
-   - Los archivos generados en `frontend/dist` deben ser accesibles desde el backend
-   - Asegurarse de configurar correctamente las variables de entorno para producción
+   - Asegurarse que en el archivo server.js del backend esté configurado para servir la carpeta dist del frontend
+   - Configurar las variables de entorno para producción en un archivo .env en la carpeta backend:
+   ```
+   NODE_ENV=production
+   HOST=0.0.0.0
+   PORT=3000
+   DB_URL=mongodb://[usuario]:[contraseña]@[host]:[puerto]/ladespensa
+   ACCESS_JWT_SECRET=tu_secret_key_para_produccion
+   REFRESH_JWT_SECRET=tu_secret_key_refresh_para_produccion
+   ```
 
 3. Iniciar el servidor en modo producción:
 ```bash
 cd backend
 npm start
 ```
+
+4. Para despliegue en servicios cloud:
+   - Asegurarse de configurar correctamente las variables de entorno en el proveedor de servicios
+   - Configurar MongoDB Atlas u otro servicio en la nube para la base de datos
+   - Seguir la documentación específica del proveedor para desplegar aplicaciones Node.js
 
 ## Estructura del Proyecto
 
