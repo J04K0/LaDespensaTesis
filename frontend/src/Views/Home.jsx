@@ -485,23 +485,6 @@ const Home = () => {
                 }
               }} />
             </div>
-            
-            {/* Tabla de datos */}
-            <div className="chart-data-table">
-              <div className="chart-data-header">
-                <span>Producto</span>
-                <span>Cantidad</span>
-              </div>
-              {topProductos.labels.map((label, index) => (
-                <div key={index} className="chart-data-row">
-                  <span className="product-name">
-                    <span className="color-indicator" style={{backgroundColor: topProductos.datasets[0].backgroundColor[index]}}></span>
-                    {label}
-                  </span>
-                  <span className="product-value">{topProductos.datasets[0].data[index]}</span>
-                </div>
-              ))}
-            </div>
           </div>
         ) : (
           <p>No hay datos disponibles</p>
