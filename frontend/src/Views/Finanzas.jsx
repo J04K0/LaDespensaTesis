@@ -7,7 +7,17 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../styles/FinanzasStyles.css";
 import FinanzasSkeleton from '../components/FinanzasSkeleton';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faInfoCircle, 
+  faFilePdf, 
+  faChartBar, 
+  faCoins, 
+  faMoneyBillWave, 
+  faShoppingCart,
+  faChartLine,
+  faWarehouse,
+  faPercentage
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { 
@@ -598,7 +608,43 @@ const Finanzas = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: true, position: "top" },
+      legend: { 
+        display: true, 
+        position: "top",
+        labels: {
+          font: {
+            family: "'Helvetica', 'Arial', sans-serif",
+            size: 12
+          },
+          color: '#343a40',
+          usePointStyle: true,
+          padding: 20
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 38, 81, 0.8)',
+        titleFont: {
+          size: 13
+        },
+        bodyFont: {
+          size: 12
+        },
+        bodySpacing: 6,
+        padding: 12,
+        displayColors: true,
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += '$' + context.parsed.y.toLocaleString();
+            }
+            return label;
+          }
+        }
+      }
     },
     scales: {
       y: {
@@ -606,9 +652,50 @@ const Finanzas = () => {
         ticks: {
           callback: function(value) {
             return '$' + value.toLocaleString();
-          }
+          },
+          font: {
+            family: "'Helvetica', 'Arial', sans-serif",
+            size: 11
+          },
+          color: '#6c757d'
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          drawBorder: false
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            family: "'Helvetica', 'Arial', sans-serif",
+            size: 11
+          },
+          color: '#6c757d'
+        },
+        grid: {
+          display: false
         }
       }
+    },
+    elements: {
+      line: {
+        tension: 0.4
+      },
+      point: {
+        radius: 4,
+        hitRadius: 10,
+        hoverRadius: 6
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
+    animation: {
+      duration: 1000
+    },
+    layout: {
+      padding: 15
     }
   };
 
@@ -632,257 +719,320 @@ const Finanzas = () => {
     return explanations[chartType];
   };
 
+  // Obtener el icono adecuado para cada tipo de métrica
+  const getMetricIcon = (metricType) => {
+    switch(metricType) {
+      case 'ingresos': return faCoins;
+      case 'transacciones': return faShoppingCart;
+      case 'costos': return faMoneyBillWave;
+      case 'ganancias': return faChartLine;
+      case 'inversion': return faWarehouse;
+      case 'rentabilidad': return faPercentage;
+      default: return faChartBar;
+    }
+  };
+
   return (
-    <div className="finanzas-page">
+    <div className="app-container">
       <Navbar />
-      <div className="chart-container">
+      <div className="content-container">
         {loading ? (
           <FinanzasSkeleton />
         ) : (
           <>
-            <h1>📊 Finanzas</h1>
+            <div className="page-header">
+              <h1 className="page-title">Dashboard Financiero</h1>
+              <button className="btn btn-secondary" onClick={descargarReporteFinanciero}>
+                <FontAwesomeIcon icon={faFilePdf} /> Descargar Reporte
+              </button>
+            </div>
             
-            <div className="filter-container">
+            <div className="filters-container">
               <div className="filter-group">
-                <label>Periodo:</label>
-                <select value={timeRange} onChange={handleTimeRangeChange}>
+                <label className="form-label">Periodo:</label>
+                <select 
+                  value={timeRange} 
+                  onChange={handleTimeRangeChange}
+                  className="form-select"
+                >
                   <option value="semana">Última semana</option>
                   <option value="mes">Último mes</option>
                   <option value="año">Último año</option>
                 </select>
               </div>
-              
-              <button onClick={descargarReporteFinanciero} className="download-button">
-                Descargar Reporte Financiero 📄
-              </button>
             </div>
 
             {/* Resumen financiero */}
             {ingresosPorDia && comparacionIngresoCosto && (
-              <div className="finance-summary">
+              <div className="metrics-dashboard">
                 <div 
-                  className={`summary-card income ${activeChart === 'ingresos' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'ingresos' ? 'active' : ''}`}
                   onClick={() => handleCardClick('ingresos')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid #4CAF50' }}
                 >
-                  <h3>Ingresos Totales</h3>
-                  <p className="amount" style={{ color: '#4CAF50' }}>
-                    ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-success">
+                    <FontAwesomeIcon icon={getMetricIcon('ingresos')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Ingresos Totales</h3>
+                    <p className="metric-value text-success">
+                      ${ingresosPorDia.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
                 
                 <div 
-                  className={`summary-card transactions ${activeChart === 'transacciones' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'transacciones' ? 'active' : ''}`}
                   onClick={() => handleCardClick('transacciones')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid #36A2EB' }}
                 >
-                  <h3>Transacciones</h3>
-                  <p className="amount" style={{ color: '#36A2EB' }}>
-                    {numeroTransacciones}
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-primary">
+                    <FontAwesomeIcon icon={getMetricIcon('transacciones')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Transacciones</h3>
+                    <p className="metric-value text-primary">
+                      {numeroTransacciones}
+                    </p>
+                  </div>
                 </div>
                 
                 <div 
-                  className={`summary-card ${activeChart === 'costos' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'costos' ? 'active' : ''}`}
                   onClick={() => handleCardClick('costos')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid rgba(255, 99, 132, 1)' }}
                 >
-                  <h3>Costos Totales</h3>
-                  <p className="amount" style={{ color: 'rgba(255, 99, 132, 1)' }}>
-                    ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-danger">
+                    <FontAwesomeIcon icon={getMetricIcon('costos')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Costos Totales</h3>
+                    <p className="metric-value text-danger">
+                      ${comparacionIngresoCosto.datasets[1].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
                 
                 <div 
-                  className={`summary-card ${activeChart === 'ganancias' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'ganancias' ? 'active' : ''}`}
                   onClick={() => handleCardClick('ganancias')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid #8A2BE2' }}
                 >
-                  <h3>Ganancias Totales</h3>
-                  <p className="amount" style={{ color: '#8A2BE2' }}>
-                    ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-info">
+                    <FontAwesomeIcon icon={getMetricIcon('ganancias')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Ganancias Totales</h3>
+                    <p className="metric-value text-info">
+                      ${comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
 
                 <div 
-                  className={`summary-card ${activeChart === 'inversion' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'inversion' ? 'active' : ''}`}
                   onClick={() => handleCardClick('inversion')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid #FF5733' }}
                 >
-                  <h3>Inversión en Mercadería</h3>
-                  <p className="amount" style={{ color: '#FF5733' }}>
-                    ${inversionMercaderiaPorCategoria ? 
-                      inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
-                      '0'}
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-warning">
+                    <FontAwesomeIcon icon={getMetricIcon('inversion')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Inversión en Mercadería</h3>
+                    <p className="metric-value text-warning">
+                      ${inversionMercaderiaPorCategoria ? 
+                        inversionMercaderiaPorCategoria.datasets[0].data.reduce((a, b) => a + b, 0).toLocaleString() : 
+                        '0'}
+                    </p>
+                  </div>
                 </div>
 
                 <div 
-                  className={`summary-card ${activeChart === 'rentabilidad' ? 'active' : ''}`}
+                  className={`metric-card ${activeChart === 'rentabilidad' ? 'active' : ''}`}
                   onClick={() => handleCardClick('rentabilidad')}
-                  style={{ cursor: 'pointer', borderTop: '5px solid #FFC107' }}
                 >
-                  <h3>Rentabilidad (%)</h3>
-                  <p className="amount" style={{ color: '#FFC107' }}>
-                    {((comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0) / 
-                      comparacionIngresoCosto.datasets[0].data.reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%
-                  </p>
-                  <small>Click para ver detalles</small>
+                  <div className="metric-icon bg-success">
+                    <FontAwesomeIcon icon={getMetricIcon('rentabilidad')} />
+                  </div>
+                  <div className="metric-content">
+                    <h3 className="metric-title">Rentabilidad (%)</h3>
+                    <p className="metric-value text-success">
+                      {((comparacionIngresoCosto.datasets[2].data.reduce((a, b) => a + b, 0) / 
+                        comparacionIngresoCosto.datasets[0].data.reduce((a, b) => a + b, 0)) * 100).toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
-            {loading && <p className="loading-message">Cargando datos financieros...</p>}
-            {error && <p className="error-message">{error}</p>}
+            {error && <div className="alert alert-danger">{error}</div>}
 
             {/* Sección de gráficos - solo muestra el seleccionado */}
             {activeChart && (
               <div className="chart-section">
                 {activeChart === 'ingresos' && (
-                  <div className="chart">
-                    <h2>Ingresos por Día</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('ingresos', 'daily')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Ingresos por Día</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('ingresos', 'daily')}</span>
+                      </div>
                     </div>
-                    {ingresosPorDia ? (
-                      <Line data={ingresosPorDia} options={chartOptions} />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {ingresosPorDia ? (
+                        <Line data={ingresosPorDia} options={chartOptions} />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
-                        
+                      
                 {activeChart === 'ingresos' && (
-                  <div className="chart">
-                    <h2>Ventas por Mes (Año Actual)</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('ingresos', 'monthly')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Ventas por Mes (Año Actual)</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('ingresos', 'monthly')}</span>
+                      </div>
                     </div>
-                    {ventasPorMes ? (
-                      <Bar data={ventasPorMes} options={chartOptions} />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {ventasPorMes ? (
+                        <Bar data={ventasPorMes} options={chartOptions} />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
                 
                 {activeChart === 'costos' && (
-                  <div className="chart">
-                    <h2>Costos por Período</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('costos')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Costos por Período</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('costos')}</span>
+                      </div>
                     </div>
-                    {comparacionIngresoCosto ? (
-                      <Bar 
-                        data={{
-                          labels: comparacionIngresoCosto.labels,
-                          datasets: [
-                            {
-                              label: 'Costos',
-                              data: comparacionIngresoCosto.datasets[1].data,
-                              backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                              borderColor: 'rgba(255, 99, 132, 1)',
-                              borderWidth: 1
-                            }
-                          ]
-                        }} 
-                        options={chartOptions} 
-                      />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {comparacionIngresoCosto ? (
+                        <Bar 
+                          data={{
+                            labels: comparacionIngresoCosto.labels,
+                            datasets: [
+                              {
+                                label: 'Costos',
+                                data: comparacionIngresoCosto.datasets[1].data,
+                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                              }
+                            ]
+                          }} 
+                          options={chartOptions} 
+                        />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {activeChart === 'ganancias' && (
-                  <div className="chart">
-                    <h2>Ganancias por Período</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('ganancias')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Ganancias por Período</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('ganancias')}</span>
+                      </div>
                     </div>
-                    {comparacionIngresoCosto ? (
-                      <Bar 
-                        data={{
-                          labels: comparacionIngresoCosto.labels,
-                          datasets: [
-                            {
-                              label: 'Ganancias',
-                              data: comparacionIngresoCosto.datasets[2].data,
-                              backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                              borderColor: 'rgba(54, 162, 235, 1)',
-                              borderWidth: 1
-                            }
-                          ]
-                        }} 
-                        options={chartOptions} 
-                      />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {comparacionIngresoCosto ? (
+                        <Bar 
+                          data={{
+                            labels: comparacionIngresoCosto.labels,
+                            datasets: [
+                              {
+                                label: 'Ganancias',
+                                data: comparacionIngresoCosto.datasets[2].data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                              }
+                            ]
+                          }} 
+                          options={chartOptions} 
+                        />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {activeChart === 'inversion' && (
-                  <div className="chart">
-                    <h2>Inversión Actual en Mercadería</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('inversion')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Inversión Actual en Mercadería</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('inversion')}</span>
+                      </div>
                     </div>
-                    {inversionMercaderiaPorCategoria ? (
-                      <Pie data={inversionMercaderiaPorCategoria} options={chartOptions} />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {inversionMercaderiaPorCategoria ? (
+                        <Pie data={inversionMercaderiaPorCategoria} options={{
+                          ...chartOptions,
+                          plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                              ...chartOptions.plugins.legend,
+                              position: 'right'
+                            }
+                          }
+                        }} />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {activeChart === 'transacciones' && (
-                  <div className="chart">
-                    <h2>Valor Promedio por Transacción</h2>
-                    <button className="chart-info-button">
-                      <FontAwesomeIcon icon={faInfoCircle} />
-                    </button>
-                    <div className="chart-tooltip">
-                      {getChartExplanation('transacciones')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Valor Promedio por Transacción</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('transacciones')}</span>
+                      </div>
                     </div>
-                    {valorPromedioTransaccion ? (
-                      <Bar data={valorPromedioTransaccion} options={chartOptions} />
-                    ) : (
-                      <p className="no-data">No hay datos disponibles</p>
-                    )}
+                    
+                    <div className="chart-body">
+                      {valorPromedioTransaccion ? (
+                        <Bar data={valorPromedioTransaccion} options={chartOptions} />
+                      ) : (
+                        <p className="text-center text-muted">No hay datos disponibles</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {activeChart === 'rentabilidad' && (
-                  <>
-                    <div className="chart">
-                      <h2>Rentabilidad por Categoría</h2>
-                      <button className="chart-info-button">
-                        <FontAwesomeIcon icon={faInfoCircle} />
-                      </button>
-                      <div className="chart-tooltip">
-                        {getChartExplanation('rentabilidad')}
+                  <div className="chart-container">
+                    <div className="chart-header">
+                      <h2 className="chart-title">Rentabilidad por Categoría</h2>
+                      <div className="tooltip-container">
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        <span className="tooltip-text">{getChartExplanation('rentabilidad')}</span>
                       </div>
+                    </div>
+                    
+                    <div className="chart-body">
                       {ingresosPorCategoria && comparacionIngresoCosto ? (
                         <Bar 
                           data={{
@@ -914,10 +1064,10 @@ const Finanzas = () => {
                           }}
                         />
                       ) : (
-                        <p className="no-data">No hay datos disponibles</p>
+                        <p className="text-center text-muted">No hay datos disponibles</p>
                       )}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             )}

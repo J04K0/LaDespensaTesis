@@ -27,8 +27,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  height: auto; /* Asegurar que la altura se ajuste al contenido */
-  min-height: 350px; /* Altura mínima para consistencia */
+  height: auto !important; /* Asegurar que la altura se ajuste al contenido */
+  min-height: 350px !important; /* Altura mínima para consistencia */
 }
 
 .product-card:hover {
@@ -98,11 +98,13 @@
 }
 
 .product-info {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  justify-content: space-between;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
 .image-container {
@@ -179,16 +181,21 @@
 }
 
 .product-name {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--gray-dark);
-  line-height: 1.4;
-  /* Eliminar restricciones de líneas */
-  word-wrap: break-word;
-  overflow-wrap: break-word; 
-  height: auto;
-  /* Eliminar max-height y configuraciones de truncamiento */
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin: 0 0 12px 0 !important;
+  color: var(--gray-dark) !important;
+  line-height: 1.4 !important;
+  text-align: center !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 5px !important;
+  display: block !important;
 }
 
 .product-price {

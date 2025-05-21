@@ -6,6 +6,8 @@ import { registrarVenta } from "../services/venta.service.js";
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, faExclamationTriangle, faStore } from '@fortawesome/free-solid-svg-icons';
 
 const ProductScanner = () => {
   const navigate = useNavigate();
@@ -55,7 +57,8 @@ const ProductScanner = () => {
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
           }));
           
-          agregarAlCarrito(productoEncontrado);
+          // Se comenta la línea para no agregar automáticamente al carrito
+          // agregarAlCarrito(productoEncontrado);
         } else {
           console.warn("⚠️ Producto agotado.");
           showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para este producto.");
@@ -249,219 +252,199 @@ const ProductScanner = () => {
   return (
     <div className="scanner-container">
       <Navbar />
-      {loading ? (
-        <ProductScannerSkeleton />
-      ) : (
-        <>
-          <SearchBar
-            codigoEscaneado={codigoEscaneado}
-            setCodigoEscaneado={setCodigoEscaneado}
-            handleScan={handleScan}
-          />
-          <div className="scanner-content">
-            <Cart 
-              carrito={carrito}
-              stockPorProducto={stockPorProducto}
-              eliminarDelCarrito={eliminarDelCarrito}
-              incrementarCantidadCarrito={incrementarCantidadCarrito}
-              disminuirCantidadCarrito={disminuirCantidadCarrito}
-              finalizarVenta={finalizarVenta}
-            />
-            <div className="sidebar-panel">
-              {productoActual && (
-                <div className="current-product-info">
-                  <h3>Producto Escaneado</h3>
-                  <div className="scanned-product-details">
-                    <h4>{productoActual.nombre}</h4>
-                    <p>Marca: <strong>{productoActual.marca}</strong></p>
-                    <p>Categoría: <strong>{productoActual.categoria}</strong></p>
-                    <p className="scanned-price">Precio: <strong>${productoActual.precioVenta}</strong></p>
-                    <p>Stock disponible: <strong>{stockPorProducto[productoActual.codigoBarras] || 0}</strong></p>
+      <div className="content-container">
+        {loading ? (
+          <ProductScannerSkeleton />
+        ) : (
+          <div className="scanner-wrapper">
+            <h1 className="scanner-title">Terminal Punto de Venta</h1>
+            
+            <div className="search-bar">
+              <form onSubmit={handleScan} className="search-form">
+                <div className="search-input-wrapper">
+                  <FontAwesomeIcon icon={faBarcode} className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Escanee o ingrese código de barras"
+                    value={codigoEscaneado}
+                    onChange={(e) => setCodigoEscaneado(e.target.value)}
+                    className="search-input"
+                    autoFocus
+                  />
+                </div>
+                <button type="submit" className="search-button">
+                  <FontAwesomeIcon icon={faSearch} /> Buscar
+                </button>
+              </form>
+            </div>
+            
+            <div className="scanner-content">
+              <div className="scanner-section">
+                {productoActual ? (
+                  <div className="product-info">
+                    <h3>Producto Escaneado</h3>
+                    {productoActual.image && (
+                      <img 
+                        src={productoActual.image} 
+                        alt={productoActual.nombre} 
+                        className="product-image" 
+                      />
+                    )}
+                    <p><strong>Nombre:</strong> {productoActual.nombre}</p>
+                    <p><strong>Marca:</strong> {productoActual.marca}</p>
+                    <p><strong>Categoría:</strong> {productoActual.categoria}</p>
+                    <p><strong>Código:</strong> {productoActual.codigoBarras}</p>
+                    <p className="product-price">${productoActual.precioVenta}</p>
+                    <p><strong>Stock disponible:</strong> <span className={stockPorProducto[productoActual.codigoBarras] < 5 ? "low-stock" : ""}>
+                      {stockPorProducto[productoActual.codigoBarras] || 0} unidades
+                    </span></p>
+                    
+                    <div className="quantity-controls">
+                      <button 
+                        onClick={disminuirCantidad} 
+                        disabled={cantidad <= 1}
+                      >
+                        <FontAwesomeIcon icon={faMinus} />
+                      </button>
+                      <span>{cantidad}</span>
+                      <button 
+                        onClick={incrementarCantidad}
+                        disabled={!stockPorProducto[productoActual.codigoBarras] || cantidad >= stockPorProducto[productoActual.codigoBarras]}
+                      >
+                        <FontAwesomeIcon icon={faPlus} />
+                      </button>
+                    </div>
+                    
                     <button 
                       className="add-to-cart-button"
-                      onClick={() => productoActual && agregarAlCarrito(productoActual)}
+                      onClick={() => agregarAlCarrito(productoActual)}
+                      disabled={!stockPorProducto[productoActual.codigoBarras]}
                     >
-                      Agregar al carrito
+                      <FontAwesomeIcon icon={faShoppingCart} /> Agregar al carrito
                     </button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="product-info empty-product">
+                    <h3>Producto Escaneado</h3>
+                    <div className="barcode-placeholder">
+                      <FontAwesomeIcon icon={faBarcode} size="4x" />
+                      <p>Escanee un código de barras para mostrar información del producto</p>
+                    </div>
+                  </div>
+                )}
+              </div>
               
-              {/* Nueva sección de pago en el sidebar */}
-              <div className="sidebar-payment-section">
-                <h3>Detalles de Pago</h3>
-                <div className="payment-section">
-                  <label htmlFor="montoEntregado">
-                    <span className="payment-icon">💵</span> Efectivo entregado:
-                  </label>
-                  <input
-                    type="number"
-                    id="montoEntregado"
-                    value={montoEntregado}
-                    onChange={(e) => setMontoEntregado(e.target.value)}
-                    min={total}
-                    placeholder="Ingrese el monto"
-                    disabled={isProcessing}
-                  />
-                  {errorMonto && <p className="error-text">{errorMonto}</p>}
-                  
-                  {montoEntregado && vuelto >= 0 && (
-                    <p className="vuelto">Vuelto: <span>${vuelto}</span></p>
-                  )}
-                </div>
+              <div className="cart-section">
+                <h2><FontAwesomeIcon icon={faShoppingCart} /> Carrito de Compra</h2>
+                
+                {carrito.length === 0 ? (
+                  <div className="empty-cart">
+                    <FontAwesomeIcon icon={faShoppingCart} size="3x" className="empty-cart-icon" />
+                    <p>No hay productos en el carrito</p>
+                    <p>Escanee un código de barras para agregar productos</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="cart-items-container">
+                      {carrito.map((producto, index) => (
+                        <div key={index} className="cart-item-card">
+                          <div className="cart-item-details">
+                            <h4>{producto.nombre}</h4>
+                            <p className="cart-item-marca">{producto.marca}</p>
+                            <p className="cart-item-price">Precio: <span>${producto.precioVenta}</span></p>
+                          </div>
+                          
+                          <div className="cart-item-actions">
+                            <div className="cart-quantity-controls">
+                              <button 
+                                className="quantity-btn"
+                                onClick={() => disminuirCantidadCarrito(index)} 
+                                disabled={producto.cantidad <= 1}
+                              >
+                                <FontAwesomeIcon icon={faMinus} />
+                              </button>
+                              <span className="quantity-display">{producto.cantidad}</span>
+                              <button 
+                                className="quantity-btn"
+                                onClick={() => incrementarCantidadCarrito(index)}
+                                disabled={!stockPorProducto[producto.codigoBarras]}
+                              >
+                                <FontAwesomeIcon icon={faPlus} />
+                              </button>
+                            </div>
+                            
+                            <p className="cart-item-total">Subtotal: <span>${(producto.precioVenta * producto.cantidad).toFixed(2)}</span></p>
+                            
+                            <button 
+                              className="delete-product-btn"
+                              onClick={() => eliminarDelCarrito(index)}
+                              title="Eliminar producto"
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="cart-summary">
+                      <div className="cart-totals">
+                        <h3>Resumen de Compra</h3>
+                        <p className="total-price">Total a pagar: <span>${total.toFixed(2)}</span></p>
+                      </div>
+                      
+                      <div className="payment-section">
+                        <label>
+                          <FontAwesomeIcon icon={faMoneyBillAlt} className="payment-icon" />
+                          Ingrese el monto recibido:
+                        </label>
+                        <input
+                          type="number"
+                          value={montoEntregado}
+                          onChange={(e) => setMontoEntregado(e.target.value)}
+                          min={total}
+                          placeholder="Monto entregado"
+                          id="montoEntregado"
+                          disabled={isProcessing}
+                        />
+                        {errorMonto && (
+                          <p className="error-text">
+                            <FontAwesomeIcon icon={faExclamationTriangle} />
+                            {errorMonto}
+                          </p>
+                        )}
+                        {montoEntregado && parseFloat(montoEntregado) >= total && (
+                          <div className="vuelto">
+                            Cambio a devolver: 
+                            <span>${vuelto.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <button 
+                        className="checkout-button"
+                        onClick={handleFinalizarVenta}
+                        disabled={isProcessing || carrito.length === 0 || vuelto < 0}
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                        {isProcessing ? ' Procesando venta...' : ' Finalizar Venta'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
+            
+            {error && (
+              <div className="error-message">
+                <FontAwesomeIcon icon={faExclamationTriangle} /> {error}
+              </div>
+            )}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };
-
-const SearchBar = React.memo(({ codigoEscaneado, setCodigoEscaneado, handleScan }) => (
-  <div className="search-bar">
-    <input
-      type="text"
-      placeholder="Escanee código de barras"
-      value={codigoEscaneado}
-      onChange={(e) => setCodigoEscaneado(e.target.value)}
-      onKeyPress={(e) => {
-        if (e.key === 'Enter') {
-          handleScan(e);
-        }
-      }}
-      autoFocus
-      aria-label="Código de barras"
-    />
-  </div>
-));
-
-const ProductInfo = React.memo(({ producto, stockActual, cantidad, disminuirCantidad, incrementarCantidad, agregarAlCarrito }) => (
-  <div className="scanner-section">
-    <h2>Escanear Producto</h2>
-    {producto && (
-      <div className="product-info">
-        <img src={producto.image} alt={producto.nombre} className="product-image" />
-        <h3>{producto.nombre}</h3>
-        <p>Marca: {producto.marca}</p>
-        <p>Categoría: {producto.categoria}</p>
-        <p className="product-price">Precio: ${producto.precioVenta}</p>
-        <p className="product-price">Precio de compra: ${producto.precioCompra}</p>
-        <p>Stock restante: {stockActual}</p>
-        <p>Fecha de Vencimiento: {new Date(producto.fechaVencimiento).toLocaleDateString()}</p>
-      </div>
-    )}
-  </div>
-));
-
-const Cart = React.memo(({ carrito, stockPorProducto, eliminarDelCarrito, incrementarCantidadCarrito, disminuirCantidadCarrito, finalizarVenta }) => {
-  const [montoEntregado, setMontoEntregado] = useState("");
-  const [errorMonto, setErrorMonto] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
-  const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (montoEntregado && parseFloat(montoEntregado) < total) {
-        setErrorMonto("El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
-      } else {
-        setErrorMonto("");
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [montoEntregado, total]);
-  const handleFinalizarVenta = async () => {
-    if (isProcessing) 
-      return;
-    
-    setIsProcessing(true);
-    
-    try {
-      // Focus a non-input element before processing to prevent aria-hidden issues
-      document.getElementById('root').setAttribute('inert', '');
-      await finalizarVenta();
-    } finally {
-      setTimeout(() => {
-        setIsProcessing(false);
-        // Remove the inert attribute when done
-        document.getElementById('root').removeAttribute('inert');
-      }, 1500);
-    }
-  };
-
-  return (
-    <div className="cart-section">
-      <h2>Carrito de Compras</h2>
-      {carrito.length === 0 ? (
-        <div className="empty-cart">
-          <p>No hay productos en el carrito</p>
-          <span className="empty-cart-icon">🛒</span>
-        </div>
-      ) : (
-        <>
-          <div className="cart-items-container">
-            {carrito.map((producto, index) => (
-              <div key={index} className="cart-item-card">
-                <div className="cart-item-details">
-                  <h4>{producto.nombre}</h4>
-                  <p className="cart-item-marca">{producto.marca}</p>
-                  <p className="cart-item-price">
-                    Precio: <span>${producto.precioVenta}</span>
-                  </p>
-                </div>
-                <div className="cart-item-actions">
-                  <div className="cart-quantity-controls">
-                    <button 
-                      onClick={() => disminuirCantidadCarrito(index)} 
-                      className="quantity-btn"
-                      disabled={producto.cantidad <= 1}
-                    >−</button>
-                    <span className="quantity-display">{producto.cantidad}</span>
-                    <button 
-                      onClick={() => incrementarCantidadCarrito(index)}
-                      className="quantity-btn"
-                      disabled={!stockPorProducto[producto.codigoBarras]}
-                    >+</button>
-                  </div>
-                  <p className="cart-item-total">
-                    Subtotal: <span>${(producto.precioVenta * producto.cantidad)}</span>
-                  </p>
-                  <button 
-                    className="delete-product-btn" 
-                    onClick={() => eliminarDelCarrito(index)}
-                    title="Eliminar producto"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="cart-summary">
-            <div className="cart-totals">
-              <h3>Resumen</h3>
-              <p className="total-price">Total a pagar: <span>${total}</span></p>
-            </div>            
-            <button 
-              className="checkout-button" 
-              onClick={handleFinalizarVenta} 
-              aria-label="Aceptar venta"
-              disabled={isProcessing}
-              style={{ 
-                opacity: isProcessing ? 0.7 : 1,
-                cursor: isProcessing ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isProcessing ? 'Procesando...' : 'Finalizar Venta'}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-});
 
 export default ProductScanner;

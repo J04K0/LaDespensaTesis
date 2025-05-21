@@ -448,64 +448,75 @@ const Proveedores = () => {
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
 
   return (
-    <div className="proveedores-container">
+    <div className="app-container">
       <Navbar />
-      <div className="proveedores-content">
+      <div className="content-container">
         {loading ? (
           <ProveedoresSkeleton />
         ) : (
           <>
-            <div className="proveedores-header">
-              <h1>Gestión de Proveedores</h1>
-              <div className="proveedores-header-buttons">
-                <button onClick={exportarPDF} className="proveedores-btn-export-pdf">
+            <div className="page-header">
+              <h1 className="page-title">Gestión de Proveedores</h1>
+              <div className="d-flex gap-sm">
+                <button onClick={exportarPDF} className="btn btn-secondary">
                   <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
                 </button>
-                <button className="proveedores-btn-add" onClick={handleAddProveedor}>
+                <button className="btn btn-primary" onClick={handleAddProveedor}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
                 </button>
               </div>
             </div>
-            <div className="proveedores-controls">
-              <div className="proveedores-search-bar">
-                <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
+            
+            <div className="filters-container">
+              <div className="search-container">
+                <FontAwesomeIcon icon={faSearch} className="search-icon" />
                 <input
                   type="text"
                   placeholder="Buscar proveedores..."
                   value={searchQuery}
                   onChange={handleSearchChange}
+                  className="search-input"
                 />
               </div>
-              <div className="proveedores-sort-filter">
-                <select value={sortOption} onChange={handleSortChange}>
+              
+              <div className="filter-group">
+                <select 
+                  value={sortOption} 
+                  onChange={handleSortChange}
+                  className="form-select"
+                >
                   <option value="">Ordenar por</option>
                   <option value="nombre-asc">Nombre (A-Z)</option>
                   <option value="nombre-desc">Nombre (Z-A)</option>
                 </select>
-                <button onClick={handleClearFilters} className="proveedores-btn-clear-filters">
-                  <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
-                </button>
               </div>
-
-              <select 
-                value={categoryFilter} 
-                onChange={handleCategoryFilterChange}
-                className="proveedores-filter"
-              >
-                <option value="">Todas las categorías</option>
-                {categorias.map((cat, index) => (
-                  <option key={index} value={cat}>{cat}</option>
-                ))}
-              </select>
+              
+              <div className="filter-group">
+                <select 
+                  value={categoryFilter} 
+                  onChange={handleCategoryFilterChange}
+                  className="form-select"
+                >
+                  <option value="">Todas las categorías</option>
+                  {categorias.map((cat, index) => (
+                    <option key={index} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <button onClick={handleClearFilters} className="btn btn-secondary">
+                <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
+              </button>
             </div>
+            
             {loading ? (
-              <p className="proveedores-loading-message">Cargando proveedores...</p>
+              <p className="text-center">Cargando proveedores...</p>
             ) : error ? (
-              <p className="proveedores-error-message">{error}</p>
+              <p className="text-center text-danger">{error}</p>
             ) : (
               <>
-                <div className="proveedores-table-container">
-                  <table className="proveedores-table">
+                <div className="table-container">
+                  <table className="data-table">
                     <thead>
                       <tr>
                         <th>Nombre</th>
@@ -552,11 +563,11 @@ const Proveedores = () => {
                                         );
                                       })}
                                       {proveedor.productos.length > 3 && (
-                                        <span className="more-productos">+{proveedor.productos.length - 3}</span>
+                                        <span className="state-badge state-badge-info">+{proveedor.productos.length - 3}</span>
                                       )}
                                     </div>
                                     <button 
-                                      className="view-productos-btn"
+                                      className="btn btn-secondary"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleViewProveedorProductos(proveedor._id);
@@ -566,21 +577,23 @@ const Proveedores = () => {
                                     </button>
                                   </>
                                 ) : (
-                                  <span className="proveedores-badge-empty">Sin productos</span>
+                                  <span className="state-badge">Sin productos</span>
                                 )}
                               </div>
                             </td>
                             <td>{proveedor.notas}</td>
-                            <td className="proveedores-actions-cell">
+                            <td className="d-flex gap-sm">
                               <button 
                                 onClick={() => handleEditProveedor(proveedor._id)}
-                                className="proveedores-btn-edit"
+                                className="btn-icon btn-primary"
+                                title="Editar proveedor"
                               >
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
                               <button 
                                 onClick={() => handleDeleteProveedor(proveedor._id)}
-                                className="proveedores-btn-delete"
+                                className="btn-icon btn-danger"
+                                title="Eliminar proveedor"
                               >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
@@ -589,7 +602,7 @@ const Proveedores = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="9" className="proveedores-no-data">No hay proveedores disponibles</td>
+                          <td colSpan="9" className="no-data">No hay proveedores disponibles</td>
                         </tr>
                       )}
                     </tbody>
@@ -598,12 +611,12 @@ const Proveedores = () => {
                 
                 {/* Paginación */}
                 {totalPages > 1 && (
-                  <div className="proveedores-pagination">
+                  <div className="pagination">
                     {[...Array(totalPages).keys()].map(page => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page + 1)}
-                        className={page + 1 === currentPage ? 'active' : ''}
+                        className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
                       >
                         {page + 1}
                       </button>
@@ -618,18 +631,18 @@ const Proveedores = () => {
 
       {/* Modal de creación/edición de proveedores */}
       {showModal && (
-        <div 
-          className="proveedores-modal-overlay" 
-          onClick={() => setShowModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div 
-            className="proveedores-modal-content"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2>{isEditing ? 'Editar Proveedor' : 'Agregar Proveedor'}</h2>
+            <div className="modal-header">
+              <h2 className="modal-title">{isEditing ? 'Editar Proveedor' : 'Agregar Proveedor'}</h2>
+            </div>
+            
             <form onSubmit={handleSubmit}>
-              <div className="proveedores-form-group">
-                <label htmlFor="nombre">Nombre:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="nombre">Nombre:</label>
                 <input
                   type="text"
                   id="nombre"
@@ -637,11 +650,12 @@ const Proveedores = () => {
                   value={currentProveedor.nombre}
                   onChange={handleInputChange}
                   required
+                  className="form-control"
                 />
               </div>
               
-              <div className="proveedores-form-group">
-                <label htmlFor="telefono">Teléfono:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="telefono">Teléfono:</label>
                 <input
                   type="text"
                   id="telefono"
@@ -649,11 +663,12 @@ const Proveedores = () => {
                   value={currentProveedor.telefono}
                   onChange={handleInputChange}
                   required
+                  className="form-control"
                 />
               </div>
               
-              <div className="proveedores-form-group">
-                <label htmlFor="email">Email:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="email">Email:</label>
                 <input
                   type="email"
                   id="email"
@@ -661,22 +676,24 @@ const Proveedores = () => {
                   value={currentProveedor.email}
                   onChange={handleInputChange}
                   required
+                  className="form-control"
                 />
               </div>
               
-              <div className="proveedores-form-group">
-                <label htmlFor="direccion">Dirección:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="direccion">Dirección:</label>
                 <input
                   type="text"
                   id="direccion"
                   name="direccion"
                   value={currentProveedor.direccion}
                   onChange={handleInputChange}
+                  className="form-control"
                 />
               </div>
               
-              <div className="proveedores-form-group">
-                <label>Categorías:</label>
+              <div className="form-group">
+                <label className="form-label">Categorías:</label>
                 <div className="proveedores-categories-selector">
                   {categorias.map((cat, index) => (
                     <div key={index} className="category-checkbox-item">
@@ -693,19 +710,20 @@ const Proveedores = () => {
                 </div>
               </div>
               
-              <div className="proveedores-form-group">
-                <label htmlFor="contactoPrincipal">Persona de Contacto:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="contactoPrincipal">Persona de Contacto:</label>
                 <input
                   type="text"
                   id="contactoPrincipal"
                   name="contactoPrincipal"
                   value={currentProveedor.contactoPrincipal || ''}
                   onChange={handleInputChange}
+                  className="form-control"
                 />
               </div>
 
-              <div className="proveedores-form-group">
-                <label htmlFor="sitioWeb">Sitio Web:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="sitioWeb">Sitio Web:</label>
                 <input
                   type="url"
                   id="sitioWeb"
@@ -713,21 +731,23 @@ const Proveedores = () => {
                   value={currentProveedor.sitioWeb || ''}
                   onChange={handleInputChange}
                   placeholder="https://ejemplo.com"
+                  className="form-control"
                 />
               </div>
               
-              <div className="proveedores-form-group">
-                <label htmlFor="notas">Notas adicionales:</label>
+              <div className="form-group">
+                <label className="form-label" htmlFor="notas">Notas adicionales:</label>
                 <textarea
                   id="notas"
                   name="notas"
                   value={currentProveedor.notas}
                   onChange={handleInputChange}
                   rows="3"
+                  className="form-control"
                 ></textarea>
               </div>
 
-              <div className="proveedores-productos">
+              <div className="card">
                 <h3>Productos que provee</h3>
                 <div className="proveedores-productos-list">
                   {isEditing ? (
@@ -761,19 +781,19 @@ const Proveedores = () => {
                 <button 
                   type="button"
                   onClick={(e) => handleLinkProducts(e)}
-                  className="proveedores-btn-link"
+                  className="btn btn-secondary"
                 >
                   <FontAwesomeIcon icon={faLink} /> Vincular Productos
                 </button>
               </div>
               
-              <div className="proveedores-modal-buttons">
-                <button type="submit" className="proveedores-btn-save">
+              <div className="modal-footer">
+                <button type="submit" className="btn btn-success">
                   {isEditing ? 'Actualizar' : 'Guardar'}
                 </button>
                 <button 
                   type="button" 
-                  className="proveedores-btn-cancel"
+                  className="btn btn-danger"
                   onClick={handleCancel}
                 >
                   Cancelar
@@ -786,20 +806,22 @@ const Proveedores = () => {
 
       {/* Modal de selección de productos */}
       {showProductsModal && (
-        <div 
-          className="proveedores-modal-overlay" 
-          onClick={() => setShowProductsModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowProductsModal(false)}>
           <div 
-            className="proveedores-modal-content products-modal"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
+            style={{maxWidth: '800px'}}
           >
-            <h2>Vincular Productos</h2>
+            <div className="modal-header">
+              <h2 className="modal-title">Vincular Productos</h2>
+            </div>
             
-            <div className="product-search">
+            <div className="search-container">
+              <FontAwesomeIcon icon={faSearch} className="search-icon" />
               <input 
                 type="text" 
                 placeholder="Buscar productos..." 
+                className="search-input"
               />
             </div>
             
@@ -829,15 +851,15 @@ const Proveedores = () => {
               ))}
             </div>
             
-            <div className="proveedores-modal-buttons">
+            <div className="modal-footer">
               <button 
-                className="proveedores-btn-save"
+                className="btn btn-success"
                 onClick={handleProductsSubmit}
               >
                 Guardar
               </button>
               <button 
-                className="proveedores-btn-cancel"
+                className="btn btn-danger"
                 onClick={() => setShowProductsModal(false)}
               >
                 Cancelar
@@ -849,20 +871,20 @@ const Proveedores = () => {
 
       {/* Modal de visualización de productos */}
       {showViewProductsModal && viewingProveedor && (
-        <div 
-          className="proveedores-modal-overlay" 
-          onClick={() => setShowViewProductsModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowViewProductsModal(false)}>
           <div 
-            className="proveedores-modal-content view-products-modal"
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
+            style={{maxWidth: '900px', maxHeight: '85vh'}}
           >
-            <h2>Productos de {viewingProveedor.nombre}</h2>
+            <div className="modal-header">
+              <h2 className="modal-title">Productos de {viewingProveedor.nombre}</h2>
+            </div>
             
             <div className="provider-products-grid">
               {viewingProveedor.productosDetalle && viewingProveedor.productosDetalle.length > 0 ? (
                 viewingProveedor.productosDetalle.map(producto => (
-                  <div key={producto._id} className="provider-product-card">
+                  <div key={producto._id} className="card">
                     <div className="provider-product-image">
                       <img src={producto.image} alt={producto.Nombre || producto.nombre} />
                     </div>
@@ -876,13 +898,13 @@ const Proveedores = () => {
                   </div>
                 ))
               ) : (
-                <p className="no-products-message">Este proveedor no tiene productos asociados</p>
+                <p className="text-center">Este proveedor no tiene productos asociados</p>
               )}
             </div>
             
-            <div className="proveedores-modal-buttons">
+            <div className="modal-footer">
               <button 
-                className="proveedores-btn-cancel"
+                className="btn btn-secondary"
                 onClick={() => setShowViewProductsModal(false)}
               >
                 Cerrar

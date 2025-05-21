@@ -464,27 +464,27 @@ const handleCancel = async () => {
 };
 
   return (
-    <div className="cuentas-pagar-container">
+    <div className="app-container">
       <Navbar />
-      <div className="cuentas-pagar-content">
+      <div className="content-container">
         {loading ? (
           <CuentasPorPagarSkeleton />
         ) : (
           <>
-            <div className="section-title-cuentas">
-              Cuentas por Pagar
-              <div className="cuentas-buttons">
-                <button className="export-pdf-button" onClick={exportarPDF}>
+            <div className="page-header">
+              <h1 className="page-title">Cuentas por Pagar</h1>
+              <div className="d-flex gap-sm">
+                <button className="btn btn-secondary" onClick={exportarPDF}>
                   <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
                 </button>
-                <button className="add-cuenta-button" onClick={handleAddCuenta}>
+                <button className="btn btn-primary" onClick={handleAddCuenta}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Cuenta
                 </button>
               </div>
             </div>
             
             <div className="filters-container">
-              <div className="search-bar-cuentas">
+              <div className="search-container">
                 <FontAwesomeIcon icon={faSearch} className="search-icon" />
                 <input
                   type="text"
@@ -497,7 +497,7 @@ const handleCancel = async () => {
               
               <div className="filter-group">
                 <select 
-                  className="filter-select"
+                  className="form-select"
                   value={yearSelected}
                   onChange={handleYearChange}
                 >
@@ -507,7 +507,7 @@ const handleCancel = async () => {
                 </select>
                 
                 <select 
-                  className="filter-select"
+                  className="form-select"
                   value={categoriaFilter}
                   onChange={handleCategoriaFilterChange}
                 >
@@ -518,7 +518,7 @@ const handleCancel = async () => {
                 </select>
                 
                 <select 
-                  className="filter-select"
+                  className="form-select"
                   value={estadoFilter}
                   onChange={handleEstadoFilterChange}
                 >
@@ -529,7 +529,7 @@ const handleCancel = async () => {
                 </select>
                 
                 <button 
-                  className="clear-filters-button"
+                  className="btn btn-secondary"
                   onClick={handleClearFilters}
                 >
                   <FontAwesomeIcon icon={faEraser} /> Limpiar Filtros
@@ -537,8 +537,8 @@ const handleCancel = async () => {
               </div>
             </div>
             
-            <div className="cuentas-anual-container">
-              <table className="cuentas-anual-table">
+            <div className="table-container cuentas-anual-container">
+              <table className="data-table cuentas-anual-table">
                 <thead>
                   <tr>
                     <th className="proveedor-column">Proveedor</th>
@@ -555,10 +555,12 @@ const handleCancel = async () => {
                         <td className="proveedor-column">
                           <div className="proveedor-info">
                             <div className="proveedor-nombre">{proveedor.nombre}</div>
-                            <div className="proveedor-id">{proveedor.numeroVerificador}</div>
+                            <div className="proveedor-id text-secondary">{proveedor.numeroVerificador}</div>
                           </div>
                         </td>
-                        <td className="categoria-column">{proveedor.categoria}</td>
+                        <td className="categoria-column">
+                          <span className="state-badge">{proveedor.categoria}</span>
+                        </td>
                         
                         {meses.map(mes => {
                           const cuentaMes = proveedor.meses[mes.id];
@@ -575,20 +577,18 @@ const handleCancel = async () => {
                                   </div>
                                   <div className="cuenta-actions">
                                     <button 
-                                      className={`estado-checkbox ${cuentaMes.estado === 'Pagado' ? 'checked' : ''}`}
+                                      className={`btn-icon ${cuentaMes.estado === 'Pagado' ? 'btn-success' : 'btn-outline-success'}`}
+                                      title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagado' : 'Marcar como pagado'}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleTogglePaid(cuentaMes._id, cuentaMes.estado);
                                       }}
                                     >
-                                      {cuentaMes.estado === 'Pagado' ? (
-                                        <FontAwesomeIcon icon={faCheck} />
-                                      ) : (
-                                        <span className="checkbox-empty"></span>
-                                      )}
+                                      <FontAwesomeIcon icon={faCheck} />
                                     </button>
                                     <button 
-                                      className="delete-mini-button"
+                                      className="btn-icon btn-danger"
+                                      title="Eliminar"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDelete(cuentaMes._id);
@@ -610,7 +610,7 @@ const handleCancel = async () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={meses.length + 2} style={{ textAlign: 'center' }}>
+                      <td colSpan={meses.length + 2} className="text-center">
                         No se encontraron cuentas que coincidan con los filtros.
                       </td>
                     </tr>
@@ -625,7 +625,7 @@ const handleCancel = async () => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page + 1)}
-                    className={page + 1 === currentPage ? 'active' : ''}
+                    className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
                     disabled={page + 1 === currentPage}
                   >
                     {page + 1}
@@ -638,10 +638,12 @@ const handleCancel = async () => {
             {showModal && (
               <div className="modal-overlay">
                 <div className="modal-content">
-                  <h3>{isEditing ? 'Editar Cuenta' : 'Agregar Nueva Cuenta'}</h3>
+                  <div className="modal-header">
+                    <h2 className="modal-title">{isEditing ? 'Editar Cuenta' : 'Agregar Nueva Cuenta'}</h2>
+                  </div>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="Nombre">Nombre:</label>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="Nombre">Nombre:</label>
                     <input
                       type="text"
                       id="Nombre"
@@ -649,11 +651,12 @@ const handleCancel = async () => {
                       value={currentCuenta.Nombre}
                       onChange={handleInputChange}
                       required
+                      className="form-control"
                     />
                   </div>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="numeroVerificador">Identificador/RUT:</label>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="numeroVerificador">Identificador/RUT:</label>
                     <input
                       type="text"
                       id="numeroVerificador"
@@ -661,11 +664,12 @@ const handleCancel = async () => {
                       value={currentCuenta.numeroVerificador}
                       onChange={handleInputChange}
                       required
+                      className="form-control"
                     />
                   </div>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="Mes">Mes:</label>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="Mes">Mes:</label>
                     <input
                       type="month"
                       id="Mes"
@@ -673,11 +677,12 @@ const handleCancel = async () => {
                       value={currentCuenta.Mes}
                       onChange={handleInputChange}
                       required
+                      className="form-control"
                     />
                   </div>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="Monto">Monto:</label>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="Monto">Monto:</label>
                     <input
                       type="number"
                       id="Monto"
@@ -686,17 +691,19 @@ const handleCancel = async () => {
                       onChange={handleInputChange}
                       min="0"
                       required
+                      className="form-control"
                     />
                   </div>
                   
-                  <div className="modal-form-group">
-                    <label htmlFor="Categoria">Categoría:</label>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="Categoria">Categoría:</label>
                     <select
                       id="Categoria"
                       name="Categoria"
                       value={currentCuenta.Categoria}
                       onChange={handleInputChange}
                       required
+                      className="form-select"
                     >
                       <option value="">Seleccione una categoría</option>
                       {categorias.map(cat => (
@@ -706,14 +713,15 @@ const handleCancel = async () => {
                   </div>
                   
                   {isEditing && (
-                    <div className="modal-form-group">
-                      <label htmlFor="Estado">Estado:</label>
+                    <div className="form-group">
+                      <label className="form-label" htmlFor="Estado">Estado:</label>
                       <select
                         id="Estado"
                         name="Estado"
                         value={currentCuenta.Estado}
                         onChange={handleInputChange}
                         required
+                        className="form-select"
                       >
                         {estados.map(estado => (
                           <option key={estado} value={estado}>{estado}</option>
@@ -722,15 +730,15 @@ const handleCancel = async () => {
                     </div>
                   )}
                   
-                  <div className="modal-buttons">
+                  <div className="modal-footer">
                     <button 
-                      className="confirm-button"
+                      className="btn btn-success"
                       onClick={handleSubmit}
                     >
                       {isEditing ? 'Guardar Cambios' : 'Agregar Cuenta'}
                     </button>
                     <button 
-                      className="cancel-button"
+                      className="btn btn-danger"
                       onClick={handleCancel}
                     >
                       Cancelar

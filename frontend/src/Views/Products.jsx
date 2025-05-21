@@ -5,8 +5,10 @@ import ProductCard from '../components/ProductCard';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas } from '../services/venta.service';
-import { showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -471,106 +473,143 @@ const Products = () => {
   };
 
   return (
-    <div className="products-page">
+    <div className="app-container">
       <Navbar />
-      <div className="products-content">
-        <div className="products-header">
-          <div className="control">
-            <input
-              id="search"
-              type="text"
-              className="barra-de-busqueda"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Buscar productos..."
-            />
-          </div>
-          <select onChange={handleCategoryChange} value={category} className="filter-select">
-            <option value="Todos">Todas las categorías</option>
-            {categories.map((cat, index) => (
-              <option key={index} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <select onChange={handleAvailabilityChange} value={availabilityFilter} className="filter-select">
-            <option value="Todos">Todos</option>
-            <option value="Disponibles">Disponibles</option>
-            <option value="No disponibles">No disponibles</option>
-            <option value="Por vencer">Por vencer</option>
-            <option value="Vencidos">Vencidos</option>
-            <option value="Poco stock">Poco stock</option>
-          </select>
-          <select onChange={handleSortChange} value={sortOption} className="filter-select">
-            <option value="">Ordenar por</option>
-            <option value="name-asc">Nombre (A-Z)</option>
-            <option value="name-desc">Nombre (Z-A)</option>
-            <option value="stock-asc">Stock (Ascendente)</option>
-            <option value="stock-desc">Stock (Descendente)</option>
-            <option value="price-asc">Precio (Ascendente)</option>
-            <option value="price-desc">Precio (Descendente)</option>
-          </select>
-          <button onClick={handleClearFilters} className="clear-filters-button">
-            Limpiar Filtros
-          </button>
-          <button onClick={() => navigate('/add-product')} className="add-product-button">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.49 2 2 6.49 2 12C2 17.51 6.49 22 12 22C17.51 22 22 17.51 22 12C22 6.49 17.51 2 12 2ZM16 12.75H12.75V16C12.75 16.41 12.41 16.75 12 16.75C11.59 16.75 11.25 16.41 11.25 16V12.75H8C7.59 12.75 7.25 12.41 7.25 12C7.25 11.59 7.59 11.25 8 11.25H11.25V8C11.25 7.59 11.59 7.25 12 7.25C12.41 7.25 12.75 7.59 12.75 8V11.25H16C16.41 11.25 16.75 11.59 16.75 12C16.75 12.41 16.41 12.75 16 12.75Z" fill="currentColor"/>
-            </svg>
-            Añadir Producto
-          </button>
-        </div>
-        {loading ? (
-          <div className="product-list">
+      <div className="content-container">
+        {loading && !showEditModal && !showInfoModal ? (
+          <div className="product-grid">
             {Array.from({ length: productsPerPage }).map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
           </div>
-        ) : error ? (
-          <p className="error">{error}</p>
         ) : (
-          <div className="product-list">
-            {displayedProducts.length > 0 ? (
-              displayedProducts.map((product, index) => (
-                <ProductCard
-                  key={index}
-                  image={product.image}
-                  name={product.Nombre}
-                  marca={product.Marca}
-                  stock={product.Stock}
-                  venta={product.PrecioVenta}
-                  fechaVencimiento={product.fechaVencimiento}
-                  onDelete={() => handleDelete(product._id)}
-                  onEdit={() => handleEdit(product._id)}
-                  onInfo={() => handleProductInfo(product)}
-                  productId={product._id}
+          <>
+            <div className="page-header">
+              <h1 className="page-title">Gestión de Productos</h1>
+              <div className="d-flex gap-sm">
+                <button className="btn btn-primary" onClick={() => navigate('/add-product')}>
+                  <FontAwesomeIcon icon={faPlus} /> Añadir Producto
+                </button>
+              </div>
+            </div>
+            
+            <div className="filters-container">
+              <div className="search-container">
+                <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="search-input"
                 />
-              ))
+              </div>
+              
+              <div className="filter-group">
+                <select 
+                  value={category} 
+                  onChange={handleCategoryChange}
+                  className="form-select"
+                >
+                  <option value="Todos">Todas las categorías</option>
+                  {categories.map((cat, index) => (
+                    <option key={index} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="filter-group">
+                <select 
+                  value={availabilityFilter} 
+                  onChange={handleAvailabilityChange}
+                  className="form-select"
+                >
+                  <option value="Todos">Todos</option>
+                  <option value="Disponibles">Disponibles</option>
+                  <option value="No disponibles">No disponibles</option>
+                  <option value="Por vencer">Por vencer</option>
+                  <option value="Vencidos">Vencidos</option>
+                  <option value="Poco stock">Poco stock</option>
+                </select>
+              </div>
+              
+              <div className="filter-group">
+                <select 
+                  value={sortOption} 
+                  onChange={handleSortChange}
+                  className="form-select"
+                >
+                  <option value="">Ordenar por</option>
+                  <option value="name-asc">Nombre (A-Z)</option>
+                  <option value="name-desc">Nombre (Z-A)</option>
+                  <option value="stock-asc">Stock (Ascendente)</option>
+                  <option value="stock-desc">Stock (Descendente)</option>
+                  <option value="price-asc">Precio (Ascendente)</option>
+                  <option value="price-desc">Precio (Descendente)</option>
+                </select>
+              </div>
+              
+              <button onClick={handleClearFilters} className="btn btn-secondary">
+                <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
+              </button>
+            </div>
+
+            {error ? (
+              <div className="alert alert-danger">{error}</div>
             ) : (
-              <p>No hay productos disponibles.</p>
+              <>
+                {displayedProducts.length > 0 ? (
+                  <div className="product-grid">
+                    {displayedProducts.map((product, index) => (
+                      <ProductCard
+                        key={index}
+                        image={product.image}
+                        name={product.Nombre}
+                        marca={product.Marca}
+                        stock={product.Stock}
+                        venta={product.PrecioVenta}
+                        fechaVencimiento={product.fechaVencimiento}
+                        onDelete={() => handleDelete(product._id)}
+                        onEdit={() => handleEdit(product._id)}
+                        onInfo={() => handleProductInfo(product)}
+                        productId={product._id}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-results">No hay productos disponibles con los filtros seleccionados.</div>
+                )}
+                
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    {[...Array(totalPages).keys()].map(page => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page + 1)}
+                        className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
+                      >
+                        {page + 1}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
-          </div>
+          </>
         )}
-        <div className="pagination">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              className={`pagination-button ${index + 1 === currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(index + 1)}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
       </div>
+      
       {showInfoModal && productInfo && (
-        <div 
-          className="modal-overlay" 
-          onClick={() => setShowInfoModal(false)}
-        >
-          <div 
-            className="product-detail-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="product-detail-content">
+        <div className="modal-overlay" onClick={() => setShowInfoModal(false)}>
+          <div className="modal-content product-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">{productInfo.Nombre}</h2>
+              <button className="modal-close" onClick={() => setShowInfoModal(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
               <div className="product-detail-image-container">
                 <img 
                   src={productInfo.image || "/default-image.jpg"} 
@@ -579,123 +618,134 @@ const Products = () => {
                 />
               </div>
               
-              <div className="product-detail-info">
-                <p className="product-detail-brand">{productInfo.Marca}</p>
-                <h2 className="product-detail-name">{productInfo.Nombre}</h2>
-                
-                <div className="product-detail-price-info">
-                  <p>Compra <span className="product-detail-old-price">${productInfo.PrecioCompra}</span></p>
-                  <p className="product-detail-current-price">${productInfo.PrecioVenta}</p>
-                </div>
-                <div className="product-detail-actions">
-                  <button onClick={() => { setShowInfoModal(false); handleEdit(productInfo._id); }} className="product-detail-edit-btn">
-                    Editar
-                  </button>
-                  <button onClick={() => { if(window.confirm('¿Estás seguro de eliminar este producto?')) { handleDelete(productInfo._id); setShowInfoModal(false); } }} className="product-detail-delete-btn">
-                    Eliminar
-                  </button>
+              <div className="product-price-section">
+                <div className="product-price-row">
+                  <span className="price-label">precio compra:</span>
+                  <span className="price-value">${productInfo.PrecioCompra}</span>
                 </div>
                 
-                <div className="product-detail-characteristics">
-                  <h3 
-                    className="product-detail-section-title"
-                    onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="20" 
-                      height="20" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                      style={{ 
-                        transform: characteristicsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                        transition: 'transform 0.3s ease'
-                      }}
-                    >
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                    Características
-                  </h3>
-                  
-                  {characteristicsExpanded && (
-                    <ul className="product-detail-characteristics-list">
+                <div className="product-price-row">
+                  <span className="price-label">precio venta:</span>
+                  <span className="price-value">${productInfo.PrecioVenta}</span>
+                </div>
+              </div>
+              
+              <button 
+                className="detail-section-button"
+                onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
+              >
+                Características
+                <FontAwesomeIcon 
+                  icon={faChevronDown} 
+                  className={`accordion-icon ${characteristicsExpanded ? 'expanded' : ''}`}
+                />
+              </button>
+              
+              {characteristicsExpanded && (
+                <div className="accordion-body">
+                  <table className="details-table">
+                    <tbody>
                       {productInfo.fechaVencimiento && (
-                        <li>
-                          <span className="characteristic-bullet">-</span>
-                          <span>Fecha vencimiento: {new Date(productInfo.fechaVencimiento).toLocaleDateString()}</span>
-                        </li>
+                        <tr>
+                          <td>Fecha vencimiento:</td>
+                          <td>{new Date(productInfo.fechaVencimiento).toLocaleDateString()}</td>
+                        </tr>
                       )}
-                      <li>
-                        <span className="characteristic-bullet">-</span>
-                        <span>Categoría: {productInfo.Categoria}</span>
-                      </li>
-                      <li>
-                        <span className="characteristic-bullet">-</span>
-                        <span>Stock: {productInfo.Stock} unidades</span>
-                      </li>
-                      <li>
-                        <span className="characteristic-bullet">-</span>
-                        <span>Código de Barras: {productInfo.codigoBarras}</span>
-                      </li>
-                    </ul>
+                      <tr>
+                        <td>Categoría:</td>
+                        <td>{productInfo.Categoria}</td>
+                      </tr>
+                      <tr>
+                        <td>Stock:</td>
+                        <td>{productInfo.Stock} unidades</td>
+                      </tr>
+                      <tr>
+                        <td>Código de Barras:</td>
+                        <td>{productInfo.codigoBarras}</td>
+                      </tr>
+                      <tr>
+                        <td>Marca:</td>
+                        <td>{productInfo.Marca}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              
+              <button 
+                className="detail-section-button"
+                onClick={() => setStatsExpanded(!statsExpanded)}
+              >
+                Estadísticas de Venta
+                <FontAwesomeIcon 
+                  icon={faChevronDown} 
+                  className={`accordion-icon ${statsExpanded ? 'expanded' : ''}`}
+                />
+              </button>
+              
+              {statsExpanded && productStats.totalVentas > 0 && (
+                <div className="accordion-body">
+                  <table className="details-table">
+                    <tbody>
+                      <tr>
+                        <td>Total Unidades Vendidas:</td>
+                        <td>{productStats.totalVentas}</td>
+                      </tr>
+                      <tr>
+                        <td>Ingresos Generados:</td>
+                        <td>${productStats.ingresos.toLocaleString()}</td>
+                      </tr>
+                      {productStats.ultimaVenta && (
+                        <tr>
+                          <td>Última Venta:</td>
+                          <td>{productStats.ultimaVenta.toLocaleDateString()}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  
+                  {productStats.ventasPorMes && productStats.ventasPorMes.length > 0 && (
+                    <div className="sales-by-month">
+                      <h5>Ventas por Mes:</h5>
+                      <ul>
+                        {productStats.ventasPorMes.map((item, idx) => (
+                          <li key={idx}>{item.mes}: {item.cantidad} unidades</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
-                
-                {productStats.totalVentas > 0 && (
-                  <div className="product-detail-sales">
-                    <h3 
-                      className="product-detail-section-title"
-                      onClick={() => setStatsExpanded(!statsExpanded)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="20" 
-                        height="20" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                        style={{ 
-                          transform: statsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                          transition: 'transform 0.3s ease'
-                        }}
-                      >
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                      Estadísticas de Venta
-                    </h3>
-                    
-                    {statsExpanded && (
-                      <ul className="product-detail-characteristics-list">
-                        <li>
-                          <span className="characteristic-bullet">-</span>
-                          <span>Total de Unidades Vendidas: {productStats.totalVentas}</span>
-                        </li>
-                        <li>
-                          <span className="characteristic-bullet">-</span>
-                          <span>Ingresos Generados: ${productStats.ingresos}</span>
-                        </li>
-                        {productStats.ultimaVenta && (
-                          <li>
-                            <span className="characteristic-bullet">-</span>
-                            <span>Última Venta: {productStats.ultimaVenta.toLocaleDateString()}</span>
-                          </li>
-                        )}
-                      </ul>
-                    )}
-                  </div>
-                )}
-                
-                <button onClick={() => setShowInfoModal(false)} className="product-detail-close-btn">
-                  Cerrar
+              )}
+              
+              {statsExpanded && productStats.totalVentas === 0 && (
+                <div className="accordion-body">
+                  <p>Este producto aún no tiene historial de ventas.</p>
+                </div>
+              )}
+                  
+              <div className="product-detail-actions">
+                <button 
+                  onClick={() => { setShowInfoModal(false); handleEdit(productInfo._id); }} 
+                  className="btn btn-primary"
+                >
+                  <FontAwesomeIcon icon={faPen} /> Editar
+                </button>
+                <button 
+                  onClick={async () => {
+                    const result = await showConfirmationAlert(
+                      '¿Estás seguro?',
+                      'Esta acción no se puede deshacer',
+                      'Sí, eliminar',
+                      'Cancelar'
+                    );
+                    if (result.isConfirmed) {
+                      handleDelete(productInfo._id);
+                      setShowInfoModal(false);
+                    }
+                  }} 
+                  className="btn btn-danger"
+                >
+                  <FontAwesomeIcon icon={faTrash} /> Eliminar
                 </button>
               </div>
             </div>
@@ -704,153 +754,163 @@ const Products = () => {
       )}
       
       {showEditModal && (
-        <div 
-          className="modal-overlay" 
-          onClick={() => setShowEditModal(false)}
-        >
-          <div 
-            className="modal-content product-edit-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>Editar Producto</h3>
-            
-            <div className="modal-form-group">
-              <label htmlFor="Nombre">Nombre del producto</label>
-              <input
-                type="text"
-                id="Nombre"
-                name="Nombre"
-                value={productToEdit.Nombre}
-                onChange={handleEditChange}
-                required
-              />
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content product-edit-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Editar Producto</h2>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
             </div>
             
-            <div className="modal-form-group">
-              <label htmlFor="codigoBarras">Código de Barras</label>
-              <input
-                type="text"
-                id="codigoBarras"
-                name="codigoBarras"
-                value={productToEdit.codigoBarras}
-                onChange={handleEditChange}
-                required
-              />
-            </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="Marca">Marca</label>
-              <input
-                type="text"
-                id="Marca"
-                name="Marca"
-                value={productToEdit.Marca}
-                onChange={handleEditChange}
-                required
-              />
-            </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="Stock">Stock</label>
-              <input
-                type="number"
-                id="Stock"
-                name="Stock"
-                value={productToEdit.Stock}
-                onChange={handleEditChange}
-                required
-              />
-            </div>
-            
-            <div className="modal-form-group">
-              <label htmlFor="Categoria">Categoría</label>
-              <select
-                id="Categoria"
-                name="Categoria"
-                value={productToEdit.Categoria}
-                onChange={handleEditChange}
-                required
-              >
-                <option value="">Seleccione una categoría</option>
-                {categories.map((cat, index) => (
-                  <option key={index} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="form-grid">
-              <div className="modal-form-group">
-                <label htmlFor="PrecioCompra">Precio de Compra</label>
-                <input
-                  type="number"
-                  id="PrecioCompra"
-                  name="PrecioCompra"
-                  value={productToEdit.PrecioCompra}
-                  onChange={handleEditChange}
-                  required
-                />
+            <div className="modal-body">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="Nombre">Nombre del producto</label>
+                  <input
+                    type="text"
+                    id="Nombre"
+                    name="Nombre"
+                    value={productToEdit.Nombre}
+                    onChange={handleEditChange}
+                    required
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="codigoBarras">Código de Barras</label>
+                  <input
+                    type="text"
+                    id="codigoBarras"
+                    name="codigoBarras"
+                    value={productToEdit.codigoBarras}
+                    onChange={handleEditChange}
+                    required
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="Marca">Marca</label>
+                  <input
+                    type="text"
+                    id="Marca"
+                    name="Marca"
+                    value={productToEdit.Marca}
+                    onChange={handleEditChange}
+                    required
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="Categoria">Categoría</label>
+                  <select
+                    id="Categoria"
+                    name="Categoria"
+                    value={productToEdit.Categoria}
+                    onChange={handleEditChange}
+                    required
+                    className="form-select"
+                  >
+                    <option value="">Seleccione una categoría</option>
+                    {categories.map((cat, index) => (
+                      <option key={index} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="Stock">Stock</label>
+                  <input
+                    type="number"
+                    id="Stock"
+                    name="Stock"
+                    value={productToEdit.Stock}
+                    onChange={handleEditChange}
+                    required
+                    className="form-control"
+                    min="0"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
+                  <input
+                    type="date"
+                    id="fechaVencimiento"
+                    name="fechaVencimiento"
+                    value={productToEdit.fechaVencimiento}
+                    onChange={handleEditChange}
+                    className="form-control"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="PrecioCompra">Precio de Compra</label>
+                  <div className="input-with-icon">
+                    <span className="input-prefix">$</span>
+                    <input
+                      type="number"
+                      id="PrecioCompra"
+                      name="PrecioCompra"
+                      value={productToEdit.PrecioCompra}
+                      onChange={handleEditChange}
+                      required
+                      className="form-control"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="PrecioVenta">Precio de Venta</label>
+                  <div className="input-with-icon">
+                    <span className="input-prefix">$</span>
+                    <input
+                      type="number"
+                      id="PrecioVenta"
+                      name="PrecioVenta"
+                      value={productToEdit.PrecioVenta}
+                      onChange={handleEditChange}
+                      required
+                      className="form-control"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
               </div>
-              
-              <div className="modal-form-group">
-                <label htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
-                <input
-                  type="date"
-                  id="fechaVencimiento"
-                  name="fechaVencimiento"
-                  value={productToEdit.fechaVencimiento}
-                  onChange={handleEditChange}
-                  required
-                />
-              </div>
-              
-              <div className="modal-form-group">
-                <label htmlFor="PrecioVenta">Precio de Venta</label>
-                <input
-                  type="number"
-                  id="PrecioVenta"
-                  name="PrecioVenta"
-                  value={productToEdit.PrecioVenta}
-                  onChange={handleEditChange}
-                  required
-                />
-              </div>
-            </div>
-                    
-            <div className="modal-form-group">
-              <label htmlFor="image">Imagen</label>
-              <div className="file-input-wrapper">
+                      
+              <div className="form-group-full">
+                <label className="form-label" htmlFor="image">Imagen del Producto</label>
                 <input
                   type="file"
                   id="image"
                   name="image"
                   onChange={handleImageChange}
                   accept="image/*"
+                  className="form-control file-input"
                 />
+                <small className="form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                
+                {typeof editImage === 'string' && (
+                  <div className="current-image">
+                    <p>Imagen actual:</p>
+                    <img src={editImage} alt="Imagen actual del producto" className="preview-image" />
+                  </div>
+                )}
               </div>
-              {typeof editImage === 'string' && (
-                <div className="current-image">
-                  <p>Imagen actual:</p>
-                  <img src={editImage} alt="Imagen actual del producto" />
-                </div>
-              )}
             </div>
             
             <div className="modal-buttons">
               <button onClick={handleEditSubmit} className="confirm-button">
-                Editar producto
-                <svg className="edit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12.9 7.5C12.2 6.8 11.1 6.3 10 6.3C7.6 6.3 5.7 8.2 5.7 10.6C5.7 13 7.6 14.9 10 14.9C12.4 14.9 14.3 13 14.3 10.6" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M16.2 2.43L14.1 4.53C13.8 4.83 13.5 5.41 13.5 5.85V7.29C13.5 8.06 14.14 8.7 14.91 8.7H16.35C16.79 8.7 17.38 8.4 17.67 8.11L19.77 6.01C20.74 5.04 21.2 3.95 19.77 2.52C18.34 1.07 17.25 1.45 16.2 2.43Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <FontAwesomeIcon icon={faPen} /> Guardar Cambios
               </button>
               <button onClick={() => setShowEditModal(false)} className="cancel-button">
-                Cancelar
-                <svg className="cancel-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M21 5.97998C17.67 5.64998 14.32 5.47998 10.98 5.47998C9 5.47998 7.02 5.57998 5.04 5.77998L3 5.97998" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8.5 4.97L8.72 3.66C8.88 2.71 9 2 10.69 2H13.31C15 2 15.13 2.75 15.28 3.67L15.5 4.97" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M18.85 9.14001L18.2 19.21C18.09 20.78 18 22 15.21 22H8.79002C6.00002 22 5.91002 20.78 5.80002 19.21L5.15002 9.14001" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <FontAwesomeIcon icon={faTimes} /> Cancelar
               </button>
             </div>
           </div>

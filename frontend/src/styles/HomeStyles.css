@@ -292,7 +292,6 @@
   color: var(--gray);
   text-align: right;
   font-size: 16px;
-  text-align: center !important;
 }
 
 /* Estilo para deudores con deuda cero */
@@ -300,7 +299,6 @@
   color: var(--gray) !important;
   background-color: #f2f2f2;
   font-weight: 500 !important;
-  text-align: center !important;
 }
 
 .zero-debt-row:hover {

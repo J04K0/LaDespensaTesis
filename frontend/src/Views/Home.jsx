@@ -83,7 +83,7 @@ const Home = () => {
         
         // Mostrar más deudores para que el panel sea más grande
         // Ahora mostraremos al menos 15 deudores en total o más si hay suficientes con deuda
-        const minDeudoresTotales = 20;
+        const minDeudoresTotales = 12;
         
         // Si hay suficientes deudores con deuda, mostrar todos ellos
         let deudoresFinales = [...deudoresConDeudaOrdenados];
@@ -516,23 +516,6 @@ const Home = () => {
                 }
               }} />
             </div>
-            
-            {/* Tabla de datos */}
-            <div className="chart-data-table">
-              <div className="chart-data-header">
-                <span>Categoría</span>
-                <span>Cantidad</span>
-              </div>
-              {ventasPorCategoria.labels.map((label, index) => (
-                <div key={index} className="chart-data-row">
-                  <span className="product-name">
-                    <span className="color-indicator" style={{backgroundColor: ventasPorCategoria.datasets[0].backgroundColor[index]}}></span>
-                    {label}
-                  </span>
-                  <span className="product-value">{ventasPorCategoria.datasets[0].data[index]}</span>
-                </div>
-              ))}
-            </div>
           </div>
         ) : (
           <p>No hay datos disponibles</p>
@@ -563,23 +546,6 @@ const Home = () => {
                   }
                 }
               }} />
-            </div>
-            
-            {/* Tabla de datos */}
-            <div className="chart-data-table">
-              <div className="chart-data-header">
-                <span>Producto</span>
-                <span>Cantidad</span>
-              </div>
-              {productosPocoVendidos.labels.map((label, index) => (
-                <div key={index} className="chart-data-row">
-                  <span className="product-name">
-                    <span className="color-indicator" style={{backgroundColor: productosPocoVendidos.datasets[0].backgroundColor[index]}}></span>
-                    {label}
-                  </span>
-                  <span className="product-value">{productosPocoVendidos.datasets[0].data[index]}</span>
-                </div>
-              ))}
             </div>
           </div>
         ) : (

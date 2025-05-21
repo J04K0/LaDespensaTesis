@@ -1,169 +1,315 @@
-/* Variables de colores para mantener consistencia en toda la aplicación */
+/* MODIFICACIONES PARA MEJOR VISUAL EN LA PÁGINA */
 :root {
-  --primary-dark: #002651;      /* Azul oscuro para fondos principales */
-  --primary: #006EDF;           /* Azul principal para botones y acentos */
-  --primary-light: #E3F2FD;     /* Azul claro para fondos sutiles y hovers */
-  --secondary: #3a86ff;         /* Azul secundario para variaciones */
-  --danger: #dc3545;            /* Rojo para cancelar/eliminar */
-  --danger-hover: #bd2130;      /* Rojo hover */
-  --gray-dark: #343a40;         /* Gris oscuro para encabezados */
-  --gray-light: #f8f9fa;        /* Gris claro para fondos */
+  --primary-dark: #002651;
+  --primary: #006EDF;
+  --primary-light: #E3F2FD;
+  --secondary: #3a86ff;
+  --danger: #dc3545;
+  --danger-hover: #bd2130;
+  --success: #28a745;
+  --success-hover: #218838;
+  --warning: #ffbe0b;
+  --gray-dark: #343a40;
+  --gray: #6c757d;
+  --gray-light: #f8f9fa;
+  --white: #ffffff;
 }
 
-.add-prod-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100vh;
-  background-color: #f5f8fa; /* Fondo más suave */
-  padding-top: calc(var(--navbar-height) + 20px) !important; /* Ajuste para navbar */
-}
-
-.add-prod-container {
-  width: 100%;
-  max-width: 1000px;
-  margin: auto;
-  padding: 40px;
-  border-radius: 12px;
+/* Contenedor principal de la aplicación */
+.app-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background-color: white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease; /* Efecto sutil al cargar */
-}
-
-.add-prod-container:hover {
-  transform: translateY(-5px);
-}
-
-.add-prod-container h2 {
-  text-align: center;
-  margin-bottom: 25px;
-  font-size: 24px;
-  color: var(--primary-dark);
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
+  min-height: 100vh;
   width: 100%;
-}
-
-.add-prod-form {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.add-prod-form-group-full {
-  grid-column: span 2;
-}
-
-.add-prod-form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.add-prod-form-group label {
-  margin-bottom: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  color: #333;
-}
-
-.add-prod-form-group input, .add-prod-form-group select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: white;
-  font-size: 15px;
-  color: #333;
-  box-sizing: border-box;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.add-prod-form-group input:focus, .add-prod-form-group select:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
-}
-
-.add-prod-buttons {
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
-  width: 100%;
-  grid-column: span 2;
-  gap: 15px;
-}
-
-.add-prod-buttons button {
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: none;
-  max-width: 200px;
-  flex: 1;
-}
-
-.add-prod-buttons button:not(.cancel-button) {
-  background-color: var(--primary);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
-}
-
-.add-prod-buttons button:not(.cancel-button):hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
-}
-
-.add-prod-buttons .cancel-button {
-  background-color: var(--danger);
-  color: white;
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
-}
-
-.add-prod-buttons .cancel-button:hover {
-  background-color: var(--danger-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-}
-
-.add-prod-buttons .icon {
-  margin-left: 8px;
-}
-
-/* Estilo para carga de imágenes */
-.image-upload-container {
-  width: 100%;
-  padding: 20px;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: border-color 0.3s;
   background-color: var(--gray-light);
 }
 
-.image-upload-container:hover {
-  border-color: var(--primary);
+.content-container {
+  padding: 60px 20px 40px;
+  width: 100%;
+  margin: 0 auto;
+  background-color: var(--gray-light);
+  min-height: calc(100vh - 60px);
+  max-width: 1200px;
 }
 
-.image-preview {
-  max-width: 200px;
-  max-height: 200px;
-  margin-top: 15px;
+/* Contenedor del formulario de producto */
+.product-form-container {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.product-form {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Card contenedora del formulario */
+.card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+}
+
+.card-body {
+  padding: 30px;
+}
+
+/* Estilos para las secciones del formulario */
+.form-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.section-icon {
+  color: white;
+  font-size: 1rem;
+  background-color: var(--primary);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 12px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: visible;
+}
+
+.section-title {
+  color: var(--primary-dark);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Organización del formulario en filas */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -10px;
+  margin-bottom: 15px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Grupos de formularios */
+.form-group {
+  margin-bottom: 20px;
+  padding: 0 10px;
+  flex: 1;
+  min-width: calc(50% - 20px);
+  position: relative;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: calc(50% - 20px);
+}
+
+/* En la sección de inventario queremos 3 columnas */
+.form-section:nth-child(2) .form-row:first-child .form-group {
+  flex: 1;
+  min-width: calc(33.33% - 20px);
+}
+
+/* La fecha de vencimiento debe ocupar menos espacio */
+.fecha-vencimiento {
+  flex: 0 0 auto;
+  min-width: calc(50% - 20px);
+}
+
+/* Estilos para etiquetas de formulario */
+.form-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+/* Estilos para inputs y selects */
+.form-control, .form-select {
+  padding: 10px 12px;
+  font-size: 0.95rem;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  color: #212529;
+}
+
+.form-control::placeholder {
+  color: #aaa;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.12);
+  outline: none;
+  background-color: #fff;
+}
+
+/* Estilos para los grupos de inputs con prefijo */
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background-color: #e9ecef;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px 0 0 8px;
+  border-right: none;
+  color: #495057;
+  font-weight: 500;
+}
+
+.input-group .form-control {
+  border-radius: 0 8px 8px 0;
+  flex: 1;
+}
+
+/* Estilos para la carga de archivos */
+.file-input {
+  padding: 8px 10px;
+  background-color: #f9f9f9;
+}
+
+/* Estilos para los botones del formulario */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  min-width: 120px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--danger);
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: var(--danger-hover);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* Estilos para mensajes de alerta */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+/* Estilos para texto pequeño */
+.form-text {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Responsividad */
+@media (max-width: 1200px) {
+  .content-container {
+    padding: 80px 30px 30px;
+  }
+}
+
+@media (max-width: 992px) {
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-group, 
+  .form-row .form-group,
+  .form-section:nth-child(2) .form-row:first-child .form-group,
+  .fecha-vencimiento {
+    min-width: 100%;
+    flex: 0 0 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-container {
+    padding: 80px 15px 20px;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+  }
 }
