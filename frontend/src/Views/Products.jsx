@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
+import PriceHistoryModal from '../components/PriceHistoryModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas } from '../services/venta.service';
@@ -48,16 +49,19 @@ const Products = () => {
     ventasPorMes: []
   });
 
+  const [showPriceHistoryModal, setShowPriceHistoryModal] = useState(false);
+  const [priceHistoryData, setPriceHistoryData] = useState([]);
+
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
   const [statsExpanded, setStatsExpanded] = useState(true);
 
-  const productsPerPage = 9;
+  const productsPerPage = 15;
   const navigate = useNavigate();
   const location = useLocation();
 
   // Efecto para controlar el scroll cuando se abren modales
   useEffect(() => {
-    if (showInfoModal || showEditModal) {
+    if (showInfoModal || showEditModal || showPriceHistoryModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -67,7 +71,7 @@ const Products = () => {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [showInfoModal, showEditModal]);
+  }, [showInfoModal, showEditModal, showPriceHistoryModal]);
 
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
@@ -109,7 +113,7 @@ const Products = () => {
     // Ajustar el número de páginas
     setTotalPages(calculatedPages);
     
-    // Si la página actual es mayor que el total de páginas calculadas, resetear a la página 1
+    // Si la página current es mayor que el total de páginas calculadas, resetear a la página 1
     if (currentPage > calculatedPages) {
       setCurrentPage(1);
     }
@@ -477,7 +481,7 @@ const Products = () => {
       <Navbar />
       <div className="content-container">
         {loading && !showEditModal && !showInfoModal ? (
-          <div className="product-grid">
+          <div className="product-list-container">
             {Array.from({ length: productsPerPage }).map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
@@ -559,20 +563,36 @@ const Products = () => {
             ) : (
               <>
                 {displayedProducts.length > 0 ? (
-                  <div className="product-grid">
+                  <div className="product-list">
                     {displayedProducts.map((product, index) => (
                       <ProductCard
-                        key={index}
+                        key={product._id || index}
                         image={product.image}
                         name={product.Nombre}
                         marca={product.Marca}
                         stock={product.Stock}
                         venta={product.PrecioVenta}
                         fechaVencimiento={product.fechaVencimiento}
-                        onDelete={() => handleDelete(product._id)}
+                        codigoBarras={product.codigoBarras}
+                        onDelete={() => {
+                          showConfirmationAlert(
+                            '¿Estás seguro?',
+                            '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
+                            'Sí, eliminar',
+                            'Cancelar'
+                          ).then((result) => {
+                            if (result.isConfirmed) {
+                              handleDelete(product._id);
+                            }
+                          });
+                        }}
                         onEdit={() => handleEdit(product._id)}
                         onInfo={() => handleProductInfo(product)}
                         productId={product._id}
+                        onPriceHistory={() => {
+                          setPriceHistoryData(product._id);
+                          setShowPriceHistoryModal(true);
+                        }}
                       />
                     ))}
                   </div>
@@ -915,6 +935,14 @@ const Products = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {showPriceHistoryModal && (
+        <PriceHistoryModal 
+          isOpen={showPriceHistoryModal}
+          onClose={() => setShowPriceHistoryModal(false)}
+          productId={displayedProducts.find(p => p._id === priceHistoryData)._id}
+        />
       )}
     </div>
   );
