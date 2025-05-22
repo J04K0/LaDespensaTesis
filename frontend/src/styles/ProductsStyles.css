@@ -1005,3 +1005,178 @@
   background-color: #e0e0e0;
   border-radius: 6px;
 }
+
+/* Estilos para el encabezado de precio en el modal de detalles */
+.product-header-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.product-price-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.product-price-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #006EDF;
+  margin: 0 0 8px 0;
+}
+
+.product-header-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.product-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.product-badge-vencido {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.product-badge-sin-stock {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+}
+
+/* Estilos para las pestañas en el modal de detalle */
+.product-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
+.product-tab {
+  flex: 1;
+  padding: 15px 20px;
+  text-align: center;
+  background-color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  position: relative;
+  outline: none;
+}
+
+.product-tab:hover {
+  background-color: #e0e0e0;
+}
+
+.product-tab.active {
+  background-color: #006EDF;
+  color: white;
+}
+
+.product-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 4px;
+  background-color: #006EDF;
+}
+
+.product-price-history-container {
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Estilos para el historial de precios embedido */
+.product-price-history-container .price-history-modal-overlay {
+  position: static;
+  background: none;
+}
+
+.product-price-history-container .price-history-modal {
+  max-height: none;
+  box-shadow: none;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  animation: none;
+  border-radius: 0;
+}
+
+.product-price-history-container .price-history-header {
+  display: none;
+}
+
+.product-price-history-container .price-history-content {
+  padding: 0;
+}
+
+/* Estilos para el botón de mostrar/ocultar filtros */
+.toggle-filters-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-toggle-filters {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-toggle-filters:hover {
+  background-color: #f4f4f4;
+  border-color: #bbb;
+}
+
+/* Estilos para la animación de los filtros */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 1000px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filters-container.hidden {
+  max-height: 0;
+  padding: 0 15px;
+  margin-bottom: 0;
+  opacity: 0;
+}

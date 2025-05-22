@@ -9,7 +9,9 @@ import { obtenerVentas } from '../services/venta.service';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -54,6 +56,9 @@ const Products = () => {
 
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
   const [statsExpanded, setStatsExpanded] = useState(true);
+  const [showPriceHistoryTab, setShowPriceHistoryTab] = useState(false);
+
+  const [showFilters, setShowFilters] = useState(true);
 
   const productsPerPage = 15;
   const navigate = useNavigate();
@@ -412,7 +417,9 @@ const Products = () => {
     setLoading(true);
     setProductInfo(product);
 
-    setCharacteristicsExpanded(false);
+    // Restablecer las pestañas - características siempre visible primero
+    setShowPriceHistoryTab(false);
+    setCharacteristicsExpanded(true);
     setStatsExpanded(false);
 
     try {
@@ -476,6 +483,60 @@ const Products = () => {
     setCurrentPage(1);
   };
 
+  const handleExportToPDF = () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Nombre", "Marca", "Categoría", "Stock", "Precio de Venta","Precio de Compra", "Fecha de Vencimiento"];
+    const tableRows = [];
+
+    filteredAndSearchedProducts.forEach(product => {
+      const productData = [
+        product.Nombre,
+        product.Marca,
+        product.Categoria,
+        product.Stock,
+        `$${product.PrecioVenta}`,
+        `$${product.PrecioCompra}`,
+        product.fechaVencimiento ? new Date(product.fechaVencimiento).toLocaleDateString() : 'N/A'
+      ];
+      tableRows.push(productData);
+    });
+
+    doc.text("La Despensa - Listado de Productos", 14, 15);
+    
+    // Agregar fecha actual
+    const currentDate = new Date().toLocaleDateString();
+    doc.text(`Fecha de reporte: ${currentDate}`, 14, 22);
+    
+    // Agregar filtros aplicados
+    let filterText = `Filtros: `;
+    
+    if (category && category !== 'Todos') filterText += `Categoría: ${category}, `;
+    if (availabilityFilter !== 'Todos') filterText += `Disponibilidad: ${availabilityFilter}, `;
+    if (searchQuery) filterText += `Búsqueda: "${searchQuery}", `;
+    
+    if (filterText !== 'Filtros: ') {
+      filterText = filterText.substring(0, filterText.length - 2); // Eliminar la última coma
+      doc.text(filterText, 14, 29);
+      autoTable(doc, { 
+        head: [tableColumn], 
+        body: tableRows, 
+        startY: 35,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      });
+    } else {
+      autoTable(doc, { 
+        head: [tableColumn], 
+        body: tableRows, 
+        startY: 30,
+        theme: 'striped',
+        headStyles: { fillColor: [66, 139, 202] }
+      });
+    }
+    
+    doc.save(`la_despensa_productos_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   return (
     <div className="app-container">
       <Navbar />
@@ -493,6 +554,9 @@ const Products = () => {
               <div className="d-flex gap-sm">
                 <button className="btn btn-primary" onClick={() => navigate('/add-product')}>
                   <FontAwesomeIcon icon={faPlus} /> Añadir Producto
+                </button>
+                <button className="btn btn-secondary" onClick={handleExportToPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Exportar a PDF
                 </button>
               </div>
             </div>
@@ -589,10 +653,6 @@ const Products = () => {
                         onEdit={() => handleEdit(product._id)}
                         onInfo={() => handleProductInfo(product)}
                         productId={product._id}
-                        onPriceHistory={() => {
-                          setPriceHistoryData(product._id);
-                          setShowPriceHistoryModal(true);
-                        }}
                       />
                     ))}
                   </div>
@@ -630,12 +690,28 @@ const Products = () => {
             </div>
             
             <div className="modal-body">
-              <div className="product-detail-image-container">
-                <img 
-                  src={productInfo.image || "/default-image.jpg"} 
-                  alt={productInfo.Nombre} 
-                  className="product-detail-image" 
-                />
+              <div className="product-header-container">
+                <div className="product-detail-image-container">
+                  <img 
+                    src={productInfo.image || "/default-image.jpg"} 
+                    alt={productInfo.Nombre} 
+                    className="product-detail-image" 
+                  />
+                </div>
+                
+                <div className="product-price-header">
+                  <h3 className="product-price-value">${productInfo.PrecioVenta}</h3>
+                  {(new Date(productInfo.fechaVencimiento) < new Date() || productInfo.Stock === 0) && (
+                    <div className="product-header-badges">
+                      {new Date(productInfo.fechaVencimiento) < new Date() && 
+                        <span className="product-badge product-badge-vencido">Vencido</span>
+                      }
+                      {productInfo.Stock === 0 && 
+                        <span className="product-badge product-badge-sin-stock">Sin stock</span>
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="product-price-section">
@@ -649,100 +725,128 @@ const Products = () => {
                   <span className="price-value">${productInfo.PrecioVenta}</span>
                 </div>
               </div>
+
+              <div className="product-tabs">
+                <button 
+                  className={`product-tab ${!showPriceHistoryTab ? 'active' : ''}`}
+                  onClick={() => setShowPriceHistoryTab(false)}
+                >
+                  Características
+                </button>
+                <button 
+                  className={`product-tab ${showPriceHistoryTab ? 'active' : ''}`}
+                  onClick={() => setShowPriceHistoryTab(true)}
+                >
+                  Historial de Precios
+                </button>
+              </div>
               
-              <button 
-                className="detail-section-button"
-                onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
-              >
-                Características
-                <FontAwesomeIcon 
-                  icon={faChevronDown} 
-                  className={`accordion-icon ${characteristicsExpanded ? 'expanded' : ''}`}
-                />
-              </button>
-              
-              {characteristicsExpanded && (
-                <div className="accordion-body">
-                  <table className="details-table">
-                    <tbody>
-                      {productInfo.fechaVencimiento && (
-                        <tr>
-                          <td>Fecha vencimiento:</td>
-                          <td>{new Date(productInfo.fechaVencimiento).toLocaleDateString()}</td>
-                        </tr>
-                      )}
-                      <tr>
-                        <td>Categoría:</td>
-                        <td>{productInfo.Categoria}</td>
-                      </tr>
-                      <tr>
-                        <td>Stock:</td>
-                        <td>{productInfo.Stock} unidades</td>
-                      </tr>
-                      <tr>
-                        <td>Código de Barras:</td>
-                        <td>{productInfo.codigoBarras}</td>
-                      </tr>
-                      <tr>
-                        <td>Marca:</td>
-                        <td>{productInfo.Marca}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              
-              <button 
-                className="detail-section-button"
-                onClick={() => setStatsExpanded(!statsExpanded)}
-              >
-                Estadísticas de Venta
-                <FontAwesomeIcon 
-                  icon={faChevronDown} 
-                  className={`accordion-icon ${statsExpanded ? 'expanded' : ''}`}
-                />
-              </button>
-              
-              {statsExpanded && productStats.totalVentas > 0 && (
-                <div className="accordion-body">
-                  <table className="details-table">
-                    <tbody>
-                      <tr>
-                        <td>Total Unidades Vendidas:</td>
-                        <td>{productStats.totalVentas}</td>
-                      </tr>
-                      <tr>
-                        <td>Ingresos Generados:</td>
-                        <td>${productStats.ingresos.toLocaleString()}</td>
-                      </tr>
-                      {productStats.ultimaVenta && (
-                        <tr>
-                          <td>Última Venta:</td>
-                          <td>{productStats.ultimaVenta.toLocaleDateString()}</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+              {!showPriceHistoryTab ? (
+                <>
+                  <button 
+                    className="detail-section-button"
+                    onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
+                  >
+                    Características
+                    <FontAwesomeIcon 
+                      icon={faChevronDown} 
+                      className={`accordion-icon ${characteristicsExpanded ? 'expanded' : ''}`}
+                    />
+                  </button>
                   
-                  {productStats.ventasPorMes && productStats.ventasPorMes.length > 0 && (
-                    <div className="sales-by-month">
-                      <h5>Ventas por Mes:</h5>
-                      <ul>
-                        {productStats.ventasPorMes.map((item, idx) => (
-                          <li key={idx}>{item.mes}: {item.cantidad} unidades</li>
-                        ))}
-                      </ul>
+                  {characteristicsExpanded && (
+                    <div className="accordion-body">
+                      <table className="details-table">
+                        <tbody>
+                          {productInfo.fechaVencimiento && (
+                            <tr>
+                              <td>Fecha vencimiento:</td>
+                              <td>{new Date(productInfo.fechaVencimiento).toLocaleDateString()}</td>
+                            </tr>
+                          )}
+                          <tr>
+                            <td>Categoría:</td>
+                            <td>{productInfo.Categoria}</td>
+                          </tr>
+                          <tr>
+                            <td>Stock:</td>
+                            <td>{productInfo.Stock} unidades</td>
+                          </tr>
+                          <tr>
+                            <td>Código de Barras:</td>
+                            <td>{productInfo.codigoBarras}</td>
+                          </tr>
+                          <tr>
+                            <td>Marca:</td>
+                            <td>{productInfo.Marca}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   )}
+                  
+                  <button 
+                    className="detail-section-button"
+                    onClick={() => setStatsExpanded(!statsExpanded)}
+                  >
+                    Estadísticas de Venta
+                    <FontAwesomeIcon 
+                      icon={faChevronDown} 
+                      className={`accordion-icon ${statsExpanded ? 'expanded' : ''}`}
+                    />
+                  </button>
+                  
+                  {statsExpanded && productStats.totalVentas > 0 && (
+                    <div className="accordion-body">
+                      <table className="details-table">
+                        <tbody>
+                          <tr>
+                            <td>Total Unidades Vendidas:</td>
+                            <td>{productStats.totalVentas}</td>
+                          </tr>
+                          <tr>
+                            <td>Ingresos Generados:</td>
+                            <td>${productStats.ingresos.toLocaleString()}</td>
+                          </tr>
+                          {productStats.ultimaVenta && (
+                            <tr>
+                              <td>Última Venta:</td>
+                              <td>{productStats.ultimaVenta.toLocaleDateString()}</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                      
+                      {productStats.ventasPorMes && productStats.ventasPorMes.length > 0 && (
+                        <div className="sales-by-month">
+                          <h5>Ventas por Mes:</h5>
+                          <ul>
+                            {productStats.ventasPorMes.map((item, idx) => (
+                              <li key={idx}>{item.mes}: {item.cantidad} unidades</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {statsExpanded && productStats.totalVentas === 0 && (
+                    <div className="accordion-body">
+                      <p>Este producto aún no tiene historial de ventas.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="product-price-history-container">
+                  <PriceHistoryModal 
+                    isOpen={true}
+                    onClose={() => setShowPriceHistoryTab(false)}
+                    productId={productInfo._id}
+                    embedded={true}
+                  />
                 </div>
               )}
               
-              {statsExpanded && productStats.totalVentas === 0 && (
-                <div className="accordion-body">
-                  <p>Este producto aún no tiene historial de ventas.</p>
-                </div>
-              )}
-                  
               <div className="product-detail-actions">
                 <button 
                   onClick={() => { setShowInfoModal(false); handleEdit(productInfo._id); }} 
