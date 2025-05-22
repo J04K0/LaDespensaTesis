@@ -13,23 +13,53 @@ export const proveedorSchema = Joi.object({
     'string.empty': 'El nombre del proveedor es obligatorio',
     'any.required': 'El nombre del proveedor es obligatorio'
   }),
-  telefono: Joi.string().required().messages({
-    'string.empty': 'El teléfono del proveedor es obligatorio',
-    'any.required': 'El teléfono del proveedor es obligatorio'
-  }),
+  telefono: Joi.string()
+      .length(9)
+      .pattern(/^\d+$/)
+      .required()
+      .empty('')
+      .messages({
+        'string.base': 'El número de teléfono debe ser una cadena.',
+        'string.empty': 'El número de teléfono no puede estar vacío.',
+        'string.length': 'El número de teléfono debe tener exactamente 9 dígitos.',
+        'string.pattern.base': 'El número de teléfono debe ser un número.',
+        'any.required': 'El número de teléfono es un campo requerido.'
+      }),
   email: Joi.string().email().required().messages({
     'string.empty': 'El email del proveedor es obligatorio',
     'string.email': 'El email debe tener un formato válido',
     'any.required': 'El email del proveedor es obligatorio'
   }),
+  contactoPrincipal: Joi.string().allow('').optional(),
   direccion: Joi.string().allow('').optional(),
-  categorias: Joi.array().items(Joi.string()).required().messages({
-    'array.base': 'Las categorías deben ser un array',
-    'any.required': 'Debe seleccionar al menos una categoría'
-  }),
+  categorias: Joi.array()
+    .items(Joi.string().valid(
+      'Congelados',
+      'Carnes',
+      'Despensa',
+      'Panaderia y Pasteleria',
+      'Quesos y Fiambres',
+      'Bebidas y Licores',
+      'Lacteos, Huevos y otros',
+      'Desayuno y Dulces',
+      'Bebes y Niños',
+      'Cigarros y Tabacos',
+      'Limpieza y Hogar',
+      'Cuidado Personal',
+      'Mascotas',
+      'Remedios',
+      'Otros'
+    ))
+    .min(1)
+    .required()
+    .messages({
+      'array.base': 'Las categorías deben ser un array',
+      'array.includesOnly': 'Una o más categorías no son válidas',
+      'any.required': 'Debe seleccionar al menos una categoría',
+      'array.min': 'Debe seleccionar al menos una categoría'
+    }),
   notas: Joi.string().allow('').optional()
 });
-
 export const idProveedorSchema = Joi.object({
   id: Joi.string().custom(objectIdValidator).required()
 }).messages({

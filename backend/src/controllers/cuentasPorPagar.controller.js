@@ -1,5 +1,6 @@
 import CuentasPorPagar from '../models/cuentasPorPagar.model.js';
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
+import { cuentaPorPagarSchema } from '../schema/cuentasPorPagar.schema.js';
 
 // Obtener todas las cuentas por pagar
 export const getCuentasPorPagar = async (req, res) => {
@@ -53,11 +54,10 @@ export const getCuentaPorPagarById = async (req, res) => {
 export const createCuentaPorPagar = async (req, res) => {
   try {
     const { Nombre, numeroVerificador, Mes, Monto, Estado, Categoria } = req.body;
-    
-    if (!Nombre || !numeroVerificador || !Mes || !Monto || !Estado || !Categoria) {
-      return handleErrorClient(res, 400, 'Todos los campos son requeridos');
-    }
-    
+
+    const { value, error } = cuentaPorPagarSchema.validate(req.body);
+        if (error) return handleErrorClient(res, 400, error.message);
+
     const nuevaCuenta = new CuentasPorPagar({
       Nombre,
       numeroVerificador,
@@ -81,9 +81,8 @@ export const updateCuentaPorPagar = async (req, res) => {
     const { id } = req.params;
     const { Nombre, numeroVerificador, Mes, Monto, Estado, Categoria } = req.body;
     
-    if (!Nombre || !numeroVerificador || !Mes || !Monto || !Estado || !Categoria) {
-      return handleErrorClient(res, 400, 'Todos los campos son requeridos');
-    }
+   const { value, error } = cuentaPorPagarSchema.validate(req.body);
+        if (error) return handleErrorClient(res, 400, error.message);
     
     const cuenta = await CuentasPorPagar.findById(id);
     if (!cuenta) {

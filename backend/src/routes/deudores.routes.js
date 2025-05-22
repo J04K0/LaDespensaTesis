@@ -26,6 +26,6 @@ router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudores);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudorById);
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudor); // Cambiado a PATCH
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteDeudor);
-router.put('/:id/pagos', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudorPagos);
+router.put('/:id/pagos', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudorPagos); // Para agregar nuevo pago al deudor
 
 export default router;

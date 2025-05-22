@@ -1,6 +1,7 @@
 import Proveedor from '../models/proveedores.model.js';
 import Product from '../models/products.model.js'; // Asegúrate de que esta línea exista
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
+import { proveedorSchema } from '../schema/proveedores.schema.js';
 
 // Obtener todos los proveedores
 export const getProveedores = async (req, res) => {
@@ -53,6 +54,8 @@ export const createProveedor = async (req, res) => {
     if (proveedorExistente) {
       return handleErrorClient(res, 400, 'Ya existe un proveedor con este email');
     }
+    const { value, error } = proveedorSchema.validate(req.body);
+        if (error) return handleErrorClient(res, 400, error.message);
     
     // Extraer los productos del body (si existen)
     const { productos, ...datosProveedor } = req.body;
@@ -99,6 +102,9 @@ export const updateProveedor = async (req, res) => {
         return handleErrorClient(res, 400, 'Ya existe otro proveedor con este email');
       }
     }
+
+    const { value, error } = proveedorSchema.validate(req.body);
+        if (error) return handleErrorClient(res, 400, error.message);
     
     const proveedorActualizado = await Proveedor.findByIdAndUpdate(
       id,

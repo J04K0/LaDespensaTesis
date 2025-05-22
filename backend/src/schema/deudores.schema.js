@@ -18,13 +18,14 @@ const pagoSchema = Joi.object({
 });
 
 export const deudorSchema = Joi.object({
-  Nombre: Joi.string().required().messages({
+  Nombre: Joi.string().required().empty('').messages({
     'string.base': 'El nombre debe ser una cadena de texto.',
     'string.empty': 'El nombre no puede estar vacío.',
     'any.required': 'El nombre es un campo requerido.'
   }),
-  fechaPaga: Joi.string().isoDate().required().messages({
-    'date.base': 'La fecha de pago debe ser una fecha válida.',
+  fechaPaga: Joi.string().isoDate().required().empty('').messages({
+    'string.base': 'La fecha de pago debe ser una cadena.',
+    'string.empty': 'La fecha de pago no puede estar vacía.',
     'date.format': 'La fecha de pago debe estar en formato ISO.',
     'any.required': 'La fecha de pago es un campo requerido.'
   }),
@@ -32,8 +33,10 @@ export const deudorSchema = Joi.object({
     .length(9)
     .pattern(/^\d+$/)
     .required()
+    .empty('')
     .messages({
       'string.base': 'El número de teléfono debe ser una cadena.',
+      'string.empty': 'El número de teléfono no puede estar vacío.',
       'string.length': 'El número de teléfono debe tener exactamente 9 dígitos.',
       'string.pattern.base': 'El número de teléfono debe ser un número.',
       'any.required': 'El número de teléfono es un campo requerido.'
