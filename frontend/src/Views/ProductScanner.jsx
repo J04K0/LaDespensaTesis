@@ -7,7 +7,7 @@ import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFound
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, faExclamationTriangle, faStore } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, faExclamationTriangle, faStore, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 
 const ProductScanner = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const ProductScanner = () => {
   const [montoEntregado, setMontoEntregado] = useState("");
   const [errorMonto, setErrorMonto] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [metodoPago, setMetodoPago] = useState("efectivo");
   const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
   const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
 
@@ -57,8 +58,8 @@ const ProductScanner = () => {
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
           }));
           
-          // Se comenta la línea para no agregar automáticamente al carrito
-          // agregarAlCarrito(productoEncontrado);
+          // Agregar automáticamente al carrito con cantidad 1
+          agregarAlCarrito({...productoEncontrado, cantidad: 1});
         } else {
           console.warn("⚠️ Producto agotado.");
           showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para este producto.");
@@ -194,8 +195,8 @@ const ProductScanner = () => {
     setStockPorProducto({});
     setLoading(false);
     setError(null);
-    setMontoEntregado(""); // Resetear el monto entregado
-    setErrorMonto(""); // Resetear el error del monto
+    setMontoEntregado(""); 
+    setErrorMonto("");
   };
 
   const finalizarVenta = async () => {
@@ -204,10 +205,7 @@ const ProductScanner = () => {
       return Promise.reject("Carrito vacío");
     }
   
-    const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
-    const montoEntregado = parseFloat(document.getElementById("montoEntregado").value);
-  
-    if (montoEntregado < total) {
+    if (metodoPago === "efectivo" && (!montoEntregado || parseFloat(montoEntregado) < total)) {
       showErrorAlert("Monto insuficiente", "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
       return Promise.reject("Monto insuficiente");
     }
@@ -216,7 +214,7 @@ const ProductScanner = () => {
     setError(null);
     try {
       await actualizarStockVenta(carrito);
-      await registrarVenta(carrito);
+      await registrarVenta(carrito, metodoPago);
       showSuccessAlert("Venta realizada", "Los productos han sido vendidos con éxito y el stock ha sido actualizado.");
       resetState();
       return Promise.resolve();
@@ -237,69 +235,66 @@ const ProductScanner = () => {
     setIsProcessing(true);
     
     try {
-      // Focus a non-input element before processing
       document.getElementById('root').setAttribute('inert', '');
       await finalizarVenta();
     } finally {
       setTimeout(() => {
         setIsProcessing(false);
-        // Remove the inert attribute when done
         document.getElementById('root').removeAttribute('inert');
       }, 1500);
     }
   };
 
   return (
-    <div className="scanner-container">
+    <div className="productscanner-container">
       <Navbar />
-      <div className="content-container">
+      <div className="productscanner-content-container">
         {loading ? (
           <ProductScannerSkeleton />
         ) : (
-          <div className="scanner-wrapper">
-            <h1 className="scanner-title">Terminal Punto de Venta</h1>
+          <div className="productscanner-new-scanner-layout">
+            <h1 className="productscanner-title">Terminal Punto de Venta</h1>
             
-            <div className="search-bar">
-              <form onSubmit={handleScan} className="search-form">
-                <div className="search-input-wrapper">
-                  <FontAwesomeIcon icon={faBarcode} className="search-icon" />
+            <div className="productscanner-search-bar-container">
+              <form onSubmit={handleScan} className="productscanner-search-form">
+                <div className="productscanner-search-input-wrapper">
                   <input
                     type="text"
                     placeholder="Escanee o ingrese código de barras"
                     value={codigoEscaneado}
                     onChange={(e) => setCodigoEscaneado(e.target.value)}
-                    className="search-input"
+                    className="productscanner-search-input"
                     autoFocus
                   />
+                  <button type="submit" className="productscanner-search-button">
+                    <FontAwesomeIcon icon={faSearch} /> Buscar
+                  </button>
                 </div>
-                <button type="submit" className="search-button">
-                  <FontAwesomeIcon icon={faSearch} /> Buscar
-                </button>
               </form>
             </div>
             
-            <div className="scanner-content">
-              <div className="scanner-section">
+            <div className="productscanner-tpv-main-container">
+              <div className="productscanner-product-panel">
+                <h2>Producto Escaneado</h2>
                 {productoActual ? (
-                  <div className="product-info">
-                    <h3>Producto Escaneado</h3>
+                  <div className="productscanner-product-info-container">
                     {productoActual.image && (
                       <img 
                         src={productoActual.image} 
                         alt={productoActual.nombre} 
-                        className="product-image" 
+                        className="productscanner-product-image" 
                       />
                     )}
                     <p><strong>Nombre:</strong> {productoActual.nombre}</p>
                     <p><strong>Marca:</strong> {productoActual.marca}</p>
                     <p><strong>Categoría:</strong> {productoActual.categoria}</p>
                     <p><strong>Código:</strong> {productoActual.codigoBarras}</p>
-                    <p className="product-price">${productoActual.precioVenta}</p>
-                    <p><strong>Stock disponible:</strong> <span className={stockPorProducto[productoActual.codigoBarras] < 5 ? "low-stock" : ""}>
+                    <p className="productscanner-product-price">${productoActual.precioVenta}</p>
+                    <p><strong>Stock:</strong> <span className={stockPorProducto[productoActual.codigoBarras] < 5 ? "productscanner-low-stock" : ""}>
                       {stockPorProducto[productoActual.codigoBarras] || 0} unidades
                     </span></p>
                     
-                    <div className="quantity-controls">
+                    <div className="productscanner-quantity-controls">
                       <button 
                         onClick={disminuirCantidad} 
                         disabled={cantidad <= 1}
@@ -316,7 +311,7 @@ const ProductScanner = () => {
                     </div>
                     
                     <button 
-                      className="add-to-cart-button"
+                      className="productscanner-add-to-cart-button"
                       onClick={() => agregarAlCarrito(productoActual)}
                       disabled={!stockPorProducto[productoActual.codigoBarras]}
                     >
@@ -324,48 +319,44 @@ const ProductScanner = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="product-info empty-product">
-                    <h3>Producto Escaneado</h3>
-                    <div className="barcode-placeholder">
-                      <FontAwesomeIcon icon={faBarcode} size="4x" />
+                  <div className="productscanner-empty-product-container">
+                    <div className="productscanner-barcode-placeholder">
+                      <FontAwesomeIcon icon={faBarcode} size="3x" />
                       <p>Escanee un código de barras para mostrar información del producto</p>
                     </div>
                   </div>
                 )}
               </div>
               
-              <div className="cart-section">
+              <div className="productscanner-cart-panel">
                 <h2><FontAwesomeIcon icon={faShoppingCart} /> Carrito de Compra</h2>
                 
                 {carrito.length === 0 ? (
-                  <div className="empty-cart">
-                    <FontAwesomeIcon icon={faShoppingCart} size="3x" className="empty-cart-icon" />
+                  <div className="productscanner-empty-cart">
+                    <FontAwesomeIcon icon={faShoppingCart} size="3x" className="productscanner-empty-cart-icon" />
                     <p>No hay productos en el carrito</p>
                     <p>Escanee un código de barras para agregar productos</p>
                   </div>
                 ) : (
                   <>
-                    <div className="cart-items-container">
+                    <div className="productscanner-cart-items-list">
                       {carrito.map((producto, index) => (
-                        <div key={index} className="cart-item-card">
-                          <div className="cart-item-details">
+                        <div key={index} className="productscanner-cart-item">
+                          <div className="productscanner-cart-item-info">
                             <h4>{producto.nombre}</h4>
-                            <p className="cart-item-marca">{producto.marca}</p>
-                            <p className="cart-item-price">Precio: <span>${producto.precioVenta}</span></p>
+                            <p className="productscanner-cart-item-price">${producto.precioVenta}</p>
                           </div>
                           
-                          <div className="cart-item-actions">
-                            <div className="cart-quantity-controls">
+                          <div className="productscanner-cart-item-controls">
+                            <div className="productscanner-quantity-control">
                               <button 
-                                className="quantity-btn"
                                 onClick={() => disminuirCantidadCarrito(index)} 
                                 disabled={producto.cantidad <= 1}
                               >
                                 <FontAwesomeIcon icon={faMinus} />
                               </button>
-                              <span className="quantity-display">{producto.cantidad}</span>
+                              <span>{producto.cantidad}</span>
                               <button 
-                                className="quantity-btn"
                                 onClick={() => incrementarCantidadCarrito(index)}
                                 disabled={!stockPorProducto[producto.codigoBarras]}
                               >
@@ -373,12 +364,11 @@ const ProductScanner = () => {
                               </button>
                             </div>
                             
-                            <p className="cart-item-total">Subtotal: <span>${(producto.precioVenta * producto.cantidad).toFixed(2)}</span></p>
+                            <p className="productscanner-item-subtotal">${(producto.precioVenta * producto.cantidad)}</p>
                             
                             <button 
-                              className="delete-product-btn"
+                              className="productscanner-remove-item-btn"
                               onClick={() => eliminarDelCarrito(index)}
-                              title="Eliminar producto"
                             >
                               <FontAwesomeIcon icon={faTrash} />
                             </button>
@@ -387,44 +377,60 @@ const ProductScanner = () => {
                       ))}
                     </div>
                     
-                    <div className="cart-summary">
-                      <div className="cart-totals">
+                    <div className="productscanner-checkout-section">
+                      <div className="productscanner-cart-summary">
                         <h3>Resumen de Compra</h3>
-                        <p className="total-price">Total a pagar: <span>${total.toFixed(2)}</span></p>
+                        <p className="productscanner-total-price">Total a pagar: <span>${total}</span></p>
                       </div>
                       
-                      <div className="payment-section">
-                        <label>
-                          <FontAwesomeIcon icon={faMoneyBillAlt} className="payment-icon" />
-                          Ingrese el monto recibido:
-                        </label>
-                        <input
-                          type="number"
-                          value={montoEntregado}
-                          onChange={(e) => setMontoEntregado(e.target.value)}
-                          min={total}
-                          placeholder="Monto entregado"
-                          id="montoEntregado"
-                          disabled={isProcessing}
-                        />
-                        {errorMonto && (
-                          <p className="error-text">
-                            <FontAwesomeIcon icon={faExclamationTriangle} />
-                            {errorMonto}
-                          </p>
-                        )}
-                        {montoEntregado && parseFloat(montoEntregado) >= total && (
-                          <div className="vuelto">
-                            Cambio a devolver: 
-                            <span>${vuelto.toFixed(2)}</span>
+                      <div className="productscanner-payment-options">
+                        <div className="productscanner-payment-method">
+                          <label>Método de pago:</label>
+                          <select 
+                            value={metodoPago} 
+                            onChange={(e) => setMetodoPago(e.target.value)} 
+                            className="productscanner-payment-select"
+                            disabled={isProcessing}
+                          >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta de crédito/débito</option>
+                          </select>
+                        </div>
+                        
+                        {metodoPago === "efectivo" && (
+                          <div className="productscanner-cash-input">
+                            <label>
+                              <FontAwesomeIcon icon={faMoneyBillAlt} className="productscanner-payment-icon" />
+                              Ingrese el monto recibido:
+                            </label>
+                            <input
+                              type="number"
+                              value={montoEntregado}
+                              onChange={(e) => setMontoEntregado(e.target.value)}
+                              min={total}
+                              placeholder="Monto entregado"
+                              id="montoEntregado"
+                              disabled={isProcessing}
+                            />
+                            {errorMonto && (
+                              <p className="productscanner-error-text">
+                                <FontAwesomeIcon icon={faExclamationTriangle} />
+                                {errorMonto}
+                              </p>
+                            )}
+                            {montoEntregado && parseFloat(montoEntregado) >= total && (
+                              <div className="productscanner-change-amount">
+                                Cambio a devolver: <span>${vuelto.toFixed(2)}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                       
                       <button 
-                        className="checkout-button"
+                        className="productscanner-finalize-sale-button"
                         onClick={handleFinalizarVenta}
-                        disabled={isProcessing || carrito.length === 0 || vuelto < 0}
+                        disabled={isProcessing || carrito.length === 0 || (metodoPago === "efectivo" && vuelto < 0)}
                       >
                         <FontAwesomeIcon icon={faCheck} />
                         {isProcessing ? ' Procesando venta...' : ' Finalizar Venta'}
@@ -436,7 +442,7 @@ const ProductScanner = () => {
             </div>
             
             {error && (
-              <div className="error-message">
+              <div className="productscanner-error-message">
                 <FontAwesomeIcon icon={faExclamationTriangle} /> {error}
               </div>
             )}

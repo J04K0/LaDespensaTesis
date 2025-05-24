@@ -271,6 +271,33 @@
   font-weight: 500;
 }
 
+/* Estilo para la columna de método de pago */
+.metodo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.metodo-badge.efectivo {
+  background-color: #e9f7ef;
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.metodo-badge.tarjeta {
+  background-color: #eef3fb;
+  color: #3498db;
+  border: 1px solid #3498db;
+}
+
+.metodo-badge .svg-inline--fa {
+  margin-right: 5px;
+}
+
 /* Corrección para que la lista de productos use todo el espacio disponible */
 .history-sale-table td:nth-child(3) {
   width: 50%;

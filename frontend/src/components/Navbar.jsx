@@ -75,6 +75,28 @@ const Navbar = () => {
         return fechaVenta >= sessionStartTime && fechaVenta <= ahora;
       });
       
+      // Calcular totales por método de pago
+      let totalEfectivo = 0;
+      let totalTarjeta = 0;
+      let totalVentas = 0;
+      let cantidadVentasEfectivo = 0;
+      let cantidadVentasTarjeta = 0;
+
+      ventasSesion.forEach(venta => {
+        const importeVenta = venta.ventas.reduce((sum, producto) => 
+          sum + (producto.precioVenta * producto.cantidad), 0);
+        
+        totalVentas += importeVenta;
+
+        if (venta.metodoPago === 'tarjeta') {
+          totalTarjeta += importeVenta;
+          cantidadVentasTarjeta++;
+        } else {
+          totalEfectivo += importeVenta;
+          cantidadVentasEfectivo++;
+        }
+      });
+      
       // 2. Obtener información de deudores
       const respuestaDeudores = await getDeudores(1, 1000);
       const deudores = respuestaDeudores.deudores || [];
@@ -88,6 +110,28 @@ const Navbar = () => {
           return fechaPago >= sessionStartTime && fechaPago <= ahora;
         });
       });
+
+      // Calcular totales de pagos de deudores (solo pagos en efectivo)
+      let totalPagosDeudores = 0;
+      let totalNuevasDeudas = 0;
+
+      deudoresSesion.forEach(deudor => {
+        const pagosSesion = deudor.historialPagos.filter(pago => {
+          const fechaPago = new Date(pago.fecha);
+          return fechaPago >= sessionStartTime && fechaPago <= ahora;
+        });
+
+        pagosSesion.forEach(pago => {
+          if (pago.tipo === 'pago') {
+            totalPagosDeudores += pago.monto;
+          } else {
+            totalNuevasDeudas += pago.monto;
+          }
+        });
+      });
+
+      // Balance final de efectivo
+      const balanceEfectivo = totalEfectivo + totalPagosDeudores;
       
       // 3. Generar el PDF
       const doc = new jsPDF();
@@ -99,40 +143,71 @@ const Navbar = () => {
       doc.text(`Usuario: ${usuarioActual.email}`, 20, 25);
       doc.text(`Período: ${horaInicioFormateada} - ${horaFinFormateada}`, 20, 32);
       
-      // Sección de ventas
+      // Sección de resumen de caja
       doc.setFontSize(16);
-      doc.text("Ventas de la sesión", 20, 42);
+      doc.text("Resumen de Caja", 20, 42);
+
+      const resumenCajaData = [
+        ["Concepto", "Cantidad", "Monto"],
+        ["Ventas en Efectivo", cantidadVentasEfectivo, `$${totalEfectivo.toLocaleString()}`],
+        ["Ventas con Tarjeta", cantidadVentasTarjeta, `$${totalTarjeta.toLocaleString()}`],
+        ["Pagos de Deudores", deudoresSesion.length, `$${totalPagosDeudores.toLocaleString()}`],
+        ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString()}`],
+        ["BALANCE EN EFECTIVO", "", `$${balanceEfectivo.toLocaleString()}`]
+      ];
+
+      autoTable(doc, {
+        startY: 47,
+        head: [resumenCajaData[0]],
+        body: resumenCajaData.slice(1),
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [0, 38, 81],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        styles: { 
+          fontSize: 10,
+          cellPadding: 5
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          2: { halign: 'right' }
+        },
+        foot: [[
+          { content: 'EFECTIVO DISPONIBLE EN CAJA', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 12 } },
+          { content: `$${balanceEfectivo.toLocaleString()}`, styles: { fontStyle: 'bold', fontSize: 12, halign: 'right' } }
+        ]]
+      });
+      
+      // Sección de ventas detalladas
+      const ventasY = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(16);
+      doc.text("Detalle de Ventas de la Sesión", 20, ventasY);
       
       if (ventasSesion.length > 0) {
         const ventasData = ventasSesion.map(venta => [
           venta._id, // Ticket ID
           new Date(venta.fecha).toLocaleTimeString(), // Hora
+          venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo', // Método de pago
           venta.ventas.length, // Cantidad de productos
           `$${venta.ventas.reduce((total, producto) => 
             total + (producto.precioVenta * producto.cantidad), 0).toLocaleString()}`
         ]);
         
         autoTable(doc, {
-          startY: 47,
-          head: [["Ticket", "Hora", "Productos", "Total"]],
+          startY: ventasY + 5,
+          head: [["Ticket", "Hora", "Método de Pago", "Productos", "Total"]],
           body: ventasData,
         });
-        
-        // Calcular total de ventas de la sesión
-        const totalVentas = ventasSesion.reduce((total, venta) => 
-          total + venta.ventas.reduce((sum, producto) => 
-            sum + (producto.precioVenta * producto.cantidad), 0), 0);
-            
-        const ventasY = doc.lastAutoTable.finalY + 10;
-        doc.text(`Total de ventas: $${totalVentas.toLocaleString()}`, 20, ventasY);
       } else {
-        doc.text("No se registraron ventas durante esta sesión", 20, 52);
+        doc.text("No se registraron ventas durante esta sesión", 20, ventasY + 10);
       }
       
       // Sección de deudores
-      const deudoresY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 72;
+      const deudoresY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : ventasY + 30;
       doc.setFontSize(16);
-      doc.text("Movimientos de deudores", 20, deudoresY);
+      doc.text("Movimientos de Deudores", 20, deudoresY);
       
       if (deudoresSesion.length > 0) {
         const deudoresData = [];
@@ -165,11 +240,11 @@ const Navbar = () => {
       
       // Agregar pie de página con información del usuario
       doc.setFontSize(10);
-      doc.text(`Reporte generado por: ${usuarioActual.email}`, 14, doc.internal.pageSize.height - 10);
+      doc.text(`Reporte generado por: ${usuarioActual.email} - ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
       
       // Guardar el PDF
       const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
-      doc.save(`Reporte_Sesion_${usuarioActual.email}_${timestamp}.pdf`);
+      doc.save(`Cierre_Caja_${usuarioActual.email}_${timestamp}.pdf`);
     } catch (error) {
       console.error("Error al generar reporte de sesión:", error);
     }

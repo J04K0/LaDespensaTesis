@@ -1,8 +1,11 @@
 import axios from './root.service.js';
 
-export const registrarVenta = async (productosVendidos) => {
+export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo') => {
     try {
-      const response = await axios.post("/ventas/registrar-venta", { productosVendidos });
+      const response = await axios.post("/ventas/registrar-venta", { 
+        productosVendidos,
+        metodoPago
+      });
       return response.data;
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);

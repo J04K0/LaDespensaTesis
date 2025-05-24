@@ -6,7 +6,7 @@ let ticketCounter = 0; // Variable global para el contador de tickets
 
 export const registrarVenta = async (req, res) => {
     try {
-      const { productosVendidos } = req.body;
+      const { productosVendidos, metodoPago } = req.body;
   
       if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
         return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
@@ -31,7 +31,8 @@ export const registrarVenta = async (req, res) => {
           precioVenta: producto.precioVenta,
           precioCompra: producto.precioCompra,
           fecha: new Date(),
-          usuario: userId // Guardar el ID del usuario que realizó la venta
+          usuario: userId, // Guardar el ID del usuario que realizó la venta
+          metodoPago: metodoPago || 'efectivo' // Usar el método de pago proporcionado o efectivo por defecto
         });
         
         await nuevaVenta.save();
@@ -86,7 +87,8 @@ export const registrarVenta = async (req, res) => {
             _id: "$ticketId", 
             ventas: { $push: "$$ROOT" }, 
             fecha: { $first: "$fecha" },
-            usuarioId: { $first: "$usuario" } // Obtener el ID del usuario
+            usuarioId: { $first: "$usuario" }, // Obtener el ID del usuario
+            metodoPago: { $first: "$metodoPago" } // Obtener el método de pago
           } 
         },
         // Ordenar por fecha descendente
@@ -153,9 +155,10 @@ export const editTicket = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos es requerida");
     }
 
-    // Obtener una venta original para preservar el usuario
+    // Obtener una venta original para preservar el usuario y método de pago
     const ventaOriginal = await Venta.findOne({ ticketId });
     const usuarioOriginal = ventaOriginal ? ventaOriginal.usuario : null;
+    const metodoPagoOriginal = ventaOriginal ? ventaOriginal.metodoPago : 'efectivo';
 
     // Primero eliminamos todas las ventas asociadas a este ticket
     await Venta.deleteMany({ ticketId });
@@ -174,7 +177,8 @@ export const editTicket = async (req, res) => {
           precioVenta: producto.precioVenta,
           precioCompra: producto.precioCompra,
           fecha: new Date(),
-          usuario: usuarioOriginal // Mantener el usuario original que hizo la venta
+          usuario: usuarioOriginal, // Mantener el usuario original que hizo la venta
+          metodoPago: metodoPagoOriginal // Mantener el método de pago original
         });
         
         await nuevaVenta.save();

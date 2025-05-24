@@ -7,7 +7,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import HistorySaleSkeleton from '../components/HistorySaleSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
 
 const HistorySale = () => {
@@ -255,10 +255,12 @@ const HistorySale = () => {
     const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas;
 
     autoTable(doc, {
-      head: [["Ticket", "Fecha", "Productos", "Total"]],
+      head: [["Ticket", "Fecha", "Usuario", "Método de Pago", "Productos", "Total"]],
       body: dataToExport.map((venta) => [
         venta._id,
         new Date(venta.fecha).toLocaleDateString(),
+        venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
+        venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
         venta.ventas
           .map(
             (producto) =>
@@ -282,6 +284,8 @@ const HistorySale = () => {
       dataToExport.map((venta) => ({
         Ticket: venta._id,
         Fecha: new Date(venta.fecha).toLocaleDateString(),
+        Usuario: venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
+        "Método de Pago": venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
         Productos: venta.ventas
           .map(
             (producto) =>
@@ -442,6 +446,7 @@ const HistorySale = () => {
                         <th style={{width: "15%"}}>Código</th>
                         <th style={{width: "10%"}}>Fecha</th>
                         <th style={{width: "10%"}}>Usuario</th>
+                        <th style={{width: "10%"}}>Método de Pago</th>
                         <th style={{width: "35%"}}>Detalle de Productos</th>
                         <th style={{width: "15%"}}>Importe Total</th>
                         <th style={{width: "15%"}}>Acciones</th>
@@ -454,6 +459,12 @@ const HistorySale = () => {
                             <td>{venta._id}</td>
                             <td>{new Date(venta.fecha).toLocaleDateString()}</td>
                             <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
+                            <td className={`metodo-pago ${venta.metodoPago}`}>
+                              <span className={`metodo-badge ${venta.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo'}`}>
+                                <FontAwesomeIcon icon={venta.metodoPago === 'tarjeta' ? faCreditCard : faMoneyBillAlt} />
+                                {venta.metodoPago === 'tarjeta' ? ' Tarjeta' : ' Efectivo'}
+                              </span>
+                            </td>
                             <td>
                               <ul className="product-list">
                                 {venta.ventas.map((producto, i) => (
