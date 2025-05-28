@@ -400,11 +400,11 @@
 }
 
 .home-stats-content canvas {
-  max-height: 300px !important;
+  max-height: 550px !important;
+  min-height: 450px !important; /* Altura mínima para el canvas del gráfico */
   animation: fadeIn 0.6s ease-out;
   width: 100% !important;
   margin: 0 auto;
-  /* Este padding ayuda a evitar que los bordes de los gráficos se corten */
   padding: 10px;
 }
 
@@ -468,7 +468,14 @@
 .chart-area {
   flex: 1;
   min-width: 0;
-  max-width: 60%;
+  max-width: 550px;
+  min-width: 350px; /* Tamaño mínimo para el contenedor de gráfico */
+  min-height: 550px; /* Altura mínima asegurada */
+  height: 550px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
 }
 
 .chart-data-table {
@@ -588,12 +595,14 @@
 
 .chart-area {
   width: 100%;
-  max-width: 450px;
-  margin: 15px auto;
-  height: 450px;
+  max-width: 550px;
+  min-width: 350px; /* Tamaño mínimo para el contenedor de gráfico */
+  min-height: 550px; /* Altura mínima asegurada */
+  height: 550px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 15px auto;
 }
 
 .chart-data-table {
@@ -782,5 +791,109 @@
   
   .home-deudores-table {
     min-width: 500px;
+  }
+}
+
+/* Nuevos estilos para la visualización de gráficos con tablas */
+.chart-content-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.chart-visual-container {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-table-container {
+  flex: 1;
+  max-width: 40%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.chart-area {
+  width: 100%;
+  max-width: 550px;
+  min-width: 350px; /* Tamaño mínimo para el contenedor de gráfico */
+  min-height: 550px; /* Altura mínima asegurada */
+  height: 550px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+}
+
+.home-stats-content canvas {
+  max-height: 550px !important;
+  min-height: 450px !important; /* Altura mínima para el canvas del gráfico */
+  animation: fadeIn 0.6s ease-out;
+  width: 100% !important;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1280px) {
+  .chart-area {
+    max-width: 450px;
+    min-width: 350px; /* Mantener un tamaño mínimo incluso en pantallas más pequeñas */
+    min-height: 450px;
+    height: 450px;
+  }
+  
+  .home-stats-content canvas {
+    max-height: 450px !important;
+    min-height: 400px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .chart-content-wrapper {
+    flex-direction: column;
+  }
+  
+  .chart-visual-container,
+  .chart-table-container {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .chart-table-container {
+    margin-top: 20px;
+  }
+  
+  .chart-area {
+    max-width: 400px;
+    min-width: 300px;
+    min-height: 400px;
+    height: 400px;
+  }
+  
+  .home-stats-content canvas {
+    max-height: 400px !important;
+    min-height: 350px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-area {
+    min-width: 250px;
+    min-height: 300px;
+    height: 300px;
+  }
+  
+  .home-stats-content canvas {
+    min-height: 250px !important;
   }
 }

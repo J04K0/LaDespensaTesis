@@ -7,7 +7,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import HistorySaleSkeleton from '../components/HistorySaleSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
 
 const HistorySale = () => {
@@ -313,247 +313,265 @@ const HistorySale = () => {
   return (
     <div className="app-container">
       <Navbar />
-      <div className="content-container">
+      <div className="historysalecontainer">
         {loading ? (
           <HistorySaleSkeleton />
         ) : (
           <>
-            <div className="page-header">
-              <h1 className="page-title">Historial de Ventas</h1>
-              <div className="d-flex gap-sm">
-                <button className="btn btn-secondary" onClick={exportToPDF}>
-                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
-                </button>
-                <button className="btn btn-secondary" onClick={exportToExcel}>
-                  <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
-                </button>
+            <div className="historysalemaincontent">
+              <div className="historysaleheader">
+                <h1 className="historysaletitle">Historial de Ventas</h1>
+                <div className="historysaleexportbuttons">
+                  <button className="historysaleexportbtn pdf" onClick={exportToPDF}>
+                    <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
+                  </button>
+                  <button className="historysaleexportbtn excel" onClick={exportToExcel}>
+                    <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
+                  </button>
+                </div>
               </div>
-            </div>
             
-            <div className="filters-container">
-              <div className="search-container">
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Buscar por producto..."
-                  value={searchQuery}
-                  onChange={handleSearch}
-                  className="search-input"
-                />
-              </div>
-              
-              <div className="filter-group">
-                <select
-                  onChange={handleSortChange}
-                  value={sortOption}
-                  className="form-select"
-                >
-                  <option value="">Ordenar por</option>
-                  <option value="date-asc">Fecha (Ascendente)</option>
-                  <option value="date-desc">Fecha (Descendente)</option>
-                  <option value="total-asc">Precio Total (Ascendente)</option>
-                  <option value="total-desc">Precio Total (Descendente)</option>
-                </select>
+              <div className="historysalefilters">
+                <div className="historysalesearchcontainer">
+                  <FontAwesomeIcon icon={faSearch} className="historysalesearchicon" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por producto..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    className="historysalesearchbar"
+                  />
+                </div>
                 
-                <select
-                  onChange={handleFilterByCategory}
-                  value={categoryFilter}
-                  className="form-select"
-                >
-                  <option value="">Todas las categorías</option>
-                  <option value="Congelados">Congelados</option>
-                  <option value="Carnes">Carnes</option>
-                  <option value="Despensa">Despensa</option>
-                  <option value="Panaderia y Pasteleria">Panaderia y Pasteleria</option>
-                  <option value="Quesos y Fiambres">Quesos y Fiambres</option>
-                  <option value="Bebidas y Licores">Bebidas y Licores</option>
-                  <option value="Lacteos, Huevos y Refrigerados">Lacteos, Huevos y Refrigerados</option>
-                  <option value="Desayuno y Dulces">Desayuno y Dulces</option>
-                  <option value="Bebes y Niños">Bebes y Niños</option>
-                  <option value="Mascotas">Mascotas</option>
-                  <option value="Cuidado Personal">Cuidado Personal</option>
-                  <option value="Limpieza y Hogar">Limpieza y Hogar</option>
-                  <option value="Remedios">Remedios</option>
-                  <option value="Cigarros">Cigarros</option>
-                  <option value="Otros">Otros</option>
-                </select>
+                <div className="historysaledropdowns">
+                  <div className="historysalefiltergroup">
+                    <select
+                      onChange={handleSortChange}
+                      value={sortOption}
+                      className="historysaleselect"
+                    >
+                      <option value="">Ordenar por</option>
+                      <option value="date-asc">Fecha (Ascendente)</option>
+                      <option value="date-desc">Fecha (Descendente)</option>
+                      <option value="total-asc">Precio Total (Ascendente)</option>
+                      <option value="total-desc">Precio Total (Descendente)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="historysalefiltergroup">
+                    <select
+                      onChange={handleFilterByCategory}
+                      value={categoryFilter}
+                      className="historysaleselect"
+                    >
+                      <option value="">Todas las categorías</option>
+                      <option value="Congelados">Congelados</option>
+                      <option value="Carnes">Carnes</option>
+                      <option value="Despensa">Despensa</option>
+                      <option value="Panaderia y Pasteleria">Panaderia y Pasteleria</option>
+                      <option value="Quesos y Fiambres">Quesos y Fiambres</option>
+                      <option value="Bebidas y Licores">Bebidas y Licores</option>
+                      <option value="Lacteos, Huevos y Refrigerados">Lacteos, Huevos y Refrigerados</option>
+                      <option value="Desayuno y Dulces">Desayuno y Dulces</option>
+                      <option value="Bebes y Niños">Bebes y Niños</option>
+                      <option value="Mascotas">Mascotas</option>
+                      <option value="Cuidado Personal">Cuidado Personal</option>
+                      <option value="Limpieza y Hogar">Limpieza y Hogar</option>
+                      <option value="Remedios">Remedios</option>
+                      <option value="Cigarros">Cigarros</option>
+                      <option value="Otros">Otros</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="historysalefiltercontrols">
+                  <div className="historysalefilterdates">
+                    <div className="historysaledate">
+                      <label>Desde:</label>
+                      <input
+                        type="date"
+                        name="start"
+                        value={dateRange.start}
+                        onChange={handleDateRangeChange}
+                        className="historysaledateinput"
+                      />
+                    </div>
+                    <div className="historysaledate">
+                      <label>Hasta:</label>
+                      <input
+                        type="date"
+                        name="end"
+                        value={dateRange.end}
+                        onChange={handleDateRangeChange}
+                        className="historysaledateinput"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="historysaletotals">
+                    <div className="historysaleamount">
+                      <label>Mínimo:</label>
+                      <div className="historysaleinputwrapper">
+                        <span className="historysalecurrencysymbol">$</span>
+                        <input
+                          type="number"
+                          name="min"
+                          value={totalRange.min}
+                          onChange={handleTotalRangeChange}
+                          className="historysaleamountinput"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
+                    <div className="historysaleamount">
+                      <label>Máximo:</label>
+                      <div className="historysaleinputwrapper">
+                        <span className="historysalecurrencysymbol">$</span>
+                        <input
+                          type="number"
+                          name="max"
+                          value={totalRange.max}
+                          onChange={handleTotalRangeChange}
+                          className="historysaleamountinput"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={handleClearFilters}
+                    className="historysaleclearfiltersbtn"
+                  >
+                    <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
+                  </button>
+                </div>
               </div>
-              
-              <div className="filter-dates">
-                <div className="date-filter">
-                  <label className="form-label">Desde:</label>
-                  <input
-                    type="date"
-                    name="start"
-                    value={dateRange.start}
-                    onChange={handleDateRangeChange}
-                    className="form-control"
-                  />
-                </div>
-                <div className="date-filter">
-                  <label className="form-label">Hasta:</label>
-                  <input
-                    type="date"
-                    name="end"
-                    value={dateRange.end}
-                    onChange={handleDateRangeChange}
-                    className="form-control"
-                  />
-                </div>
-              </div>
-              
-              <div className="filter-prices">
-                <div className="price-filter">
-                  <label className="form-label">Mínimo:</label>
-                  <input
-                    type="number"
-                    name="min"
-                    value={totalRange.min}
-                    onChange={handleTotalRangeChange}
-                    className="form-control"
-                    placeholder="$"
-                  />
-                </div>
-                <div className="price-filter">
-                  <label className="form-label">Máximo:</label>
-                  <input
-                    type="number"
-                    name="max"
-                    value={totalRange.max}
-                    onChange={handleTotalRangeChange}
-                    className="form-control"
-                    placeholder="$"
-                  />
-                </div>
-              </div>
-              
-              <button
-                onClick={handleClearFilters}
-                className="btn btn-secondary"
-              >
-                <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
-              </button>
-            </div>
 
-            {error ? (
-              <div className="alert alert-danger">{error}</div>
-            ) : (
-              <>
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th style={{width: "15%"}}>Código</th>
-                        <th style={{width: "10%"}}>Fecha</th>
-                        <th style={{width: "10%"}}>Usuario</th>
-                        <th style={{width: "10%"}}>Método de Pago</th>
-                        <th style={{width: "35%"}}>Detalle de Productos</th>
-                        <th style={{width: "15%"}}>Importe Total</th>
-                        <th style={{width: "15%"}}>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentVentas.length > 0 ? (
-                        currentVentas.map((venta, index) => (
-                          <tr key={index}>
-                            <td>{venta._id}</td>
-                            <td>{new Date(venta.fecha).toLocaleDateString()}</td>
-                            <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
-                            <td className={`metodo-pago ${venta.metodoPago}`}>
-                              <span className={`metodo-badge ${venta.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo'}`}>
-                                <FontAwesomeIcon icon={venta.metodoPago === 'tarjeta' ? faCreditCard : faMoneyBillAlt} />
-                                {venta.metodoPago === 'tarjeta' ? ' Tarjeta' : ' Efectivo'}
-                              </span>
-                            </td>
-                            <td>
-                              <ul className="product-list">
-                                {venta.ventas.map((producto, i) => (
-                                  <li key={i} className="product-item">
-                                    <div className="product-details">
-                                      <strong>{producto.nombre}</strong>
-                                      <div className="product-meta">
-                                        <span className="state-badge">{producto.cantidad}x</span>
-                                        <span>${(producto.cantidad * producto.precioVenta).toLocaleString()}</span>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            </td>
-                            <td className="text-success fw-bold">
-                              ${venta.ventas.reduce(
-                                (acc, producto) =>
-                                  acc + producto.cantidad * producto.precioVenta,
-                                0
-                              ).toLocaleString()}
-                            </td>
-                            <td className="d-flex gap-sm">
-                              <button 
-                                onClick={() => handleEditTicket(venta)} 
-                                className="btn btn-warning" 
-                                title="Editar venta / Devolver productos"
-                              >
-                                <FontAwesomeIcon icon={faEdit} /> Devolver
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteTicket(venta._id)} 
-                                className="btn btn-danger" 
-                                title="Anular venta"
-                              >
-                                <FontAwesomeIcon icon={faTrash} /> Anular
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
+              {error ? (
+                <div className="alert alert-danger">{error}</div>
+              ) : (
+                <>
+                  <div className="historysaletablecontainer">
+                    <table className="historysaletable">
+                      <thead>
                         <tr>
-                          <td colSpan="6" className="text-center">No hay ventas registradas.</td>
+                          <th className="codigo-column">CÓDIGO</th>
+                          <th className="fecha-column">FECHA</th>
+                          <th className="usuario-column">USUARIO</th>
+                          <th className="metodo-column">MÉTODO DE PAGO</th>
+                          <th className="productos-column">DETALLE DE PRODUCTOS</th>
+                          <th className="total-column">IMPORTE TOTAL</th>
+                          <th className="acciones-column">ACCIONES</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                
-                <div className="pagination">
-                  {Array.from(
-                    { length: Math.ceil(filteredVentas.length / ventasPerPage) },
-                    (_, index) => (
-                      <button
-                        key={index}
-                        className={`pagination-button ${
-                          index + 1 === currentPage ? "active" : ""
-                        }`}
-                        onClick={() => paginate(index + 1)}
-                      >
-                        {index + 1}
-                      </button>
-                    )
-                  )}
-                </div>
-              </>
-            )}
+                      </thead>
+                      <tbody>
+                        {currentVentas.length > 0 ? (
+                          currentVentas.map((venta, index) => (
+                            <tr key={index}>
+                              <td className="codigo-cell">
+                                <div className="ticket-code">{venta._id}</div>
+                              </td>
+                              <td>{new Date(venta.fecha).toLocaleDateString()}</td>
+                              <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
+                              <td>
+                                <div className={`historysalemetodopago ${venta.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo'}`}>
+                                  <FontAwesomeIcon 
+                                    icon={venta.metodoPago === 'tarjeta' ? faCreditCard : faMoneyBillAlt} 
+                                    className="metodo-icon"
+                                  />
+                                  <span>{venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'}</span>
+                                </div>
+                              </td>
+                              <td className="productos-cell">
+                                {venta.ventas.map((producto, i) => (
+                                  <div key={i} className="producto-item">
+                                    <div className="producto-nombre">
+                                      {producto.nombre}
+                                    </div>
+                                    <div className="producto-cantidad">
+                                      <span className="cantidad-badge">{producto.cantidad}x</span>
+                                      <span className="precio-producto">${producto.precioVenta.toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </td>
+                              <td className="importe-cell">
+                                ${venta.ventas.reduce(
+                                  (acc, producto) => acc + producto.cantidad * producto.precioVenta,
+                                  0
+                                ).toLocaleString()}
+                              </td>
+                              <td className="acciones-cell">
+                                <div className="historysaleactionbuttons">
+                                  <button 
+                                    onClick={() => handleEditTicket(venta)} 
+                                    className="devolver-btn"
+                                    title="Devolver productos"
+                                  >
+                                    <FontAwesomeIcon icon={faEdit} /> Devolver
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteTicket(venta._id)} 
+                                    className="anular-btn"
+                                    title="Anular venta"
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} /> Anular
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="7" className="no-data-cell">No hay ventas registradas</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="historysalepagination">
+                    {Array.from(
+                      { length: Math.ceil(filteredVentas.length / ventasPerPage) },
+                      (_, index) => (
+                        <button
+                          key={index}
+                          className={`historysalepaginationbutton ${
+                            index + 1 === currentPage ? "active" : ""
+                          }`}
+                          onClick={() => paginate(index + 1)}
+                        >
+                          {index + 1}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
             
             {/* Modal para editar ticket / devolver productos */}
             {showEditModal && selectedTicket && (
-              <div className="modal-overlay">
-                <div className="modal-content">
-                  <div className="modal-header">
+              <div className="historysalemodaloverlay">
+                <div className="historysalemodalcontent">
+                  <div className="historysalemodalheader">
                     <h2 className="modal-title">Devolución de Productos - Ticket {selectedTicket._id}</h2>
                     <button 
-                      className="btn-icon btn-close" 
+                      className="historysalemodalclose" 
                       onClick={handleCancelEdit}
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </button>
                   </div>
                   
-                  <div className="modal-body">
-                    <div className="alert alert-info">
+                  <div className="historysalemodalbody">
+                    <div className="historysalemodalinstructions">
                       Modifique las cantidades para realizar devoluciones parciales o totales. Establezca 0 para devolver todo un producto.
                     </div>
                     
                     <div className="table-container">
-                      <table className="data-table">
+                      <table className="historysalemodaltable">
                         <thead>
                           <tr>
                             <th>Producto</th>
@@ -566,19 +584,17 @@ const HistorySale = () => {
                           {editedProducts.map((producto, index) => (
                             <tr key={index}>
                               <td>{producto.nombre}</td>
-                              <td>${producto.precioVenta}</td>
-                              <td>
-                                <div className="quantity-control">
+                              <td>${producto.precioVenta.toLocaleString()}</td>
+                              <td className="quantity-cell">
+                                <div className="quantity-controls">
                                   <button 
-                                    className="btn-icon btn-outline-danger"
                                     onClick={() => handleQuantityChange(index, producto.cantidad - 1)}
                                     disabled={producto.cantidad <= 0}
                                   >
                                     <FontAwesomeIcon icon={faMinus} />
                                   </button>
-                                  <span className="quantity">{producto.cantidad}</span>
+                                  <span>{producto.cantidad}</span>
                                   <button 
-                                    className="btn-icon btn-outline-success"
                                     onClick={() => handleQuantityChange(index, producto.cantidad + 1)}
                                     disabled={producto.cantidad >= selectedTicket.ventas[index].cantidad}
                                   >
@@ -605,7 +621,7 @@ const HistorySale = () => {
                           <tr>
                             <td colSpan="3"><strong>Total a devolver:</strong></td>
                             <td>
-                              <strong className="text-danger">
+                              <strong className="refund-amount">
                                 ${(
                                   selectedTicket.ventas.reduce((sum, p) => sum + p.cantidad * p.precioVenta, 0) - 
                                   editedProducts.reduce((sum, p) => sum + p.cantidad * p.precioVenta, 0)
@@ -618,17 +634,17 @@ const HistorySale = () => {
                     </div>
                   </div>
                   
-                  <div className="modal-footer">
+                  <div className="historysalemodalfooter">
                     <button 
                       onClick={handleSaveEdit}
-                      className="btn btn-success"
+                      className="historysaleconfirmbutton"
                       disabled={JSON.stringify(editedProducts) === JSON.stringify(selectedTicket.ventas)}
                     >
                       Confirmar Devolución
                     </button>
                     <button 
                       onClick={handleCancelEdit}
-                      className="btn btn-danger"
+                      className="historysalecancelbutton"
                     >
                       Cancelar
                     </button>

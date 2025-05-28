@@ -152,6 +152,13 @@
   position: relative;
 }
 
+/* Estilo para el contenedor de notificaciones en la barra de navegación */
+.navbar-notifications {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 /* Botón de alternar para móvil */
 .navbar-toggle-btn {
   display: none;

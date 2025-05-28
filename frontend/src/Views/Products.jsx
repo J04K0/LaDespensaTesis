@@ -30,6 +30,7 @@ const Products = () => {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [productToEdit, setProductToEdit] = useState({
+    _id: '',
     Nombre: '',
     codigoBarras: '',
     Marca: '',
@@ -37,6 +38,7 @@ const Products = () => {
     Categoria: '',
     PrecioVenta: 0,
     PrecioCompra: 0,
+    PrecioRecomendado: 0,
     fechaVencimiento: '',
     precioAntiguo: 0
   });
@@ -349,6 +351,7 @@ const Products = () => {
         Categoria: data.Categoria || '',
         PrecioVenta: Number(data.PrecioVenta) || 0,
         PrecioCompra: Number(data.PrecioCompra) || 0,
+        PrecioRecomendado: Number(data.PrecioRecomendado) || 0,
         fechaVencimiento: formattedDate,
         precioAntiguo: Number(data.precioAntiguo) || 0,
       });
@@ -535,6 +538,44 @@ const Products = () => {
     }
     
     doc.save(`la_despensa_productos_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  // Definir márgenes por categoría (mismos valores que en el backend)
+  const margenesPorCategoria = {
+    'Congelados': 0.25, // 25% (promedio de 20-30%)
+    'Carnes': 0.20, // 20% (promedio de 15-25%)
+    'Despensa': 0.20, // 20% (promedio de 15-25%)
+    'Panaderia y Pasteleria': 0.25, // 25% (promedio de 20-30%)
+    'Quesos y Fiambres': 0.25, // 25% (promedio de 20-30%)
+    'Bebidas y Licores': 0.33, // 33% (promedio de 25-40%)
+    'Lacteos, Huevos y otros': 0.20, // 20% (promedio de 15-25%)
+    'Desayuno y Dulces': 0.30, // 30% (promedio de 25-35%)
+    'Bebes y Niños': 0.28, // 28% (promedio de 20-35%)
+    'Cigarros y Tabacos': 0.40, // 40% (promedio de 30-50%)
+    'Cuidado Personal': 0.28, // 28% (promedio de 20-35%)
+    'Limpieza y Hogar': 0.28, // 28% (promedio de 20-35%)
+    'Mascotas': 0.28, // 28% (promedio de 20-35%)
+    'Remedios': 0.15, // 15% (promedio de 10-20%)
+    'Otros': 0.23  // 23% (promedio de 15-30%)
+  };
+
+  // Calcular el precio recomendado cuando cambia el precio de compra o la categoría
+  useEffect(() => {
+    if (productToEdit.PrecioCompra && productToEdit.Categoria) {
+      const margen = margenesPorCategoria[productToEdit.Categoria] || 0.23;
+      const precioRecomendado = productToEdit.PrecioCompra * (1 + margen);
+      setProductToEdit(prev => ({
+        ...prev,
+        PrecioRecomendado: precioRecomendado
+      }));
+    }
+  }, [productToEdit.PrecioCompra, productToEdit.Categoria]);
+
+  const usarPrecioRecomendado = () => {
+    setProductToEdit(prev => ({
+      ...prev,
+      PrecioVenta: prev.PrecioRecomendado.toFixed(2)
+    }));
   };
 
   return (
@@ -990,7 +1031,29 @@ const Products = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label className="form-label" htmlFor="PrecioVenta">Precio de Venta</label>
+                  <label className="form-label">Precio Recomendado (10% sobre precio de compra)</label>
+                  <div className="precio-recomendado-container">
+                    <div className="input-with-icon">
+                      <span className="input-prefix">$</span>
+                      <input
+                        type="text"
+                        value={productToEdit.PrecioRecomendado.toFixed(2)}
+                        className="form-control"
+                        disabled
+                      />
+                    </div>
+                    <button 
+                      type="button"
+                      className="btn btn-usar-recomendado"
+                      onClick={usarPrecioRecomendado}
+                    >
+                      Usar este precio
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
                   <div className="input-with-icon">
                     <span className="input-prefix">$</span>
                     <input

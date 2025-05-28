@@ -6,6 +6,11 @@ import cron from 'node-cron';
 let ticketCounter = 0; // Variable global para el contador de tickets
 import { HOST, PORT } from '../config/configEnv.js';
 import { sendLowStockAlert, sendExpirationAlert } from '../services/email.service.js';
+import { 
+  emitStockBajoAlert, 
+  emitProductoVencidoAlert, 
+  emitProductoPorVencerAlert 
+} from '../services/alert.service.js';
 
 export const getProducts = async (req, res) => {
   try {
@@ -53,8 +58,35 @@ export const addProduct = async (req, res) => {
         imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
     }
 
-    // Crear el producto con la imagen incluida
-    const newProduct = new Product({ ...value, image: imageUrl });
+    // Obtener los márgenes por categoría (mismos valores que en el modelo)
+    const margenesPorCategoria = {
+      'Congelados': 0.25,
+      'Carnes': 0.20,
+      'Despensa': 0.20,
+      'Panaderia y Pasteleria': 0.25,
+      'Quesos y Fiambres': 0.25,
+      'Bebidas y Licores': 0.33,
+      'Lacteos, Huevos y otros': 0.20,
+      'Desayuno y Dulces': 0.30,
+      'Bebes y Niños': 0.28,
+      'Cigarros y Tabacos': 0.40,
+      'Cuidado Personal': 0.28,
+      'Limpieza y Hogar': 0.28,
+      'Mascotas': 0.28,
+      'Remedios': 0.15,
+      'Otros': 0.23
+    };
+
+    // Calcular el precio recomendado según la categoría
+    const margen = margenesPorCategoria[value.Categoria] || 0.23;
+    const precioRecomendado = value.PrecioCompra * (1 + margen);
+
+    // Crear el producto con la imagen incluida y el precio recomendado
+    const newProduct = new Product({ 
+      ...value, 
+      image: imageUrl,
+      PrecioRecomendado: precioRecomendado 
+    });
 
     const product = await newProduct.save();
 
@@ -91,13 +123,37 @@ export const updateProduct = async (req, res) => {
       });
     }
 
+    // Obtener los márgenes por categoría (mismos valores que en el modelo)
+    const margenesPorCategoria = {
+      'Congelados': 0.25,
+      'Carnes': 0.20,
+      'Despensa': 0.20,
+      'Panaderia y Pasteleria': 0.25,
+      'Quesos y Fiambres': 0.25,
+      'Bebidas y Licores': 0.33,
+      'Lacteos, Huevos y otros': 0.20,
+      'Desayuno y Dulces': 0.30,
+      'Bebes y Niños': 0.28,
+      'Cigarros y Tabacos': 0.40,
+      'Cuidado Personal': 0.28,
+      'Limpieza y Hogar': 0.28,
+      'Mascotas': 0.28,
+      'Remedios': 0.15,
+      'Otros': 0.23
+    };
+
+    // Calcular el precio recomendado según la categoría
+    const margen = margenesPorCategoria[value.Categoria] || 0.23;
+    const precioRecomendado = value.PrecioCompra * (1 + margen);
+
     // Actualizar los datos del producto
     const updatedProduct = await Product.findByIdAndUpdate(
       id, 
       { 
         ...value, 
         image: imageUrl,
-        historialPrecios: product.historialPrecios 
+        historialPrecios: product.historialPrecios,
+        PrecioRecomendado: precioRecomendado
       }, 
       { new: true, runValidators: true }
     );
@@ -185,6 +241,8 @@ export const verificarStock = async (req, res) => {
       try {
         // Usar el nuevo servicio de email en lugar de WhatsApp
         await sendLowStockAlert(productosFiltrados);
+        // Emitir alerta por WebSocket
+        emitStockBajoAlert(productosFiltrados);
       } catch (emailError) {
         console.error("Error al enviar alerta por correo electrónico:", emailError);
         // Continuar con la ejecución aunque falle el envío de correo
@@ -219,6 +277,8 @@ export const getProductsExpiringSoon = async (req, res) => {
     if (productsExpiringSoon.length > 0) {
       try {
         await sendExpirationAlert(productsExpiringSoon, 'porVencer');
+        // Emitir alerta por WebSocket
+        emitProductoPorVencerAlert(productsExpiringSoon);
       } catch (emailError) {
         console.error("Error al enviar alerta de productos por vencer:", emailError);
       }
@@ -247,6 +307,8 @@ export const getExpiredProducts = async (req, res) => {
     // Enviar alerta por correo de productos vencidos
     try {
       await sendExpirationAlert(expiredProducts, 'vencidos');
+      // Emitir alerta por WebSocket
+      emitProductoVencidoAlert(expiredProducts);
     } catch (emailError) {
       console.error("Error al enviar alerta de productos vencidos:", emailError);
     }
@@ -280,6 +342,7 @@ export const scanProducts = async (req, res) => {
       categoria: product.Categoria,
       precioVenta: product.PrecioVenta,
       precioCompra: product.PrecioCompra,
+      precioRecomendado: product.PrecioRecomendado,
       fechaVencimiento: product.fechaVencimiento
     });
 
@@ -405,6 +468,20 @@ export const actualizarStockVenta = async (req, res) => {
           productosYaAgotados.length > 0,
           productosVencidos
         );
+
+        // Emitir alertas por WebSocket si es necesario
+        if (productosAfectadosEnVenta.length > 0) {
+          emitStockBajoAlert(productosAfectadosEnVenta);
+        }
+        if (productosAgotados.length > 0) {
+          emitStockBajoAlert(productosAgotados);
+        }
+        if (productosYaAgotados.length > 0) {
+          emitStockBajoAlert(productosYaAgotados);
+        }
+        if (productosVencidos.length > 0) {
+          emitProductoVencidoAlert(productosVencidos);
+        }
       } catch (emailError) {
         console.error("Error al enviar alerta:", emailError);
       }
@@ -440,6 +517,7 @@ export const getProductByBarcode = async (req, res) => {
       categoria: producto.Categoria,
       precioVenta: producto.PrecioVenta,
       precioCompra: producto.PrecioCompra,
+      precioRecomendado: producto.PrecioRecomendado,
       fechaVencimiento: producto.fechaVencimiento
     });
 
@@ -467,6 +545,7 @@ export const getProductForCreation = async (req, res) => {
       categoria: producto.Categoria,
       precioVenta: producto.PrecioVenta,
       precioCompra: producto.PrecioCompra,
+      precioRecomendado: producto.PrecioRecomendado,
       fechaVencimiento: producto.fechaVencimiento
     });
   } catch (err) {
@@ -523,6 +602,7 @@ export const getProductPriceHistory = async (req, res) => {
         nombre: product.Nombre,
         precioVentaActual: product.PrecioVenta,
         precioCompraActual: product.PrecioCompra,
+        precioRecomendadoActual: product.PrecioRecomendado,
         ultimaActualizacion: product.updatedAt
       },
       historialPrecios: historialOrdenado

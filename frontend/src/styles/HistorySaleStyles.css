@@ -15,7 +15,7 @@
 }
 
 /* Contenedor principal */
-.history-sale-container {
+.historysalecontainer {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,338 +26,493 @@
 }
 
 /* Contenido principal */
-.history-sale-main-content {
-  width: 90%;
-  max-width: 1200px;
+.historysalemaincontent {
+  width: 95%;
+  max-width: 1300px;
   background: var(--white);
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  transition: transform 0.3s ease;
-}
-
-.history-sale-main-content:hover {
-  transform: translateY(-5px);
-}
-
-/* Título de sección */
-.history-sale-main-content h2 {
-  color: var(--primary-dark);
-  font-size: 26px;
   margin-bottom: 20px;
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
 }
 
-/* Contenedor de búsqueda y filtros más compacto */
-.history-sale-search-sort-container {
-  width: 100%;
+/* Header con título y botones de exportación */
+.historysaleheader {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 1px solid #eee;
 }
 
-/* Barra de búsqueda */
-.history-sale-search-bar {
-  flex: 1;
-  min-width: 180px;
-  padding: 10px 15px;
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.history-sale-search-bar:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
-}
-
-/* Estilo para select */
-.history-sale-sort-select,
-.history-sale-category-select {
-  padding: 10px 15px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 180px;
-}
-
-.history-sale-sort-select:focus,
-.history-sale-category-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
-  outline: none;
-}
-
-/* Filtro de rango de fechas */
-.history-sale-date-range,
-.history-sale-total-range {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-}
-
-.history-sale-date-range input,
-.history-sale-total-range input {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  width: 150px;
-  transition: all 0.3s ease;
-}
-
-.history-sale-date-range input:focus,
-.history-sale-total-range input:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
-}
-
-.history-sale-date-range label,
-.history-sale-total-range label {
-  font-size: 14px;
-  font-weight: 500;
+.historysaletitle {
+  font-size: 24px;
   color: var(--gray-dark);
+  margin: 0;
+  font-weight: 600;
 }
 
-/* Botón para limpiar filtros */
-.history-sale-clear-filters-button {
-  background: var(--danger);
-  color: white;
-  padding: 10px 15px;
+/* Botones de exportación */
+.historysaleexportbuttons {
+  display: flex;
+  gap: 12px;
+}
+
+.historysaleexportbtn {
+  padding: 10px 16px;
+  font-size: 14px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  font-weight: 600;
+  transition: all 0.2s ease;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 5px rgba(211, 47, 47, 0.2);
+  color: white;
 }
 
-.history-sale-clear-filters-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(211, 47, 47, 0.3);
+.historysaleexportbtn.pdf {
+  background-color: var(--danger);
+}
+
+.historysaleexportbtn.excel {
+  background-color: var(--success);
+}
+
+.historysaleexportbtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor de filtros */
+.historysalefilters {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Barra de búsqueda */
+.historysalesearchcontainer {
+  position: relative;
+  width: 100%;
+}
+
+.historysalesearchicon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+}
+
+.historysalesearchbar {
+  width: 100%;
+  padding: 12px 12px 12px 45px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.historysalesearchbar:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  outline: none;
+}
+
+/* Contenedor de dropdowns */
+.historysaledropdowns {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.historysalefiltergroup {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Estilo para selects */
+.historysaleselect {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23343a40' d='M4.646 6.146a.5.5 0 0 1 .708 0L8 8.793l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.historysaleselect:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  outline: none;
+}
+
+/* Controles adicionales (fechas y montos) */
+.historysalefiltercontrols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Filtros de fecha */
+.historysalefilterdates {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.historysaledate {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historysaledate label {
+  font-size: 14px;
+  color: var(--gray-dark);
+  font-weight: 500;
+}
+
+.historysaledateinput {
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  min-width: 140px;
+}
+
+.historysaledateinput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  outline: none;
+}
+
+/* Filtros de monto */
+.historysaletotals {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.historysaleamount {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historysaleamount label {
+  font-size: 14px;
+  color: var(--gray-dark);
+  font-weight: 500;
+}
+
+.historysaleinputwrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.historysalecurrencysymbol {
+  position: absolute;
+  left: 15px;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+.historysaleamountinput {
+  padding: 10px 15px 10px 25px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 15px;
+  min-width: 100px;
+}
+
+.historysaleamountinput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  outline: none;
+}
+
+/* Botón Limpiar filtros */
+.historysaleclearfiltersbtn {
+  background-color: var(--primary-dark);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  transition: all 0.2s ease;
+}
+
+.historysaleclearfiltersbtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #001f40;
 }
 
 /* Contenedor de tabla con altura fija y desplazamiento */
-.history-sale-table-container {
+.historysaletablecontainer {
   overflow-x: auto;
   margin-top: 15px;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   background-color: var(--gray-light);
-  padding: 2px;
-  height: 500px;
-  max-height: 60vh;
+  padding: 0;
+  max-height: 65vh;
+  overflow-y: auto;
 }
 
 /* Nueva tabla con diseño mejorado */
-.history-sale-table {
+.historysaletable {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  height: 100%;
+  background-color: white;
 }
 
 /* Rediseño de encabezados */
-.history-sale-table th {
-  background-color: var(--gray-dark);
+.historysaletable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.historysaletable th {
+  background-color: #2c3e50;
   color: var(--white);
   font-weight: 600;
   text-align: left;
   padding: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
   font-size: 13px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-transform: uppercase;
 }
 
-.history-sale-table th:first-child {
-  border-top-left-radius: 10px;
+/* Ancho específico para las columnas */
+.codigo-column {
+  width: 15%;
 }
 
-.history-sale-table th:last-child {
-  border-top-right-radius: 10px;
+.fecha-column {
+  width: 10%;
+}
+
+.usuario-column {
+  width: 10%;
+}
+
+.metodo-column {
+  width: 10%;
+}
+
+.productos-column {
+  width: 30%;
+}
+
+.total-column {
+  width: 10%;
+}
+
+.acciones-column {
+  width: 15%;
 }
 
 /* Celdas de datos */
-.history-sale-table td {
-  padding: 14px 16px;
+.historysaletable td {
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
 }
 
 /* Estilos para filas alternantes */
-.history-sale-table tr:nth-child(even) {
-  background-color: #f0f2f5;
+.historysaletable tr:nth-child(even) {
+  background-color: #f8fafc;
 }
 
-.history-sale-table tr:nth-child(odd) {
+.historysaletable tr:nth-child(odd) {
   background-color: var(--white);
 }
 
 /* Hover para las filas */
-.history-sale-table tr:hover {
-  background-color: var(--primary-light);
+.historysaletable tbody tr:hover {
+  background-color: #edf2f7;
   transition: background-color 0.2s ease;
 }
 
-/* Estilos para productos dentro de la tabla */
-.history-sale-table ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.history-sale-table li {
-  padding: 8px 0;
-  border-bottom: 1px dashed rgba(0,0,0,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.history-sale-table li:last-child {
-  border-bottom: none;
-}
-
-.history-sale-table li strong {
-  color: var(--gray-dark);
-  font-weight: 600;
-}
-
-/* Separar el nombre del producto y el precio */
-.history-sale-table .product-price {
-  color: var(--primary);
-  font-weight: 600;
-  margin-left: auto;
-}
-
-/* Estilo para columna de ticket */
-.history-sale-table td:first-child {
+/* Celda de código (primera columna) */
+.codigo-cell {
   font-family: 'Consolas', monospace;
-  color: #495057;
-  font-size: 13px;
+  font-weight: 500;
   letter-spacing: -0.5px;
-  font-weight: 500;
 }
 
-/* Estilo para columna de fecha */
-.history-sale-table td:nth-child(2) {
-  color: #495057;
-  font-weight: 500;
+.ticket-code {
+  display: inline-block;
+  padding: 4px;
 }
 
-/* Estilo para la columna de método de pago */
-.metodo-badge {
+/* Métodos de pago */
+.historysalemetodopago {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 16px;
   font-weight: 600;
+  font-size: 13px;
+  gap: 6px;
 }
 
-.metodo-badge.efectivo {
+.historysalemetodopago.efectivo {
   background-color: #e9f7ef;
   color: #27ae60;
   border: 1px solid #27ae60;
 }
 
-.metodo-badge.tarjeta {
+.historysalemetodopago.tarjeta {
   background-color: #eef3fb;
   color: #3498db;
   border: 1px solid #3498db;
 }
 
-.metodo-badge .svg-inline--fa {
-  margin-right: 5px;
+.metodo-icon {
+  font-size: 14px;
 }
 
-/* Corrección para que la lista de productos use todo el espacio disponible */
-.history-sale-table td:nth-child(3) {
-  width: 50%;
+/* Celda de productos */
+.productos-cell {
+  padding: 8px 16px !important;
 }
 
-/* Estilo para columna de total */
-.history-sale-table td:last-child {
-  font-weight: bold;
-  color: var(--danger);
-  font-size: 16px;
-  text-align: right;
+.producto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.05);
 }
 
-/* Para casos sin datos */
-.history-sale-table .no-data {
-  text-align: center;
-  color: var(--gray);
-  font-style: italic;
-  padding: 30px;
+.producto-item:last-child {
+  border-bottom: none;
 }
 
-/* Insignia para la cantidad */
-.quantity-badge {
-  background-color: var(--gray);
-  color: white;
-  border-radius: 12px;
+.producto-nombre {
+  font-weight: 500;
+  max-width: 70%;
+}
+
+.producto-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cantidad-badge {
+  background-color: #e2e8f0;
+  border-radius: 10px;
   padding: 2px 6px;
   font-size: 12px;
-  margin-left: 8px;
-}
-
-.line-total {
-  font-size: 13px;
-  color: var(--success);
-  margin-left: 6px;
+  color: #4a5568;
   font-weight: 600;
 }
 
-/* Contenedor para agrupar la cantidad y el total */
-.quantity-total-container {
-  display: flex;
-  align-items: center;
+.precio-producto {
+  color: var(--primary);
+  font-weight: 600;
 }
 
-/* Para ajustar el layout de los elementos en cada producto */
-.history-sale-table li div {
+/* Celda de importe */
+.importe-cell {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d3748;
+  text-align: right;
+}
+
+/* Celda de acciones */
+.acciones-cell {
+  padding: 8px !important;
+}
+
+.historysaleactionbuttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.devolver-btn, .anular-btn {
   display: flex;
   align-items: center;
-  flex: 1;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.devolver-btn {
+  background-color: #4299e1;
+}
+
+.anular-btn {
+  background-color: #e53e3e;
+}
+
+.devolver-btn:hover {
+  background-color: #3182ce;
+  transform: translateY(-1px);
+}
+
+.anular-btn:hover {
+  background-color: #c53030;
+  transform: translateY(-1px);
+}
+
+/* Mensaje de no datos */
+.no-data-cell {
+  text-align: center;
+  padding: 20px !important;
+  font-style: italic;
+  color: var(--gray);
 }
 
 /* Paginación */
-.history-sale-pagination {
+.historysalepagination {
   margin-top: 25px;
   display: flex;
   justify-content: center;
   gap: 5px;
 }
 
-.history-sale-pagination-button {
+.historysalepaginationbutton {
   padding: 10px 15px;
   border: none;
   cursor: pointer;
@@ -368,126 +523,19 @@
   color: #333;
 }
 
-.history-sale-pagination-button.active {
+.historysalepaginationbutton.active {
   background-color: var(--primary);
   color: white;
   box-shadow: 0 2px 5px rgba(0, 110, 223, 0.2);
 }
 
-.history-sale-pagination-button:hover:not(.active) {
+.historysalepaginationbutton:hover:not(.active) {
   background-color: #e0e0e0;
   transform: translateY(-2px);
 }
 
-/* Contenedor de botones de exportación */
-.history-sale-export-buttons {
-  margin-top: 25px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-/* Botones de exportación */
-.history-sale-export-buttons button {
-  padding: 12px 24px;
-  font-size: 14px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.history-sale-export-buttons button:nth-child(1) {
-  background: var(--danger);
-  color: white;
-}
-
-.history-sale-export-buttons button:nth-child(2) {
-  background: var(--success);
-  color: white;
-}
-
-.history-sale-export-buttons button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Indicador de carga */
-.loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: var(--primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Animación fade-in para los elementos */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Estilos para botones de acción en la tabla de ventas */
-.history-sale-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.history-sale-edit-btn, 
-.history-sale-delete-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
-}
-
-.history-sale-edit-btn {
-  background-color: var(--primary);
-}
-
-.history-sale-delete-btn {
-  background-color: var(--danger);
-}
-
-.history-sale-edit-btn:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
-}
-
-.history-sale-delete-btn:hover {
-  background-color: #c82333;
-  transform: translateY(-2px);
-}
-
 /* Estilos para el modal de edición/devolución */
-.history-sale-modal-overlay {
+.historysalemodaloverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -501,7 +549,7 @@
   animation: fadeIn 0.3s ease;
 }
 
-.history-sale-modal-content {
+.historysalemodalcontent {
   background-color: white;
   border-radius: 10px;
   width: 90%;
@@ -513,7 +561,7 @@
   overflow: hidden;
 }
 
-.history-sale-modal-header {
+.historysalemodalheader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -522,12 +570,12 @@
   color: white;
 }
 
-.history-sale-modal-header h3 {
+.historysalemodalheader h2 {
   margin: 0;
   font-size: 18px;
 }
 
-.history-sale-modal-close {
+.historysalemodalclose {
   background: none;
   border: none;
   color: white;
@@ -542,17 +590,26 @@
   transition: all 0.2s ease;
 }
 
-.history-sale-modal-close:hover {
+.historysalemodalclose:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.history-sale-modal-body {
+.historysalemodalbody {
   padding: 20px;
   overflow-y: auto;
   max-height: calc(90vh - 130px);
 }
 
-.history-sale-modal-footer {
+.historysalemodalinstructions {
+  background-color: #fff9e6;
+  border: 1px solid #ffe0b2;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.historysalemodalfooter {
   padding: 15px 20px;
   display: flex;
   justify-content: flex-end;
@@ -561,8 +618,8 @@
   background-color: #f8f9fa;
 }
 
-.history-sale-confirm-button,
-.history-sale-cancel-button {
+.historysaleconfirmbutton,
+.historysalecancelbutton {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -571,38 +628,38 @@
   transition: all 0.2s ease;
 }
 
-.history-sale-confirm-button {
+.historysaleconfirmbutton {
   background-color: var(--success);
   color: white;
 }
 
-.history-sale-cancel-button {
+.historysalecancelbutton {
   background-color: #f0f0f0;
   color: var(--gray-dark);
 }
 
-.history-sale-confirm-button:hover {
+.historysaleconfirmbutton:hover {
   background-color: #218838;
 }
 
-.history-sale-cancel-button:hover {
+.historysalecancelbutton:hover {
   background-color: #e0e0e0;
 }
 
-.history-sale-confirm-button:disabled {
+.historysaleconfirmbutton:disabled {
   background-color: #a8d5ba;
   cursor: not-allowed;
 }
 
 /* Estilos para la tabla dentro del modal */
-.history-sale-modal-table {
+.historysalemodaltable {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
   font-size: 14px;
 }
 
-.history-sale-modal-table th {
+.historysalemodaltable th {
   background-color: #f8f9fa;
   color: var(--gray-dark);
   text-align: left;
@@ -610,30 +667,21 @@
   border-bottom: 2px solid #ddd;
 }
 
-.history-sale-modal-table td {
+.historysalemodaltable td {
   padding: 12px 10px;
   border-bottom: 1px solid #eee;
 }
 
-.history-sale-modal-table tbody tr:hover {
+.historysalemodaltable tbody tr:hover {
   background-color: #f5f8ff;
 }
 
-.history-sale-modal-table tfoot tr {
+.historysalemodaltable tfoot tr {
   background-color: #f0f8f0;
 }
 
-.history-sale-modal-table tfoot td {
+.historysalemodaltable tfoot td {
   padding: 15px 10px;
-}
-
-.history-sale-modal-instructions {
-  background-color: #fff9e6;
-  border: 1px solid #ffe0b2;
-  padding: 12px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-bottom: 20px;
 }
 
 /* Estilos para los controles de cantidad */
@@ -683,43 +731,86 @@
   font-size: 16px;
 }
 
-/* Responsividad para el modal */
-@media (max-width: 768px) {
-  .history-sale-modal-content {
-    width: 95%;
-    margin: 0 10px;
+/* Responsividad */
+@media (max-width: 1024px) {
+  .historysaletablecontainer {
+    max-height: 50vh;
   }
   
-  .history-sale-modal-table {
-    font-size: 13px;
+  .historysaledropdowns {
+    flex-direction: column;
   }
   
-  .quantity-controls {
-    width: 90px;
+  .historysalefiltergroup {
+    width: 100%;
   }
 }
 
-/* Responsividad */
 @media (max-width: 768px) {
-  .history-sale-search-sort-container {
+  .historysalefilters {
+    padding: 15px;
+  }
+
+  .historysaleheader {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .historysaleexportbuttons {
+    width: 100%;
+  }
+
+  .historysalefiltercontrols {
+    flex-direction: column;
   }
   
-  .history-sale-date-range,
-  .history-sale-total-range,
-  .history-sale-sort-select,
-  .history-sale-category-select {
+  .historysalefilterdates, 
+  .historysaletotals {
+    width: 100%;
+  }
+
+  .historysaleclearfiltersbtn {
     width: 100%;
   }
   
-  .history-sale-export-buttons {
+  .producto-item {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    gap: 4px;
   }
   
-  .history-sale-export-buttons button {
-    width: 100%;
-    max-width: 300px;
+  .producto-nombre {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .historysalefilterdates, 
+  .historysaletotals {
+    flex-direction: column;
+  }
+
+  .historysaletable td, 
+  .historysaletable th {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  
+  .devolver-btn, .anular-btn {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+}
+
+/* Animación fade-in para elementos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

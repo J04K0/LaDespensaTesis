@@ -10,15 +10,16 @@ import { faFile, faSave, faTimes, faImage, faClipboardList } from '@fortawesome/
 const AddProducts = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    Nombre: '',
-    codigoBarras: '',
-    Marca: '',
-    Stock: '',
-    Categoria: '',
-    PrecioCompra: '',
-    fechaVencimiento: '',
-    PrecioVenta: '',
+    'addproducts-nombre': '',
+    'addproducts-codigo-barras': '',
+    'addproducts-marca': '',
+    'addproducts-stock': '',
+    'addproducts-categoria': '',
+    'addproducts-precio-compra': '',
+    'addproducts-fecha-vencimiento': '',
+    'addproducts-precio-venta': '',
   });
+  const [precioRecomendado, setPrecioRecomendado] = useState(0);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,15 +32,43 @@ const AddProducts = () => {
     'Limpieza y Hogar', 'Mascotas', 'Remedios', 'Otros'
   ];
 
+  // Definir márgenes por categoría (mismos valores que en el backend)
+  const margenesPorCategoria = {
+    'Congelados': 0.25, // 25% (promedio de 20-30%)
+    'Carnes': 0.20, // 20% (promedio de 15-25%)
+    'Despensa': 0.20, // 20% (promedio de 15-25%)
+    'Panaderia y Pasteleria': 0.25, // 25% (promedio de 20-30%)
+    'Quesos y Fiambres': 0.25, // 25% (promedio de 20-30%)
+    'Bebidas y Licores': 0.33, // 33% (promedio de 25-40%)
+    'Lacteos, Huevos y Refrigerados': 0.20, // 20% (promedio de 15-25%)
+    'Desayuno y Dulces': 0.30, // 30% (promedio de 25-35%)
+    'Bebes y Niños': 0.28, // 28% (promedio de 20-35%)
+    'Cigarros': 0.40, // 40% (promedio de 30-50%)
+    'Cuidado Personal': 0.28, // 28% (promedio de 20-35%)
+    'Limpieza y Hogar': 0.28, // 28% (promedio de 20-35%)
+    'Mascotas': 0.28, // 28% (promedio de 20-35%)
+    'Remedios': 0.15, // 15% (promedio de 10-20%)
+    'Otros': 0.23  // 23% (promedio de 15-30%)
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const barcode = params.get('barcode');
     
     if (barcode) {
-      setFormData(prev => ({ ...prev, codigoBarras: barcode }));
+      setFormData(prev => ({ ...prev, 'addproducts-codigo-barras': barcode }));
       handleCodigoBarrasChange(barcode);
     }
   }, []);
+
+  // Calcular precio recomendado cuando cambia el precio de compra o la categoría
+  useEffect(() => {
+    const precioCompra = parseFloat(formData['addproducts-precio-compra']) || 0;
+    const categoria = formData['addproducts-categoria'] || 'Otros';
+    const margen = margenesPorCategoria[categoria] || 0.23;
+    const nuevoPrecioRecomendado = precioCompra * (1 + margen);
+    setPrecioRecomendado(nuevoPrecioRecomendado);
+  }, [formData['addproducts-precio-compra'], formData['addproducts-categoria']]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +91,7 @@ const AddProducts = () => {
   };
 
   const handleCodigoBarrasChange = async (value) => {
-    setFormData(prev => ({ ...prev, codigoBarras: value }));
+    setFormData(prev => ({ ...prev, 'addproducts-codigo-barras': value }));
 
     if (value.length === 13) {
       setLoading(true);
@@ -73,9 +102,9 @@ const AddProducts = () => {
         if (product) {
           setFormData(prev => ({
             ...prev,
-            Nombre: product.nombre || '',
-            Marca: product.marca || '',
-            Categoria: product.categoria || ''
+            'addproducts-nombre': product.nombre || '',
+            'addproducts-marca': product.marca || '',
+            'addproducts-categoria': product.categoria || ''
           }));
 
           if (product.image) {
@@ -91,6 +120,13 @@ const AddProducts = () => {
     }
   };
 
+  const usarPrecioRecomendado = () => {
+    setFormData(prev => ({ 
+      ...prev, 
+      'addproducts-precio-venta': precioRecomendado.toFixed(0) 
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -104,7 +140,7 @@ const AddProducts = () => {
 
     if (!result.isConfirmed) return;
 
-    if (formData.Categoria === '') {
+    if (formData['addproducts-categoria'] === '') {
       showErrorAlert('Error', 'Por favor, seleccione una categoría válida.');
       return;
     }
@@ -153,43 +189,43 @@ const AddProducts = () => {
     <div className="app-container">
       <Navbar />
       <div className="content-container">
-        <div className="product-form-container">
-          <div className="card">
-            <div className="card-body">
-              <form onSubmit={handleSubmit} className="product-form">
+        <div className="addproducts-form-container">
+          <div className="addproducts-card">
+            <div className="addproducts-card-body">
+              <form onSubmit={handleSubmit} className="addproducts-form">
                 {error && (
-                  <div className="alert alert-danger">{error}</div>
+                  <div className="addproducts-alert addproducts-alert-danger">{error}</div>
                 )}
                 
-                <div className="form-section">
-                  <div className="section-header">
-                    <FontAwesomeIcon icon={faClipboardList} className="section-icon" />
-                    <h3 className="section-title">Información Básica</h3>
+                <div className="addproducts-form-section">
+                  <div className="addproducts-section-header">
+                    <FontAwesomeIcon icon={faClipboardList} className="addproducts-section-icon" />
+                    <h3 className="addproducts-section-title">Información Básica</h3>
                   </div>
                   
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="codigoBarras" className="form-label">Código de Barras *</label>
+                  <div className="addproducts-form-row">
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-codigo-barras" className="addproducts-form-label">Código de Barras *</label>
                       <input
                         type="text"
-                        id="codigoBarras"
-                        name="codigoBarras"
-                        value={formData.codigoBarras}
+                        id="addproducts-codigo-barras"
+                        name="addproducts-codigo-barras"
+                        value={formData['addproducts-codigo-barras']}
                         onChange={(e) => handleCodigoBarrasChange(e.target.value)}
-                        className="form-control"
+                        className="addproducts-form-control"
                         placeholder="Escanee o ingrese el código"
                         required
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label htmlFor="Categoria" className="form-label">Categoría *</label>
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-categoria" className="addproducts-form-label">Categoría *</label>
                       <select
-                        id="Categoria"
-                        name="Categoria"
-                        value={formData.Categoria}
+                        id="addproducts-categoria"
+                        name="addproducts-categoria"
+                        value={formData['addproducts-categoria']}
                         onChange={handleChange}
-                        className="form-select"
+                        className="addproducts-form-select"
                         required
                       >
                         <option value="">Seleccione una categoría</option>
@@ -200,30 +236,30 @@ const AddProducts = () => {
                     </div>
                   </div>
                   
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="Nombre" className="form-label">Nombre del Producto *</label>
+                  <div className="addproducts-form-row">
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-nombre" className="addproducts-form-label">Nombre del Producto *</label>
                       <input
                         type="text"
-                        id="Nombre"
-                        name="Nombre"
-                        value={formData.Nombre}
+                        id="addproducts-nombre"
+                        name="addproducts-nombre"
+                        value={formData['addproducts-nombre']}
                         onChange={handleChange}
-                        className="form-control"
+                        className="addproducts-form-control"
                         placeholder="Nombre del producto"
                         required
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label htmlFor="Marca" className="form-label">Marca *</label>
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-marca" className="addproducts-form-label">Marca *</label>
                       <input
                         type="text"
-                        id="Marca"
-                        name="Marca"
-                        value={formData.Marca}
+                        id="addproducts-marca"
+                        name="addproducts-marca"
+                        value={formData['addproducts-marca']}
                         onChange={handleChange}
-                        className="form-control"
+                        className="addproducts-form-control"
                         placeholder="Marca del producto"
                         required
                       />
@@ -231,58 +267,39 @@ const AddProducts = () => {
                   </div>
                 </div>
                 
-                <div className="form-section">
-                  <div className="section-header">
-                    <FontAwesomeIcon icon={faFile} className="section-icon" />
-                    <h3 className="section-title">Inventario y Precios</h3>
+                <div className="addproducts-form-section">
+                  <div className="addproducts-section-header">
+                    <FontAwesomeIcon icon={faFile} className="addproducts-section-icon" />
+                    <h3 className="addproducts-section-title">Inventario y Precios</h3>
                   </div>
                   
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="Stock" className="form-label">Stock Inicial *</label>
+                  <div className="addproducts-form-row">
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-stock" className="addproducts-form-label">Stock Inicial *</label>
                       <input
                         type="number"
-                        id="Stock"
-                        name="Stock"
-                        value={formData.Stock}
+                        id="addproducts-stock"
+                        name="addproducts-stock"
+                        value={formData['addproducts-stock']}
                         onChange={handleChange}
-                        className="form-control"
+                        className="addproducts-form-control"
                         placeholder="Cantidad"
                         min="0"
                         required
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label htmlFor="PrecioCompra" className="form-label">Precio de Compra *</label>
-                      <div className="input-group">
-                        <span className="input-group-text">$</span>
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-precio-compra" className="addproducts-form-label">Precio de Compra *</label>
+                      <div className="addproducts-input-group">
+                        <span className="addproducts-input-group-text">$</span>
                         <input
                           type="number"
-                          id="PrecioCompra"
-                          name="PrecioCompra"
-                          value={formData.PrecioCompra}
+                          id="addproducts-precio-compra"
+                          name="addproducts-precio-compra"
+                          value={formData['addproducts-precio-compra']}
                           onChange={handleChange}
-                          className="form-control"
-                          placeholder="0.00"
-                          min="0"
-                          step="0.01"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="PrecioVenta" className="form-label">Precio de Venta *</label>
-                      <div className="input-group">
-                        <span className="input-group-text">$</span>
-                        <input
-                          type="number"
-                          id="PrecioVenta"
-                          name="PrecioVenta"
-                          value={formData.PrecioVenta}
-                          onChange={handleChange}
-                          className="form-control"
+                          className="addproducts-form-control"
                           placeholder="0.00"
                           min="0"
                           step="0.01"
@@ -292,49 +309,93 @@ const AddProducts = () => {
                     </div>
                   </div>
                   
-                  <div className="form-row">
-                    <div className="form-group fecha-vencimiento">
-                      <label htmlFor="fechaVencimiento" className="form-label">Fecha de Vencimiento</label>
+                  <div className="addproducts-form-row">
+                    <div className="addproducts-form-group">
+                      <label className="addproducts-form-label">Precio Recomendado (Según categoria)</label>
+                      <div className="addproducts-recomendado-container">
+                        <div className="addproducts-input-group">
+                          <span className="addproducts-input-group-text">$</span>
+                          <input
+                            type="text"
+                            value={precioRecomendado.toFixed(0)}
+                            className="addproducts-form-control"
+                            disabled
+                          />
+                        </div>
+                        <button 
+                          type="button"
+                          className="addproducts-btn addproducts-btn-usar-recomendado"
+                          onClick={usarPrecioRecomendado}
+                          disabled={!precioRecomendado}
+                        >
+                          Usar este precio
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-precio-venta" className="addproducts-form-label">Precio de Venta Final *</label>
+                      <div className="addproducts-input-group">
+                        <span className="addproducts-input-group-text">$</span>
+                        <input
+                          type="number"
+                          id="addproducts-precio-venta"
+                          name="addproducts-precio-venta"
+                          value={formData['addproducts-precio-venta']}
+                          onChange={handleChange}
+                          className="addproducts-form-control"
+                          placeholder="0.00"
+                          min="0"
+                          step="0.01"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="addproducts-form-row">
+                    <div className="addproducts-form-group addproducts-fecha-vencimiento">
+                      <label htmlFor="addproducts-fecha-vencimiento" className="addproducts-form-label">Fecha de Vencimiento</label>
                       <input
                         type="date"
-                        id="fechaVencimiento"
-                        name="fechaVencimiento"
-                        value={formData.fechaVencimiento}
+                        id="addproducts-fecha-vencimiento"
+                        name="addproducts-fecha-vencimiento"
+                        value={formData['addproducts-fecha-vencimiento']}
                         onChange={handleChange}
-                        className="form-control"
+                        className="addproducts-form-control"
                       />
                     </div>
                   </div>
                 </div>
                 
-                <div className="form-section">
-                  <div className="section-header">
-                    <FontAwesomeIcon icon={faImage} className="section-icon" />
-                    <h3 className="section-title">Imagen del Producto</h3>
+                <div className="addproducts-form-section">
+                  <div className="addproducts-section-header">
+                    <FontAwesomeIcon icon={faImage} className="addproducts-section-icon" />
+                    <h3 className="addproducts-section-title">Imagen del Producto</h3>
                   </div>
                   
-                  <div className="form-row image-section">
-                    <div className="form-group">
-                      <label htmlFor="image" className="form-label">Imagen</label>
+                  <div className="addproducts-form-row addproducts-image-section">
+                    <div className="addproducts-form-group">
+                      <label htmlFor="addproducts-image" className="addproducts-form-label">Imagen</label>
                       <input
                         type="file"
-                        id="image"
-                        name="image"
+                        id="addproducts-image"
+                        name="addproducts-image"
                         onChange={handleImageChange}
-                        className="form-control file-input"
+                        className="addproducts-form-control addproducts-file-input"
                         accept="image/*"
                       />
-                      <small className="form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                      <small className="addproducts-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
                     </div>
                     
-                    <div className="form-group preview-container">
+                    <div className="addproducts-form-group addproducts-preview-container">
                       {(imagePreview || image) && (
-                        <div className="image-preview">
+                        <div className="addproducts-image-preview">
                           <p>Vista previa:</p>
                           <img 
                             src={imagePreview || (image instanceof File ? URL.createObjectURL(image) : null)} 
                             alt="Vista previa del producto" 
-                            className="img-preview" 
+                            className="addproducts-img-preview" 
                           />
                         </div>
                       )}
@@ -342,17 +403,17 @@ const AddProducts = () => {
                   </div>
                 </div>
                 
-                <div className="form-actions">
+                <div className="addproducts-form-actions">
                   <button 
                     type="submit" 
-                    className="btn btn-primary"
+                    className="addproducts-btn addproducts-btn-primary"
                     disabled={loading}
                   >
                     <FontAwesomeIcon icon={faSave} /> {loading ? 'Guardando...' : 'Guardar Producto'}
                   </button>
                   <button 
                     type="button" 
-                    className="btn btn-secondary"
+                    className="addproducts-btn addproducts-btn-secondary"
                     onClick={handleCancel}
                     disabled={loading}
                   >

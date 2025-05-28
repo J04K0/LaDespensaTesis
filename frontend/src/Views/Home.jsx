@@ -11,6 +11,7 @@ import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
 import ChartSkeleton from '../components/ChartSkeleton';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import { 
   Chart as ChartJS, 
@@ -34,7 +35,8 @@ ChartJS.register(
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 const Home = () => {
@@ -273,10 +275,36 @@ const Home = () => {
           label: function(context) {
             const label = context.dataset.label || '';
             const value = context.formattedValue;
-            return `${label}: ${value}`;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = Math.round((context.raw / total) * 100);
+            return `${label}: ${value} (${percentage}%)`;
           }
         }
-      }
+      },
+      datalabels: {
+        display: true,
+        color: '#fff',
+        font: {
+          weight: 'bold',
+          size: 14
+        },
+        formatter: (value, ctx) => {
+          const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+          const percentage = Math.round((value / total) * 100);
+          return percentage > 5 ? `${percentage}%` : '';
+        }
+      },
+      // Mantener un tamaño consistente independientemente de la cantidad de datos
+      layout: {
+        padding: {
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: 20
+        }
+      },
+      // Asegurar que el gráfico siempre ocupe todo el espacio disponible
+      aspectRatio: 1
     },
   };
 
@@ -463,27 +491,52 @@ const Home = () => {
           <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faStar} style={{marginRight: '10px'}}/> Top 5 Productos Más Vendidos</h2>
             
-            {/* Leyenda del gráfico */}
-            <div className="chart-legend">
-              {topProductos.labels.map((label, index) => (
-                <div key={index} className="legend-item">
-                  <span className="color-indicator" style={{backgroundColor: topProductos.datasets[0].backgroundColor[index]}}></span>
-                  <span className="legend-label">{label}</span>
+            <div className="chart-content-wrapper">
+              <div className="chart-visual-container">
+                {/* Leyenda del gráfico */}
+                <div className="chart-legend">
+                  {topProductos.labels.map((label, index) => (
+                    <div key={index} className="legend-item">
+                      <span className="color-indicator" style={{backgroundColor: topProductos.datasets[0].backgroundColor[index]}}></span>
+                      <span className="legend-label">{label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            {/* Área del gráfico */}
-            <div className="chart-area">
-              <Doughnut data={topProductos} options={{
-                ...chartOptions,
-                plugins: {
-                  ...chartOptions.plugins,
-                  legend: {
-                    display: false
-                  }
-                }
-              }} />
+                
+                {/* Área del gráfico */}
+                <div className="chart-area">
+                  <Doughnut data={topProductos} options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      legend: {
+                        display: false
+                      }
+                    }
+                  }} />
+                </div>
+              </div>
+              
+              {/* Tabla de datos */}
+              <div className="chart-table-container">
+                <h3>Detalles de Ventas</h3>
+                <table className="chart-data-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Unidades Vendidas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProductos.labels.map((label, index) => (
+                      <tr key={index}>
+                        <td>{label}</td>
+                        <td>{topProductos.datasets[0].data[index]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         ) : (
@@ -494,27 +547,52 @@ const Home = () => {
           <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faChartPie} style={{marginRight: '10px'}}/> Ventas por Categoría</h2>
             
-            {/* Leyenda del gráfico */}
-            <div className="chart-legend">
-              {ventasPorCategoria.labels.map((label, index) => (
-                <div key={index} className="legend-item">
-                  <span className="color-indicator" style={{backgroundColor: ventasPorCategoria.datasets[0].backgroundColor[index]}}></span>
-                  <span className="legend-label">{label}</span>
+            <div className="chart-content-wrapper">
+              <div className="chart-visual-container">
+                {/* Leyenda del gráfico */}
+                <div className="chart-legend">
+                  {ventasPorCategoria.labels.map((label, index) => (
+                    <div key={index} className="legend-item">
+                      <span className="color-indicator" style={{backgroundColor: ventasPorCategoria.datasets[0].backgroundColor[index]}}></span>
+                      <span className="legend-label">{label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            {/* Área del gráfico */}
-            <div className="chart-area">
-              <Pie data={ventasPorCategoria} options={{
-                ...chartOptions,
-                plugins: {
-                  ...chartOptions.plugins,
-                  legend: {
-                    display: false
-                  }
-                }
-              }} />
+                
+                {/* Área del gráfico */}
+                <div className="chart-area">
+                  <Pie data={ventasPorCategoria} options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      legend: {
+                        display: false
+                      }
+                    }
+                  }} />
+                </div>
+              </div>
+              
+              {/* Tabla de datos */}
+              <div className="chart-table-container">
+                <h3>Detalles por Categoría</h3>
+                <table className="chart-data-table">
+                  <thead>
+                    <tr>
+                      <th>Categoría</th>
+                      <th>Unidades Vendidas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ventasPorCategoria.labels.map((label, index) => (
+                      <tr key={index}>
+                        <td>{label}</td>
+                        <td>{ventasPorCategoria.datasets[0].data[index]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         ) : (
@@ -525,27 +603,52 @@ const Home = () => {
           <div className="chart-wrapper">
             <h2><FontAwesomeIcon icon={faChartPie} style={{marginRight: '10px'}}/> Productos Menos Vendidos</h2>
             
-            {/* Leyenda del gráfico */}
-            <div className="chart-legend">
-              {productosPocoVendidos.labels.map((label, index) => (
-                <div key={index} className="legend-item">
-                  <span className="color-indicator" style={{backgroundColor: productosPocoVendidos.datasets[0].backgroundColor[index]}}></span>
-                  <span className="legend-label">{label}</span>
+            <div className="chart-content-wrapper">
+              <div className="chart-visual-container">
+                {/* Leyenda del gráfico */}
+                <div className="chart-legend">
+                  {productosPocoVendidos.labels.map((label, index) => (
+                    <div key={index} className="legend-item">
+                      <span className="color-indicator" style={{backgroundColor: productosPocoVendidos.datasets[0].backgroundColor[index]}}></span>
+                      <span className="legend-label">{label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            {/* Área del gráfico */}
-            <div className="chart-area">
-              <Doughnut data={productosPocoVendidos} options={{
-                ...chartOptions,
-                plugins: {
-                  ...chartOptions.plugins,
-                  legend: {
-                    display: false
-                  }
-                }
-              }} />
+                
+                {/* Área del gráfico */}
+                <div className="chart-area">
+                  <Doughnut data={productosPocoVendidos} options={{
+                    ...chartOptions,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      legend: {
+                        display: false
+                      }
+                    }
+                  }} />
+                </div>
+              </div>
+              
+              {/* Tabla de datos */}
+              <div className="chart-table-container">
+                <h3>Productos con Menor Rotación</h3>
+                <table className="chart-data-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Unidades Vendidas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productosPocoVendidos.labels.map((label, index) => (
+                      <tr key={index}>
+                        <td>{label}</td>
+                        <td>{productosPocoVendidos.datasets[0].data[index]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         ) : (

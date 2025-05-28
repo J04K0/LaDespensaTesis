@@ -34,18 +34,18 @@
 }
 
 /* Contenedor del formulario de producto */
-.product-form-container {
+.addproducts-form-container {
   width: 100%;
   margin: 0 auto;
 }
 
-.product-form {
+.addproducts-form {
   width: 100%;
   max-width: 100%;
 }
 
 /* Card contenedora del formulario */
-.card {
+.addproducts-card {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -55,112 +55,118 @@
   width: 100%;
 }
 
-.card-body {
+.addproducts-card-body {
   padding: 30px;
 }
 
 /* Estilos para las secciones del formulario */
-.form-section {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
+.addproducts-form-section {
+  margin-bottom: 25px; /* Reducido de 30px */
+  padding-bottom: 15px; /* Reducido de 20px */
   border-bottom: 1px solid #f0f0f0;
 }
 
-.form-section:last-child {
+.addproducts-form-section:last-child {
   border-bottom: none;
 }
 
-.section-header {
+.addproducts-section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px; /* Reducido de 25px */
   justify-content: flex-start;
-  gap: 10px;
+  gap: 8px; /* Reducido de 10px */
+  padding-bottom: 8px; /* Añadido para separar del contenido */
+  border-bottom: 1px solid #f0f0f0; /* Añadido para mejor separación visual */
 }
 
-.section-icon {
+.addproducts-section-icon {
   color: white;
-  font-size: 1rem;
+  font-size: 0.85rem; /* Reducido de 1rem */
   background-color: var(--primary);
-  width: 34px;
-  height: 34px;
+  width: 28px; /* Reducido de 34px */
+  height: 28px; /* Reducido de 34px */
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 12px;
+  margin-right: 10px; /* Reducido de 12px */
   box-sizing: border-box;
   position: relative;
   overflow: visible;
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2); /* Añadido sombra sutil */
 }
 
-.section-title {
+.addproducts-section-title {
   color: var(--primary-dark);
-  font-size: 1.4rem;
+  font-size: 1.25rem; /* Reducido de 1.4rem para mejor proporción con el icono */
   font-weight: 700;
   margin: 0;
+  letter-spacing: -0.01em; /* Añadido para mejorar legibilidad */
 }
 
 /* Organización del formulario en filas */
-.form-row {
+.addproducts-form-row {
   display: flex;
   flex-wrap: wrap;
   margin: 0 -10px;
   margin-bottom: 15px;
 }
 
-.form-row:last-child {
+.addproducts-form-row:last-child {
   margin-bottom: 0;
 }
 
 /* Grupos de formularios */
-.form-group {
-  margin-bottom: 20px;
+.addproducts-form-group {
+  margin-bottom: 18px; /* Reducido de 20px */
   padding: 0 10px;
   flex: 1;
   min-width: calc(50% - 20px);
   position: relative;
 }
 
-.form-row .form-group {
+.addproducts-form-row .addproducts-form-group {
   flex: 1;
   min-width: calc(50% - 20px);
 }
 
 /* En la sección de inventario queremos 3 columnas */
-.form-section:nth-child(2) .form-row:first-child .form-group {
+.addproducts-form-section:nth-child(2) .addproducts-form-row:first-child .addproducts-form-group {
   flex: 1;
   min-width: calc(33.33% - 20px);
 }
 
 /* La fecha de vencimiento debe ocupar menos espacio */
-.fecha-vencimiento {
+.addproducts-fecha-vencimiento {
   flex: 0 0 auto;
   min-width: calc(50% - 20px);
 }
 
 /* Estilos para etiquetas de formulario */
-.form-label {
+.addproducts-form-label {
   font-weight: 600;
   font-size: 0.95rem;
   margin-bottom: 8px;
 }
 
 /* Estilos para inputs y selects */
-.form-control, .form-select {
-  padding: 10px 12px;
-  font-size: 0.95rem;
+.addproducts-form-control, .addproducts-form-select {
+  padding: 9px 12px; /* Reducido de 10px 12px */
+  font-size: 0.9rem; /* Reducido de 0.95rem */
   border-radius: 8px;
   border: 1px solid #ced4da;
   background-color: #fff;
   color: #212529;
+  width: 100%; /* Asegurar que ocupen todo el ancho disponible */
+  height: 38px; /* Altura fija para consistencia */
 }
 
-.form-control::placeholder {
+.addproducts-form-control::placeholder {
   color: #aaa;
 }
 
-.form-control:focus, .form-select:focus {
+.addproducts-form-control:focus, .addproducts-form-select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.12);
   outline: none;
@@ -168,86 +174,119 @@
 }
 
 /* Estilos para los grupos de inputs con prefijo */
-.input-group {
+.addproducts-input-group {
   position: relative;
   display: flex;
   align-items: stretch;
   width: 100%;
+  height: 38px; /* Igualado a la altura de los otros inputs */
 }
 
-.input-group-text {
+.addproducts-input-group-text {
   display: flex;
   align-items: center;
-  padding: 0 12px;
+  justify-content: center;
+  padding: 0 10px; /* Reducido de 0 12px */
   background-color: #e9ecef;
   border: 1px solid #e0e0e0;
   border-radius: 8px 0 0 8px;
   border-right: none;
   color: #495057;
   font-weight: 500;
+  width: 30px; /* Ancho fijo para el prefijo */
 }
 
-.input-group .form-control {
+.addproducts-input-group .addproducts-form-control {
   border-radius: 0 8px 8px 0;
   flex: 1;
+  padding-left: 8px; /* Ajustado para mejor visualización */
 }
 
 /* Estilos para la carga de archivos */
-.file-input {
+.addproducts-file-input {
   padding: 8px 10px;
   background-color: #f9f9f9;
+  height: auto; /* Permitir altura flexible para inputs de archivo */
+  display: flex;
+  align-items: center;
+}
+
+.addproducts-file-input::-webkit-file-upload-button {
+  padding: 6px 10px;
+  margin-right: 10px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addproducts-file-input::-webkit-file-upload-button:hover {
+  background-color: var(--primary);
+  color: white;
 }
 
 /* Estilos para los botones del formulario */
-.form-actions {
+.addproducts-form-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end; /* Cambiado de space-between a flex-end */
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px; /* Aumentado de 10px */
+  margin-top: 20px; /* Añadido margen superior */
+  padding-top: 15px; /* Añadido padding superior */
+  border-top: 1px solid #f0f0f0; /* Añadido borde superior */
 }
 
-.btn {
-  padding: 12px 20px;
+.addproducts-btn {
+  padding: 10px 18px; /* Reducido de 12px 20px */
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Reducido de 1rem */
   cursor: pointer;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px; /* Reducido de 8px */
   border: none;
   min-width: 120px;
+  font-weight: 500; /* Añadido para mejor legibilidad */
 }
 
-.btn-primary {
+/* Ajustar tamaño de los iconos en los botones */
+.addproducts-btn svg {
+  font-size: 0.95rem; /* Asegurar que los iconos sean proporcionales */
+}
+
+.addproducts-btn-primary {
   background-color: var(--primary);
   color: #fff;
 }
 
-.btn-primary:hover {
+.addproducts-btn-primary:hover {
   background-color: #0056b3;
   box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
 }
 
-.btn-secondary {
+.addproducts-btn-secondary {
   background-color: var(--danger);
   color: #fff;
 }
 
-.btn-secondary:hover {
+.addproducts-btn-secondary:hover {
   background-color: var(--danger-hover);
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
-.btn:disabled {
+.addproducts-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   box-shadow: none !important;
 }
 
 /* Estilos para mensajes de alerta */
-.alert {
+.addproducts-alert {
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -257,18 +296,83 @@
   gap: 8px;
 }
 
-.alert-danger {
+.addproducts-alert-danger {
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   color: #721c24;
 }
 
 /* Estilos para texto pequeño */
-.form-text {
+.addproducts-form-text {
   display: block;
   margin-top: 5px;
   font-size: 0.85rem;
   color: #6c757d;
+}
+
+/* Sección de imagen del producto */
+.addproducts-image-section {
+  gap: 20px; /* Añadido para separar mejor los elementos de la imagen */
+  align-items: flex-start; /* Mejor alineación */
+}
+
+.addproducts-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.addproducts-image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.addproducts-img-preview {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Estilos para el contenedor del precio recomendado */
+.addproducts-recomendado-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.addproducts-recomendado-container .addproducts-input-group {
+  flex: 1;
+}
+
+.addproducts-btn-usar-recomendado {
+  background-color: var(--success);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  height: 38px;
+  min-width: 120px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addproducts-btn-usar-recomendado:hover {
+  background-color: var(--success-hover);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.addproducts-btn-usar-recomendado:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Responsividad */
@@ -279,28 +383,45 @@
 }
 
 @media (max-width: 992px) {
-  .form-row {
+  .addproducts-form-row {
     flex-direction: column;
   }
   
-  .form-group, 
-  .form-row .form-group,
-  .form-section:nth-child(2) .form-row:first-child .form-group,
-  .fecha-vencimiento {
+  .addproducts-form-group, 
+  .addproducts-form-row .addproducts-form-group,
+  .addproducts-form-section:nth-child(2) .addproducts-form-row:first-child .addproducts-form-group,
+  .addproducts-fecha-vencimiento {
     min-width: 100%;
     flex: 0 0 100%;
   }
   
-  .form-actions {
+  .addproducts-form-actions {
     flex-direction: column-reverse;
+    gap: 10px; /* Reducido para móviles */
   }
   
-  .btn {
+  .addproducts-btn {
     width: 100%;
   }
   
-  .card-body {
+  .addproducts-card-body {
     padding: 20px;
+  }
+  
+  .addproducts-section-icon {
+    width: 24px; /* Reducido para móviles */
+    height: 24px; /* Reducido para móviles */
+    font-size: 0.8rem; /* Reducido para móviles */
+  }
+  
+  .addproducts-recomendado-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .addproducts-btn-usar-recomendado {
+    width: 100%;
   }
 }
 
@@ -309,7 +430,28 @@
     padding: 80px 15px 20px;
   }
   
-  .section-title {
-    font-size: 1.2rem;
+  .addproducts-section-title {
+    font-size: 1.1rem; /* Reducido de 1.2rem */
+  }
+  
+  .addproducts-section-icon {
+    width: 22px; /* Aún más pequeño en pantallas muy pequeñas */
+    height: 22px;
+    font-size: 0.75rem;
+    margin-right: 8px;
+  }
+  
+  .addproducts-form-label {
+    font-size: 0.9rem; /* Reducción para móviles */
+  }
+  
+  .addproducts-file-input::-webkit-file-upload-button {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .addproducts-img-preview {
+    max-width: 150px; /* Reducido para móviles */
+    max-height: 150px;
   }
 }

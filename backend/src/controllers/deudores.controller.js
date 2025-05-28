@@ -1,6 +1,8 @@
 import Deudores from '../models/deudores.model.js';
 import { deudorSchema, idDeudorSchema } from '../schema/deudores.schema.js';
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
+import { emitDeudorPagoProximoAlert } from '../services/alert.service.js';
+import cron from 'node-cron';
 
 export const getDeudores = async (req, res) => {
   try {
@@ -127,3 +129,23 @@ export const updateDeudorPagos = async (req, res) => {
     handleErrorServer(res, 500, 'Error al registrar el pago', err.message);
   }
 };
+
+// Tarea programada para enviar alertas de pago próximo
+cron.schedule('0 9 * * *', async () => {
+  try {
+    const deudores = await Deudores.find();
+    deudores.forEach(deudor => {
+      const fechaPago = new Date(deudor.fechaPaga);
+      const hoy = new Date();
+      // Verificar si el pago es en 3 días
+      const diffTime = Math.abs(fechaPago - hoy);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+      if (diffDays === 3) {
+        emitDeudorPagoProximoAlert(deudor);
+      }
+    });
+  } catch (err) {
+    console.error('Error al enviar alertas de pago próximo:', err.message);
+  }
+});

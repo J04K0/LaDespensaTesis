@@ -2,12 +2,29 @@ import axios from './root.service.js';
 
 export const addProducts = async (formData) => {
     try {
+        // Crear un nuevo FormData para mapear los campos
+        const mappedFormData = new FormData();
+        
+        // Mapear los nombres de campos con prefijo al formato esperado por el backend
+        if (formData.has('addproducts-nombre')) mappedFormData.append('Nombre', formData.get('addproducts-nombre'));
+        if (formData.has('addproducts-codigo-barras')) mappedFormData.append('codigoBarras', formData.get('addproducts-codigo-barras'));
+        if (formData.has('addproducts-marca')) mappedFormData.append('Marca', formData.get('addproducts-marca'));
+        if (formData.has('addproducts-stock')) mappedFormData.append('Stock', formData.get('addproducts-stock'));
+        if (formData.has('addproducts-categoria')) mappedFormData.append('Categoria', formData.get('addproducts-categoria'));
+        if (formData.has('addproducts-precio-compra')) mappedFormData.append('PrecioCompra', formData.get('addproducts-precio-compra'));
+        if (formData.has('addproducts-fecha-vencimiento')) mappedFormData.append('fechaVencimiento', formData.get('addproducts-fecha-vencimiento'));
+        if (formData.has('addproducts-precio-venta')) mappedFormData.append('PrecioVenta', formData.get('addproducts-precio-venta'));
+        
+        // Conservar la imagen si existe
+        if (formData.has('image')) mappedFormData.append('image', formData.get('image'));
+        if (formData.has('imageUrl')) mappedFormData.append('imageUrl', formData.get('imageUrl'));
+        
         const config = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         };
-        const response = await axios.post('/products/agregar', formData, config);
+        const response = await axios.post('/products/agregar', mappedFormData, config);
         return response;
     } catch (error) {
         console.error('Error al añadir el producto:', error);

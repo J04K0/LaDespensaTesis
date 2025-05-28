@@ -8,6 +8,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { obtenerVentasPorTicket } from '../services/venta.service';
 import { getDeudores } from '../services/deudores.service';
+import NotificationCenter from './NotificationCenter';
+import { initializeSocket, closeSocket } from '../services/socket.service';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,8 +26,18 @@ const Navbar = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     
+    // Inicializar la conexión WebSocket al montar el componente
+    initializeSocket();
+    
+    // Guardar la hora de inicio de sesión
+    if (!localStorage.getItem('sessionStartTime')) {
+      localStorage.setItem('sessionStartTime', new Date().toISOString());
+    }
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      // Cerrar la conexión WebSocket al desmontar
+      closeSocket();
     };
   }, []);
 
@@ -322,6 +334,10 @@ const Navbar = () => {
               <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
             </li>
             
+            <div className="navbar-notifications">
+              <NotificationCenter />
+            </div>
+        
             <li onClick={handleLogout} className="logout-item">
               <FontAwesomeIcon icon={faSignOutAlt} /> <span>Cerrar sesión</span>
             </li>

@@ -221,12 +221,6 @@
   /* Eliminado text-align: center !important; */
 }
 
-/* Hover para las filas */
-.deudores-table tbody tr:hover {
-  background-color: #e8f4ff;
-  transition: background-color 0.2s ease;
-}
-
 /* Celda de acciones */
 .actions-cell {
   display: flex;
