@@ -211,6 +211,20 @@
   align-items: center;
 }
 
+.addproducts-file-input-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 150px; /* Aumentado para mayor visibilidad */
+  min-width: 400px; /* Aseguramos un ancho aún mayor */
+  border: 1px dashed #ced4da;
+  border-radius: 8px;
+  padding: 20px; /* Aumentado el padding */
+  background-color: #f9f9f9;
+  position: relative;
+  margin-bottom: 15px;
+}
+
 .addproducts-file-input::-webkit-file-upload-button {
   padding: 6px 10px;
   margin-right: 10px;
@@ -226,6 +240,27 @@
 .addproducts-file-input::-webkit-file-upload-button:hover {
   background-color: var(--primary);
   color: white;
+}
+
+.addproducts-no-file-selected {
+  margin-top: 20px;
+  padding: 15px;
+  text-align: center;
+  color: #6c757d;
+  font-style: normal; /* Cambiado de itálica a normal */
+  background-color: #f0f0f0; /* Fondo más destacado */
+  border: 1px solid #e0e0e0; /* Borde adicional */
+  border-radius: 6px;
+  width: 90%; /* Reducido ligeramente del 100% */
+  max-width: 350px; /* Limitando el ancho máximo para mejor control */
+  font-size: 16px; /* Aumentado el tamaño de la fuente */
+  font-weight: 500; /* Un poco más visible con mayor peso */
+  margin-left: auto;
+  margin-right: auto;
+  overflow: visible;
+  display: block;
+  white-space: normal; /* Permitir que el texto se ajuste en múltiples líneas si es necesario */
+  line-height: 1.5;
 }
 
 /* Estilos para los botones del formulario */

@@ -375,21 +375,28 @@ const AddProducts = () => {
                   </div>
                   
                   <div className="addproducts-form-row addproducts-image-section">
-                    <div className="addproducts-form-group">
+                    <div className="addproducts-form-group" style={{flexBasis: '100%'}}>
                       <label htmlFor="addproducts-image" className="addproducts-form-label">Imagen</label>
-                      <input
-                        type="file"
-                        id="addproducts-image"
-                        name="addproducts-image"
-                        onChange={handleImageChange}
-                        className="addproducts-form-control addproducts-file-input"
-                        accept="image/*"
-                      />
-                      <small className="addproducts-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                      <div className="addproducts-file-input-container">
+                        <input
+                          type="file"
+                          id="addproducts-image"
+                          name="addproducts-image"
+                          onChange={handleImageChange}
+                          className="addproducts-form-control addproducts-file-input"
+                          accept="image/*"
+                        />
+                        <small className="addproducts-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                        {!image && !imagePreview && (
+                          <div className="addproducts-no-file-selected">
+                            Sin archivos seleccionados
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
-                    <div className="addproducts-form-group addproducts-preview-container">
-                      {(imagePreview || image) && (
+                    {(imagePreview || image) && (
+                      <div className="addproducts-form-group addproducts-preview-container">
                         <div className="addproducts-image-preview">
                           <p>Vista previa:</p>
                           <img 
@@ -398,8 +405,8 @@ const AddProducts = () => {
                             className="addproducts-img-preview" 
                           />
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
