@@ -528,38 +528,38 @@ const DeudoresList = () => {
   };
 
   return (
-    <div className="app-container">
+    <div className="deudores-container">
       <Navbar />
-      <div className="content-container">
+      <div className="deudores-content">
         {loading ? (
           <DeudoresListSkeleton />
         ) : (
           <>
-            <div className="page-header">
-              <h1 className="page-title">Personas deudoras</h1>
-              <button className="btn btn-primary" onClick={handleAddDeudor}>
+            <div className="deudores-page-header">
+              <h1 className="deudores-page-title">Personas deudoras</h1>
+              <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudor}>
                 <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
               </button>
             </div>
             
-            <div className="filters-container">
-              <div className="search-container">
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
+            <div className="deudores-filters-container">
+              <div className="deudores-search-container">
+                <FontAwesomeIcon icon={faSearch} className="deudores-search-icon" />
                 <input
                   id="search"
                   type="text"
-                  className="search-input"
+                  className="deudores-search-input"
                   value={searchQuery}
                   onChange={handleSearchChange}
                   placeholder="Buscar deudores..."
                 />
               </div>
               
-              <div className="filter-group">
+              <div className="deudores-filter-group">
                 <select 
                   onChange={handleSortChange} 
                   value={sortOption} 
-                  className="form-select"
+                  className="deudores-form-select"
                 >
                   <option value="">Ordenar por</option>
                   <option value="name-asc">Nombre (A-Z)</option>
@@ -571,13 +571,13 @@ const DeudoresList = () => {
                 </select>
               </div>
               
-              <button onClick={handleClearFilters} className="btn btn-secondary">
+              <button onClick={handleClearFilters} className="deudores-btn deudores-btn-secondary">
                 Limpiar Filtros
               </button>
             </div>
             
-            <div className="table-container">
-              <table className="data-table">
+            <div className="deudores-table-container">
+              <table className="deudores-table">
                 <thead>
                   <tr>
                     <th>Nombre</th>
@@ -593,24 +593,24 @@ const DeudoresList = () => {
                     const isZeroDebt = deudaValue === 0;
 
                     return (
-                      <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
+                      <tr key={index} className={isZeroDebt ? 'deudores-zero-debt-row' : ''}>
                         <td>{deudor.Nombre || 'Nombre desconocido'}</td>
                         <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
                         <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
-                        <td className={isZeroDebt ? 'text-success' : 'text-danger'}>
+                        <td className={isZeroDebt ? 'deudores-text-success' : 'deudores-text-danger'}>
                           ${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}
                         </td>
-                        <td className="d-flex gap-sm">
-                          <button onClick={() => handleUpdateDebt(deudor)} className="btn-icon btn-success" title="Actualizar deuda">
+                        <td className="deudores-d-flex deudores-gap-sm">
+                          <button onClick={() => handleUpdateDebt(deudor)} className="deudores-btn-icon deudores-btn-success" title="Actualizar deuda">
                             <FontAwesomeIcon icon={faMoneyBillWave} />
                           </button>
-                          <button onClick={() => handleViewHistory(deudor)} className="btn-icon btn-secondary" title="Ver historial">
+                          <button onClick={() => handleViewHistory(deudor)} className="deudores-btn-icon deudores-btn-secondary" title="Ver historial">
                             <FontAwesomeIcon icon={faHistory} />
                           </button>
-                          <button onClick={() => handleEdit(deudor)} className="btn-icon btn-primary" title="Editar deudor">
+                          <button onClick={() => handleEdit(deudor)} className="deudores-btn-icon deudores-btn-primary" title="Editar deudor">
                             <FontAwesomeIcon icon={faEdit} />
                           </button>
-                          <button onClick={() => handleDelete(deudor._id)} className="btn-icon btn-danger" title="Eliminar deudor">
+                          <button onClick={() => handleDelete(deudor._id)} className="deudores-btn-icon deudores-btn-danger" title="Eliminar deudor">
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </td>
@@ -621,12 +621,12 @@ const DeudoresList = () => {
               </table>
             </div>
             
-            <div className="pagination">
+            <div className="deudores-pagination">
               {[...Array(totalPages).keys()].map(page => (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page + 1)}
-                  className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
+                  className={`deudores-pagination-button ${page + 1 === currentPage ? 'deudores-active' : ''}`}
                   disabled={page + 1 === currentPage}
                 >
                   {page + 1}
@@ -635,76 +635,80 @@ const DeudoresList = () => {
             </div>
 
             {showModal && selectedDeudor && (
-              <div className="modal-overlay" onClick={() => {
+              <div className="deudores-modal-overlay" onClick={() => {
                 controlBodyScroll(false);
                 setShowModal(false);
                 setComment('');
                 setAmount('');
               }}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="modal-header">
-                    <h2 className="modal-title">{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h2>
+                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="deudores-modal-header">
+                    <h2 className="deudores-modal-title">{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h2>
                   </div>
                   
-                  <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
-                  <p><strong>Deuda actual:</strong> ${selectedDeudor.deudaTotal}</p>
+                  <div className="deudores-modal-body">
+                    <div className="deudores-modal-info">
+                      <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
+                      <span className="deuda-actual">
+                        Deuda actual: ${selectedDeudor.deudaTotal}
+                      </span>
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="amount">Monto:</label>
-                    <input
-                      type="number"
-                      id="amount"
-                      value={amount}
-                      onChange={(e) => setAmount(sanitizeNumber(e.target.value))}
-                      placeholder="Ingrese el monto"
-                      min="0"
-                      required
-                      className="form-control"
-                    />
-                  </div>
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="amount">Monto:</label>
+                      <div className="input-with-icon">
+                        <input
+                          type="number"
+                          id="amount"
+                          value={amount}
+                          onChange={(e) => setAmount(sanitizeNumber(e.target.value))}
+                          placeholder="Ingrese el monto"
+                          min="0"
+                          required
+                          className="deudores-form-control"
+                        />
+                      </div>
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="comment">Comentario (opcional):</label>
-                    <textarea
-                      id="comment"
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="Añada un comentario opcional"
-                      rows="3"
-                      maxLength={50}
-                      className="form-control"
-                    />
-                  </div>
-
-                  <div className="form-group payment-type">
-                    <div>
-                      <input
-                        type="radio"
-                        id="payment"
-                        name="paymentType"
-                        checked={isPayment}
-                        onChange={() => setIsPayment(true)}
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="comment">Comentario (opcional):</label>
+                      <textarea
+                        id="comment"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Añada un comentario opcional"
+                        rows="3"
+                        maxLength={100}
+                        className="deudores-form-control"
                       />
-                      <label htmlFor="payment" className="form-label">
+                    </div>
+
+                    <div className="deudores-payment-type">
+                      <label className="deudores-radio-group">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={isPayment}
+                          onChange={() => setIsPayment(true)}
+                        />
+                        <span className="deudores-radio-checkmark"></span>
                         Registrar pago (restar de la deuda)
                       </label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="debt"
-                        name="paymentType"
-                        checked={!isPayment}
-                        onChange={() => setIsPayment(false)}
-                      />
-                      <label htmlFor="debt" className="form-label">
+                      <label className="deudores-radio-group">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          checked={!isPayment}
+                          onChange={() => setIsPayment(false)}
+                        />
+                        <span className="deudores-radio-checkmark"></span>
                         Añadir a la deuda
                       </label>
                     </div>
                   </div>
 
-                  <div className="modal-footer">
-                    <button onClick={handleDebtUpdate} className="btn btn-success">
+                  <div className="deudores-modal-footer">
+                    <button onClick={handleDebtUpdate} className="deudores-btn deudores-btn-success">
                       Confirmar
                     </button>
                     <button 
@@ -714,7 +718,7 @@ const DeudoresList = () => {
                         setComment('');
                         setAmount('');
                       }} 
-                      className="btn btn-danger"
+                      className="deudores-btn deudores-btn-danger"
                     >
                       Cancelar
                     </button>
@@ -724,14 +728,14 @@ const DeudoresList = () => {
             )}
 
             {showEditModal && (
-              <div className="modal-overlay" onClick={handleCloseEditModal}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="modal-header">
-                    <h2 className="modal-title">Editar Deudor</h2>
+              <div className="deudores-modal-overlay" onClick={handleCloseEditModal}>
+                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="deudores-modal-header">
+                    <h2 className="deudores-modal-title">Editar Deudor</h2>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="editNombre">Nombre:</label>
+                  <div className="deudores-form-group">
+                    <label className="deudores-form-label" htmlFor="editNombre">Nombre:</label>
                     <input
                       type="text"
                       id="editNombre"
@@ -739,12 +743,12 @@ const DeudoresList = () => {
                       value={deudorToEdit.Nombre}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="deudores-form-control"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="editFechaPaga">Fecha a Pagar:</label>
+                  <div className="deudores-form-group">
+                    <label className="deudores-form-label" htmlFor="editFechaPaga">Fecha a Pagar:</label>
                     <input
                       type="date"
                       id="editFechaPaga"
@@ -752,12 +756,12 @@ const DeudoresList = () => {
                       value={deudorToEdit.fechaPaga}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="deudores-form-control"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="editNumeroTelefono">Número de Teléfono:</label>
+                  <div className="deudores-form-group">
+                    <label className="deudores-form-label" htmlFor="editNumeroTelefono">Número de Teléfono:</label>
                     <input
                       type="text"
                       id="editNumeroTelefono"
@@ -765,12 +769,12 @@ const DeudoresList = () => {
                       value={deudorToEdit.numeroTelefono}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="deudores-form-control"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="editDeudaTotal">Deuda Total:</label>
+                  <div className="deudores-form-group">
+                    <label className="deudores-form-label" htmlFor="editDeudaTotal">Deuda Total:</label>
                     <input
                       type="number"
                       id="editDeudaTotal"
@@ -778,15 +782,15 @@ const DeudoresList = () => {
                       value={deudorToEdit.deudaTotal}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="deudores-form-control"
                     />
                   </div>
 
-                  <div className="card">
+                  <div className="deudores-card">
                     <h3>Historial de Pagos</h3>
                     {deudorToEdit.historialPagos && deudorToEdit.historialPagos.length > 0 ? (
-                      <div className="table-container" style={{maxHeight: "200px"}}>
-                        <table className="data-table">
+                      <div className="deudores-table-container" style={{maxHeight: "200px"}}>
+                        <table className="deudores-table">
                           <thead>
                             <tr>
                               <th>Fecha</th>
@@ -797,15 +801,15 @@ const DeudoresList = () => {
                           </thead>
                           <tbody>
                             {deudorToEdit.historialPagos.map((pago, idx) => (
-                              <tr key={idx} className={pago.tipo === 'pago' ? 'payment-row' : 'debt-row'}>
+                              <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
                                 <td>{new Date(pago.fecha).toLocaleDateString()}</td>
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>
-                                  <span className={`state-badge ${pago.tipo === 'pago' ? 'state-badge-success' : 'state-badge-danger'}`}>
+                                  <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
                                     {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
                                   </span>
                                 </td>
-                                <td className="comment-cell">
+                                <td className="deudores-comment-cell">
                                   {renderComment(pago.comentario, `edit-${idx}`)}
                                 </td>
                               </tr>
@@ -814,15 +818,15 @@ const DeudoresList = () => {
                         </table>
                       </div>
                     ) : (
-                      <p className="text-center">No hay historial de pagos registrado</p>
+                      <p className="deudores-text-center">No hay historial de pagos registrado</p>
                     )}
                   </div>
 
-                  <div className="modal-footer">
-                    <button onClick={handleEditSubmit} className="btn btn-success">
+                  <div className="deudores-modal-footer">
+                    <button onClick={handleEditSubmit} className="deudores-btn deudores-btn-success">
                       Guardar Cambios
                     </button>
-                    <button onClick={handleCancelEdit} className="btn btn-danger">
+                    <button onClick={handleCancelEdit} className="deudores-btn deudores-btn-danger">
                       Cancelar
                     </button>
                   </div>
@@ -831,24 +835,24 @@ const DeudoresList = () => {
             )}
 
             {showHistoryModal && selectedHistoryDeudor && (
-              <div className="modal-overlay" onClick={handleCloseHistoryModal}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="modal-header">
-                    <h2 className="modal-title">Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h2>
+              <div className="deudores-modal-overlay" onClick={handleCloseHistoryModal}>
+                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
+                  <div className="deudores-modal-header">
+                    <h2 className="deudores-modal-title">Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h2>
                   </div>
                   
-                  <p><strong>Deuda actual:</strong> <span className={parseFloat(selectedHistoryDeudor.deudaTotal) === 0 ? 'text-success' : 'text-danger'}>
+                  <p><strong>Deuda actual:</strong> <span className={parseFloat(selectedHistoryDeudor.deudaTotal) === 0 ? 'deudores-text-success' : 'deudores-text-danger'}>
                     ${typeof selectedHistoryDeudor.deudaTotal === 'number' ?
                       selectedHistoryDeudor.deudaTotal.toLocaleString() :
                       selectedHistoryDeudor.deudaTotal}
                   </span></p>
 
-                  <div className="card">
+                  <div className="deudores-card">
                     {selectedHistoryDeudor.historialPagos &&
                       Array.isArray(selectedHistoryDeudor.historialPagos) &&
                       selectedHistoryDeudor.historialPagos.length > 0 ? (
-                      <div className="table-container">
-                        <table className="data-table">
+                      <div className="deudores-table-container">
+                        <table className="deudores-table">
                           <thead>
                             <tr>
                               <th>Fecha</th>
@@ -859,27 +863,29 @@ const DeudoresList = () => {
                           </thead>
                           <tbody>
                             {selectedHistoryDeudor.historialPagos.map((pago, idx) => (
-                              <tr key={idx}>
+                              <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
                                 <td>{new Date(pago.fecha).toLocaleDateString()}</td>
                                 <td>${pago.monto.toLocaleString()}</td>
                                 <td>
-                                  <span className={`state-badge ${pago.tipo === 'pago' ? 'state-badge-success' : 'state-badge-danger'}`}>
+                                  <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
                                     {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
                                   </span>
                                 </td>
-                                <td>{renderComment(pago.comentario, `history-${idx}`)}</td>
+                                <td className="deudores-comment-cell">
+                                  {renderComment(pago.comentario, `history-${idx}`)}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
                     ) : (
-                      <p className="text-center">No hay historial de pagos registrado</p>
+                      <p className="deudores-text-center">No hay historial de pagos registrado</p>
                     )}
                   </div>
 
-                  <div className="modal-footer">
-                    <button onClick={handleCloseHistoryModal} className="btn btn-secondary">
+                  <div className="deudores-modal-footer">
+                    <button onClick={handleCloseHistoryModal} className="deudores-btn deudores-btn-secondary">
                       Cerrar
                     </button>
                   </div>

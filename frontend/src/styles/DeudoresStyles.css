@@ -15,139 +15,193 @@
 }
 
 /* Contenedor principal */
-.deudores-list-container {
+.deudores-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Ocupa toda la altura de la ventana */
-  width: 100vw; /* Ocupa todo el ancho de la ventana */
-  padding: 0;
-  margin: 0;
-  background-color: #f5f8fa;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
-/* Contenedor con scroll */
-.deudores-list-container .main-content {
+.deudores-content {
+  padding: 20px;
+  margin: 0 auto;
+  width: calc(100% - 40px);
   max-width: 1200px;
-  width: 100%;
-  padding: 30px;
-  border-radius: 12px; /* Más redondeado */
-  background-color: var(--white);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Sombra más sutil */
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 85vh;
-  overflow-y: auto;
-  transition: transform 0.3s ease; /* Efecto sutil al cargar */
 }
 
-.deudores-list-container .main-content:hover {
-  transform: translateY(-5px);
-}
-
-/* Contenido principal */
-.main-content {
-  max-width: 1200px; /* Ancho máximo ajustado */
-  width: 100%; /* Ocupa todo el ancho posible */
-  padding: 30px;
-  border-radius: 10px;
-  background-color: white;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Título de la sección */
-.section-title-deudores {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 25px;
-  width: 100%;
+/* Estilos para el encabezado de la página */
+.deudores-page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--primary-dark);
-  border-bottom: 1px solid #eee;
+  margin-bottom: 25px;
   padding-bottom: 15px;
+  border-bottom: 2px solid var(--primary-light);
+  width: 100%;
 }
 
-/* Botón "Agregar Deudor" */
-.add-deudor-button {
-  padding: 12px 20px;
-  background: var(--primary);
-  color: var(--white);
-  border: none;
+.deudores-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 0;
+}
+
+/* Botones genéricos */
+.deudores-btn {
+  padding: 10px 16px;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  display: flex;
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
 }
 
-/* Barra de búsqueda y ordenamiento */
-.search-sort-container {
+.deudores-btn-primary {
+  background-color: var(--primary);
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-primary:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deudores-btn-secondary {
+  background-color: var(--gray-dark);
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-secondary:hover {
+  background-color: #212529;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deudores-btn-success {
+  background-color: var(--success);
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-success:hover {
+  background-color: #218838;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deudores-btn-danger {
+  background-color: var(--danger);
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-danger:hover {
+  background-color: #c82333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Filtros y búsqueda */
+.deudores-filters-container {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.search-bar-deudores {
+.deudores-search-container {
   flex: 1;
-  margin-right: 20px;
+  min-width: 200px;
+  position: relative;
 }
 
-.search-input {
-  width: 80%;
-  padding: 10px; /* Reducir el padding */
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+.deudores-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
 }
 
-.sort-bar {
-  flex: 0 0 300px; /* Ancho fijo ajustado */
-}
-
-.sort-select {
+.deudores-search-input {
   width: 100%;
-  padding: 10px; /* Reducir el padding */
-  box-sizing: border-box;
+  padding: 10px 10px 10px 35px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
-  background-color: white;
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.sort-select:focus {
-  border-color: #006EDF;
-  box-shadow: 0 0 5px rgba(0, 110, 223, 0.5);
+.deudores-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.deudores-form-select {
+  padding: 10px 30px 10px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: var(--white);
+  font-size: 14px;
+  min-width: 140px;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+}
+
+.deudores-form-select:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+/* Estilos para botones de acciones en tabla */
+.deudores-btn-icon {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.deudores-btn-icon:hover {
+  opacity: 0.9;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* Contenedor de tabla con altura fija y scroll */
 .deudores-table-container {
   width: 100%;
   overflow-x: auto;
-  margin-top: 10px;
+  margin-top: 15px;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   background-color: var(--gray-light);
-  padding: 2px 2px 20px 2px; /* Added bottom padding */
-  min-height: 200px; /* Minimum height instead of fixed height */
-  max-height: 60vh; /* Maximum responsive height */
+  padding: 0;
+  max-height: 65vh;
+  overflow-y: auto;
 }
 
 /* Tabla de deudores */
@@ -156,24 +210,25 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  height: auto; /* Changed from 100% to auto */
-  margin-bottom: 0; /* Remove bottom margin */
+  background-color: white;
 }
 
-/* Encabezados rediseñados */
+/* Encabezados de tabla */
+.deudores-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 .deudores-table th {
-  background-color: #343a40; /* Match the exact color from providers */
-  color: white;
+  background-color: #2c3e50;
+  color: var(--white);
   font-weight: 600;
   text-align: left;
   padding: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
   font-size: 13px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-transform: uppercase;
 }
 
 .deudores-table th:first-child {
@@ -184,561 +239,421 @@
   border-top-right-radius: 10px;
 }
 
+/* Ancho específico para las columnas */
+.deudores-column-nombre { width: 20%; }
+.deudores-column-fecha { width: 15%; }
+.deudores-column-telefono { width: 15%; }
+.deudores-column-deuda { width: 15%; }
+.deudores-column-acciones { width: 15%; }
+
 /* Celdas de datos */
 .deudores-table td {
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   vertical-align: middle;
-  height: 60px; /* Fixed height for cells like in providers table */
 }
 
 /* Estilos para filas alternantes */
-.deudores-table tbody tr:nth-child(even) {
-  background-color: #f8f9fa;
+.deudores-table tr:nth-child(even) {
+  background-color: #f8fafc;
 }
 
-.deudores-table tbody tr:nth-child(odd) {
-  background-color: #ffffff;
+.deudores-table tr:nth-child(odd) {
+  background-color: var(--white);
 }
 
 /* Hover para las filas */
 .deudores-table tbody tr:hover {
-  background-color: #e8f4ff;
+  background-color: #edf2f7;
   transition: background-color 0.2s ease;
 }
 
-/* Color específico para iconos de deudores sin deuda */
-.zero-debt-row .actions-cell button {
-  background-color: var(--gray);
-  opacity: 0.7;
+/* Deudores especiales */
+.deudores-deuda-cell {
+  font-weight: 600;
+  text-align: right;
+  font-size: 16px;
 }
 
-/* Estilo para deudores con deuda cero */
-.zero-debt-row td {
-  color: var(--gray) !important;
-  background-color: #f2f2f2;
-  font-weight: 500 !important;
-  /* Eliminado text-align: center !important; */
+.deudores-deuda-positiva {
+  color: var(--danger);
 }
 
-/* Celda de acciones */
-.actions-cell {
+.deudores-deuda-cero {
+  color: var(--success);
+}
+
+/* Botones de acción de deudores */
+.deudores-actions-cell {
   display: flex;
+  flex-direction: row;
   justify-content: center;
   gap: 8px;
 }
 
-/* Botones de acción */
-.update-debt-button,
-.view-history-button,
-.edit-button,
-.delete-button {
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 50%;
+.deudores-btn-action {
   display: flex;
-  justify-content: center;
   align-items: center;
-  cursor: pointer;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 14px;
   color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.update-debt-button {
-  background-color: var(--success);
+.deudores-btn-pagar {
+  background-color: #27ae60;
 }
 
-.view-history-button {
-  background-color: #17a2b8;
+.deudores-btn-historial {
+  background-color: #3498db;
 }
 
-.edit-button {
-  background-color: var(--primary);
+.deudores-btn-editar {
+  background-color: #f39c12;
 }
 
-.delete-button {
-  background-color: var(--danger);
+.deudores-btn-eliminar {
+  background-color: #e74c3c;
 }
 
-.update-debt-button:hover,
-.view-history-button:hover,
-.edit-button:hover,
-.delete-button:hover {
-  opacity: 0.9;
+.deudores-btn-action:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.deudores-btn-pagar:hover {
+  background-color: #219a52;
+}
+
+.deudores-btn-historial:hover {
+  background-color: #2980b9;
+}
+
+.deudores-btn-editar:hover {
+  background-color: #d35400;
+}
+
+.deudores-btn-eliminar:hover {
+  background-color: #c0392b;
+}
+
+/* Mensaje cuando no hay datos */
+.deudores-no-data {
+  text-align: center;
+  padding: 30px;
+  color: #6c757d;
+  font-style: italic;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  margin: 20px 0;
 }
 
 /* Paginación */
-.pagination {
+.deudores-pagination {
+  margin-top: 25px;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  gap: 5px;
 }
 
-.pagination button {
-  margin: 0 5px;
+.deudores-pagination-button {
   padding: 10px 15px;
-  border: 1px solid #ddd;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  font-size: 16px;
-}
-
-.pagination button.active {
-  background-color: #006EDF;
-  color: white;
-}
-
-.pagination button:hover:not(.active) {
-  background-color: #f2f2f2;
-  color: #000;
-}
-
-/* Modal para actualizar deuda */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 25px;
   border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  background-color: #f0f3f5;
+  color: #333;
 }
 
-.modal-content h3 {
-  margin-top: 0;
-  color: #002651;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-}
-
-.modal-form-group {
-  margin-bottom: 15px;
-}
-
-.modal-form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.modal-form-group input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.payment-type label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: normal;
-}
-
-.payment-type input[type="radio"] {
-  margin-right: 10px;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.confirm-button {
-  background-color: #4CAF50;
+.deudores-pagination-button.deudores-active {
+  background-color: var(--primary);
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 110, 223, 0.2);
 }
 
-.confirm-button:hover {
-  background-color: #45a049;
+.deudores-pagination-button:hover:not(.deudores-active) {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
 }
 
-.cancel-button {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.cancel-button:hover {
-  background-color: #d32f2f;
-}
-
-.update-debt-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  margin: 0 5px;
-}
-
-.update-debt-button:hover {
-  background-color: #45a049;
-}
-
-/* Estilos para el modal de edición */
-.edit-modal {
-  max-width: 600px;
-  width: 90%;
-}
-
-.edit-modal .modal-form-group {
-  margin-bottom: 20px;
-}
-
-.edit-modal input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.edit-modal input:focus {
-  border-color: #006edf;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 110, 223, 0.3);
-}
-
-.edit-modal .modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 30px;
-}
-
-/* Estilos específicos para modales de deudores */
+/* Estilos para modales */
 .deudores-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.65);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .deudores-modal-content {
   background-color: white;
-  padding: 30px;
   border-radius: 12px;
+  padding: 0;
   width: 90%;
-  max-width: 550px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  animation: modalFadeIn 0.3s ease;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.deudores-modal-content h3 {
-  margin-top: 0;
-  color: var(--primary-dark);
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-  margin-bottom: 20px;
-  font-size: 22px;
-}
-
-.deudores-modal-form-group {
-  margin-bottom: 15px;
-}
-
-.deudores-modal-form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.deudores-modal-form-group input[type="number"],
-.deudores-modal-form-group input[type="text"],
-.deudores-modal-form-group input[type="date"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.deudores-modal-form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.3s;
-  font-family: inherit;
-}
-
-.deudores-modal-form-group textarea:focus {
-  border-color: var(--primary);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.1);
-}
-
-.deudores-modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.deudores-confirm-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.deudores-cancel-button {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.deudores-confirm-button:hover {
-  background-color: #45a049;
-}
-
-.deudores-cancel-button:hover {
-  background-color: #d32f2f;
-}
-
-.payment-type label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: normal;
-}
-
-.payment-type input[type="radio"] {
-  margin-right: 10px;
-}
-
-/* Estilos para el historial de pagos */
-.deudores-payment-history {
-  margin-top: 20px;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 15px;
-}
-
-.deudores-payment-history h4 {
-  margin-top: 0;
-  color: #002651;
-  margin-bottom: 15px;
-}
-
-.deudores-payment-history-table-container {
-  max-height: 200px;
+  max-width: 540px;
+  max-height: 90vh;
   overflow-y: auto;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
 }
 
-.deudores-payment-history-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.deudores-payment-history-table th,
-.deudores-payment-history-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-}
-
-.deudores-payment-history-table th {
-  background-color: var(--gray-dark);
-  color: var(--white);
-  font-weight: 600;
-  text-align: left;
-  padding: 16px;
+.deudores-modal-header {
+  background: linear-gradient(135deg, #002651, #006EDF);
+  color: white;
+  padding: 20px 25px;
+  border-radius: 12px 12px 0 0;
   position: sticky;
   top: 0;
-  z-index: 20;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-size: 13px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 5;
 }
 
-.deudores-payment-history-table td:nth-child(4) {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.payment-row {
-  background-color: #e8f5e9; /* Verde claro para pagos */
-}
-
-.debt-row {
-  background-color: #ffebee; /* Rojo claro para deudas */
-}
-
-.no-payment-history {
-  color: #666;
-  font-style: italic;
-  text-align: center;
-}
-
-.view-history-button {
-  background-color: #2196F3;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  color: white;
-}
-
-.view-history-button:hover {
-  background-color: #0b7dda;
-}
-
-.history-modal {
-  max-width: 600px;
-}
-
-/* Estilos comunes para todos los botones de acción */
-.update-debt-button,
-.view-history-button,
-.edit-button,
-.delete-button {
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.deudores-modal-title {
   margin: 0;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* Colores específicos para cada botón */
-.update-debt-button {
+.deudores-modal-body {
+  padding: 25px;
+}
+
+.deudores-modal-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 4px solid #006EDF;
+}
+
+.deudores-modal-info p {
+  margin: 0 0 5px 0;
+  font-size: 15px;
+}
+
+.deuda-actual {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #dc3545;
+  margin-top: 8px;
+}
+
+.deudores-payment-type {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f0f4f8;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.deudores-radio-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  font-weight: 500;
+  user-select: none;
+}
+
+.deudores-radio-group input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.deudores-radio-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.deudores-radio-group:hover input ~ .deudores-radio-checkmark {
+  border-color: #006EDF;
+}
+
+.deudores-radio-group input:checked ~ .deudores-radio-checkmark {
+  background-color: #fff;
+  border-color: #006EDF;
+}
+
+.deudores-radio-checkmark:after {
+  content: '';
+  position: absolute;
+  display: none;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #006EDF;
+}
+
+.deudores-radio-group input:checked ~ .deudores-radio-checkmark:after {
+  display: block;
+}
+
+.deudores-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 25px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  background-color: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon:before {
+  content: '$';
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: #495057;
+  font-size: 16px;
+  z-index: 2;
+}
+
+.input-with-icon input[type="number"] {
+  padding-left: 30px;
+}
+
+/* Animación para los botones */
+.deudores-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+.deudores-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.deudores-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.deudores-btn-success {
   background-color: #28a745;
   color: white;
 }
 
-.update-debt-button:hover {
-  background-color: #45a049;
-  opacity: 0.9;
-  transform: translateY(-3px);
+.deudores-btn-success:hover {
+  background-color: #218838;
 }
 
-.view-history-button {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.view-history-button:hover {
-  background-color: #0b7dda;
-  opacity: 0.9;
-  transform: translateY(-3px);
-}
-
-.edit-button {
-  background-color: #007bff;
-  color: white;
-}
-
-.delete-button {
+.deudores-btn-danger {
   background-color: #dc3545;
   color: white;
 }
 
-.edit-button:hover, 
-.delete-button:hover {
-  opacity: 0.9;
-  transform: translateY(-3px);
+.deudores-btn-danger:hover {
+  background-color: #c82333;
 }
 
-/* Tooltip para ver el comentario completo al hacer hover */
-.comment-cell {
-  position: relative;
-  cursor: pointer;
+.deudores-form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.2s ease;
 }
 
-.comment-cell:hover .comment-tooltip {
-  display: block;
+.deudores-form-control:focus {
+  border-color: #006EDF;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.15);
+  outline: none;
 }
 
-.comment-tooltip {
-  display: none;
-  position: absolute;
-  background: #333;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  z-index: 100;
-  width: 250px;
-  white-space: normal;
-  bottom: 100%;
-  left: 0;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+.deudores-form-control::placeholder {
+  color: #adb5bd;
 }
 
-.deudores-table tbody:after {
-  content: "";
-  display: block;
-  height: 10px;
+textarea.deudores-form-control {
+  resize: vertical;
+  min-height: 80px;
 }
+
+/* Smooth scrollbar para el modal */
+.deudores-modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.deudores-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.deudores-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 12px 12px 0;
+}
+
+.deudores-modal-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.deudores-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Clases de utilidad */
+.deudores-d-flex { 
+  display: flex; 
+  flex-direction: row;
+  justify-content: center;
+}
+.deudores-gap-sm { gap: 10px; }
