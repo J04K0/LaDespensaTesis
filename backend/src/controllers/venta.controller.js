@@ -1,12 +1,13 @@
 import Venta from '../models/venta.model.js';
 import mongoose from 'mongoose';
+import Deudores from '../models/deudores.model.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 let ticketCounter = 0; // Variable global para el contador de tickets
 
 
 export const registrarVenta = async (req, res) => {
     try {
-      const { productosVendidos, metodoPago } = req.body;
+      const { productosVendidos, metodoPago, deudorId } = req.body;
   
       if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
         return handleErrorClient(res, 400, "Lista de productos vendidos inválida");
@@ -21,6 +22,8 @@ export const registrarVenta = async (req, res) => {
       
       // Crear registros de venta para cada producto
       const ventasRegistradas = [];
+      let totalVenta = 0;
+
       for (const producto of productosVendidos) {
         const nuevaVenta = new Venta({
           ticketId,
@@ -32,17 +35,55 @@ export const registrarVenta = async (req, res) => {
           precioCompra: producto.precioCompra,
           fecha: new Date(),
           usuario: userId, // Guardar el ID del usuario que realizó la venta
-          metodoPago: metodoPago || 'efectivo' // Usar el método de pago proporcionado o efectivo por defecto
+          metodoPago: metodoPago || 'efectivo', // Usar el método de pago proporcionado o efectivo por defecto
+          deudorId: deudorId || null // Guardar el ID del deudor si existe
         });
         
         await nuevaVenta.save();
         ventasRegistradas.push(nuevaVenta);
+        totalVenta += producto.precioVenta * producto.cantidad;
       }
       
-      handleSuccess(res, 201, "Venta registrada correctamente", { 
-        ticketId, 
-        productos: ventasRegistradas 
-      });
+      // Si hay un deudor asignado, actualizar su deuda
+      if (deudorId) {
+        const deudor = await Deudores.findById(deudorId);
+        if (deudor) {
+          // Crear un nuevo registro de deuda en el historial de pagos
+          const nuevaDeuda = {
+            fecha: new Date(),
+            monto: totalVenta,
+            tipo: 'deuda',
+            comentario: `Venta ticket ${ticketId}`
+          };
+          
+          // Agregar la deuda al historial y actualizar la deuda total
+          deudor.historialPagos.push(nuevaDeuda);
+          deudor.deudaTotal += totalVenta;
+          
+          await deudor.save();
+          
+          // Incluir información del deudor en la respuesta
+          handleSuccess(res, 201, "Venta registrada correctamente y deuda asignada", { 
+            ticketId, 
+            productos: ventasRegistradas,
+            deudor: {
+              id: deudor._id,
+              nombre: deudor.Nombre,
+              deudaTotal: deudor.deudaTotal
+            }
+          });
+        } else {
+          handleSuccess(res, 201, "Venta registrada correctamente pero el deudor no fue encontrado", { 
+            ticketId, 
+            productos: ventasRegistradas 
+          });
+        }
+      } else {
+        handleSuccess(res, 201, "Venta registrada correctamente", { 
+          ticketId, 
+          productos: ventasRegistradas 
+        });
+      }
     } catch (error) {
       console.error("Error al registrar venta:", error);
       handleErrorServer(res, 500, "Error al registrar la venta", error.message);
@@ -88,32 +129,35 @@ export const registrarVenta = async (req, res) => {
             ventas: { $push: "$$ROOT" }, 
             fecha: { $first: "$fecha" },
             usuarioId: { $first: "$usuario" }, // Obtener el ID del usuario
-            metodoPago: { $first: "$metodoPago" } // Obtener el método de pago
+            metodoPago: { $first: "$metodoPago" }, // Obtener el método de pago
+            deudorId: { $first: "$deudorId" } // Obtener el ID del deudor si existe
           } 
         },
         // Ordenar por fecha descendente
         { $sort: { fecha: -1 } }
       ]);
 
-      // Poblar la información del usuario para cada grupo de ventas
-      const ventasConUsuario = await Promise.all(ventasPorTicket.map(async (grupo) => {
+      // Poblar la información del usuario y del deudor para cada grupo de ventas
+      const ventasCompletas = await Promise.all(ventasPorTicket.map(async (grupo) => {
+        let resultado = { ...grupo };
+        
+        // Buscar el usuario si existe
         if (grupo.usuarioId) {
-          // Importar el modelo de Usuario
           const User = mongoose.model('User');
-          
-          // Buscar el usuario por ID
           const usuario = await User.findById(grupo.usuarioId).select('nombre username');
-          
-          // Añadir la información del usuario al grupo
-          return {
-            ...grupo,
-            usuario: usuario
-          };
+          resultado.usuario = usuario;
         }
-        return grupo;
+        
+        // Buscar el deudor si existe
+        if (grupo.deudorId) {
+          const deudor = await Deudores.findById(grupo.deudorId).select('Nombre');
+          resultado.deudor = deudor;
+        }
+        
+        return resultado;
       }));
 
-      handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasConUsuario);
+      handleSuccess(res, 200, "Historial de ventas por ticket obtenido correctamente", ventasCompletas);
     } catch (error) {
       console.error("Error al obtener ventas por ticket:", error);
       handleErrorServer(res, 500, "Error al obtener las ventas por ticket", error.message);
@@ -155,10 +199,11 @@ export const editTicket = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos es requerida");
     }
 
-    // Obtener una venta original para preservar el usuario y método de pago
+    // Obtener una venta original para preservar el usuario, método de pago y deudor
     const ventaOriginal = await Venta.findOne({ ticketId });
     const usuarioOriginal = ventaOriginal ? ventaOriginal.usuario : null;
     const metodoPagoOriginal = ventaOriginal ? ventaOriginal.metodoPago : 'efectivo';
+    const deudorIdOriginal = ventaOriginal ? ventaOriginal.deudorId : null;
 
     // Primero eliminamos todas las ventas asociadas a este ticket
     await Venta.deleteMany({ ticketId });
@@ -178,7 +223,8 @@ export const editTicket = async (req, res) => {
           precioCompra: producto.precioCompra,
           fecha: new Date(),
           usuario: usuarioOriginal, // Mantener el usuario original que hizo la venta
-          metodoPago: metodoPagoOriginal // Mantener el método de pago original
+          metodoPago: metodoPagoOriginal, // Mantener el método de pago original
+          deudorId: deudorIdOriginal // Mantener el deudor original
         });
         
         await nuevaVenta.save();

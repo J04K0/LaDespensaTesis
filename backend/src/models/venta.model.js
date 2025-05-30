@@ -10,7 +10,8 @@ const VentaSchema = new mongoose.Schema({
   precioCompra: { type: Number, required: true },
   fecha: { type: Date, default: Date.now },
   usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  metodoPago: { type: String, enum: ['efectivo', 'tarjeta'], default: 'efectivo' }
+  metodoPago: { type: String, enum: ['efectivo', 'tarjeta'], default: 'efectivo' },
+  deudorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Deudor', default: null }
 });
 
 const Venta = mongoose.model("Venta", VentaSchema);

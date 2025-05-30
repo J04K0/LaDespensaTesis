@@ -30,6 +30,14 @@ const PagoSchema = new Schema({
     },
     required: [true, "El tipo es obligatorio"]
   },
+  metodoPago: {
+    type: String,
+    enum: {
+      values: ['efectivo', 'tarjeta'],
+      message: "El método de pago debe ser 'efectivo' o 'tarjeta'"
+    },
+    default: 'efectivo'
+  },
   comentario: {
     type: String,
     maxlength: [50, "El comentario no puede exceder los 50 caracteres"]

@@ -397,6 +397,12 @@
   border: 1px solid #3498db;
 }
 
+.historysalemetodopago.deudor {
+  background-color: #fff8e1;
+  color: #f39c12;
+  border: 1px solid #f39c12;
+}
+
 .metodo-icon {
   font-size: 14px;
 }

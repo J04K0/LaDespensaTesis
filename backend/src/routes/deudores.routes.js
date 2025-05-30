@@ -5,7 +5,8 @@ import {
     updateDeudor, 
     deleteDeudor,
     addDeudor,
-    updateDeudorPagos
+    updateDeudorPagos,
+    getDeudoresSimple
 } from '../controllers/deudores.controller.js';
 
 import { 
@@ -23,6 +24,7 @@ router.use(authenticationMiddleware);
 
 router.post('/agregar', authorizeRoles([isEmpleado, isAdmin, isJefe]), addDeudor);
 router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudores);
+router.get('/simple', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudoresSimple);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudorById);
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudor); // Cambiado a PATCH
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteDeudor);

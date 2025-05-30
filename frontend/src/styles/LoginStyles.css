@@ -27,11 +27,6 @@
   overflow: hidden;
 }
 
-/* Removing the gradient overlay */
-.containerLogin::after {
-  display: none;
-}
-
 .containerImagen {
   display: flex;
   justify-content: center;

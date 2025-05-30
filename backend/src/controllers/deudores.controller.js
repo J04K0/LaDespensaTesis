@@ -130,6 +130,21 @@ export const updateDeudorPagos = async (req, res) => {
   }
 };
 
+// Obtener lista simple de deudores para selector de ventas
+export const getDeudoresSimple = async (req, res) => {
+  try {
+    const deudores = await Deudores.find({}, 'Nombre numeroTelefono deudaTotal');
+
+    if (deudores.length === 0) {
+      return handleErrorClient(res, 404, 'No hay deudores registrados');
+    }
+    
+    handleSuccess(res, 200, 'Lista de deudores obtenida', deudores);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al obtener la lista de deudores', err.message);
+  }
+};
+
 // Tarea programada para enviar alertas de pago próximo
 cron.schedule('0 9 * * *', async () => {
   try {

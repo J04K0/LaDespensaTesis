@@ -12,6 +12,16 @@ export const getDeudores = async (page = 1, limit = 6) => {
   }
 };
 
+export const getDeudoresSimple = async () => {
+  try {
+    const response = await axios.get('/deudores/simple');
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching simple deudores list:', error);
+    throw error;
+  }
+};
+
 export const getDeudorById = async (id) => {
   try {
     const response = await axios.get(`/deudores/getbyid/${id}`);

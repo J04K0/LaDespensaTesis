@@ -12,8 +12,8 @@ html, body, #root {
     padding: 0;
 }
 
-/* Ajuste para contenido principal en toda la aplicación */
-body {
+/* Ajuste para contenido principal en toda la aplicación, excepto en login */
+body:not(.login-page) {
   padding-top: calc(var(--navbar-height) + 20px);
 }
 
@@ -29,4 +29,9 @@ body {
 .home-container { /* Añadir la clase home-container aquí */
   padding-top: calc(var(--navbar-height) + 20px) !important;
   margin-top: 0;
+}
+
+/* Clase específica para la página de login */
+.login-page {
+  padding-top: 0;
 }

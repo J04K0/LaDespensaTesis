@@ -12,6 +12,7 @@ const pagoSchema = Joi.object({
   fecha: Joi.date().required(),
   monto: Joi.number().positive().required(),
   tipo: Joi.string().valid('pago', 'deuda').required(),
+  metodoPago: Joi.string().valid('efectivo', 'tarjeta').default('efectivo'),
   comentario: Joi.string().max(50).optional().messages({
     'string.max': 'El comentario no puede exceder los 100 caracteres.'
   })

@@ -7,7 +7,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import HistorySaleSkeleton from '../components/HistorySaleSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye, faUser } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
 
 const HistorySale = () => {
@@ -260,7 +260,7 @@ const HistorySale = () => {
         venta._id,
         new Date(venta.fecha).toLocaleDateString(),
         venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
-        venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+        venta.deudorId ? `Deudor: ${venta.deudor?.Nombre || 'Desconocido'}` : venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
         venta.ventas
           .map(
             (producto) =>
@@ -285,7 +285,7 @@ const HistorySale = () => {
         Ticket: venta._id,
         Fecha: new Date(venta.fecha).toLocaleDateString(),
         Usuario: venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
-        "Método de Pago": venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+        "Método de Pago": venta.deudorId ? `Deudor: ${venta.deudor?.Nombre || 'Desconocido'}` : venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
         Productos: venta.ventas
           .map(
             (producto) =>
@@ -475,13 +475,23 @@ const HistorySale = () => {
                               <td>{new Date(venta.fecha).toLocaleDateString()}</td>
                               <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
                               <td>
-                                <div className={`historysalemetodopago ${venta.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo'}`}>
-                                  <FontAwesomeIcon 
-                                    icon={venta.metodoPago === 'tarjeta' ? faCreditCard : faMoneyBillAlt} 
-                                    className="metodo-icon"
-                                  />
-                                  <span>{venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'}</span>
-                                </div>
+                                {venta.deudorId ? (
+                                  <div className="historysalemetodopago deudor">
+                                    <FontAwesomeIcon 
+                                      icon={faUser} 
+                                      className="metodo-icon"
+                                    />
+                                    <span>Deudor: {venta.deudor?.Nombre || 'Desconocido'}</span>
+                                  </div>
+                                ) : (
+                                  <div className={`historysalemetodopago ${venta.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo'}`}>
+                                    <FontAwesomeIcon 
+                                      icon={venta.metodoPago === 'tarjeta' ? faCreditCard : faMoneyBillAlt} 
+                                      className="metodo-icon"
+                                    />
+                                    <span>{venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'}</span>
+                                  </div>
+                                )}
                               </td>
                               <td className="productos-cell">
                                 {venta.ventas.map((producto, i) => (

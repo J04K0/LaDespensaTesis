@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
@@ -49,6 +49,7 @@ const DeudoresList = () => {
   const [amount, setAmount] = useState('');
   const [isPayment, setIsPayment] = useState(true);
   const [comment, setComment] = useState('');
+  const [metodoPago, setMetodoPago] = useState('efectivo');
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [deudorToEdit, setDeudorToEdit] = useState({
@@ -353,6 +354,7 @@ const DeudoresList = () => {
         fecha: new Date(),
         monto: parsedAmount,
         tipo: isPayment ? 'pago' : 'deuda',
+        metodoPago: isPayment ? metodoPago : 'efectivo', // Solo usamos el método de pago para pagos
         comentario: comment.trim() || ''
       };
 
@@ -369,6 +371,7 @@ const DeudoresList = () => {
 
       setComment('');
       setAmount('');
+      setMetodoPago('efectivo'); // Resetear el método de pago
       setShowModal(false);
       
       // Restaurar el scroll
@@ -670,57 +673,54 @@ const DeudoresList = () => {
                       </div>
                     </div>
 
+                    {isPayment && (
+                      <div className="deudores-form-group">
+                        <label className="deudores-form-label">Método de Pago:</label>
+                        <div className="deudores-payment-method-select">
+                          <label className="deudores-radio-group">
+                            <input
+                              type="radio"
+                              name="metodoPago"
+                              value="efectivo"
+                              checked={metodoPago === 'efectivo'}
+                              onChange={() => setMetodoPago('efectivo')}
+                            />
+                            <span className="deudores-radio-checkmark"></span>
+                            Efectivo
+                          </label>
+                          <label className="deudores-radio-group">
+                            <input
+                              type="radio"
+                              name="metodoPago"
+                              value="tarjeta"
+                              checked={metodoPago === 'tarjeta'}
+                              onChange={() => setMetodoPago('tarjeta')}
+                            />
+                            <span className="deudores-radio-checkmark"></span>
+                            Tarjeta
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="deudores-form-group">
                       <label className="deudores-form-label" htmlFor="comment">Comentario (opcional):</label>
                       <textarea
                         id="comment"
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        placeholder="Añada un comentario opcional"
-                        rows="3"
-                        maxLength={100}
+                        placeholder="Ingrese un comentario (opcional)"
                         className="deudores-form-control"
-                      />
-                    </div>
-
-                    <div className="deudores-payment-type">
-                      <label className="deudores-radio-group">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          checked={isPayment}
-                          onChange={() => setIsPayment(true)}
-                        />
-                        <span className="deudores-radio-checkmark"></span>
-                        Registrar pago (restar de la deuda)
-                      </label>
-                      <label className="deudores-radio-group">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          checked={!isPayment}
-                          onChange={() => setIsPayment(false)}
-                        />
-                        <span className="deudores-radio-checkmark"></span>
-                        Añadir a la deuda
-                      </label>
+                      ></textarea>
                     </div>
                   </div>
-
+                  
                   <div className="deudores-modal-footer">
-                    <button onClick={handleDebtUpdate} className="deudores-btn deudores-btn-success">
-                      Confirmar
+                    <button className="deudores-btn deudores-btn-secondary" onClick={() => setShowModal(false)}>
+                      <FontAwesomeIcon icon={faTimes} /> Cancelar
                     </button>
-                    <button 
-                      onClick={() => {
-                        controlBodyScroll(false);
-                        setShowModal(false);
-                        setComment('');
-                        setAmount('');
-                      }} 
-                      className="deudores-btn deudores-btn-danger"
-                    >
-                      Cancelar
+                    <button className="deudores-btn deudores-btn-primary" onClick={handleDebtUpdate}>
+                      <FontAwesomeIcon icon={faSave} /> {isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}
                     </button>
                   </div>
                 </div>
@@ -728,106 +728,72 @@ const DeudoresList = () => {
             )}
 
             {showEditModal && (
-              <div className="deudores-modal-overlay" onClick={handleCloseEditModal}>
+              <div className="deudores-modal-overlay" onClick={() => setShowEditModal(false)}>
                 <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
                   <div className="deudores-modal-header">
                     <h2 className="deudores-modal-title">Editar Deudor</h2>
                   </div>
+                  
+                  <div className="deudores-modal-body">
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="Nombre">Nombre:</label>
+                      <input
+                        type="text"
+                        id="Nombre"
+                        name="Nombre"
+                        value={deudorToEdit.Nombre}
+                        onChange={handleEditChange}
+                        placeholder="Ingrese el nombre"
+                        required
+                        className="deudores-form-control"
+                      />
+                    </div>
 
-                  <div className="deudores-form-group">
-                    <label className="deudores-form-label" htmlFor="editNombre">Nombre:</label>
-                    <input
-                      type="text"
-                      id="editNombre"
-                      name="Nombre"
-                      value={deudorToEdit.Nombre}
-                      onChange={handleEditChange}
-                      required
-                      className="deudores-form-control"
-                    />
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="fechaPaga">Fecha a Pagar:</label>
+                      <input
+                        type="date"
+                        id="fechaPaga"
+                        name="fechaPaga"
+                        value={deudorToEdit.fechaPaga}
+                        onChange={handleEditChange}
+                        className="deudores-form-control"
+                      />
+                    </div>
+
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="numeroTelefono">Número de Teléfono:</label>
+                      <input
+                        type="text"
+                        id="numeroTelefono"
+                        name="numeroTelefono"
+                        value={deudorToEdit.numeroTelefono}
+                        onChange={handleEditChange}
+                        placeholder="Ingrese el número de teléfono"
+                        className="deudores-form-control"
+                      />
+                    </div>
+
+                    <div className="deudores-form-group">
+                      <label className="deudores-form-label" htmlFor="deudaTotal">Deuda Total:</label>
+                      <input
+                        type="text"
+                        id="deudaTotal"
+                        name="deudaTotal"
+                        value={deudorToEdit.deudaTotal}
+                        onChange={handleEditChange}
+                        placeholder="Ingrese la deuda total"
+                        className="deudores-form-control"
+                      />
+                    </div>
                   </div>
-
-                  <div className="deudores-form-group">
-                    <label className="deudores-form-label" htmlFor="editFechaPaga">Fecha a Pagar:</label>
-                    <input
-                      type="date"
-                      id="editFechaPaga"
-                      name="fechaPaga"
-                      value={deudorToEdit.fechaPaga}
-                      onChange={handleEditChange}
-                      required
-                      className="deudores-form-control"
-                    />
-                  </div>
-
-                  <div className="deudores-form-group">
-                    <label className="deudores-form-label" htmlFor="editNumeroTelefono">Número de Teléfono:</label>
-                    <input
-                      type="text"
-                      id="editNumeroTelefono"
-                      name="numeroTelefono"
-                      value={deudorToEdit.numeroTelefono}
-                      onChange={handleEditChange}
-                      required
-                      className="deudores-form-control"
-                    />
-                  </div>
-
-                  <div className="deudores-form-group">
-                    <label className="deudores-form-label" htmlFor="editDeudaTotal">Deuda Total:</label>
-                    <input
-                      type="number"
-                      id="editDeudaTotal"
-                      name="deudaTotal"
-                      value={deudorToEdit.deudaTotal}
-                      onChange={handleEditChange}
-                      required
-                      className="deudores-form-control"
-                    />
-                  </div>
-
-                  <div className="deudores-card">
-                    <h3>Historial de Pagos</h3>
-                    {deudorToEdit.historialPagos && deudorToEdit.historialPagos.length > 0 ? (
-                      <div className="deudores-table-container" style={{maxHeight: "200px"}}>
-                        <table className="deudores-table">
-                          <thead>
-                            <tr>
-                              <th>Fecha</th>
-                              <th>Monto</th>
-                              <th>Tipo</th>
-                              <th>Comentario</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {deudorToEdit.historialPagos.map((pago, idx) => (
-                              <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
-                                <td>{new Date(pago.fecha).toLocaleDateString()}</td>
-                                <td>${pago.monto.toLocaleString()}</td>
-                                <td>
-                                  <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
-                                    {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
-                                  </span>
-                                </td>
-                                <td className="deudores-comment-cell">
-                                  {renderComment(pago.comentario, `edit-${idx}`)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <p className="deudores-text-center">No hay historial de pagos registrado</p>
-                    )}
-                  </div>
-
+                  
                   <div className="deudores-modal-footer">
-                    <button onClick={handleEditSubmit} className="deudores-btn deudores-btn-success">
-                      Guardar Cambios
+                    <button className="deudores-btn deudores-btn-secondary" onClick={() => setShowEditModal(false)}>
+                      <FontAwesomeIcon icon={faTimes} /> Cancelar
                     </button>
-                    <button onClick={handleCancelEdit} className="deudores-btn deudores-btn-danger">
-                      Cancelar
+                    <button className="deudores-btn deudores-btn-primary" onClick={handleEditSubmit}>
+                      <FontAwesomeIcon icon={faSave} /> Guardar Cambios
                     </button>
                   </div>
                 </div>
@@ -838,61 +804,58 @@ const DeudoresList = () => {
               <div className="deudores-modal-overlay" onClick={handleCloseHistoryModal}>
                 <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
                   <div className="deudores-modal-header">
-                    <h2 className="deudores-modal-title">Historial de Transacciones - {selectedHistoryDeudor.Nombre}</h2>
+                    <h2 className="deudores-modal-title">Historial de Pagos - {selectedHistoryDeudor.Nombre}</h2>
                   </div>
                   
-                  <p><strong>Deuda actual:</strong> <span className={parseFloat(selectedHistoryDeudor.deudaTotal) === 0 ? 'deudores-text-success' : 'deudores-text-danger'}>
-                    ${typeof selectedHistoryDeudor.deudaTotal === 'number' ?
-                      selectedHistoryDeudor.deudaTotal.toLocaleString() :
-                      selectedHistoryDeudor.deudaTotal}
-                  </span></p>
-
-                  <div className="deudores-card">
-                    {selectedHistoryDeudor.historialPagos &&
-                      Array.isArray(selectedHistoryDeudor.historialPagos) &&
-                      selectedHistoryDeudor.historialPagos.length > 0 ? (
-                      <div className="deudores-table-container">
-                        <table className="deudores-table">
-                          <thead>
-                            <tr>
-                              <th>Fecha</th>
-                              <th>Monto</th>
-                              <th>Tipo</th>
-                              <th>Comentario</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedHistoryDeudor.historialPagos.map((pago, idx) => (
-                              <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
-                                <td>{new Date(pago.fecha).toLocaleDateString()}</td>
-                                <td>${pago.monto.toLocaleString()}</td>
-                                <td>
-                                  <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
-                                    {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
-                                  </span>
-                                </td>
-                                <td className="deudores-comment-cell">
-                                  {renderComment(pago.comentario, `history-${idx}`)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                  <div className="deudores-modal-body">
+                    {selectedHistoryDeudor.historialPagos.length === 0 ? (
+                      <p className="deudores-no-history">No hay historial de pagos disponible para este deudor.</p>
                     ) : (
-                      <p className="deudores-text-center">No hay historial de pagos registrado</p>
+                      <table className="deudores-table">
+                        <thead>
+                          <tr>
+                            <th>Fecha</th>
+                            <th>Monto</th>
+                            <th>Tipo</th>
+                            <th>Método de Pago</th>
+                            <th>Comentario</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedHistoryDeudor.historialPagos.map((pago, idx) => (
+                            <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
+                              <td>{new Date(pago.fecha).toLocaleDateString()}</td>
+                              <td>${pago.monto.toLocaleString()}</td>
+                              <td>
+                                <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
+                                  {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
+                                </span>
+                              </td>
+                              <td>
+                                {pago.tipo === 'pago' ? (
+                                  <span className={`deudores-payment-method ${pago.metodoPago === 'efectivo' ? 'efectivo' : 'tarjeta'}`}>
+                                    {pago.metodoPago === 'efectivo' ? 'Efectivo' : 'Tarjeta'}
+                                  </span>
+                                ) : '-'}
+                              </td>
+                              <td className="deudores-comment-cell">
+                                {renderComment(pago.comentario, `history-${idx}`)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
-
+                  
                   <div className="deudores-modal-footer">
-                    <button onClick={handleCloseHistoryModal} className="deudores-btn deudores-btn-secondary">
-                      Cerrar
+                    <button className="deudores-btn deudores-btn-secondary" onClick={handleCloseHistoryModal}>
+                      <FontAwesomeIcon icon={faTimes} /> Cerrar
                     </button>
                   </div>
                 </div>
               </div>
             )}
-
           </>
         )}
       </div>
