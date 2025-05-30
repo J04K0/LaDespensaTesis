@@ -128,8 +128,8 @@ body {
 .productscanner-tpv-main-container {
   display: flex;
   gap: 20px;
-  height: calc(100vh - 240px);
-  min-height: 500px;
+  height: calc(100vh - 200px); /* Incrementamos la altura para aprovechar más espacio */
+  min-height: 550px;
 }
 
 /* Panel izquierdo - Producto escaneado */
@@ -221,6 +221,38 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.productscanner-cart-panel h2 {
+  color: var(--primary-dark);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between; /* Para separar el título y el contador */
+}
+
+.productscanner-cart-summary-count {
+  font-size: 14px;
+  color: var(--gray);
+  font-weight: normal;
+  background-color: var(--gray-light);
+  padding: 4px 10px;
+  border-radius: 16px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Lista de items en el carrito */
+.productscanner-cart-items-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  max-height: 450px; /* Aumentamos la altura máxima para mostrar más productos */
 }
 
 .productscanner-cart-panel h2 {

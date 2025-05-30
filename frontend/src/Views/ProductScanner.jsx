@@ -205,7 +205,8 @@ const ProductScanner = () => {
       return Promise.reject("Carrito vacío");
     }
   
-    if (metodoPago === "efectivo" && (!montoEntregado || parseFloat(montoEntregado) < total)) {
+    // Solo verificar el monto si se ingresó un valor
+    if (metodoPago === "efectivo" && montoEntregado && parseFloat(montoEntregado) < total) {
       showErrorAlert("Monto insuficiente", "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
       return Promise.reject("Monto insuficiente");
     }
@@ -289,26 +290,13 @@ const ProductScanner = () => {
                     <p><strong>Marca:</strong> {productoActual.marca}</p>
                     <p><strong>Categoría:</strong> {productoActual.categoria}</p>
                     <p><strong>Código:</strong> {productoActual.codigoBarras}</p>
-                    <p className="productscanner-product-price">${productoActual.precioVenta}</p>
+                    <p className="productscanner-product-price"><strong>Precio de venta:</strong> ${productoActual.precioVenta.toLocaleString('es-ES', {
+                      maximumFractionDigits: 0,
+                      useGrouping: true
+                    }).replace(/,/g, '.')}</p>
                     <p><strong>Stock:</strong> <span className={stockPorProducto[productoActual.codigoBarras] < 5 ? "productscanner-low-stock" : ""}>
                       {stockPorProducto[productoActual.codigoBarras] || 0} unidades
                     </span></p>
-                    
-                    <div className="productscanner-quantity-controls">
-                      <button 
-                        onClick={disminuirCantidad} 
-                        disabled={cantidad <= 1}
-                      >
-                        <FontAwesomeIcon icon={faMinus} />
-                      </button>
-                      <span>{cantidad}</span>
-                      <button 
-                        onClick={incrementarCantidad}
-                        disabled={!stockPorProducto[productoActual.codigoBarras] || cantidad >= stockPorProducto[productoActual.codigoBarras]}
-                      >
-                        <FontAwesomeIcon icon={faPlus} />
-                      </button>
-                    </div>
                     
                     <button 
                       className="productscanner-add-to-cart-button"
@@ -329,7 +317,13 @@ const ProductScanner = () => {
               </div>
               
               <div className="productscanner-cart-panel">
-                <h2><FontAwesomeIcon icon={faShoppingCart} /> Carrito de Compra</h2>
+                <h2>
+                  <FontAwesomeIcon icon={faShoppingCart} /> 
+                  Carrito de Compra
+                  <span className="productscanner-cart-summary-count">
+                    {carrito.length} productos • {carrito.reduce((sum, p) => sum + p.cantidad, 0)} unidades
+                  </span>
+                </h2>
                 
                 {carrito.length === 0 ? (
                   <div className="productscanner-empty-cart">
@@ -344,7 +338,10 @@ const ProductScanner = () => {
                         <div key={index} className="productscanner-cart-item">
                           <div className="productscanner-cart-item-info">
                             <h4>{producto.nombre}</h4>
-                            <p className="productscanner-cart-item-price">${producto.precioVenta}</p>
+                            <p className="productscanner-cart-item-price">${producto.precioVenta.toLocaleString('es-ES', {
+                              maximumFractionDigits: 0,
+                              useGrouping: true
+                            }).replace(/,/g, '.')}</p>
                           </div>
                           
                           <div className="productscanner-cart-item-controls">
@@ -364,7 +361,10 @@ const ProductScanner = () => {
                               </button>
                             </div>
                             
-                            <p className="productscanner-item-subtotal">${(producto.precioVenta * producto.cantidad)}</p>
+                            <p className="productscanner-item-subtotal">${(producto.precioVenta * producto.cantidad).toLocaleString('es-ES', {
+                              maximumFractionDigits: 0,
+                              useGrouping: true
+                            }).replace(/,/g, '.')}</p>
                             
                             <button 
                               className="productscanner-remove-item-btn"
@@ -380,7 +380,10 @@ const ProductScanner = () => {
                     <div className="productscanner-checkout-section">
                       <div className="productscanner-cart-summary">
                         <h3>Resumen de Compra</h3>
-                        <p className="productscanner-total-price">Total a pagar: <span>${total}</span></p>
+                        <p className="productscanner-total-price">Total a pagar: <span>${total.toLocaleString('es-ES', {
+                          maximumFractionDigits: 0,
+                          useGrouping: true
+                        }).replace(/,/g, '.')}</span></p>
                       </div>
                       
                       <div className="productscanner-payment-options">
@@ -420,7 +423,10 @@ const ProductScanner = () => {
                             )}
                             {montoEntregado && parseFloat(montoEntregado) >= total && (
                               <div className="productscanner-change-amount">
-                                Cambio a devolver: <span>${vuelto.toFixed(2)}</span>
+                                Cambio a devolver: <span>${vuelto.toLocaleString('es-ES', {
+                                  maximumFractionDigits: 0,
+                                  useGrouping: true
+                                }).replace(/,/g, '.')}</span>
                               </div>
                             )}
                           </div>
@@ -430,7 +436,7 @@ const ProductScanner = () => {
                       <button 
                         className="productscanner-finalize-sale-button"
                         onClick={handleFinalizarVenta}
-                        disabled={isProcessing || carrito.length === 0 || (metodoPago === "efectivo" && vuelto < 0)}
+                        disabled={isProcessing || carrito.length === 0 || (metodoPago === "efectivo" && montoEntregado && parseFloat(montoEntregado) < total)}
                       >
                         <FontAwesomeIcon icon={faCheck} />
                         {isProcessing ? ' Procesando venta...' : ' Finalizar Venta'}
