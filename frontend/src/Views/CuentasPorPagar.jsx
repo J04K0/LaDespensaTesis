@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/CuentasPorPagarStyles.css';
 import axios from "../services/root.service.js";
+import { ExportService } from '../services/export.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faCheckCircle, faSearch, faFilter, faEraser, faCheck, faTimes, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faCheckCircle, faSearch, faFilter, faEraser, faCheck, faTimes, faFilePdf, faCalendarAlt, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import CuentasPorPagarSkeleton from '../components/CuentasPorPagarSkeleton';
 import jsPDF from 'jspdf';
@@ -12,10 +13,14 @@ import autoTable from 'jspdf-autotable';
 
 const CuentasPorPagar = () => {
   const [cuentas, setCuentas] = useState([]);
-  const [cuentasAgrupadas, setCuentasAgrupadas] = useState({});
   const [filteredCuentas, setFilteredCuentas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [cuentasAgrupadas, setCuentasAgrupadas] = useState({});
+  const [ordenProveedores, setOrdenProveedores] = useState([]); // Movido aquí arriba
+  const [totalGeneral, setTotalGeneral] = useState(0);
+  const [totalPagado, setTotalPagado] = useState(0);
+  const [totalPendiente, setTotalPendiente] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
@@ -30,7 +35,10 @@ const CuentasPorPagar = () => {
     Estado: 'Pendiente',
     Categoria: ''
   });
-  
+  // Estado para almacenar los resúmenes mensuales
+  const [resumenMensual, setResumenMensual] = useState({});
+  const [mesesConDatos, setMesesConDatos] = useState(0);
+
   // Meses del año para la tabla
   const meses = [
     {id: '01', nombre: 'Enero'},
@@ -50,7 +58,7 @@ const CuentasPorPagar = () => {
   // Año actual para la tabla
   const [yearSelected, setYearSelected] = useState(new Date().getFullYear().toString());
 
-  const cuentasPorPagina = 25;
+  const cuentasPorPagina = 5; // Modificado de 25 a 5 para mostrar menos elementos por página
   const navigate = useNavigate();
 
   // Categorías disponibles
@@ -62,16 +70,22 @@ const CuentasPorPagar = () => {
   // Función para agrupar cuentas por nombre y categoría
   const agruparCuentas = (cuentasData) => {
     const agrupadas = {};
-    
+    const orden = []; // Array para mantener el orden de agregación
+
     cuentasData.forEach(cuenta => {
       const key = `${cuenta.Nombre}-${cuenta.Categoria}`;
+      
+      // Si es la primera vez que vemos este proveedor, lo guardamos en el array de orden
       if (!agrupadas[key]) {
+        orden.push(key);
         agrupadas[key] = {
           id: key,
           nombre: cuenta.Nombre,
           numeroVerificador: cuenta.numeroVerificador,
           categoria: cuenta.Categoria,
-          meses: {}
+          meses: {},
+          cantidadCuentas: 0, // Contador para la cantidad de cuentas por proveedor
+          createdAt: cuenta.createdAt || new Date() // Guardamos la fecha de creación para ordenar
         };
       }
       
@@ -85,10 +99,18 @@ const CuentasPorPagar = () => {
           monto: cuenta.Monto,
           estado: cuenta.Estado
         };
+        // Incrementar el contador de cuentas
+        agrupadas[key].cantidadCuentas++;
       }
     });
     
-    return agrupadas;
+    // Ordenar el array 'orden' basado en la cantidad de cuentas que tiene cada proveedor
+    orden.sort((a, b) => {
+      return agrupadas[b].cantidadCuentas - agrupadas[a].cantidadCuentas;
+    });
+    
+    // Retornamos un objeto con los datos agrupados y el orden
+    return { agrupadas, orden };
   };
 
   // Función fetchCuentas mejorada con manejo de respuestas consistente
@@ -111,10 +133,11 @@ const CuentasPorPagar = () => {
         setFilteredCuentas(cuentas);
         
         // Agrupar cuentas por nombre y categoría
-        const agrupadas = agruparCuentas(cuentas);
+        const { agrupadas, orden } = agruparCuentas(cuentas);
         setCuentasAgrupadas(agrupadas);
+        setOrdenProveedores(orden);
         
-        setTotalPages(Math.ceil(Object.keys(agrupadas).length / cuentasPorPagina));
+        setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
       } else {
         throw new Error(response.data.message || 'Error al obtener las cuentas');
       }
@@ -126,6 +149,7 @@ const CuentasPorPagar = () => {
           setCuentas([]);
           setFilteredCuentas([]);
           setCuentasAgrupadas({});
+          setOrdenProveedores([]);
           setTotalPages(1);
         } else {
           showErrorAlert('Error al cargar las cuentas', error.response.data?.message || 'Error en el servidor');
@@ -154,10 +178,11 @@ const CuentasPorPagar = () => {
     setFilteredCuentas(filtered);
     
     // Agrupar cuentas filtradas
-    const agrupadas = agruparCuentas(filtered);
+    const { agrupadas, orden } = agruparCuentas(filtered);
     setCuentasAgrupadas(agrupadas);
+    setOrdenProveedores(orden);
     
-    setTotalPages(Math.ceil(Object.keys(agrupadas).length / cuentasPorPagina));
+    setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
     setCurrentPage(1);
   }, [searchQuery, cuentas, yearSelected]);
 
@@ -184,7 +209,7 @@ const CuentasPorPagar = () => {
     setEstadoFilter('');
     setYearSelected(new Date().getFullYear().toString());
     setFilteredCuentas(cuentas);
-    const agrupadas = agruparCuentas(cuentas);
+    const { agrupadas } = agruparCuentas(cuentas);
     setCuentasAgrupadas(agrupadas);
     setTotalPages(Math.ceil(Object.keys(agrupadas).length / cuentasPorPagina));
     setCurrentPage(1);
@@ -197,11 +222,14 @@ const CuentasPorPagar = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Mostrar proveedores/categorías según la página actual
-  const displayedProveedores = Object.values(cuentasAgrupadas).slice(
-    (currentPage - 1) * cuentasPorPagina,
-    currentPage * cuentasPorPagina
-  );
+  // Mostrar proveedores/categorías según la página actual y orden de agregación
+  const displayedProveedores = ordenProveedores
+    .map(key => cuentasAgrupadas[key])
+    .filter(Boolean)
+    .slice(
+      (currentPage - 1) * cuentasPorPagina,
+      currentPage * cuentasPorPagina
+    );
 
   // Agregar nueva cuenta
   const handleAddCuenta = () => {
@@ -381,11 +409,11 @@ const handleSubmit = async () => {
   }
 };
   
-  // Generar años para el selector (5 años atrás y 5 años adelante)
+  // Generar años para el selector (10 años atrás y 5 años adelante)
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+    for (let i = currentYear - 10; i <= currentYear + 5; i++) {
       years.push(i);
     }
     return years;
@@ -393,60 +421,7 @@ const handleSubmit = async () => {
 
 // Función para exportar a PDF
 const exportarPDF = () => {
-  const doc = new jsPDF({
-    orientation: 'landscape', // Cambia la orientación a horizontal
-    unit: 'mm',
-    format: 'a4'
-  });
-  
-  doc.text("Reporte de Cuentas por Pagar", 14, 16);
-  doc.text(`Año: ${yearSelected}`, 14, 24);
-  
-  // Preparar datos para la tabla
-  const headers = [
-    'Proveedor', 
-    'Identificador', 
-    'Categoría',
-    ...meses.map(mes => mes.nombre)
-  ];
-  
-  const rows = Object.values(cuentasAgrupadas).map(proveedor => {
-    const rowData = [
-      proveedor.nombre,
-      proveedor.numeroVerificador,
-      proveedor.categoria
-    ];
-    
-    // Agregar montos por mes
-    meses.forEach(mes => {
-      const cuentaMes = proveedor.meses[mes.id];
-      if (cuentaMes) {
-        rowData.push(`$${cuentaMes.monto.toLocaleString()} (${cuentaMes.estado})`);
-      } else {
-        rowData.push('-');
-      }
-    });
-    
-    return rowData;
-  });
-  
-  // Generar tabla
-  autoTable(doc, {
-    head: [headers],
-    body: rows,
-    margin: { top: 30 },
-    styles: { overflow: 'linebreak' },
-    headStyles: { fillColor: [0, 38, 81] }, // Color #002651
-    didDrawPage: (data) => {
-      // Agregar pie de página con fecha
-      const currentDate = new Date().toLocaleDateString();
-      doc.setFontSize(10);
-      doc.text(`Fecha de emisión: ${currentDate}`, 14, doc.internal.pageSize.height - 10);
-    }
-  });
-  
-  // Guardar PDF
-  doc.save(`Cuentas_por_Pagar_${yearSelected}.pdf`);
+  ExportService.generarReporteCuentasPorPagar(cuentasAgrupadas, meses, yearSelected);
 };
 
 const handleCancel = async () => {
@@ -462,6 +437,55 @@ const handleCancel = async () => {
     setShowModal(false); // Cerrar el modal si el usuario confirma
   }
 };
+
+  // Calcular totales mensuales para el resumen anual
+  const calcularTotalesMensuales = (cuentasData) => {
+    const resumen = {};
+    
+    cuentasData.forEach(cuenta => {
+      // Extraer año y mes de la fecha
+      const [year, month] = cuenta.Mes.split('-');
+      
+      if (year === yearSelected) {
+        if (!resumen[month]) {
+          resumen[month] = {
+            total: 0,
+            pagado: 0,
+            pendiente: 0
+          };
+        }
+        
+        resumen[month].total += cuenta.Monto;
+        if (cuenta.Estado === 'Pagado') {
+          resumen[month].pagado += cuenta.Monto;
+        } else {
+          resumen[month].pendiente += cuenta.Monto;
+        }
+      }
+    });
+    
+    setResumenMensual(resumen);
+    
+    // Calcular totales generales
+    const totalGen = cuentasData.reduce((sum, cuenta) => sum + cuenta.Monto, 0);
+    const totalPag = cuentasData.filter(cuenta => cuenta.Estado === 'Pagado').reduce((sum, cuenta) => sum + cuenta.Monto, 0);
+    const totalPen = cuentasData.filter(cuenta => cuenta.Estado === 'Pendiente').reduce((sum, cuenta) => sum + cuenta.Monto, 0);
+    
+    // Calcular el número de meses con datos
+    const mesesConDatos = Object.keys(resumen).length;
+    
+    setTotalGeneral(totalGen);
+    setTotalPagado(totalPag);
+    setTotalPendiente(totalPen);
+    
+    // Almacenar el número de meses con datos para usarlo en el cálculo del promedio
+    return { mesesConDatos };
+  };
+
+  useEffect(() => {
+    const { mesesConDatos } = calcularTotalesMensuales(cuentas);
+    setMesesConDatos(mesesConDatos);
+  }, [cuentas, yearSelected]);
 
   return (
     <div className="app-container">
@@ -483,57 +507,139 @@ const handleCancel = async () => {
               </div>
             </div>
             
-            <div className="filters-container">
-              <div className="search-container">
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                <input
-                  type="text"
-                  className="search-input"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder="Buscar por nombre o identificador..."
-                />
+            {/* Cuadros de resumen */}
+            <div className="summary-cards">
+              <div className="summary-card">
+                <div className="summary-icon total">
+                  <FontAwesomeIcon icon={faCalendarAlt} />
+                </div>
+                <div className="summary-info">
+                  <h3>Promedio Mensual</h3>
+                  <p className="summary-value">${(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                  <span className="summary-label">Facturas a Pagar: {cuentas.length} | Meses activos: {mesesConDatos}</span>
+                </div>
+                <div className="summary-trend">
+                  <span className="trend-percentage">{cuentas.length > 0 ? '+' + (totalGeneral/cuentas.length).toFixed(0) : '0'}</span>
+                  <span className="trend-label">Promedio por factura</span>
+                </div>
               </div>
               
-              <div className="filter-group">
-                <select 
-                  className="form-select"
-                  value={yearSelected}
-                  onChange={handleYearChange}
-                >
-                  {generateYearOptions().map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+              <div className="summary-card">
+                <div className="summary-icon paid">
+                  <FontAwesomeIcon icon={faCheckCircle} />
+                </div>
+                <div className="summary-info">
+                  <h3>Total Pagado</h3>
+                  <p className="summary-value">${totalPagado.toLocaleString()}</p>
+                  <span className="summary-label">Facturas Pagadas: {cuentas.filter(c => c.Estado === 'Pagado').length}</span>
+                </div>
+                <div className="summary-trend positive">
+                  <span className="trend-percentage">{totalGeneral > 0 ? ((totalPagado/totalGeneral)*100).toFixed(1)+'%' : '0%'}</span>
+                  <span className="trend-label">del total facturado</span>
+                </div>
+              </div>
+              
+              <div className="summary-card">
+                <div className="summary-icon pending">
+                  <FontAwesomeIcon icon={faMoneyBillWave} />
+                </div>
+                <div className="summary-info">
+                  <h3>Total Pendiente</h3>
+                  <p className="summary-value">${totalPendiente.toLocaleString()}</p>
+                  <span className="summary-label">Facturas Pendientes: {cuentas.filter(c => c.Estado === 'Pendiente').length}</span>
+                </div>
+                <div className="summary-trend negative">
+                  <span className="trend-percentage">{totalGeneral > 0 ? ((totalPendiente/totalGeneral)*100).toFixed(1)+'%' : '0%'}</span>
+                  <span className="trend-label">del total facturado</span>
+                </div>
+              </div>
+              
+              <div className="summary-card">
+                <div className="summary-icon analytics">
+                  <FontAwesomeIcon icon={faChartLine} />
+                </div>
+                <div className="summary-info">
+                  <h3>Análisis Anual</h3>
+                  <div className="progress-circle-container">
+                    <div 
+                      className="progress-circle"
+                      style={{
+                        '--progress': `${totalGeneral ? ((totalPagado/totalGeneral)*100) : 0}%`
+                      }}
+                    >
+                      <div className="progress-circle-value">{totalGeneral ? ((totalPagado/totalGeneral)*100).toFixed(1) : 0}%</div>
+                    </div>
+                  </div>
+                  <span className="summary-label">
+                    Periodo: {yearSelected} | Facturas pagadas: {cuentas.filter(c => c.Estado === 'Pagado').length}/{cuentas.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="filters-container">
+              <h2><FontAwesomeIcon icon={faFilter} /> Filtros y Búsqueda</h2>
+              
+              <div className="filters-vertical">
+                <div className="filter-item">
+                  <div className="search-container">
+                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                    <input
+                      type="text"
+                      className="search-input"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Buscar proveedor..."
+                    />
+                  </div>
+                </div>
                 
-                <select 
-                  className="form-select"
-                  value={categoriaFilter}
-                  onChange={handleCategoriaFilterChange}
-                >
-                  <option value="">Todas las categorías</option>
-                  {categorias.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <div className="filter-item">
+                  <select 
+                    className="form-select"
+                    value={yearSelected}
+                    onChange={handleYearChange}
+                  >
+                    {generateYearOptions().map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
                 
-                <select 
-                  className="form-select"
-                  value={estadoFilter}
-                  onChange={handleEstadoFilterChange}
-                >
-                  <option value="">Todos los estados</option>
-                  {estados.map(estado => (
-                    <option key={estado} value={estado}>{estado}</option>
-                  ))}
-                </select>
+                <div className="filter-item">
+                  <select 
+                    className="form-select"
+                    value={categoriaFilter}
+                    onChange={handleCategoriaFilterChange}
+                  >
+                    <option value="">Todas las categorías</option>
+                    {categorias.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
                 
-                <button 
-                  className="btn btn-secondary"
-                  onClick={handleClearFilters}
-                >
-                  <FontAwesomeIcon icon={faEraser} /> Limpiar Filtros
-                </button>
+                <div className="filter-item">
+                  <select 
+                    className="form-select"
+                    value={estadoFilter}
+                    onChange={handleEstadoFilterChange}
+                  >
+                    <option value="">Todos los estados</option>
+                    {estados.map(estado => (
+                      <option key={estado} value={estado}>{estado}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="filter-item">
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={handleClearFilters}
+                  >
+                    <FontAwesomeIcon icon={faEraser} /> Limpiar Filtros
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -549,8 +655,8 @@ const handleCancel = async () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedProveedores.length > 0 ? (
-                    displayedProveedores.map((proveedor) => (
+                  {displayedProveedores.length > 0 
+                    ? displayedProveedores.map((proveedor) => (
                       <tr key={proveedor.id}>
                         <td className="proveedor-column">
                           <div className="proveedor-info">
@@ -578,7 +684,7 @@ const handleCancel = async () => {
                                   <div className="cuenta-actions">
                                     <button 
                                       className={`btn-icon ${cuentaMes.estado === 'Pagado' ? 'btn-success' : 'btn-outline-success'}`}
-                                      title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagado' : 'Marcar como pagado'}
+                                      title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagada' : 'Marcar como pagada'}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleTogglePaid(cuentaMes._id, cuentaMes.estado);
@@ -608,29 +714,77 @@ const handleCancel = async () => {
                         })}
                       </tr>
                     ))
-                  ) : (
-                    <tr>
-                      <td colSpan={meses.length + 2} className="text-center">
-                        No se encontraron cuentas que coincidan con los filtros.
-                      </td>
-                    </tr>
-                  )}
+                    : (
+                      <tr>
+                        <td colSpan={meses.length + 2} className="text-center">
+                          No se encontraron cuentas que coincidan con los filtros.
+                        </td>
+                      </tr>
+                    )
+                  }
                 </tbody>
               </table>
             </div>
             
             {totalPages > 1 && (
               <div className="pagination">
-                {[...Array(totalPages).keys()].map(page => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page + 1)}
-                    className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
-                    disabled={page + 1 === currentPage}
-                  >
-                    {page + 1}
-                  </button>
-                ))}
+                <button 
+                  onClick={() => handlePageChange(1)}
+                  className="pagination-button"
+                  disabled={currentPage === 1}
+                >
+                  « Primera
+                </button>
+                <button 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="pagination-button"
+                  disabled={currentPage === 1}
+                >
+                  ‹ Anterior
+                </button>
+                
+                {[...Array(totalPages).keys()].map(page => {
+                  const pageNum = page + 1;
+                  // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
+                  if (
+                    pageNum === 1 || 
+                    pageNum === totalPages || 
+                    (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
+                        disabled={pageNum === currentPage}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    (pageNum === currentPage - 3 && currentPage > 4) || 
+                    (pageNum === currentPage + 3 && currentPage < totalPages - 3)
+                  ) {
+                    // Mostrar puntos suspensivos para indicar páginas omitidas
+                    return <span key={page} className="pagination-ellipsis">...</span>;
+                  }
+                  return null;
+                })}
+                
+                <button 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="pagination-button"
+                  disabled={currentPage === totalPages}
+                >
+                  Siguiente ›
+                </button>
+                <button 
+                  onClick={() => handlePageChange(totalPages)}
+                  className="pagination-button"
+                  disabled={currentPage === totalPages}
+                >
+                  Última »
+                </button>
               </div>
             )}
             
@@ -747,6 +901,69 @@ const handleCancel = async () => {
                 </div>
               </div>
             )}
+            
+            {/* Resumen anual */}
+            <div className="resumen-anual-container">
+              <div className="resumen-header">
+                <h2>Resumen Anual</h2>
+              </div>
+              
+              <div className="summary-cards">
+                {Object.entries(resumenMensual).length > 0 ? (
+                  Object.entries(resumenMensual).map(([mes, datos]) => (
+                    <div key={mes} className="summary-card">
+                      <div className={`summary-icon ${datos.pendiente > 0 ? 'pending' : 'paid'}`}>
+                        <FontAwesomeIcon icon={datos.pendiente > 0 ? faMoneyBillWave : faCheckCircle} />
+                      </div>
+                      <div className="summary-info">
+                        <h3>{meses.find(m => m.id === mes)?.nombre}</h3>
+                        <p className="summary-value">${datos.total.toLocaleString()}</p>
+                        <span className="summary-label">
+                          Pagado: ${datos.pagado.toLocaleString()} | Pendiente: ${datos.pendiente.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className={`summary-trend ${datos.pendiente > 0 ? 'negative' : 'positive'}`}>
+                        <span className="trend-percentage">
+                          {datos.total > 0 ? ((datos.pagado/datos.total)*100).toFixed(1)+'%' : '0%'}
+                        </span>
+                        <span className="trend-label">pagado</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="summary-card">
+                    <div className="summary-info">
+                      <h3>Sin datos</h3>
+                      <p className="summary-value">No hay datos disponibles</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Tarjeta de totales generales */}
+                <div className="summary-card">
+                  <div className="summary-icon total">
+                    <FontAwesomeIcon icon={faChartLine} />
+                  </div>
+                  <div className="summary-info">
+                    <h3>Total Anual</h3>
+                    <p className="summary-value">${totalGeneral.toLocaleString()}</p>
+                    <span className="summary-label">
+                      Pagado: ${totalPagado.toLocaleString()} | Pendiente: ${totalPendiente.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="progress-circle-container">
+                    <div 
+                      className="progress-circle"
+                      style={{
+                        '--progress': `${totalGeneral ? ((totalPagado/totalGeneral)*100) : 0}%`
+                      }}
+                    >
+                      <div className="progress-circle-value">{totalGeneral ? ((totalPagado/totalGeneral)*100).toFixed(1) : 0}%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>

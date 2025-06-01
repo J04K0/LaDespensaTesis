@@ -242,11 +242,8 @@ const ProductScanner = () => {
       return Promise.reject("Deudor no seleccionado");
     }
   
-    // Solo verificar el monto para clientes que pagan en efectivo y no son deudores
-    if (metodoPago === "efectivo" && !isDeudor && (!montoEntregado || parseFloat(montoEntregado) < total)) {
-      showErrorAlert("Monto insuficiente", "El monto entregado es menor que el total. Por favor, ingrese un monto mayor.");
-      return Promise.reject("Monto insuficiente");
-    }
+    // Ya no verificamos el monto entregado como condición para finalizar la venta
+    // El campo ahora solo sirve como calculadora de vuelto
   
     setLoading(true);
     setError(null);
@@ -554,7 +551,6 @@ const ProductScanner = () => {
                         disabled={
                           isProcessing || 
                           carrito.length === 0 || 
-                          (metodoPago === "efectivo" && !isDeudor && (!montoEntregado || parseFloat(montoEntregado) < total)) ||
                           (isDeudor && !selectedDeudorId)
                         }
                       >

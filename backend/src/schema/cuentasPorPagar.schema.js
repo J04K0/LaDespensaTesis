@@ -34,7 +34,7 @@ export const cuentaPorPagarSchema = Joi.object({
     'any.only': 'El estado debe ser uno de los siguientes valores: Pendiente, Pagado o Vencido.',
     'any.required': 'El estado es un campo requerido.'
   }),
-  Categoria: Joi.string().valid('Luz', 'Agua', 'Gas', 'Internet', 'Alquiler', 'Impuestos', 'Salarios', 'Proveedores', 'Otros').required().messages({
+  Categoria: Joi.string().valid('Luz', 'Agua', 'Gas', 'Internet', 'Alquiler', 'Impuestos', 'Salarios', 'Proveedores', 'Servicios', 'Otros').required().messages({
     'string.base': 'La categoría debe ser una cadena de texto.',
     'any.only': 'La categoría debe ser una de las categorías válidas.',
     'any.required': 'La categoría es un campo requerido.'

@@ -3,6 +3,7 @@ import { Bar, Line, Pie, Doughnut } from "react-chartjs-2";
 import Navbar from "../components/Navbar";
 import { obtenerVentasPorTicket } from "../services/venta.service.js";
 import { getProducts } from "../services/AddProducts.service.js";
+import { ExportService } from '../services/export.service.js';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../styles/FinanzasStyles.css";
@@ -528,80 +529,12 @@ const Finanzas = () => {
   };
 
   const descargarReporteFinanciero = () => {
-    const doc = new jsPDF();
-    doc.text("Reporte Financiero - La Despensa", 20, 10);
-    
-    const fechaActual = new Date().toLocaleDateString();
-    doc.text(`Fecha: ${fechaActual}`, 20, 20);
-    
-    let periodoTexto = "Últimos 7 días";
-    if (timeRange === "mes") periodoTexto = "Último mes";
-    if (timeRange === "año") periodoTexto = "Último año";
-    doc.text(`Periodo: ${periodoTexto}`, 20, 30);
-    
-    if (ingresosPorDia && ingresosPorDia.labels) {
-      doc.text("Ingresos por Día", 20, 45);
-      
-      const datosIngresos = ingresosPorDia.labels.map((fecha, i) => 
-        [fecha, `$${ingresosPorDia.datasets[0].data[i].toLocaleString()}`]
-      );
-      
-      autoTable(doc, {
-        startY: 50,
-        head: [["Fecha", "Ingreso"]],
-        body: datosIngresos,
-      });
-    }
-
-    if (ingresosPorCategoria && ingresosPorCategoria.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 120;
-      doc.text("Ingresos por Categoría", 20, currentY);
-      
-      const datosCategoria = ingresosPorCategoria.labels.map((categoria, i) => 
-        [categoria, `$${ingresosPorCategoria.datasets[0].data[i].toLocaleString()}`]
-      );
-      
-      autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Categoría", "Ingreso Total"]],
-        body: datosCategoria,
-      });
-    }
-    
-    if (comparacionIngresoCosto && comparacionIngresoCosto.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 180;
-      doc.text("Comparación de Ingresos vs Costos", 20, currentY);
-      
-      const datosComparacion = comparacionIngresoCosto.labels.map((periodo, i) => [
-        periodo, 
-        `$${comparacionIngresoCosto.datasets[0].data[i].toLocaleString()}`,
-        `$${comparacionIngresoCosto.datasets[1].data[i].toLocaleString()}`,
-        `$${comparacionIngresoCosto.datasets[2].data[i].toLocaleString()}`
-      ]);
-      
-      autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Período", "Ingresos", "Costos", "Ganancias"]],
-        body: datosComparacion,
-      });
-    }
-
-    if (inversionMercaderiaPorCategoria && inversionMercaderiaPorCategoria.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 230;
-      doc.text("Inversión en Mercadería por Categoría", 20, currentY);
-      
-      const datosInversion = inversionMercaderiaPorCategoria.labels.map((categoria, i) => 
-        [categoria, `$${inversionMercaderiaPorCategoria.datasets[0].data[i].toLocaleString()}`]
-      );
-      
-      autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Categoría", "Inversión Total"]],
-        body: datosInversion,
-      });
-    }
-    
-    doc.save("reporte_financiero.pdf");
+    ExportService.generarReporteFinanciero({
+      ingresosPorDia,
+      ingresosPorCategoria,
+      comparacionIngresoCosto,
+      inversionMercaderiaPorCategoria
+    }, timeRange);
   };
 
   const chartOptions = {

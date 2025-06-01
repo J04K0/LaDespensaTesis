@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ExportService } from '../services/export.service.js';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -62,7 +63,7 @@ const Products = () => {
 
   const [showFilters, setShowFilters] = useState(true);
 
-  const productsPerPage = 15;
+  const productsPerPage = 10;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -487,57 +488,7 @@ const Products = () => {
   };
 
   const handleExportToPDF = () => {
-    const doc = new jsPDF();
-    const tableColumn = ["Nombre", "Marca", "Categoría", "Stock", "Precio de Venta","Precio de Compra", "Fecha de Vencimiento"];
-    const tableRows = [];
-
-    filteredAndSearchedProducts.forEach(product => {
-      const productData = [
-        product.Nombre,
-        product.Marca,
-        product.Categoria,
-        product.Stock,
-        `$${product.PrecioVenta}`,
-        `$${product.PrecioCompra}`,
-        product.fechaVencimiento ? new Date(product.fechaVencimiento).toLocaleDateString() : 'N/A'
-      ];
-      tableRows.push(productData);
-    });
-
-    doc.text("La Despensa - Listado de Productos", 14, 15);
-    
-    // Agregar fecha actual
-    const currentDate = new Date().toLocaleDateString();
-    doc.text(`Fecha de reporte: ${currentDate}`, 14, 22);
-    
-    // Agregar filtros aplicados
-    let filterText = `Filtros: `;
-    
-    if (category && category !== 'Todos') filterText += `Categoría: ${category}, `;
-    if (availabilityFilter !== 'Todos') filterText += `Disponibilidad: ${availabilityFilter}, `;
-    if (searchQuery) filterText += `Búsqueda: "${searchQuery}", `;
-    
-    if (filterText !== 'Filtros: ') {
-      filterText = filterText.substring(0, filterText.length - 2); // Eliminar la última coma
-      doc.text(filterText, 14, 29);
-      autoTable(doc, { 
-        head: [tableColumn], 
-        body: tableRows, 
-        startY: 35,
-        theme: 'striped',
-        headStyles: { fillColor: [66, 139, 202] }
-      });
-    } else {
-      autoTable(doc, { 
-        head: [tableColumn], 
-        body: tableRows, 
-        startY: 30,
-        theme: 'striped',
-        headStyles: { fillColor: [66, 139, 202] }
-      });
-    }
-    
-    doc.save(`la_despensa_productos_${new Date().toISOString().split('T')[0]}.pdf`);
+    ExportService.generarReporteProductos(filteredAndSearchedProducts, category, availabilityFilter, searchQuery);
   };
 
   // Definir márgenes por categoría (mismos valores que en el backend)
@@ -590,35 +541,38 @@ const Products = () => {
           </div>
         ) : (
           <>
-            <div className="page-header">
-              <h1 className="page-title">Gestión de Productos</h1>
-              <div className="d-flex gap-sm">
-                <button className="btn btn-primary" onClick={() => navigate('/add-product')}>
-                  <FontAwesomeIcon icon={faPlus} /> Añadir Producto
+            <div className="products-page-header">
+              <div className="products-title-container">
+                <h1 className="products-page-title">Productos</h1>
+                <p className="products-page-subtitle">Gestiona tu inventario de manera eficiente</p>
+              </div>
+              <div className="products-actions">
+                <button className="products-btn products-btn-primary" onClick={() => navigate('/add-product')}>
+                  <FontAwesomeIcon icon={faPlus} /> Nuevo Producto
                 </button>
-                <button className="btn btn-secondary" onClick={handleExportToPDF}>
-                  <FontAwesomeIcon icon={faFilePdf} /> Exportar a PDF
+                <button className="products-btn products-btn-secondary" onClick={handleExportToPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Exportar
                 </button>
               </div>
             </div>
-            
-            <div className="filters-container">
-              <div className="search-container">
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          
+            <div className={`products-filters-container ${!showFilters ? 'hidden' : ''}`}>
+              <div className="products-search-container">
+                <FontAwesomeIcon icon={faSearch} className="products-search-icon" />
                 <input
                   type="text"
                   placeholder="Buscar productos..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="search-input"
+                  className="products-search-input"
                 />
               </div>
               
-              <div className="filter-group">
+              <div className="products-filter-group">
                 <select 
                   value={category} 
                   onChange={handleCategoryChange}
-                  className="form-select"
+                  className="products-form-select"
                 >
                   <option value="Todos">Todas las categorías</option>
                   {categories.map((cat, index) => (
@@ -627,11 +581,11 @@ const Products = () => {
                 </select>
               </div>
               
-              <div className="filter-group">
+              <div className="products-filter-group">
                 <select 
                   value={availabilityFilter} 
                   onChange={handleAvailabilityChange}
-                  className="form-select"
+                  className="products-form-select"
                 >
                   <option value="Todos">Todos</option>
                   <option value="Disponibles">Disponibles</option>
@@ -642,11 +596,11 @@ const Products = () => {
                 </select>
               </div>
               
-              <div className="filter-group">
+              <div className="products-filter-group">
                 <select 
                   value={sortOption} 
                   onChange={handleSortChange}
-                  className="form-select"
+                  className="products-form-select"
                 >
                   <option value="">Ordenar por</option>
                   <option value="name-asc">Nombre (A-Z)</option>
@@ -658,7 +612,7 @@ const Products = () => {
                 </select>
               </div>
               
-              <button onClick={handleClearFilters} className="btn btn-secondary">
+              <button onClick={handleClearFilters} className="products-clear-filters-button">
                 <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
               </button>
             </div>
@@ -703,15 +657,63 @@ const Products = () => {
                 
                 {totalPages > 1 && (
                   <div className="pagination">
-                    {[...Array(totalPages).keys()].map(page => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page + 1)}
-                        className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
-                      >
-                        {page + 1}
-                      </button>
-                    ))}
+                    <button 
+                      onClick={() => handlePageChange(1)}
+                      className="pagination-button"
+                      disabled={currentPage === 1}
+                    >
+                      « Primera
+                    </button>
+                    <button 
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="pagination-button"
+                      disabled={currentPage === 1}
+                    >
+                      ‹ Anterior
+                    </button>
+                    
+                    {[...Array(totalPages).keys()].map(page => {
+                      const pageNum = page + 1;
+                      // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
+                      if (
+                        pageNum === 1 || 
+                        pageNum === totalPages || 
+                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
+                            disabled={pageNum === currentPage}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      } else if (
+                        (pageNum === currentPage - 3 && currentPage > 4) || 
+                        (pageNum === currentPage + 3 && currentPage < totalPages - 3)
+                      ) {
+                        // Mostrar puntos suspensivos para indicar páginas omitidas
+                        return <span key={page} className="pagination-ellipsis">...</span>;
+                      }
+                      return null;
+                    })}
+                    
+                    <button 
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="pagination-button"
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente ›
+                    </button>
+                    <button 
+                      onClick={() => handlePageChange(totalPages)}
+                      className="pagination-button"
+                      disabled={currentPage === totalPages}
+                    >
+                      Última »
+                    </button>
                   </div>
                 )}
               </>

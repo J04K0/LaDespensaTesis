@@ -18,6 +18,7 @@ import {
 import { getProducts } from '../services/AddProducts.service.js';
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProveedoresSkeleton from '../components/ProveedoresSkeleton';
+import { ExportService } from '../services/export.service.js';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -382,51 +383,7 @@ const Proveedores = () => {
   };
 
   const exportarPDF = () => {
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    doc.text("Listado de Proveedores", 14, 15);
-    const currentDate = new Date().toLocaleDateString();
-    doc.text(`Fecha: ${currentDate}`, 14, 22);
-    
-    const headers = [
-      'Nombre', 
-      'Teléfono', 
-      'Email',
-      'Contacto Principal',
-      'Dirección',
-      'Categorías',
-      'Notas'
-    ];
-    
-    const rows = filteredProveedores.map(proveedor => [
-      proveedor.nombre,
-      proveedor.telefono,
-      proveedor.email,
-      proveedor.contactoPrincipal || '—',
-      proveedor.direccion || '—',
-      proveedor.categorias.join(', '),
-      proveedor.notas || '—'
-    ]);
-    
-    // Generar tabla
-    autoTable(doc, {
-      head: [headers],
-      body: rows,
-      margin: { top: 30 },
-      styles: { overflow: 'linebreak' },
-      headStyles: { fillColor: [0, 38, 81] }, // Color #002651
-      didDrawPage: (data) => {
-        doc.setFontSize(10);
-        doc.text(`La Despensa - Listado de Proveedores - ${currentDate}`, 14, doc.internal.pageSize.height - 10);
-      }
-    });
-    
-    // Guardar PDF
-    doc.save("Proveedores.pdf");
+    ExportService.generarReporteProveedores(filteredProveedores);
   };
 
   const handleCancel = async () => {

@@ -10,6 +10,8 @@ import { obtenerVentasPorTicket } from '../services/venta.service';
 import { getDeudores } from '../services/deudores.service';
 import NotificationCenter from './NotificationCenter';
 import { initializeSocket, closeSocket } from '../services/socket.service';
+import { showSuccessAlert } from '../helpers/swaHelper';
+import { ExportService } from '../services/export.service.js';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ const Navbar = () => {
     // Inicializar la conexión WebSocket al montar el componente
     initializeSocket();
     
-    // Guardar la hora de inicio de sesión
+    // Guardar la hora de inicio de sesión solo si no existe ya
     if (!localStorage.getItem('sessionStartTime')) {
       localStorage.setItem('sessionStartTime', new Date().toISOString());
     }
@@ -53,13 +55,24 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
-    // Generar reporte diario antes de cerrar sesión
-    await generarReporteDiario();
-    
-    // Código de cierre de sesión existente
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/auth');
+    try {
+      // Generar reporte diario antes de cerrar sesión
+      await generarReporteDiario();
+      
+      // Código de cierre de sesión existente
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      // También eliminamos el tiempo de inicio de sesión al cerrar sesión
+      localStorage.removeItem('sessionStartTime');
+      navigate('/auth');
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      // Continuar con el cierre de sesión incluso si hay error en el reporte
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('sessionStartTime');
+      navigate('/auth');
+    }
   };
 
   const generarReporteDiario = async () => {
@@ -74,7 +87,6 @@ const Navbar = () => {
       
       const ahora = new Date();
       const fechaFormateada = ahora.toLocaleDateString();
-      const horaInicioFormateada = sessionStartTime.toLocaleTimeString();
       const horaFinFormateada = ahora.toLocaleTimeString();
       
       // 1. Obtener todas las ventas 
@@ -93,6 +105,8 @@ const Navbar = () => {
       let totalVentas = 0;
       let cantidadVentasEfectivo = 0;
       let cantidadVentasTarjeta = 0;
+      let ventasADeudores = 0;
+      let cantidadVentasADeudores = 0;
 
       ventasSesion.forEach(venta => {
         const importeVenta = venta.ventas.reduce((sum, producto) => 
@@ -100,7 +114,11 @@ const Navbar = () => {
         
         totalVentas += importeVenta;
 
-        if (venta.metodoPago === 'tarjeta') {
+        // Si es una venta a deudor, no afecta al efectivo ni tarjeta directamente
+        if (venta.deudorId) {
+          ventasADeudores += importeVenta;
+          cantidadVentasADeudores++;
+        } else if (venta.metodoPago === 'tarjeta') {
           totalTarjeta += importeVenta;
           cantidadVentasTarjeta++;
         } else {
@@ -123,9 +141,16 @@ const Navbar = () => {
         });
       });
 
-      // Calcular totales de pagos de deudores (solo pagos en efectivo)
-      let totalPagosDeudores = 0;
+      // Calcular totales de pagos de deudores, separando por método de pago
+      let totalPagosDeudoresEfectivo = 0;
+      let totalPagosDeudoresTarjeta = 0;
+      let cantidadPagosEfectivo = 0;
+      let cantidadPagosTarjeta = 0;
       let totalNuevasDeudas = 0;
+      let cantidadNuevasDeudas = 0;
+      
+      // Array para almacenar los movimientos de deudores para el reporte
+      const deudoresData = [];
 
       deudoresSesion.forEach(deudor => {
         const pagosSesion = deudor.historialPagos.filter(pago => {
@@ -135,130 +160,65 @@ const Navbar = () => {
 
         pagosSesion.forEach(pago => {
           if (pago.tipo === 'pago') {
-            totalPagosDeudores += pago.monto;
+            // Diferenciar entre pagos en efectivo y con tarjeta
+            if (pago.metodoPago === 'tarjeta') {
+              totalPagosDeudoresTarjeta += pago.monto;
+              cantidadPagosTarjeta++;
+            } else {
+              totalPagosDeudoresEfectivo += pago.monto;
+              cantidadPagosEfectivo++;
+            }
           } else {
             totalNuevasDeudas += pago.monto;
+            cantidadNuevasDeudas++;
           }
+          
+          // Agregar al array de datos para el reporte
+          deudoresData.push([
+            deudor.Nombre,
+            pago.tipo === 'pago' ? 
+              `Pago (${pago.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'})` : 
+              'Aumento de deuda',
+            `$${pago.monto.toLocaleString()}`,
+            pago.comentario || '-'
+          ]);
         });
       });
 
-      // Balance final de efectivo
-      const balanceEfectivo = totalEfectivo + totalPagosDeudores;
+      // Balance final de efectivo (solo operaciones en efectivo)
+      const balanceEfectivo = totalEfectivo + totalPagosDeudoresEfectivo;
       
-      // 3. Generar el PDF
-      const doc = new jsPDF();
-      
-      // Título y fecha
-      doc.setFontSize(20);
-      doc.text(`Reporte de Sesión - ${fechaFormateada}`, 20, 15);
-      doc.setFontSize(12);
-      doc.text(`Usuario: ${usuarioActual.email}`, 20, 25);
-      doc.text(`Período: ${horaInicioFormateada} - ${horaFinFormateada}`, 20, 32);
-      
-      // Sección de resumen de caja
-      doc.setFontSize(16);
-      doc.text("Resumen de Caja", 20, 42);
-
+      // Crear el objeto con los datos para el reporte
       const resumenCajaData = [
         ["Concepto", "Cantidad", "Monto"],
         ["Ventas en Efectivo", cantidadVentasEfectivo, `$${totalEfectivo.toLocaleString()}`],
         ["Ventas con Tarjeta", cantidadVentasTarjeta, `$${totalTarjeta.toLocaleString()}`],
-        ["Pagos de Deudores", deudoresSesion.length, `$${totalPagosDeudores.toLocaleString()}`],
-        ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString()}`],
-        ["BALANCE EN EFECTIVO", "", `$${balanceEfectivo.toLocaleString()}`]
+        ["Ventas a Deudores", cantidadVentasADeudores, `$${ventasADeudores.toLocaleString()}`],
+        ["Pagos de Deudores (Efectivo)", cantidadPagosEfectivo, `$${totalPagosDeudoresEfectivo.toLocaleString()}`],
+        ["Pagos de Deudores (Tarjeta)", cantidadPagosTarjeta, `$${totalPagosDeudoresTarjeta.toLocaleString()}`],
+        ["Nuevas Deudas Registradas", cantidadNuevasDeudas, `$${totalNuevasDeudas.toLocaleString()}`],
+        ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString()}`]
       ];
-
-      autoTable(doc, {
-        startY: 47,
-        head: [resumenCajaData[0]],
-        body: resumenCajaData.slice(1),
-        theme: 'grid',
-        headStyles: { 
-          fillColor: [0, 38, 81],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        styles: { 
-          fontSize: 10,
-          cellPadding: 5
-        },
-        columnStyles: {
-          0: { fontStyle: 'bold' },
-          2: { halign: 'right' }
-        },
-        foot: [[
-          { content: 'EFECTIVO DISPONIBLE EN CAJA', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 12 } },
-          { content: `$${balanceEfectivo.toLocaleString()}`, styles: { fontStyle: 'bold', fontSize: 12, halign: 'right' } }
-        ]]
+      
+      // Usar el servicio de exportación centralizado
+      const result = ExportService.generarReporteCierreCaja({
+        usuarioActual,
+        sessionStartTime,
+        horaFinFormateada,
+        fechaFormateada,
+        ventasSesion,
+        deudoresData,
+        resumenCajaData,
+        balanceEfectivo
       });
       
-      // Sección de ventas detalladas
-      const ventasY = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(16);
-      doc.text("Detalle de Ventas de la Sesión", 20, ventasY);
+      // Actualizar el tiempo de inicio de sesión para la próxima sesión
+      localStorage.setItem('sessionStartTime', new Date().toISOString());
       
-      if (ventasSesion.length > 0) {
-        const ventasData = ventasSesion.map(venta => [
-          venta._id, // Ticket ID
-          new Date(venta.fecha).toLocaleTimeString(), // Hora
-          venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo', // Método de pago
-          venta.ventas.length, // Cantidad de productos
-          `$${venta.ventas.reduce((total, producto) => 
-            total + (producto.precioVenta * producto.cantidad), 0).toLocaleString()}`
-        ]);
-        
-        autoTable(doc, {
-          startY: ventasY + 5,
-          head: [["Ticket", "Hora", "Método de Pago", "Productos", "Total"]],
-          body: ventasData,
-        });
-      } else {
-        doc.text("No se registraron ventas durante esta sesión", 20, ventasY + 10);
-      }
-      
-      // Sección de deudores
-      const deudoresY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : ventasY + 30;
-      doc.setFontSize(16);
-      doc.text("Movimientos de Deudores", 20, deudoresY);
-      
-      if (deudoresSesion.length > 0) {
-        const deudoresData = [];
-        
-        // Para cada deudor, obtener los movimientos de la sesión
-        deudoresSesion.forEach(deudor => {
-          const pagosSesion = deudor.historialPagos.filter(pago => {
-            const fechaPago = new Date(pago.fecha);
-            return fechaPago >= sessionStartTime && fechaPago <= ahora;
-          });
-          
-          pagosSesion.forEach(pago => {
-            deudoresData.push([
-              deudor.Nombre,
-              pago.tipo === 'pago' ? 'Pago' : 'Aumento de deuda',
-              `$${pago.monto.toLocaleString()}`,
-              pago.comentario || '-'
-            ]);
-          });
-        });
-        
-        autoTable(doc, {
-          startY: deudoresY + 5,
-          head: [["Deudor", "Tipo", "Monto", "Comentario"]],
-          body: deudoresData,
-        });
-      } else {
-        doc.text("No hubo movimientos de deudores durante esta sesión", 20, deudoresY + 10);
-      }
-      
-      // Agregar pie de página con información del usuario
-      doc.setFontSize(10);
-      doc.text(`Reporte generado por: ${usuarioActual.email} - ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
-      
-      // Guardar el PDF
-      const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
-      doc.save(`Cierre_Caja_${usuarioActual.email}_${timestamp}.pdf`);
+      return result;
     } catch (error) {
       console.error("Error al generar reporte de sesión:", error);
+      return false;
     }
   };
 

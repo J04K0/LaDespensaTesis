@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { obtenerVentasPorTicket, eliminarTicket, editarTicket } from "../services/venta.service.js";
+import { ExportService } from '../services/export.service.js';
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -249,32 +250,8 @@ const HistorySale = () => {
   });
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Historial de Ventas", 20, 10);
-
     const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas;
-
-    autoTable(doc, {
-      head: [["Ticket", "Fecha", "Usuario", "Método de Pago", "Productos", "Total"]],
-      body: dataToExport.map((venta) => [
-        venta._id,
-        new Date(venta.fecha).toLocaleDateString(),
-        venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
-        venta.deudorId ? `Deudor: ${venta.deudor?.Nombre || 'Desconocido'}` : venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-        venta.ventas
-          .map(
-            (producto) =>
-              `${producto.nombre} - ${producto.cantidad}x $${producto.precioVenta}`
-          )
-          .join("\n"),
-        venta.ventas.reduce(
-          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
-          0
-        ),
-      ]),
-    });
-
-    doc.save("historial_ventas.pdf");
+    ExportService.generarReporteHistorialVentas(dataToExport);
   };
 
   const exportToExcel = () => {

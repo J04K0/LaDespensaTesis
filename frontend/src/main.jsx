@@ -1,7 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import App from './routes/App.jsx';
 import './index.css';
-import './styles/theme.css'; // Importamos nuestro sistema de diseño
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from './routes/Root.jsx';
 import ErrorPage from './routes/ErrorPage.jsx';

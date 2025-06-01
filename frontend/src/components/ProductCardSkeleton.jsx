@@ -3,19 +3,19 @@ import '../styles/ProductsStyles.css';
 
 const ProductCardSkeleton = () => {
   return (
-    <div className="skeleton-product-card">
-      <div className="skeleton-content">
-        <div className="skeleton-image"></div>
-        <div className="skeleton-info">
-          <div className="skeleton-text title"></div>
-          <div className="skeleton-text subtitle"></div>
-          <div className="skeleton-text"></div>
+    <div className="products-skeleton-product-card">
+      <div className="products-skeleton-content">
+        <div className="products-skeleton-image"></div>
+        <div className="products-skeleton-info">
+          <div className="products-skeleton-text products-skeleton-title"></div>
+          <div className="products-skeleton-text products-skeleton-subtitle"></div>
+          <div className="products-skeleton-text"></div>
         </div>
-        <div className="skeleton-price"></div>
+        <div className="products-skeleton-price"></div>
       </div>
-      <div className="skeleton-actions">
-        <div className="skeleton-action-btn"></div>
-        <div className="skeleton-action-btn"></div>
+      <div className="products-skeleton-actions">
+        <div className="products-skeleton-action-btn"></div>
+        <div className="products-skeleton-action-btn"></div>
       </div>
     </div>
   );
