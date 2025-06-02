@@ -51,7 +51,7 @@ const Proveedores = () => {
   const [viewingProveedor, setViewingProveedor] = useState(null);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
 
-  const proveedoresPorPagina = 10;
+  const proveedoresPorPagina = 5;
   const categorias = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
     'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
@@ -424,46 +424,48 @@ const Proveedores = () => {
               </div>
             </div>
             
-            <div className="filters-container">
-              <div className="search-container">
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Buscar proveedores..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="search-input"
-                />
+            <div className="proveedores-filters-container">
+              <div className="proveedores-filters-row">
+                <div className="proveedores-search-container">
+                  <FontAwesomeIcon icon={faSearch} className="proveedores-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Buscar proveedores..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="proveedores-search-input"
+                  />
+                </div>
+                
+                <div className="proveedores-filter-group">
+                  <select 
+                    value={sortOption} 
+                    onChange={handleSortChange}
+                    className="proveedores-form-select"
+                  >
+                    <option value="">Ordenar por</option>
+                    <option value="nombre-asc">Nombre (A-Z)</option>
+                    <option value="nombre-desc">Nombre (Z-A)</option>
+                  </select>
+                </div>
+                
+                <div className="proveedores-filter-group">
+                  <select 
+                    value={categoryFilter} 
+                    onChange={handleCategoryFilterChange}
+                    className="proveedores-form-select"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {categorias.map((cat, index) => (
+                      <option key={index} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <button onClick={handleClearFilters} className="proveedores-clear-filters-button">
+                  <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
+                </button>
               </div>
-              
-              <div className="filter-group">
-                <select 
-                  value={sortOption} 
-                  onChange={handleSortChange}
-                  className="form-select"
-                >
-                  <option value="">Ordenar por</option>
-                  <option value="nombre-asc">Nombre (A-Z)</option>
-                  <option value="nombre-desc">Nombre (Z-A)</option>
-                </select>
-              </div>
-              
-              <div className="filter-group">
-                <select 
-                  value={categoryFilter} 
-                  onChange={handleCategoryFilterChange}
-                  className="form-select"
-                >
-                  <option value="">Todas las categorías</option>
-                  {categorias.map((cat, index) => (
-                    <option key={index} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <button onClick={handleClearFilters} className="btn btn-secondary">
-                <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
-              </button>
             </div>
             
             {loading ? (
@@ -472,8 +474,8 @@ const Proveedores = () => {
               <p className="text-center text-danger">{error}</p>
             ) : (
               <>
-                <div className="table-container">
-                  <table className="data-table">
+                <div className="proveedores-table-container">
+                  <table className="proveedores-table">
                     <thead>
                       <tr>
                         <th>Nombre</th>
@@ -483,7 +485,6 @@ const Proveedores = () => {
                         <th>Dirección</th>
                         <th>Categorías</th>
                         <th>Productos</th>
-                        <th>Notas</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
@@ -496,12 +497,18 @@ const Proveedores = () => {
                             <td>{proveedor.email}</td>
                             <td>{proveedor.contactoPrincipal || '—'}</td>
                             <td>{proveedor.direccion}</td>
-                            <td>{proveedor.categorias.join(', ')}</td>
                             <td>
-                              <div className="producto-preview-container">
+                              <div className="proveedores-categories-badges">
+                                {proveedor.categorias.map((cat, idx) => (
+                                  <span key={idx} className="proveedores-category-badge">{cat}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <div className="proveedores-productos-preview">
                                 {proveedor.productos && proveedor.productos.length > 0 ? (
                                   <>
-                                    <div className="producto-thumbnails">
+                                    <div className="proveedores-productos-thumbnails">
                                       {proveedor.productos.slice(0, 3).map((productoId, idx) => {
                                         const producto = allProducts.find(p => p._id === productoId);
                                         return producto ? (
@@ -509,22 +516,22 @@ const Proveedores = () => {
                                             key={idx} 
                                             src={producto.image} 
                                             alt={producto.Nombre} 
-                                            className="producto-mini-thumb"
+                                            className="proveedores-producto-thumbnail"
                                             onError={(e) => {
                                               e.target.onerror = null;
                                               e.target.src = 'https://via.placeholder.com/30?text=N/A';
                                             }}
                                           />
                                         ) : (
-                                          <div key={idx} className="producto-mini-thumb-placeholder"></div>
+                                          <div key={idx} className="proveedores-producto-placeholder"></div>
                                         );
                                       })}
                                       {proveedor.productos.length > 3 && (
-                                        <span className="state-badge state-badge-info">+{proveedor.productos.length - 3}</span>
+                                        <span className="proveedores-badge proveedores-badge-info">+{proveedor.productos.length - 3}</span>
                                       )}
                                     </div>
                                     <button 
-                                      className="btn btn-secondary"
+                                      className="proveedores-btn-ver-productos"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleViewProveedorProductos(proveedor._id);
@@ -534,22 +541,21 @@ const Proveedores = () => {
                                     </button>
                                   </>
                                 ) : (
-                                  <span className="state-badge">Sin productos</span>
+                                  <span className="proveedores-badge proveedores-badge-empty">Sin productos</span>
                                 )}
                               </div>
                             </td>
-                            <td>{proveedor.notas}</td>
-                            <td className="d-flex gap-sm">
+                            <td className="proveedores-d-flex proveedores-gap-sm">
                               <button 
                                 onClick={() => handleEditProveedor(proveedor._id)}
-                                className="btn-icon btn-primary"
+                                className="proveedores-btn-icon proveedores-btn-primary"
                                 title="Editar proveedor"
                               >
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
                               <button 
                                 onClick={() => handleDeleteProveedor(proveedor._id)}
-                                className="btn-icon btn-danger"
+                                className="proveedores-btn-icon proveedores-btn-danger"
                                 title="Eliminar proveedor"
                               >
                                 <FontAwesomeIcon icon={faTrash} />
@@ -559,25 +565,73 @@ const Proveedores = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="9" className="no-data">No hay proveedores disponibles</td>
+                          <td colSpan="8" className="proveedores-no-data">No hay proveedores disponibles</td>
                         </tr>
                       )}
                     </tbody>
                   </table>
                 </div>
                 
-                {/* Paginación */}
+                {/* Paginación mejorada similar a la de Productos */}
                 {totalPages > 1 && (
                   <div className="pagination">
-                    {[...Array(totalPages).keys()].map(page => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page + 1)}
-                        className={`pagination-button ${page + 1 === currentPage ? 'active' : ''}`}
-                      >
-                        {page + 1}
-                      </button>
-                    ))}
+                    <button 
+                      onClick={() => handlePageChange(1)}
+                      className="pagination-button"
+                      disabled={currentPage === 1}
+                    >
+                      « Primera
+                    </button>
+                    <button 
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="pagination-button"
+                      disabled={currentPage === 1}
+                    >
+                      ‹ Anterior
+                    </button>
+                    
+                    {[...Array(totalPages).keys()].map(page => {
+                      const pageNum = page + 1;
+                      // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
+                      if (
+                        pageNum === 1 || 
+                        pageNum === totalPages || 
+                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
+                            disabled={pageNum === currentPage}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      } else if (
+                        (pageNum === currentPage - 3 && currentPage > 4) || 
+                        (pageNum === currentPage + 3 && currentPage < totalPages - 3)
+                      ) {
+                        // Mostrar puntos suspensivos para indicar páginas omitidas
+                        return <span key={page} className="pagination-ellipsis">...</span>;
+                      }
+                      return null;
+                    })}
+                    
+                    <button 
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="pagination-button"
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente ›
+                    </button>
+                    <button 
+                      onClick={() => handlePageChange(totalPages)}
+                      className="pagination-button"
+                      disabled={currentPage === totalPages}
+                    >
+                      Última »
+                    </button>
                   </div>
                 )}
               </>
@@ -588,18 +642,18 @@ const Proveedores = () => {
 
       {/* Modal de creación/edición de proveedores */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="proveedores-modal-overlay" onClick={() => setShowModal(false)}>
           <div 
-            className="modal-content"
+            className="proveedores-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
-              <h2 className="modal-title">{isEditing ? 'Editar Proveedor' : 'Agregar Proveedor'}</h2>
+            <div className="proveedores-modal-header">
+              <h2 className="proveedores-modal-title">{isEditing ? 'Editar Proveedor' : 'Agregar Proveedor'}</h2>
             </div>
             
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="nombre">Nombre:</label>
+            <form onSubmit={handleSubmit} className="proveedores-form">
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="nombre">Nombre:</label>
                 <input
                   type="text"
                   id="nombre"
@@ -607,12 +661,12 @@ const Proveedores = () => {
                   value={currentProveedor.nombre}
                   onChange={handleInputChange}
                   required
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label" htmlFor="telefono">Teléfono:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="telefono">Teléfono:</label>
                 <input
                   type="text"
                   id="telefono"
@@ -620,12 +674,12 @@ const Proveedores = () => {
                   value={currentProveedor.telefono}
                   onChange={handleInputChange}
                   required
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label" htmlFor="email">Email:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="email">Email:</label>
                 <input
                   type="email"
                   id="email"
@@ -633,54 +687,55 @@ const Proveedores = () => {
                   value={currentProveedor.email}
                   onChange={handleInputChange}
                   required
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label" htmlFor="direccion">Dirección:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="direccion">Dirección:</label>
                 <input
                   type="text"
                   id="direccion"
                   name="direccion"
                   value={currentProveedor.direccion}
                   onChange={handleInputChange}
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label">Categorías:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label">Categorías:</label>
                 <div className="proveedores-categories-selector">
                   {categorias.map((cat, index) => (
-                    <div key={index} className="category-checkbox-item">
+                    <div key={index} className="proveedores-category-checkbox-item">
                       <input
                         type="checkbox"
                         id={`cat-${index}`}
                         name={cat}
                         checked={currentProveedor.categorias.includes(cat)}
                         onChange={handleCategoriaCheckboxChange}
+                        className="proveedores-checkbox"
                       />
-                      <label htmlFor={`cat-${index}`}>{cat}</label>
+                      <label htmlFor={`cat-${index}`} className="proveedores-checkbox-label">{cat}</label>
                     </div>
                   ))}
                 </div>
               </div>
               
-              <div className="form-group">
-                <label className="form-label" htmlFor="contactoPrincipal">Persona de Contacto:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="contactoPrincipal">Persona de Contacto:</label>
                 <input
                   type="text"
                   id="contactoPrincipal"
                   name="contactoPrincipal"
                   value={currentProveedor.contactoPrincipal || ''}
                   onChange={handleInputChange}
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="sitioWeb">Sitio Web:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="sitioWeb">Sitio Web:</label>
                 <input
                   type="url"
                   id="sitioWeb"
@@ -688,36 +743,40 @@ const Proveedores = () => {
                   value={currentProveedor.sitioWeb || ''}
                   onChange={handleInputChange}
                   placeholder="https://ejemplo.com"
-                  className="form-control"
+                  className="proveedores-form-control"
                 />
               </div>
               
-              <div className="form-group">
-                <label className="form-label" htmlFor="notas">Notas adicionales:</label>
+              <div className="proveedores-form-group">
+                <label className="proveedores-form-label" htmlFor="notas">Notas adicionales:</label>
                 <textarea
                   id="notas"
                   name="notas"
                   value={currentProveedor.notas}
                   onChange={handleInputChange}
                   rows="3"
-                  className="form-control"
+                  className="proveedores-form-control"
                 ></textarea>
               </div>
 
-              <div className="card">
-                <h3>Productos que provee</h3>
+              <div className="proveedores-card">
+                <h3 className="proveedores-card-title">Productos que provee</h3>
                 <div className="proveedores-productos-list">
                   {isEditing ? (
                     proveedorProductos.length > 0 ? (
                       proveedorProductos.map(producto => (
                         <div key={producto._id} className="proveedores-producto-item">
-                          <img src={producto.image} alt={producto.nombre} />
-                          <span>{producto.nombre}</span>
-                          <span>{producto.marca}</span>
+                          <img 
+                            src={producto.image} 
+                            alt={producto.nombre} 
+                            className="proveedores-producto-imagen"
+                          />
+                          <span className="proveedores-producto-nombre">{producto.nombre}</span>
+                          <span className="proveedores-producto-marca">{producto.marca}</span>
                         </div>
                       ))
                     ) : (
-                      <p>No hay productos registrados de este proveedor</p>
+                      <p className="proveedores-no-productos">No hay productos registrados de este proveedor</p>
                     )
                   ) : (
                     selectedProducts.length > 0 ? (
@@ -725,32 +784,39 @@ const Proveedores = () => {
                         .filter(product => selectedProducts.includes(product._id))
                         .map(producto => (
                           <div key={producto._id} className="proveedores-producto-item">
-                            <img src={producto.image} alt={producto.Nombre} />
-                            <span>{producto.Nombre}</span>
-                            <span>{producto.Marca}</span>
+                            <img 
+                              src={producto.image} 
+                              alt={producto.Nombre} 
+                              className="proveedores-producto-imagen"
+                            />
+                            <span className="proveedores-producto-nombre">{producto.Nombre}</span>
+                            <span className="proveedores-producto-marca">{producto.Marca}</span>
                           </div>
                         ))
                     ) : (
-                      <p>No hay productos seleccionados</p>
+                      <p className="proveedores-no-productos">No hay productos seleccionados</p>
                     )
                   )}
                 </div>
                 <button 
                   type="button"
                   onClick={(e) => handleLinkProducts(e)}
-                  className="btn btn-secondary"
+                  className="proveedores-btn proveedores-btn-secondary"
                 >
                   <FontAwesomeIcon icon={faLink} /> Vincular Productos
                 </button>
               </div>
               
-              <div className="modal-footer">
-                <button type="submit" className="btn btn-success">
+              <div className="proveedores-modal-footer">
+                <button 
+                  type="submit" 
+                  className="proveedores-btn proveedores-btn-success"
+                >
                   {isEditing ? 'Actualizar' : 'Guardar'}
                 </button>
                 <button 
                   type="button" 
-                  className="btn btn-danger"
+                  className="proveedores-btn proveedores-btn-danger"
                   onClick={handleCancel}
                 >
                   Cancelar
@@ -763,41 +829,40 @@ const Proveedores = () => {
 
       {/* Modal de selección de productos */}
       {showProductsModal && (
-        <div className="modal-overlay" onClick={() => setShowProductsModal(false)}>
+        <div className="proveedores-modal-overlay" onClick={() => setShowProductsModal(false)}>
           <div 
-            className="modal-content"
+            className="proveedores-modal-content proveedores-products-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{maxWidth: '800px'}}
           >
-            <div className="modal-header">
-              <h2 className="modal-title">Vincular Productos</h2>
+            <div className="proveedores-modal-header">
+              <h2 className="proveedores-modal-title">Vincular Productos</h2>
             </div>
             
-            <div className="search-container">
-              <FontAwesomeIcon icon={faSearch} className="search-icon" />
+            <div className="proveedores-products-search">
+              <FontAwesomeIcon icon={faSearch} className="proveedores-products-search-icon" />
               <input 
                 type="text" 
                 placeholder="Buscar productos..." 
-                className="search-input"
+                className="proveedores-products-search-input"
               />
             </div>
             
-            <div className="products-list">
+            <div className="proveedores-products-list">
               {allProducts.map(product => (
                 <div 
                   key={product._id} 
-                  className={`product-item ${selectedProducts.includes(product._id) ? 'selected' : ''}`}
+                  className={`proveedores-product-item ${selectedProducts.includes(product._id) ? 'selected' : ''}`}
                   onClick={() => handleProductSelection(product._id)}
                 >
-                  <div className="product-image">
+                  <div className="proveedores-product-image">
                     <img src={product.image} alt={product.Nombre} />
                   </div>
-                  <div className="product-info">
+                  <div className="proveedores-product-info">
                     <h4>{product.Nombre}</h4>
                     <p>Marca: {product.Marca}</p>
                     <p>Categoría: {product.Categoria}</p>
                   </div>
-                  <div className="product-check">
+                  <div className="proveedores-product-check">
                     <input 
                       type="checkbox" 
                       checked={selectedProducts.includes(product._id)} 
@@ -808,15 +873,15 @@ const Proveedores = () => {
               ))}
             </div>
             
-            <div className="modal-footer">
+            <div className="proveedores-modal-footer">
               <button 
-                className="btn btn-success"
+                className="proveedores-btn proveedores-btn-success"
                 onClick={handleProductsSubmit}
               >
                 Guardar
               </button>
               <button 
-                className="btn btn-danger"
+                className="proveedores-btn proveedores-btn-danger"
                 onClick={() => setShowProductsModal(false)}
               >
                 Cancelar
@@ -828,24 +893,23 @@ const Proveedores = () => {
 
       {/* Modal de visualización de productos */}
       {showViewProductsModal && viewingProveedor && (
-        <div className="modal-overlay" onClick={() => setShowViewProductsModal(false)}>
+        <div className="proveedores-modal-overlay" onClick={() => setShowViewProductsModal(false)}>
           <div 
-            className="modal-content"
+            className="proveedores-modal-content proveedores-view-products-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{maxWidth: '900px', maxHeight: '85vh'}}
           >
-            <div className="modal-header">
-              <h2 className="modal-title">Productos de {viewingProveedor.nombre}</h2>
+            <div className="proveedores-modal-header">
+              <h2 className="proveedores-modal-title">Productos de {viewingProveedor.nombre}</h2>
             </div>
             
-            <div className="provider-products-grid">
+            <div className="proveedores-view-products-grid">
               {viewingProveedor.productosDetalle && viewingProveedor.productosDetalle.length > 0 ? (
                 viewingProveedor.productosDetalle.map(producto => (
-                  <div key={producto._id} className="card">
-                    <div className="provider-product-image">
+                  <div key={producto._id} className="proveedores-product-card">
+                    <div className="proveedores-product-card-image">
                       <img src={producto.image} alt={producto.Nombre || producto.nombre} />
                     </div>
-                    <div className="provider-product-info">
+                    <div className="proveedores-product-card-info">
                       <h4>{producto.Nombre || producto.nombre}</h4>
                       <p>Marca: {producto.Marca || producto.marca}</p>
                       <p>Categoría: {producto.Categoria || producto.categoria}</p>
@@ -855,13 +919,13 @@ const Proveedores = () => {
                   </div>
                 ))
               ) : (
-                <p className="text-center">Este proveedor no tiene productos asociados</p>
+                <p className="proveedores-no-productos">Este proveedor no tiene productos asociados</p>
               )}
             </div>
             
-            <div className="modal-footer">
+            <div className="proveedores-modal-footer">
               <button 
-                className="btn btn-secondary"
+                className="proveedores-btn proveedores-btn-secondary"
                 onClick={() => setShowViewProductsModal(false)}
               >
                 Cerrar

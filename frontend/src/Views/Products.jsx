@@ -386,15 +386,23 @@ const Products = () => {
       setLoading(true);
 
       const formData = new FormData();
-      const { _id, ...productData } = productToEdit;
+      const { _id, PrecioRecomendado, ...productData } = productToEdit;
 
+      // Asegurar que todos los campos numéricos se envíen como números
       Object.keys(productData).forEach(key => {
-        formData.append(key, productData[key]);
+        const value = productData[key];
+        if (key === 'Stock' || key === 'PrecioVenta' || key === 'PrecioCompra') {
+          formData.append(key, Number(value).toString());
+        } else {
+          formData.append(key, value);
+        }
       });
 
+      // Si hay una nueva imagen seleccionada (un archivo), la añadimos al FormData
       if (editImage instanceof File) {
         formData.append('image', editImage);
       }
+      // No enviamos imageUrl, ya que no está permitido en el esquema del backend
 
       await updateProduct(_id, formData);
 
@@ -922,18 +930,18 @@ const Products = () => {
       
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content product-edit-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Editar Producto</h2>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+          <div className="products-modal-content products-product-edit-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="products-modal-header">
+              <h2 className="products-modal-title">Editar Producto</h2>
+              <button className="products-modal-close" onClick={() => setShowEditModal(false)}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label className="form-label" htmlFor="Nombre">Nombre del producto</label>
+            <div className="products-modal-body">
+              <div className="products-form-grid">
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="Nombre">Nombre del producto</label>
                   <input
                     type="text"
                     id="Nombre"
@@ -941,12 +949,12 @@ const Products = () => {
                     value={productToEdit.Nombre}
                     onChange={handleEditChange}
                     required
-                    className="form-control"
+                    className="products-form-control"
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="codigoBarras">Código de Barras</label>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="codigoBarras">Código de Barras</label>
                   <input
                     type="text"
                     id="codigoBarras"
@@ -954,12 +962,12 @@ const Products = () => {
                     value={productToEdit.codigoBarras}
                     onChange={handleEditChange}
                     required
-                    className="form-control"
+                    className="products-form-control"
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="Marca">Marca</label>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="Marca">Marca</label>
                   <input
                     type="text"
                     id="Marca"
@@ -967,19 +975,19 @@ const Products = () => {
                     value={productToEdit.Marca}
                     onChange={handleEditChange}
                     required
-                    className="form-control"
+                    className="products-form-control"
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="Categoria">Categoría</label>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="Categoria">Categoría</label>
                   <select
                     id="Categoria"
                     name="Categoria"
                     value={productToEdit.Categoria}
                     onChange={handleEditChange}
                     required
-                    className="form-select"
+                    className="products-form-select"
                   >
                     <option value="">Seleccione una categoría</option>
                     {categories.map((cat, index) => (
@@ -988,8 +996,8 @@ const Products = () => {
                   </select>
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="Stock">Stock</label>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="Stock">Stock</label>
                   <input
                     type="number"
                     id="Stock"
@@ -997,27 +1005,27 @@ const Products = () => {
                     value={productToEdit.Stock}
                     onChange={handleEditChange}
                     required
-                    className="form-control"
+                    className="products-form-control"
                     min="0"
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
                   <input
                     type="date"
                     id="fechaVencimiento"
                     name="fechaVencimiento"
                     value={productToEdit.fechaVencimiento}
                     onChange={handleEditChange}
-                    className="form-control"
+                    className="products-form-control"
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="PrecioCompra">Precio de Compra</label>
-                  <div className="input-with-icon">
-                    <span className="input-prefix">$</span>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="PrecioCompra">Precio de Compra</label>
+                  <div className="products-input-with-icon">
+                    <span className="products-input-prefix">$</span>
                     <input
                       type="number"
                       id="PrecioCompra"
@@ -1025,28 +1033,28 @@ const Products = () => {
                       value={productToEdit.PrecioCompra}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="products-form-control"
                       min="0"
                       step="0.01"
                     />
                   </div>
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label">Precio Recomendado (10% sobre precio de compra)</label>
-                  <div className="precio-recomendado-container">
-                    <div className="input-with-icon">
-                      <span className="input-prefix">$</span>
+                <div className="products-form-group">
+                  <label className="products-form-label">Precio Recomendado (10% sobre precio de compra)</label>
+                  <div className="products-precio-recomendado-container">
+                    <div className="products-input-with-icon">
+                      <span className="products-input-prefix">$</span>
                       <input
                         type="text"
                         value={productToEdit.PrecioRecomendado.toFixed(2)}
-                        className="form-control"
+                        className="products-form-control"
                         disabled
                       />
                     </div>
                     <button 
                       type="button"
-                      className="btn btn-usar-recomendado"
+                      className="products-btn products-btn-usar-recomendado"
                       onClick={usarPrecioRecomendado}
                     >
                       Usar este precio
@@ -1054,10 +1062,10 @@ const Products = () => {
                   </div>
                 </div>
                 
-                <div className="form-group">
-                  <label className="form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
-                  <div className="input-with-icon">
-                    <span className="input-prefix">$</span>
+                <div className="products-form-group">
+                  <label className="products-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
+                  <div className="products-input-with-icon">
+                    <span className="products-input-prefix">$</span>
                     <input
                       type="number"
                       id="PrecioVenta"
@@ -1065,7 +1073,7 @@ const Products = () => {
                       value={productToEdit.PrecioVenta}
                       onChange={handleEditChange}
                       required
-                      className="form-control"
+                      className="products-form-control"
                       min="0"
                       step="0.01"
                     />
@@ -1073,32 +1081,32 @@ const Products = () => {
                 </div>
               </div>
                       
-              <div className="form-group-full">
-                <label className="form-label" htmlFor="image">Imagen del Producto</label>
+              <div className="products-form-group-full">
+                <label className="products-form-label" htmlFor="image">Imagen del Producto</label>
                 <input
                   type="file"
                   id="image"
                   name="image"
                   onChange={handleImageChange}
                   accept="image/*"
-                  className="form-control file-input"
+                  className="products-form-control products-file-input"
                 />
-                <small className="form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+                <small className="products-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
                 
                 {typeof editImage === 'string' && (
-                  <div className="current-image">
+                  <div className="products-current-image">
                     <p>Imagen actual:</p>
-                    <img src={editImage} alt="Imagen actual del producto" className="preview-image" />
+                    <img src={editImage} alt="Imagen actual del producto" className="products-preview-image" />
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="modal-buttons">
-              <button onClick={handleEditSubmit} className="confirm-button">
+            <div className="products-modal-buttons">
+              <button onClick={handleEditSubmit} className="products-confirm-button">
                 <FontAwesomeIcon icon={faPen} /> Guardar Cambios
               </button>
-              <button onClick={() => setShowEditModal(false)} className="cancel-button">
+              <button onClick={() => setShowEditModal(false)} className="products-cancel-button">
                 <FontAwesomeIcon icon={faTimes} /> Cancelar
               </button>
             </div>
