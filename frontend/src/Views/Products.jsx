@@ -550,8 +550,8 @@ const Products = () => {
                 <button className="products-btn products-btn-primary" onClick={() => navigate('/add-product')}>
                   <FontAwesomeIcon icon={faPlus} /> Nuevo Producto
                 </button>
-                <button className="products-btn products-btn-secondary" onClick={handleExportToPDF}>
-                  <FontAwesomeIcon icon={faFilePdf} /> Exportar
+                <button className="products-btn products-btn-export-pdf" onClick={handleExportToPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
               </div>
             </div>

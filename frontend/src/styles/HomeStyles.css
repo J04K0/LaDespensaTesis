@@ -340,7 +340,7 @@
 }
 
 .home-stats-download-button {
-  background: rgba(255, 255, 255, 0.2);
+  background-color: #dc3545; /* Cambiado a color rojo para PDF */
   color: var(--white);
   border: none;
   border-radius: 8px;
@@ -356,6 +356,12 @@
   backdrop-filter: blur(5px);
   margin-left: auto;
   font-weight: 500;
+}
+
+.home-stats-download-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+  background-color: #c82333; /* Color hover más oscuro */
 }
 
 .home-stats-nav-button:hover, .home-stats-download-button:hover {
@@ -707,6 +713,49 @@
 
 .time-filter-container label svg {
   font-size: 16px;
+}
+
+/* Botones de exportación */
+.home-btn-export-pdf {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.home-btn-export-pdf:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.home-btn-export-excel {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.home-btn-export-excel:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive adjustments */

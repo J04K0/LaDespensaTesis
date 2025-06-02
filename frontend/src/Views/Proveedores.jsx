@@ -415,8 +415,8 @@ const Proveedores = () => {
             <div className="page-header">
               <h1 className="page-title">Gestión de Proveedores</h1>
               <div className="d-flex gap-sm">
-                <button onClick={exportarPDF} className="btn btn-secondary">
-                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
+                <button onClick={exportarPDF} className="proveedores-btn-export-pdf">
+                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
                 <button className="btn btn-primary" onClick={handleAddProveedor}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor

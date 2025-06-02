@@ -170,6 +170,51 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilos para botones de exportación */
+.btn-export-pdf {
+  background-color: #dc3545 !important;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-export-pdf:hover {
+  background-color: #c82333 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export-excel {
+  background-color: #28a745 !important;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-export-excel:hover {
+  background-color: #218838 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 /* Contenedor de tabla con altura fija y scroll */
 .cuentas-table-container {
   width: 100%;
@@ -598,6 +643,12 @@
   
   .filter-item {
     width: 100%;
+  }
+
+  .btn-export-pdf, .btn-export-excel {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 18px;
   }
 }
 

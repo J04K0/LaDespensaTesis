@@ -4,8 +4,6 @@ import Navbar from "../components/Navbar";
 import { obtenerVentasPorTicket } from "../services/venta.service.js";
 import { getProducts } from "../services/AddProducts.service.js";
 import { ExportService } from '../services/export.service.js';
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import "../styles/FinanzasStyles.css";
 import FinanzasSkeleton from '../components/FinanzasSkeleton';
 import { 
@@ -675,8 +673,8 @@ const Finanzas = () => {
           <>
             <div className="page-header">
               <h1 className="page-title">Dashboard Financiero</h1>
-              <button className="btn btn-secondary" onClick={descargarReporteFinanciero}>
-                <FontAwesomeIcon icon={faFilePdf} /> Descargar Reporte
+              <button className="btn-export-pdf" onClick={descargarReporteFinanciero}>
+                <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
               </button>
             </div>
             

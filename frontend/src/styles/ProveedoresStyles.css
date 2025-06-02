@@ -394,7 +394,7 @@
 
 /* Botón exportar PDF */
 .proveedores-btn-export-pdf {
-  background-color: #d32f2f;
+  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 5px;
@@ -408,7 +408,26 @@
 }
 
 .proveedores-btn-export-pdf:hover {
-  background-color: #b71c1c;
+  background-color: #c82333;
+}
+
+/* Botón exportar Excel */
+.proveedores-btn-export-excel {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.proveedores-btn-export-excel:hover {
+  background-color: #218838;
 }
 
 /* Botones de contacto rápido */

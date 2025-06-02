@@ -300,10 +300,7 @@ const HistorySale = () => {
                 <h1 className="historysaletitle">Historial de Ventas</h1>
                 <div className="historysaleexportbuttons">
                   <button className="historysaleexportbtn pdf" onClick={exportToPDF}>
-                    <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
-                  </button>
-                  <button className="historysaleexportbtn excel" onClick={exportToExcel}>
-                    <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
+                    <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                   </button>
                 </div>
               </div>

@@ -1229,39 +1229,45 @@
   gap: 15px;
 }
 
-.products-btn {
-  padding: 10px 20px;
+/* Botones de exportación */
+.products-btn-export-pdf {
+  background-color: #dc3545;
+  color: white;
+  border: none;
   border-radius: 8px;
+  padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: none;
-  white-space: nowrap;
+  transition: all 0.3s ease;
 }
 
-.products-btn-primary {
-  background-color: #4763E4;
+.products-btn-export-pdf:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.products-btn-export-excel {
+  background-color: #28a745;
   color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
 }
 
-.products-btn-primary:hover {
-  background-color: #3A51C1;
+.products-btn-export-excel:hover {
+  background-color: #218838;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.2);
-}
-
-.products-btn-secondary {
-  background-color: white;
-  color: #333;
-  border: 1px solid #dee2e6;
-}
-
-.products-btn-secondary:hover {
-  background-color: #f8f9fa;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
