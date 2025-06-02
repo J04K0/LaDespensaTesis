@@ -4,10 +4,12 @@ import Navbar from '../components/Navbar';
 import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
+import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 
 // Función para controlar el scroll del body
 const controlBodyScroll = (disable) => {
@@ -530,6 +532,44 @@ const DeudoresList = () => {
     }
   };
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Nombre", "Fecha a Pagar", "Número de Teléfono", "Deuda Total"];
+    const tableRows = [];
+
+    filteredDeudores.forEach(deudor => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      const isZeroDebt = deudaValue === 0;
+
+      tableRows.push([
+        deudor.Nombre || 'Nombre desconocido',
+        new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida',
+        deudor.numeroTelefono || 'Teléfono desconocido',
+        isZeroDebt ? { content: `${deudor.deudaTotal.toLocaleString()}`, styles: { textColor: [0, 128, 0] } } : { content: `${deudor.deudaTotal.toLocaleString()}`, styles: { textColor: [255, 0, 0] } }
+      ]);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 38, 81] }, // Color primario oscuro
+      didDrawPage: (data) => {
+        // Agregar título y fecha
+        doc.setFontSize(18);
+        doc.text("La Despensa - Listado de Deudores", 14, 15);
+        
+        // Agregar pie de página
+        const currentDate = new Date().toLocaleDateString();
+        doc.setFontSize(10);
+        doc.text(`Fecha de emisión: ${currentDate}`, 14, doc.internal.pageSize.height - 10);
+      }
+    });
+    
+    doc.save(`deudores_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   return (
     <div className="deudores-container">
       <Navbar />
@@ -540,9 +580,14 @@ const DeudoresList = () => {
           <>
             <div className="deudores-page-header">
               <h1 className="deudores-page-title">Personas deudoras</h1>
-              <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudor}>
-                <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
-              </button>
+              <div className="deudores-actions">
+                <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudor}>
+                  <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
+                </button>
+                <button className="deudores-btn-export-pdf" onClick={handleExportPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
+                </button>
+              </div>
             </div>
             
             <div className="deudores-filters-container">
