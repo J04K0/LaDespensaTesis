@@ -195,7 +195,7 @@
 
 /* Rediseño de encabezados */
 .cuentas-table th {
-  background-color: #343a40;
+  background-color: var(--primary-dark);
   color: white;
   font-weight: 600;
   text-align: left;
@@ -539,7 +539,7 @@
 
 /* Encabezados fijos */
 .cuentas-anual-table th {
-  background-color: #343a40;
+  background-color: var(--primary-dark);
   color: white;
   font-weight: 600;
   padding: 16px;

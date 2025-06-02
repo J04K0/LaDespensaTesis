@@ -126,7 +126,7 @@
 
 /* Rediseño de encabezados */
 .proveedores-table th {
-  background-color: #343a40;
+  background-color: var(--primary-dark);
   color: white;
   font-weight: 600;
   text-align: left;

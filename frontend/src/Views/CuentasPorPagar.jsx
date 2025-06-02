@@ -578,7 +578,7 @@ const handleCancel = async () => {
             </div>
             
             <div className="filters-container">
-              <h2><FontAwesomeIcon icon={faFilter} /> Filtros y Búsqueda</h2>
+              <h2><FontAwesomeIcon icon={faFilter} /> Búsqueda y Filtros</h2>
               
               <div className="filters-vertical">
                 <div className="filter-item">

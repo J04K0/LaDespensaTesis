@@ -198,7 +198,7 @@ table {
 }
 
 th {
-  background: var(--gray-dark);
+  background: var(--primary-dark);
   color: var(--white);
   font-weight: 600;
   text-align: left;
