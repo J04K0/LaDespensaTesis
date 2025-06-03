@@ -579,7 +579,10 @@ const DeudoresList = () => {
         ) : (
           <>
             <div className="deudores-page-header">
-              <h1 className="deudores-page-title">Personas deudoras</h1>
+              <div className="deudores-title-container">
+                <h1 className="deudores-page-title">Personas deudoras</h1>
+                <p className="deudores-page-subtitle">Administra tus clientes con crédito y su historial de pagos</p>
+              </div>
               <div className="deudores-actions">
                 <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudor}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Deudor

@@ -496,7 +496,10 @@ const handleCancel = async () => {
         ) : (
           <>
             <div className="page-header">
-              <h1 className="page-title">Cuentas por Pagar</h1>
+              <div className="title-container">
+                <h1 className="page-title">Cuentas por Pagar</h1>
+                <p className="page-subtitle">Controla y gestiona tus pagos mensuales a proveedores y servicios</p>
+              </div>
               <div className="d-flex gap-sm">
                 <button className="btn-export-pdf" onClick={exportarPDF}>
                   <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF

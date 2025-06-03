@@ -297,7 +297,10 @@ const HistorySale = () => {
           <>
             <div className="historysalemaincontent">
               <div className="historysaleheader">
-                <h1 className="historysaletitle">Historial de Ventas</h1>
+                <div className="title-container">
+                  <h1 className="historysaletitle">Historial de Ventas</h1>
+                  <p className="historysale-subtitle">Consulta, gestiona y analiza todas las transacciones realizadas en tu negocio</p>
+                </div>
                 <div className="historysaleexportbuttons">
                   <button className="historysaleexportbtn pdf" onClick={exportToPDF}>
                     <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF

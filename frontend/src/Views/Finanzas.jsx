@@ -672,13 +672,16 @@ const Finanzas = () => {
         ) : (
           <>
             <div className="page-header">
-              <h1 className="page-title">Dashboard Financiero</h1>
+              <div className="title-container">
+                <h1 className="page-title">Dashboard Financiero</h1>
+                <p className="page-subtitle">Analiza el rendimiento económico y tendencias de ventas de tu negocio</p>
+              </div>
               <button className="btn-export-pdf" onClick={descargarReporteFinanciero}>
                 <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
               </button>
             </div>
             
-            <div className="filters-container">
+            <div className="filters-container" style={{ alignSelf: 'flex-start' }}>
               <div className="filter-group">
                 <label className="form-label">Periodo:</label>
                 <select 

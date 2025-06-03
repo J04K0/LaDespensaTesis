@@ -106,12 +106,14 @@
   width: 100%;
   max-width: 1400px;
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  justify-content: flex-start; /* Ya está configurado para alinear a la izquierda */
+  align-items: flex-start; /* Cambiado de center a flex-start */
   margin-bottom: 20px;
   background-color: transparent;
   padding: 0;
   box-shadow: none;
+  margin-left: 0; /* Asegurar que no haya margen izquierdo */
+  align-self: flex-start; /* Alinear el contenedor mismo a la izquierda */
 }
 
 .filter-group {

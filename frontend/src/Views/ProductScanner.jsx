@@ -302,8 +302,7 @@ const ProductScanner = () => {
           <ProductScannerSkeleton />
         ) : (
           <div className="productscanner-new-scanner-layout">
-            <h1 className="productscanner-title">Terminal Punto de Venta</h1>
-            
+            <h1 className="productscanner-title">Terminal Punto de Venta</h1>            
             <div className="productscanner-search-bar-container">
               <form onSubmit={handleScan} className="productscanner-search-form">
                 <div className="productscanner-search-input-wrapper">

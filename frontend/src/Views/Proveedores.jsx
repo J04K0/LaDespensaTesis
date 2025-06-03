@@ -413,7 +413,10 @@ const Proveedores = () => {
         ) : (
           <>
             <div className="page-header">
-              <h1 className="page-title">Gestión de Proveedores</h1>
+              <div className="proveedores-title-container">
+                <h1 className="page-title">Gestión de Proveedores</h1>
+                <p className="proveedores-page-subtitle">Administra tus proveedores y vincula productos a cada uno de ellos</p>
+              </div>
               <div className="d-flex gap-sm">
                 <button onClick={exportarPDF} className="proveedores-btn-export-pdf">
                   <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF

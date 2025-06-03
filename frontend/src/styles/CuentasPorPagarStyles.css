@@ -340,6 +340,42 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* Mejoras en los botones de estado */
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-success {
+  background-color: #4caf50;
+  color: white;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.4);
+}
+
+.btn-outline-success {
+  background-color: white;
+  color: #4caf50;
+  border: 2px solid #4caf50;
+}
+
+.btn-danger {
+  background-color: #f44336;
+  color: white;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.4);
+}
+
+.btn-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Paginación */
 .pagination {
   display: flex;
@@ -506,15 +542,18 @@
 }
 
 .mes-cell.estado-pendiente {
-  background-color: rgba(255, 152, 0, 0.1);
+  background-color: rgba(255, 152, 0, 0.25); /* Aumentado de 0.1 a 0.25 para mayor visibilidad */
+  border-left: 3px solid #ff9800; /* Añadido borde izquierdo para mejor distinción */
 }
 
 .mes-cell.estado-pagado {
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: rgba(76, 175, 80, 0.3); /* Aumentado de 0.1 a 0.3 para un verde más intenso */
+  border-left: 3px solid #4caf50; /* Añadido borde izquierdo para mejor distinción */
 }
 
 .mes-cell.estado-vencido {
-  background-color: rgba(244, 67, 54, 0.1);
+  background-color: rgba(244, 67, 54, 0.25); /* Aumentado de 0.1 a 0.25 para mayor visibilidad */
+  border-left: 3px solid #f44336; /* Añadido borde izquierdo para mejor distinción */
 }
 
 .cuenta-mes-info {
