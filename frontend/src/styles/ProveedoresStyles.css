@@ -1087,3 +1087,84 @@ textarea.proveedores-form-control {
   resize: vertical;
   min-height: 80px;
 }
+
+/* Cabecera de la página */
+.page-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Contenedor para el título y subtítulo */
+.proveedores-title-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.page-title {
+  font-size: 28px;
+  color: #002651;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.proveedores-page-subtitle {
+  color: #6c757d;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Contenedor para los botones del encabezado */
+.header-buttons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Botón de agregar */
+.add-btn {
+  background-color: #006EDF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #005bb8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Botón de descarga PDF */
+.download-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.download-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

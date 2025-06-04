@@ -500,12 +500,12 @@ const handleCancel = async () => {
                 <h1 className="page-title">Cuentas por Pagar</h1>
                 <p className="page-subtitle">Controla y gestiona tus pagos mensuales a proveedores y servicios</p>
               </div>
-              <div className="d-flex gap-sm">
-                <button className="btn-export-pdf" onClick={exportarPDF}>
-                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
-                </button>
-                <button className="btn btn-primary" onClick={handleAddCuenta}>
+              <div className="header-buttons">
+                <button className="btn btn-primary add-btn" onClick={handleAddCuenta}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Cuenta
+                </button>
+                <button className="btn-export-pdf download-btn" onClick={exportarPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
               </div>
             </div>

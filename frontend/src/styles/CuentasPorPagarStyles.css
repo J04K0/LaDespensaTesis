@@ -170,47 +170,82 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos para botones de exportación */
-.btn-export-pdf {
-  background-color: #dc3545 !important;
+/* Cabecera de la página */
+.page-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.title-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.page-title {
+  font-size: 28px;
+  color: #002651;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Contenedor para los botones del encabezado */
+.header-buttons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Botón de agregar cuenta */
+.add-btn {
+  background-color: #006EDF;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 12px 20px;
+  padding: 12px 24px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
 }
 
-.btn-export-pdf:hover {
-  background-color: #c82333 !important;
+.add-btn:hover {
+  background-color: #005bb8;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn-export-excel {
-  background-color: #28a745 !important;
+/* Botón de descarga PDF */
+.download-btn {
+  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 12px 20px;
+  padding: 12px 24px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
 }
 
-.btn-export-excel:hover {
-  background-color: #218838 !important;
+.download-btn:hover {
+  background-color: #c82333;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -685,6 +720,27 @@
   }
 
   .btn-export-pdf, .btn-export-excel {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 18px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .title-container {
+    width: 100%;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .add-btn, .download-btn {
     width: 100%;
     padding: 12px 0;
     font-size: 18px;

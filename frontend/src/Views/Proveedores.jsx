@@ -417,12 +417,12 @@ const Proveedores = () => {
                 <h1 className="page-title">Gestión de Proveedores</h1>
                 <p className="proveedores-page-subtitle">Administra tus proveedores y vincula productos a cada uno de ellos</p>
               </div>
-              <div className="d-flex gap-sm">
-                <button onClick={exportarPDF} className="proveedores-btn-export-pdf">
-                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
-                </button>
-                <button className="btn btn-primary" onClick={handleAddProveedor}>
+              <div className="header-buttons">
+                <button className="btn btn-primary add-btn" onClick={handleAddProveedor}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
+                </button>
+                <button className="btn-export-pdf download-btn" onClick={exportarPDF}>
+                  <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
               </div>
             </div>
