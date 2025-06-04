@@ -333,7 +333,11 @@ export const scanProducts = async (req, res) => {
 
     if (!product) return handleErrorClient(res, 404, "Producto no encontrado o sin stock disponible");
 
-    handleSuccess(res, 200, "Producto escaneado exitosamente", {
+    // Verificar si el producto está vencido pero permitir continuar
+    const today = new Date();
+    const isExpired = new Date(product.fechaVencimiento) < today;
+
+    handleSuccess(res, 200, isExpired ? "Producto vencido, verifique antes de vender" : "Producto escaneado exitosamente", {
       image: product.image,
       codigoBarras: product.codigoBarras,
       nombre: product.Nombre,
@@ -343,7 +347,8 @@ export const scanProducts = async (req, res) => {
       precioVenta: product.PrecioVenta,
       precioCompra: product.PrecioCompra,
       precioRecomendado: product.PrecioRecomendado,
-      fechaVencimiento: product.fechaVencimiento
+      fechaVencimiento: product.fechaVencimiento,
+      isExpired: isExpired // Agregar un flag para indicar si está vencido
     });
 
   } catch (err) {
@@ -363,7 +368,10 @@ export const actualizarStockVenta = async (req, res) => {
     const productosAfectadosEnVenta = [];
     // Array para almacenar productos que se agotaron en esta venta
     const productosAgotados = [];
+    // Array para almacenar productos vencidos que se vendieron
+    const productosVencidosVendidos = [];
     const codigosBarrasVendidos = new Set();
+    const today = new Date();
 
     for (const { codigoBarras, cantidad } of productosVendidos) {
       let cantidadRestante = cantidad;
@@ -377,6 +385,15 @@ export const actualizarStockVenta = async (req, res) => {
 
       if (!productos.length) {
         return handleErrorClient(res, 400, `No hay stock disponible para el producto ${codigoBarras}`);
+      }
+
+      // Verificar si hay productos vencidos y guardarlos para notificar pero permitir la venta
+      const productoVencido = productos.find(p => new Date(p.fechaVencimiento) < today);
+      if (productoVencido) {
+        productosVencidosVendidos.push({
+          ...productoVencido.toObject(),
+          cantidadVendida: cantidad
+        });
       }
 
       // Resta la cantidad vendida de cada lote hasta que se complete la venta
@@ -452,7 +469,6 @@ export const actualizarStockVenta = async (req, res) => {
     ];
 
     // Buscar productos vencidos
-    const today = new Date();
     const productosVencidos = await Product.find({
       fechaVencimiento: { $lt: today }
     });
@@ -487,7 +503,13 @@ export const actualizarStockVenta = async (req, res) => {
       }
     }
 
-    handleSuccess(res, 200, "Stock actualizado correctamente");
+    // Añadir mensaje de advertencia si se vendieron productos vencidos
+    let mensaje = "Stock actualizado correctamente";
+    if (productosVencidosVendidos.length > 0) {
+      mensaje += ". ADVERTENCIA: Se han vendido productos vencidos";
+    }
+
+    handleSuccess(res, 200, mensaje, { productosVencidosVendidos: productosVencidosVendidos.length > 0 ? productosVencidosVendidos : null });
   } catch (err) {
     handleErrorServer(res, 500, "Error al actualizar stock", err.message);
   }
@@ -508,7 +530,11 @@ export const getProductByBarcode = async (req, res) => {
     // Seleccionar el producto con el stock más antiguo disponible
     const producto = productos[0];
 
-    handleSuccess(res, 200, "Producto escaneado exitosamente", {
+    // Verificar si el producto está vencido pero permitir continuar
+    const today = new Date();
+    const isExpired = new Date(producto.fechaVencimiento) < today;
+
+    handleSuccess(res, 200, isExpired ? "Producto vencido, verifique antes de vender" : "Producto escaneado exitosamente", {
       image: producto.image,
       codigoBarras: producto.codigoBarras,
       nombre: producto.Nombre,
@@ -518,7 +544,8 @@ export const getProductByBarcode = async (req, res) => {
       precioVenta: producto.PrecioVenta,
       precioCompra: producto.PrecioCompra,
       precioRecomendado: producto.PrecioRecomendado,
-      fechaVencimiento: producto.fechaVencimiento
+      fechaVencimiento: producto.fechaVencimiento,
+      isExpired: isExpired // Agregar un flag para indicar si está vencido
     });
 
   } catch (err) {

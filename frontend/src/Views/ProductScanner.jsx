@@ -89,6 +89,17 @@ const ProductScanner = () => {
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
           }));
           
+          // Verificar si el producto está vencido y mostrar advertencia
+          if (productoEncontrado.isExpired) {
+            showWarningAlert(
+              "¡Producto vencido!",
+              `El producto ${productoEncontrado.nombre} está vencido (Fecha: ${new Date(productoEncontrado.fechaVencimiento).toLocaleDateString()}). Puede continuar con la venta, pero se recomienda revisar el producto.`,
+              null,
+              "warning",
+              true  // Necesita confirmación
+            );
+          }
+          
           // Agregar automáticamente al carrito con cantidad 1
           agregarAlCarrito({...productoEncontrado, cantidad: 1});
         } else {
@@ -108,7 +119,30 @@ const ProductScanner = () => {
       setCantidad(1);
     } catch (error) {
       console.error("❌ Error al escanear el producto:", error);
-      setError("Error al escanear el producto. Inténtalo de nuevo.");
+      
+      // Verificar si el error es específicamente por stock insuficiente o no encontrado
+      if (error.response) {
+        const statusCode = error.response.status;
+        const errorMessage = error.response.data && error.response.data.message;
+        
+        if (statusCode === 404) {
+          // Producto no encontrado
+          showProductNotFoundAlert(codigoEscaneado).then((result) => {
+            if (result.isConfirmed) {
+              navigate(`/addproduct?barcode=${codigoEscaneado}`);
+            }
+          });
+        } else if (statusCode === 400 && errorMessage && errorMessage.includes("stock")) {
+          // Error específico de stock insuficiente
+          showErrorAlert("Stock insuficiente", "No hay stock disponible para este producto.");
+        } else {
+          // Otros errores
+          setError("Error al escanear el producto: " + (errorMessage || "Inténtalo de nuevo."));
+        }
+      } else {
+        setError("Error al escanear el producto. Inténtalo de nuevo.");
+      }
+      
       setProductoActual(null);
     } finally {
       setLoading(false);
@@ -248,7 +282,23 @@ const ProductScanner = () => {
     setLoading(true);
     setError(null);
     try {
-      await actualizarStockVenta(carrito);
+      // Realizar la actualización de stock
+      const responseStock = await actualizarStockVenta(carrito);
+      
+      // Verificar si hay productos vencidos vendidos
+      if (responseStock.data && responseStock.data.data && responseStock.data.data.productosVencidosVendidos) {
+        const productosVencidos = responseStock.data.data.productosVencidosVendidos;
+        const nombresProductos = productosVencidos.map(p => p.Nombre).join(", ");
+        
+        // Mostrar una advertencia pero permitir continuar
+        await showWarningAlert(
+          "¡Atención! Productos vencidos", 
+          `Se han vendido los siguientes productos vencidos: ${nombresProductos}. Se recomienda verificar estos productos.`,
+          null,
+          "warning",
+          true  // Necesita confirmación
+        );
+      }
       
       // Determinar si se debe enviar un ID de deudor
       const deudorIdToSend = isDeudor && selectedDeudorId ? selectedDeudorId : null;
@@ -326,6 +376,9 @@ const ProductScanner = () => {
                 <h2>Producto Escaneado</h2>
                 {productoActual ? (
                   <div className="productscanner-product-info-container">
+                    {productoActual.isExpired && (
+                      <div className="productscanner-expired-badge">VENCIDO</div>
+                    )}
                     {productoActual.image && (
                       <img 
                         src={productoActual.image} 
