@@ -84,84 +84,353 @@ export class ExportService {
    * @param {string} timeRange - Rango de tiempo para el reporte ('semana', 'mes', 'año')
    */
   static generarReporteFinanciero(data, timeRange) {
-    const { ingresosPorDia, ingresosPorCategoria, comparacionIngresoCosto, inversionMercaderiaPorCategoria } = data;
+    // Extraer todos los datos financieros necesarios
+    const { 
+      ingresosTotales, 
+      costosTotales, 
+      gananciasTotales, 
+      rentabilidadPromedio,
+      transacciones,
+      valorPromedioTransaccion,
+      inversionMercaderia,
+      topCategorias,
+      productosMasVendidos,
+      categoriasPorVolumen,
+      margenPorCategoria,
+      ingresosPorPeriodo,
+      ingresosPorMes,
+      inversionPorCategoria,
+      rentabilidadTemporal
+    } = data;
     
+    // Crear el documento PDF
     const doc = new jsPDF();
-    doc.text("Reporte Financiero - La Despensa", 20, 10);
     
-    const fechaActual = new Date().toLocaleDateString();
-    doc.text(`Fecha: ${fechaActual}`, 20, 20);
+    // Estilo para títulos y secciones
+    const colorPrimario = [0, 38, 81]; // Color #002651
+    const colorSecundario = [17, 138, 178]; // Color #118AB2
+    const colorAcento = [239, 71, 111]; // Color #EF476F
     
+    // ---- PORTADA ----
+    doc.setFontSize(22);
+    doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+    doc.text("REPORTE FINANCIERO", 105, 50, { align: 'center' });
+    doc.text("LA DESPENSA", 105, 65, { align: 'center' });
+    
+    // Línea decorativa
+    doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+    doc.setLineWidth(1);
+    doc.line(40, 75, 170, 75);
+    
+    // Información del periodo
     let periodoTexto = "Últimos 7 días";
     if (timeRange === "mes") periodoTexto = "Último mes";
     if (timeRange === "año") periodoTexto = "Último año";
-    doc.text(`Periodo: ${periodoTexto}`, 20, 30);
     
-    if (ingresosPorDia && ingresosPorDia.labels) {
-      doc.text("Ingresos por Día", 20, 45);
+    doc.setFontSize(16);
+    doc.text(`Periodo: ${periodoTexto}`, 105, 90, { align: 'center' });
+    
+    // Fecha de generación
+    const fechaActual = new Date().toLocaleDateString();
+    const horaActual = new Date().toLocaleTimeString();
+    doc.setFontSize(12);
+    doc.text(`Generado el: ${fechaActual} a las ${horaActual}`, 105, 105, { align: 'center' });
+    
+    // Agregar página nueva para el contenido
+    doc.addPage();
+    
+    // ---- RESUMEN EJECUTIVO ----
+    doc.setFontSize(18);
+    doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+    doc.text("RESUMEN EJECUTIVO", 105, 20, { align: 'center' });
+    
+    // Línea decorativa
+    doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+    doc.line(40, 25, 170, 25);
+    
+    // Métricas principales
+    doc.setFontSize(12);
+    doc.text("Métricas principales del periodo:", 20, 35);
+    
+    // Crear tabla de métricas principales
+    const metricasPrincipales = [
+      ["Ingresos totales", `$${ingresosTotales.toLocaleString('es-AR')}`],
+      ["Costos totales", `$${costosTotales.toLocaleString('es-AR')}`],
+      ["Ganancias totales", `$${gananciasTotales.toLocaleString('es-AR')}`],
+      ["Rentabilidad", `${rentabilidadPromedio.toFixed(2)}%`],
+      ["Número de transacciones", transacciones],
+      ["Valor promedio por transacción", `$${valorPromedioTransaccion.toLocaleString('es-AR')}`],
+      ["Inversión en inventario", `$${inversionMercaderia.toLocaleString('es-AR')}`]
+    ];
+    
+    autoTable(doc, {
+      startY: 40,
+      head: [["Métrica", "Valor"]],
+      body: metricasPrincipales,
+      headStyles: { fillColor: colorPrimario },
+      alternateRowStyles: { fillColor: [240, 240, 240] },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // ---- ANÁLISIS DE INGRESOS ----
+    // Verificar si la tabla anterior dejó suficiente espacio, sino añadir nueva página
+    const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 30 : 120; // Aumentado de 15 a 30
+    if (currentY > 200) { // Reducido de 220 a 200 para agregar página más temprano
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("ANÁLISIS DE INGRESOS", 105, 20, { align: 'center' });
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(40, 25, 170, 25);
+    } else {
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("ANÁLISIS DE INGRESOS", 105, currentY, { align: 'center' });
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(40, currentY + 5, 170, currentY + 5);
+    }
+    
+    // Si hay datos de ingresos por periodo (día, semana, mes)
+    if (ingresosPorPeriodo && Object.keys(ingresosPorPeriodo).length > 0) {
+      const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : (currentY > 200 ? 40 : currentY + 25); // Aumentado a 25
+      doc.setFontSize(14);
+      doc.text("Distribución de ingresos por día", 20, newY);
       
-      const datosIngresos = ingresosPorDia.labels.map((fecha, i) => 
-        [fecha, `$${ingresosPorDia.datasets[0].data[i].toLocaleString()}`]
-      );
+      // Convertir los datos de ingresosPorPeriodo para la tabla
+      const datosIngresos = Object.entries(ingresosPorPeriodo).map(([fecha, valor]) => {
+        return [
+          new Date(fecha).toLocaleDateString('es-AR', {weekday: 'short', day: 'numeric', month: 'short'}),
+          `$${valor.toLocaleString('es-AR')}`
+        ];
+      });
       
       autoTable(doc, {
-        startY: 50,
+        startY: newY + 10, // Aumentado de 5 a 10
         head: [["Fecha", "Ingresos"]],
         body: datosIngresos,
+        headStyles: { fillColor: colorSecundario },
+        margin: { left: 20, right: 20 }
       });
     }
     
-    if (ingresosPorCategoria && ingresosPorCategoria.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 50;
-      doc.text("Ingresos por Categoría", 20, currentY);
+    // Si hay datos de top categorías
+    if (topCategorias && topCategorias.length > 0) {
+      // Verificar espacio disponible
+      const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : 180; // Aumentado de 15 a 25
+      if (newY > 200) { // Reducido de 220 a 200
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Top categorías por ingresos", 20, 30); // Aumentado de 20 a 30
+      } else {
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Top categorías por ingresos", 20, newY);
+      }
       
-      const datosCategoria = ingresosPorCategoria.labels.map((categoria, i) => 
-        [categoria, `$${ingresosPorCategoria.datasets[0].data[i].toLocaleString()}`]
-      );
-      
-      autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Categoría", "Ingresos Totales"]],
-        body: datosCategoria,
-      });
-    }
-
-    if (comparacionIngresoCosto && comparacionIngresoCosto.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 50;
-      doc.text("Comparación de Ingresos y Costos", 20, currentY);
-      
-      const datosComparacion = comparacionIngresoCosto.labels.map((periodo, i) => 
-        [
-          periodo, 
-          `$${comparacionIngresoCosto.datasets[0].data[i].toLocaleString()}`,
-          `$${comparacionIngresoCosto.datasets[1].data[i].toLocaleString()}`,
-          `$${comparacionIngresoCosto.datasets[2].data[i].toLocaleString()}`,
-        ]
-      );
+      // Datos para la tabla
+      const datosTopCategorias = topCategorias.map(cat => [
+        cat.nombre,
+        `$${cat.ingresos.toLocaleString('es-AR')}`,
+        `${cat.porcentaje.toFixed(2)}%`
+      ]);
       
       autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Periodo", "Ingresos", "Costos", "Ganancias"]],
-        body: datosComparacion,
+        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : (newY > 200 ? 40 : newY + 10), // Ajustado para más espacio
+        head: [["Categoría", "Ingresos", "Porcentaje"]],
+        body: datosTopCategorias,
+        headStyles: { fillColor: colorPrimario },
+        margin: { left: 20, right: 20 }
       });
     }
     
-    if (inversionMercaderiaPorCategoria && inversionMercaderiaPorCategoria.labels) {
-      const currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 230;
-      doc.text("Inversión en Mercadería por Categoría", 20, currentY);
+    // ---- ANÁLISIS DE PRODUCTOS ----
+    doc.addPage();
+    doc.setFontSize(18);
+    doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+    doc.text("ANÁLISIS DE PRODUCTOS", 105, 20, { align: 'center' });
+    doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+    doc.line(40, 25, 170, 25);
+    
+    // Productos más vendidos
+    if (productosMasVendidos && productosMasVendidos.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Productos más vendidos", 20, 40); // Aumentado de 35 a 40
       
-      const datosInversion = inversionMercaderiaPorCategoria.labels.map((categoria, i) => 
-        [categoria, `$${inversionMercaderiaPorCategoria.datasets[0].data[i].toLocaleString()}`]
-      );
+      // Datos para la tabla
+      const datosProductos = productosMasVendidos.map((prod, index) => [
+        index + 1,
+        prod.nombre,
+        prod.ventas,
+        `$${prod.ingreso.toLocaleString('es-AR')}`
+      ]);
       
       autoTable(doc, {
-        startY: currentY + 5,
-        head: [["Categoría", "Inversión Total"]],
+        startY: 50, // Aumentado de 40 a 50
+        head: [["Ranking", "Producto", "Unidades", "Ingresos"]],
+        body: datosProductos,
+        headStyles: { fillColor: colorSecundario },
+        margin: { left: 20, right: 20 }
+      });
+    }
+    
+    // Categorías por volumen de ventas
+    if (categoriasPorVolumen && categoriasPorVolumen.length > 0) {
+      const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : 120; // Aumentado de 15 a 25
+      doc.setFontSize(14);
+      doc.text("Categorías por volumen de ventas", 20, newY);
+      
+      // Datos para la tabla
+      const datosCategorias = categoriasPorVolumen.map(cat => [
+        cat.nombre,
+        cat.ventas,
+        `${cat.porcentaje.toFixed(2)}%`
+      ]);
+      
+      autoTable(doc, {
+        startY: newY + 10, // Aumentado de 5 a 10
+        head: [["Categoría", "Unidades vendidas", "Porcentaje"]],
+        body: datosCategorias,
+        headStyles: { fillColor: colorPrimario },
+        margin: { left: 20, right: 20 }
+      });
+    }
+    
+    // Inversión por categoría
+    if (inversionPorCategoria && Object.keys(inversionPorCategoria).length > 0) {
+      // Verificar espacio disponible
+      const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : 180; // Aumentado de 15 a 25
+      if (newY > 200) { // Reducido de 220 a 200
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Inversión por categoría", 20, 30); // Aumentado de 20 a 30
+      } else {
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Inversión por categoría", 20, newY);
+      }
+      
+      // Datos para la tabla
+      const datosInversion = Object.entries(inversionPorCategoria)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10) // Top 10 categorías por inversión
+        .map(([categoria, valor]) => {
+          const porcentaje = inversionMercaderia > 0 
+            ? (valor / inversionMercaderia * 100).toFixed(2) 
+            : "0.00";
+          return [categoria, `$${valor.toLocaleString('es-AR')}`, `${porcentaje}%`];
+        });
+      
+      autoTable(doc, {
+        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : (newY > 200 ? 40 : newY + 10), // Ajustado para más espacio
+        head: [["Categoría", "Inversión", "Porcentaje"]],
         body: datosInversion,
+        headStyles: { fillColor: colorSecundario },
+        margin: { left: 20, right: 20 }
       });
     }
     
-    doc.save("reporte_financiero.pdf");
+    // ---- ANÁLISIS DE RENTABILIDAD ----
+    doc.addPage();
+    doc.setFontSize(18);
+    doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+    doc.text("ANÁLISIS DE RENTABILIDAD", 105, 20, { align: 'center' });
+    doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+    doc.line(40, 25, 170, 25);
+    
+    // Margen de ganancia por categoría
+    if (margenPorCategoria && margenPorCategoria.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Margen de ganancia por categoría", 20, 40); // Aumentado de 35 a 40
+      
+      // Datos para la tabla
+      const datosMargen = margenPorCategoria.map(cat => [
+        cat.categoria,
+        `${cat.margen.toFixed(2)}%`,
+        cat.rendimiento.charAt(0).toUpperCase() + cat.rendimiento.slice(1) // Capitalizar
+      ]);
+      
+      autoTable(doc, {
+        startY: 50, // Aumentado de 40 a 50
+        head: [["Categoría", "Margen de ganancia", "Rendimiento"]],
+        body: datosMargen,
+        headStyles: { fillColor: colorPrimario },
+        margin: { left: 20, right: 20 }
+      });
+    }
+    
+    // Comparativa Ingresos vs Costos vs Ganancias
+    const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : 120; // Aumentado de 15 a 25
+    doc.setFontSize(14);
+    doc.text("Comparativa financiera", 20, newY);
+    
+    const datosComparativos = [
+      ["Ingresos", `$${ingresosTotales.toLocaleString('es-AR')}`, "100%"],
+      ["Costos", `$${costosTotales.toLocaleString('es-AR')}`, `${(costosTotales / ingresosTotales * 100).toFixed(2)}%`],
+      ["Ganancias", `$${gananciasTotales.toLocaleString('es-AR')}`, `${(gananciasTotales / ingresosTotales * 100).toFixed(2)}%`]
+    ];
+    
+    autoTable(doc, {
+      startY: newY + 10, // Aumentado de 5 a 10
+      head: [["Concepto", "Monto", "Porcentaje"]],
+      body: datosComparativos,
+      headStyles: { fillColor: colorSecundario },
+      bodyStyles: { halign: 'center' },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Rentabilidad temporal si está disponible
+    if (rentabilidadTemporal && rentabilidadTemporal.length > 0) {
+      // Verificar espacio disponible
+      const newY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 25 : 180; // Aumentado de 15 a 25
+      if (newY > 200) { // Reducido de 200 a 180
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Rentabilidad temporal", 20, 30); // Aumentado de 20 a 30
+      } else {
+        doc.setFontSize(14);
+        doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+        doc.text("Rentabilidad temporal", 20, newY);
+      }
+      
+      // Datos para la tabla
+      const datosRentabilidad = rentabilidadTemporal.map(dia => [
+        `${dia.fecha.getDate()}/${dia.fecha.getMonth() + 1}`,
+        `$${dia.ingresos.toLocaleString('es-AR')}`,
+        `$${dia.costos.toLocaleString('es-AR')}`,
+        `$${dia.ganancias.toLocaleString('es-AR')}`,
+        `${dia.margen.toFixed(2)}%`
+      ]);
+      
+      autoTable(doc, {
+        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : (newY > 200 ? 40 : newY + 10), // Ajustado para más espacio
+        head: [["Fecha", "Ingresos", "Costos", "Ganancias", "Margen"]],
+        body: datosRentabilidad,
+        headStyles: { fillColor: colorPrimario },
+        margin: { left: 20, right: 20 }
+      });
+    }
+    
+    // Agregar pie de página en todas las páginas
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      // Pie de página con fecha de generación y número de página
+      doc.text(`La Despensa - Reporte Financiero - ${fechaActual}`, 20, pageHeight - 10);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
+    }
+    
+    // Guardar el PDF con un nombre más descriptivo
+    const timestamp = new Date().toISOString().split('T')[0];
+    const nombreArchivo = `Reporte_Financiero_${periodoTexto.replace(/ /g, '_')}_${timestamp}.pdf`;
+    doc.save(nombreArchivo);
   }
 
   /**
