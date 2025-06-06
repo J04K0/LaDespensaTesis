@@ -148,7 +148,7 @@
 }
 
 .form-select {
-  padding: 6px 28px 6px 10px;
+  padding: 6px 40px 6px 10px !important; /* Añadido !important para asegurar prioridad */
   border-radius: 6px;
   border: 1px solid #ddd;
   background-color: var(--white);
@@ -445,6 +445,8 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
 .analysis-card.full-width {
@@ -465,25 +467,33 @@
 .time-distribution {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  height: 220px;
-  gap: 8px;
-  margin-top: 20px;
+  gap: 4px;  /* Reducido de 5px a 4px para ahorrar espacio */
+  height: 250px;
+  margin-top: 10px;
+  overflow-x: hidden;
+  padding: 0 5px;  /* Añadir padding para evitar que las barras toquen los bordes */
 }
 
 .time-bar-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  min-width: 24px;  /* Reducido de 30px a 24px */
+  max-width: 40px;  /* Limitamos el ancho máximo para mejor distribución */
 }
 
 .time-label {
-  font-size: 11px;
-  color: var(--gray);
+  font-size: 9px;   /* Reducido de 10px a 9px */
   text-align: center;
-  margin-bottom: 7px;
+  color: #666;
+  margin-bottom: 5px;
+  font-weight: 500;
   line-height: 1.2;
+  white-space: nowrap;  /* Evitar saltos de línea */
+  overflow: hidden;    /* Ocultar texto que sobresale */
+  text-overflow: ellipsis; /* Mostrar elipsis si no cabe */
+  width: 100%;         /* Usar todo el ancho disponible */
 }
 
 .time-bar-wrapper {
@@ -495,8 +505,8 @@
 }
 
 .time-bar {
-  width: 90%;
-  max-width: 40px;
+  width: 85%;  /* Ajustado de 90% a 85% */
+  max-width: 36px;
   background-color: var(--primary);
   border-radius: 4px 4px 0 0;
   position: relative;
@@ -509,176 +519,232 @@
 
 .time-bar-value {
   position: absolute;
-  top: -20px;
-  font-size: 10px;
+  bottom: -25px; /* Cambiado de 'top: -25px' a 'bottom: -25px' para que aparezca debajo */
+  left: 50%;
+  transform: translateX(-50%); /* Eliminada la rotación para mayor legibilidad */
+  font-size: 11px;
   font-weight: 600;
   color: var(--primary);
-  transform: rotate(-45deg);
-  transform-origin: left;
   white-space: nowrap;
+  z-index: 5;
 }
 
-/* Distribución por día */
+/* Estilos para la paginación en la distribución de días */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.pagination-button {
+  background-color: #f0f2f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #e0e2e5;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+/* Estilos para la distribución por día de la semana */
 .day-distribution {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-top: 15px;
+  margin-top: 20px;
+  padding: 0 10px;
 }
 
 .day-stat {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  gap: 10px;
 }
 
 .day-name {
-  width: 40px;
   font-weight: 600;
   color: var(--gray-dark);
+  width: 40px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.day-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-bar-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 5px;
+  min-height: 20px; /* Asegura altura mínima para valores de $0 */
 }
 
 .day-value {
-  width: 80px;
+  font-weight: 600;
   color: var(--primary);
-  font-weight: 500;
+  font-size: 14px;
+  visibility: visible !important; /* Fuerza la visibilidad */
+  display: block !important; /* Garantiza que siempre se muestre */
+}
+
+.day-percent {
+  font-size: 12px;
+  color: var(--gray);
+  text-align: right;
 }
 
 .day-progress-container {
-  flex-grow: 1;
+  flex: 1;
+  height: 10px;
   background-color: #e9ecef;
-  height: 8px;
-  border-radius: 4px;
-  margin: 0 10px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
 .day-progress {
   height: 100%;
   background-color: var(--primary);
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
-.day-percent {
-  width: 40px;
-  color: var(--gray);
-  text-align: right;
-  font-size: 12px;
-}
-
-/* Distribución mensual */
+/* Estilos para la distribución mensual */
 .monthly-distribution {
   display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  height: 220px;
-  margin-top: 15px;
+  justify-content: space-between;
+  gap: 8px;
+  height: 250px;
+  margin-top: 20px;
+  padding: 0 15px;
 }
 
 .month-stat {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
 }
 
 .month-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gray);
-  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-dark);
+  margin-bottom: 5px;
 }
 
 .month-bar-container {
-  height: 180px;
-  width: 100%;
+  width: 24px;
+  height: 200px;
   display: flex;
-  justify-content: center;
   align-items: flex-end;
+  justify-content: center;
+  margin-top: auto;
 }
 
 .month-bar {
-  width: 80%;
-  max-width: 50px;
+  width: 100%;
+  min-height: 4px;
   background-color: var(--primary);
   border-radius: 4px 4px 0 0;
   position: relative;
-  transition: height 0.6s ease;
-  display: flex;
-  justify-content: center;
-  padding-top: 5px;
 }
 
 .month-bar-value {
   position: absolute;
-  top: -18px;
-  font-size: 10px;
+  bottom: -25px; /* Cambiado de 'top: -20px' a 'bottom: -25px' para que aparezca debajo */
+  left: 50%;
+  transform: translateX(-50%); /* Eliminada la rotación para mayor legibilidad */
+  font-size: 11px;
+  font-weight: 600;
   color: var(--primary);
   white-space: nowrap;
-  font-weight: 600;
-  transform: rotate(-45deg);
-  transform-origin: left;
+  z-index: 5;
 }
 
-/* Lista de productos */
+/* Estilos para productos más vendidos */
 .product-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 15px;
 }
 
 .product-item {
   display: flex;
   align-items: center;
-  padding: 10px;
+  gap: 10px;
+  padding: 10px 15px;
   border-radius: 8px;
-  background-color: var(--white);
+  background-color: #f8f9fa;
   transition: all 0.2s ease;
-  border: 1px solid #eee;
 }
 
 .product-item:hover {
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  border-color: var(--primary-light);
+  background-color: var(--primary-light);
+  transform: translateX(3px);
 }
 
 .product-rank {
   width: 24px;
   height: 24px;
-  background-color: var(--primary-light);
-  color: var(--primary);
+  background-color: var(--primary);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
   font-weight: 700;
-  margin-right: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
 .product-info {
-  flex-grow: 1;
+  flex: 1;
+  overflow: hidden;
 }
 
 .product-name {
-  font-size: 14px;
   font-weight: 600;
   color: var(--gray-dark);
-  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-meta {
   font-size: 12px;
   color: var(--gray);
+  margin-top: 2px;
 }
 
 .product-revenue {
-  font-size: 16px;
   font-weight: 700;
   color: var(--primary);
-  text-align: right;
-  min-width: 80px;
+  font-size: 16px;
 }
 
 /* Categorías por volumen */
@@ -686,12 +752,13 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  margin-top: 15px;
 }
 
 .category-volume-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .category-volume-info {
@@ -701,19 +768,17 @@
 }
 
 .category-volume-name {
-  font-size: 14px;
   font-weight: 600;
   color: var(--gray-dark);
 }
 
 .category-volume-count {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--gray);
 }
 
 .category-volume-bar-container {
   height: 8px;
-  width: 100%;
   background-color: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
@@ -730,21 +795,23 @@
   position: absolute;
   right: 0;
   top: -18px;
-  font-size: 11px;
-  color: var(--gray);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* Inversión por categoría */
 .inventory-distribution {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
+  margin-top: 15px;
 }
 
 .inventory-category {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
 .inventory-category-header {
@@ -754,20 +821,17 @@
 }
 
 .inventory-category-name {
-  font-size: 14px;
   font-weight: 600;
   color: var(--gray-dark);
 }
 
 .inventory-category-value {
-  font-size: 14px;
+  font-weight: 700;
   color: var(--primary);
-  font-weight: 600;
 }
 
 .inventory-progress-container {
   height: 8px;
-  width: 100%;
   background-color: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
@@ -776,16 +840,17 @@
 
 .inventory-progress {
   height: 100%;
-  background-color: var(--warning);
+  background-color: var(--primary);
   border-radius: 4px;
 }
 
 .inventory-percent {
   position: absolute;
   right: 0;
-  top: -16px;
-  font-size: 11px;
-  color: var(--gray);
+  top: -18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* Rotación de inventario */
@@ -793,102 +858,106 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px;
-  padding: 10px 0;
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .turnover-gauge {
-  position: relative;
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: conic-gradient(var(--success) 0% 70%, #e9ecef 70% 100%);
+  background: conic-gradient(
+    var(--primary) 0% 60%,
+    #e9ecef 60% 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
-.turnover-gauge::after {
+.turnover-gauge::before {
   content: '';
-  position: absolute;
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  background: var(--white);
+  background-color: white;
+  position: absolute;
 }
 
 .turnover-value {
   position: relative;
-  z-index: 1;
   font-size: 28px;
   font-weight: 700;
-  color: var(--gray-dark);
+  color: var(--primary-dark);
+  z-index: 2;
 }
 
 .turnover-label {
   position: relative;
-  z-index: 1;
   font-size: 12px;
   color: var(--gray);
+  z-index: 2;
   margin-top: -5px;
 }
 
 .turnover-stats {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   width: 100%;
+  gap: 10px;
 }
 
 .turnover-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex: 1;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  border-top: 3px solid var(--primary);
 }
 
 .turnover-stat-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--gray-dark);
 }
 
 .turnover-stat-label {
   font-size: 12px;
   color: var(--gray);
+  margin-top: 5px;
 }
 
-/* Márgenes por categoría */
+/* Margen de ganancia por categoría */
 .margin-by-category {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
+  margin-top: 10px;
 }
 
 .margin-category {
   display: flex;
-  align-items: center;
-  gap: 15px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .margin-category-name {
-  font-size: 13px;
   font-weight: 600;
   color: var(--gray-dark);
-  width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .margin-meter-container {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  height: 12px;
+  position: relative;
+  background-color: #f8f9fa;
+  border-radius: 6px;
 }
 
 .margin-meter {
-  height: 8px;
-  border-radius: 4px;
+  height: 100%;
+  border-radius: 6px;
 }
 
 .margin-meter.alto {
@@ -904,18 +973,20 @@
 }
 
 .margin-value {
-  font-size: 13px;
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--gray-dark);
-  width: 40px;
-  text-align: right;
 }
 
-/* Comparativas */
+/* Comparativa ingresos vs costos */
 .comparison-stats {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-top: 15px;
 }
 
 .comparison-stat {
@@ -927,165 +998,60 @@
 .comparison-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .comparison-label {
-  font-size: 14px;
   font-weight: 600;
   color: var(--gray-dark);
 }
 
 .comparison-value {
-  font-size: 16px;
   font-weight: 700;
   color: var(--primary);
 }
 
 .comparison-bar-container {
-  height: 10px;
-  width: 100%;
+  height: 12px;
   background-color: #e9ecef;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
-.comparison-bar.income {
+.comparison-bar {
   height: 100%;
+  border-radius: 6px;
+}
+
+.comparison-bar.income {
   background-color: var(--primary);
 }
 
 .comparison-bar.expenses {
-  height: 100%;
   background-color: var(--danger);
 }
 
 .comparison-bar.profits {
-  height: 100%;
   background-color: var(--success);
 }
 
 .comparison-percentage {
-  font-size: 13px;
-  color: var(--gray);
   margin-top: 5px;
   text-align: right;
+  font-size: 13px;
+  color: var(--gray);
 }
 
 .profit-percentage {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--success);
 }
 
-/* Timeline de rentabilidad */
-.profitability-timeline {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  height: 250px;
-  gap: 20px;
-  margin-bottom: 15px;
-}
-
-.timeline-day {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-}
-
-.timeline-date {
-  font-size: 12px;
+.no-data {
+  padding: 30px;
+  text-align: center;
   color: var(--gray);
-  margin-bottom: 8px;
-}
-
-.timeline-bars {
-  width: 100%;
-  height: calc(100% - 45px);
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-.timeline-bar {
-  position: absolute;
-  bottom: 0;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.6s ease;
-}
-
-.timeline-bar.revenue {
-  width: 60px;
-  background-color: rgba(58, 134, 255, 0.2);
-  border: 1px solid var(--primary);
-  z-index: 1;
-}
-
-.timeline-bar.cost {
-  width: 40px;
-  background-color: rgba(220, 53, 69, 0.8);
-  z-index: 2;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.timeline-bar.profit {
-  width: 20px;
-  background-color: rgba(40, 167, 69, 0.8);
-  z-index: 3;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.timeline-bar-value {
-  position: absolute;
-  top: -20px;
-  font-size: 10px;
-  color: var(--gray-dark);
-  white-space: nowrap;
-  font-weight: 600;
-}
-
-.timeline-margin {
-  margin-top: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--success);
-}
-
-.timeline-legend {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 10px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--gray-dark);
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-.legend-color.revenue {
-  background-color: rgba(58, 134, 255, 0.2);
-  border: 1px solid var(--primary);
-}
-
-.legend-color.cost {
-  background-color: rgba(220, 53, 69, 0.8);
-}
-
-.legend-color.profit {
-  background-color: rgba(40, 167, 69, 0.8);
+  font-style: italic;
 }
 
 /* Animation */
@@ -1189,4 +1155,158 @@
   .finanzas-nav-btn span {
     display: none;
   }
+}
+
+/* Estilos para tooltips de información */
+.info-button {
+  background: none;
+  border: none;
+  color: var(--gray);
+  cursor: pointer;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
+}
+
+.info-button:hover {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.tooltip {
+  position: absolute;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  max-width: 280px;
+  z-index: 1000;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0, 0, 0, 0.8);
+}
+
+/* Botón para alternar entre gráfico y tabla */
+.toggle-view-btn {
+  position: absolute;
+  top: 15px;
+  right: 50px;
+  background-color: #f0f2f5;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-dark);
+  transition: all 0.2s ease;
+}
+
+.toggle-view-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+/* Estilos para tablas de datos */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.data-table th {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.data-table tr:hover {
+  background-color: var(--primary-light);
+}
+
+/* Mejoras en las cards de análisis */
+.analysis-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.analysis-card .card-title {
+  padding-right: 40px;
+}
+
+/* Indicador de información en la tarjeta */
+.card-info-indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-radius: 0 0 0 8px;
+  font-size: 12px;
+}
+
+/* Mejoras en la visualización de gráficos */
+.time-bar-value {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.day-progress {
+  transition: width 0.5s ease;
+}
+
+.category-volume-bar {
+  transition: width 0.5s ease;
+}
+
+.inventory-progress {
+  transition: width 0.5s ease;
+}
+
+.margin-meter {
+  transition: width 0.5s ease;
+}
+
+.comparison-bar {
+  transition: width 0.5s ease;
 }

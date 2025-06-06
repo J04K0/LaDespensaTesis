@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar";
 import { obtenerVentasPorTicket } from "../services/venta.service.js";
 import { getProducts } from "../services/AddProducts.service.js";
@@ -22,7 +22,11 @@ import {
   faTags,
   faCashRegister,
   faPercent,
-  faChartPie
+  faChartPie,
+  faChevronLeft,
+  faChevronRight,
+  faTable,
+  faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -51,6 +55,16 @@ const Finanzas = () => {
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState("semana");
   const [seccionActiva, setSeccionActiva] = useState("general");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [diasPorPagina, setDiasPorPagina] = useState(14); // Mostrar 2 semanas por página
+  
+  // Nuevos estados para los tooltips de información
+  const [activeTooltip, setActiveTooltip] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [verTabla, setVerTabla] = useState(false);
+  
+  // Referencia al contenedor principal para calcular posiciones de tooltips
+  const containerRef = useRef(null);
 
   useEffect(() => {
     obtenerDatosFinancieros();
@@ -143,11 +157,34 @@ const Finanzas = () => {
       ingresosPorMes[mes] = 0;
     });
     
+    // Inicializar ventas por día de la semana con valores cero
+    const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const ventasPorDiaSemana = {};
+    diasSemana.forEach(dia => {
+      ventasPorDiaSemana[dia] = 0;
+    });
+    
+    // Mapeo correcto de los días de JavaScript a nuestro array
+    // getDay() devuelve: 0=Domingo, 1=Lunes, ..., 6=Sábado
+    const mapeoJSaDias = {
+      0: 'Dom', // Domingo (0 en JS)
+      1: 'Lun', // Lunes (1 en JS)
+      2: 'Mar', // Martes (2 en JS)
+      3: 'Mié', // Miércoles (3 en JS)
+      4: 'Jue', // Jueves (4 en JS)
+      5: 'Vie', // Viernes (5 en JS)
+      6: 'Sáb'  // Sábado (6 en JS)
+    };
+    
     // Procesar las ventas
     ventasFiltradas.forEach(venta => {
       const fecha = new Date(venta.fecha);
       const fechaStr = fecha.toISOString().split('T')[0];
       const mes = meses[fecha.getMonth()];
+      
+      // CORREGIDO: Usar mapeo directo para el día de la semana
+      const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diaSemanaKey = mapeoJSaDias[diaSemana];
       
       let ingresoVenta = 0;
       let costoVenta = 0;
@@ -184,6 +221,11 @@ const Finanzas = () => {
       // Actualizar ingresos por día si es del período actual
       if (fechaStr in ingresosPorDia) {
         ingresosPorDia[fechaStr] += ingresoVenta;
+      }
+      
+      // Actualizar ingresos por día de la semana
+      if (diaSemanaKey) {
+        ventasPorDiaSemana[diaSemanaKey] += ingresoVenta;
       }
       
       // Actualizar ingresos por mes del año actual
@@ -278,6 +320,7 @@ const Finanzas = () => {
       productosMasVendidos,
       categoriasPorVolumen,
       margenPorCategoria,
+      ventasPorDiaSemana,
       rentabilidadTemporal
     }));
   };
@@ -363,10 +406,107 @@ const Finanzas = () => {
     return 0;
   };
 
+  // Función auxiliar para paginar los datos de ingresos por día
+  const getPaginatedData = () => {
+    if (!datosFinancieros.ingresosPorPeriodo) return [];
+    
+    const entradas = Object.entries(datosFinancieros.ingresosPorPeriodo);
+    // Ordenar por fecha
+    const entradasOrdenadas = entradas.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+    
+    // Calcular el número de páginas basado en el tamaño de los datos y el timeRange
+    let elementosPorPagina = diasPorPagina;
+    if (timeRange === "año") {
+      elementosPorPagina = 31; // Ajustado para mostrar aproximadamente un mes por página
+    } else if (timeRange === "mes") {
+      elementosPorPagina = 15; // Medio mes por página cuando es un periodo mensual
+    }
+    
+    // Actualizar la cantidad de días por página
+    if (diasPorPagina !== elementosPorPagina) {
+      setDiasPorPagina(elementosPorPagina);
+    }
+    
+    const inicio = (paginaActual - 1) * elementosPorPagina;
+    const fin = inicio + elementosPorPagina;
+    
+    return entradasOrdenadas.slice(inicio, fin);
+  };
+  
+  // Calcular el número total de páginas
+  const getTotalPages = () => {
+    if (!datosFinancieros.ingresosPorPeriodo) return 1;
+    
+    const totalEntradas = Object.keys(datosFinancieros.ingresosPorPeriodo).length;
+    return Math.ceil(totalEntradas / diasPorPagina);
+  };
+  
+  // Funciones para navegar entre páginas
+  const goToNextPage = () => {
+    if (paginaActual < getTotalPages()) {
+      setPaginaActual(paginaActual + 1);
+    }
+  };
+  
+  const goToPreviousPage = () => {
+    if (paginaActual > 1) {
+      setPaginaActual(paginaActual - 1);
+    }
+  };
+  
+  // Resetear la página actual cuando cambia el rango de tiempo
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [timeRange]);
+
+  // Mostrar/ocultar tooltips
+  const showTooltip = (e, tooltipText) => {
+    if (containerRef.current) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      
+      setTooltipPosition({
+        top: rect.top - containerRect.top + window.scrollY + rect.height + 10,
+        left: rect.left - containerRect.left + window.scrollX + rect.width / 2
+      });
+      
+      setActiveTooltip(tooltipText);
+    }
+  };
+  
+  const hideTooltip = () => {
+    setActiveTooltip(null);
+  };
+
+  // Alternar entre vista de gráfico y tabla
+  const toggleTableView = (cardId) => {
+    setVerTabla(prevState => prevState === cardId ? null : cardId);
+  };
+  
+  // Información para tooltips
+  const tooltipInfo = {
+    ingresosTotales: "Total de dinero recibido por ventas en el período seleccionado, sin considerar costos.",
+    costosTotales: "Total de costos asociados a los productos vendidos, incluyendo precio de compra.",
+    gananciasTotales: "Diferencia entre ingresos y costos, representa el beneficio neto.",
+    inversionInventario: "Valor total del inventario actual a precio de compra.",
+    transacciones: "Número total de ventas realizadas en el período seleccionado.",
+    rentabilidad: "Porcentaje de ganancia respecto a los ingresos totales.",
+    categoriasPrincipales: "Categorías con mayor volumen de ventas ordenadas por ingresos.",
+    distribucionDias: "Ingresos diarios durante el período seleccionado.",
+    ventasDiaSemana: "Distribución de ventas según el día de la semana.",
+    ventasMensuales: "Ingresos mensuales durante el año actual.",
+    productosMasVendidos: "Productos con mayor cantidad de unidades vendidas.",
+    categoriasPorVolumen: "Categorías ordenadas por cantidad de unidades vendidas.",
+    inversionPorCategoria: "Valor del inventario actual distribuido por categorías.",
+    rotacionInventario: "Indica cuántas veces se renueva el inventario en un año.",
+    margenPorCategoria: "Porcentaje de ganancia por categoría de productos.",
+    comparativaFinanciera: "Comparación entre ingresos, costos y ganancias."
+  };
+
   return (
     <div className="app-container">
       <Navbar />
-      <div className="content-container">
+      <div className="content-container" ref={containerRef}>
         {loading ? (
           <FinanzasSkeleton />
         ) : (
@@ -580,77 +720,166 @@ const Finanzas = () => {
                 
                 <div className="section-cards">
                   <div className="analysis-card">
-                    <h3 className="card-title">Distribución por días</h3>#
-                    <div className="time-distribution">
-                      {Object.entries(datosFinancieros.ingresosPorPeriodo).map(([fecha, valor], index) => (
-                        <div key={index} className="time-bar-container">
-                          <div className="time-label">
-                            {new Date(fecha).toLocaleDateString('es-AR', {weekday: 'short'})}<br/>
-                            {new Date(fecha).getDate()}
-                          </div>
-                          <div className="time-bar-wrapper">
-                            <div 
-                              className="time-bar" 
-                              style={{ 
-                                height: `${Math.max(
-                                  5, 
-                                  (valor / Math.max(...Object.values(datosFinancieros.ingresosPorPeriodo))) * 100
-                                )}%` 
-                              }}
-                              title={`${new Date(fecha).toLocaleDateString()}: ${formatMoney(valor)}`}
-                            >
-                              <span className="time-bar-value">{formatMoney(valor)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="analysis-card">
                     <h3 className="card-title">Ventas por día de la semana</h3>
-                    <div className="day-distribution">
-                      {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((dia, index) => {
-                        // Simulación de datos para el ejemplo
-                        const valor = Math.floor(Math.random() * 15000) + 5000;
-                        const porcentaje = Math.floor(Math.random() * 30) + 5;
-                        
-                        return (
-                          <div key={index} className="day-stat">
-                            <div className="day-name">{dia}</div>
-                            <div className="day-value">{formatMoney(valor)}</div>
-                            <div className="day-progress-container">
-                              <div className="day-progress" style={{ width: `${porcentaje}%` }}></div>
-                            </div>
-                            <div className="day-percent">{porcentaje}%</div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.ventasDiaSemana)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('ventasDiaSemana')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'ventasDiaSemana' ? faChartBar : faTable} />
+                      {verTabla === 'ventasDiaSemana' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'ventasDiaSemana' ? (
+                      <div className="day-distribution">
+                        {datosFinancieros.ventasPorDiaSemana ? (
+                          // Verificar si hay datos de ventas
+                          Object.values(datosFinancieros.ventasPorDiaSemana).some(valor => valor > 0) ? (
+                            (() => {
+                              // Calcular el total de ventas para porcentajes
+                              const totalVentasSemana = Object.values(datosFinancieros.ventasPorDiaSemana).reduce((sum, valor) => sum + valor, 0);
+                              
+                              // Orden fijo de los días
+                              const diasOrdenados = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+                              
+                              return diasOrdenados.map((dia, index) => {
+                                // Obtener el valor asignado a este día o 0 si no existe
+                                const valor = datosFinancieros.ventasPorDiaSemana[dia] || 0;
+                                
+                                // Calcular el porcentaje de este día respecto al total
+                                const porcentaje = totalVentasSemana > 0 ? (valor / totalVentasSemana) * 100 : 0;
+                                
+                                return (
+                                  <div key={index} className="day-stat">
+                                    <div className="day-name">{dia}</div>
+                                    <div className="day-bar-container">
+                                      <div className="day-progress-container">
+                                        <div 
+                                          className="day-progress" 
+                                          style={{ 
+                                            width: valor > 0 ? `${Math.max(5, porcentaje)}%` : '0%',
+                                            display: valor > 0 ? 'block' : 'none'
+                                          }}
+                                        ></div>
+                                      </div>
+                                      <div className="day-bar-values">
+                                        <div className="day-value">{formatMoney(valor)}</div>
+                                        <div className="day-percent">{porcentaje.toFixed(1)}%</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              });
+                            })()
+                          ) : (
+                            <div className="no-data">No hay ventas registradas en este período</div>
+                          )
+                        ) : (
+                          <div className="no-data">Cargando datos...</div>
+                        )}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Día de la semana</th>
+                            <th>Ingresos</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            if (!datosFinancieros.ventasPorDiaSemana) return null;
+                            
+                            const totalVentasSemana = Object.values(datosFinancieros.ventasPorDiaSemana).reduce((sum, valor) => sum + valor, 0);
+                            const diasOrdenados = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+                            const diasCompletos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                            
+                            return diasOrdenados.map((dia, index) => {
+                              const valor = datosFinancieros.ventasPorDiaSemana[dia] || 0;
+                              const porcentaje = totalVentasSemana > 0 ? (valor / totalVentasSemana) * 100 : 0;
+                              
+                              return (
+                                <tr key={index}>
+                                  <td>{diasCompletos[index]}</td>
+                                  <td>{formatMoney(valor)}</td>
+                                  <td>{porcentaje.toFixed(1)}%</td>
+                                </tr>
+                              );
+                            });
+                          })()}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
-                </div>
-                
-                <div className="section-cards">
-                  <div className="analysis-card full-width">
+
+                  <div className="analysis-card">
                     <h3 className="card-title">Ventas mensuales (año actual)</h3>
-                    <div className="monthly-distribution">
-                      {Object.entries(datosFinancieros.ingresosPorMes).map(([mes, valor], index) => {
-                        const porcentaje = datosFinancieros.ingresosTotales > 0 
-                          ? (valor / Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0)) * 100 
-                          : 0;
-                          
-                        return (
-                          <div key={index} className="month-stat">
-                            <div className="month-name">{mes.substring(0, 3)}</div>
-                            <div className="month-bar-container">
-                              <div className="month-bar" style={{ height: `${Math.max(4, porcentaje)}%` }}>
-                                <span className="month-bar-value">{formatMoney(valor)}</span>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.ventasMensuales)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('ventasMensuales')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'ventasMensuales' ? faChartBar : faTable} />
+                      {verTabla === 'ventasMensuales' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'ventasMensuales' ? (
+                      <div className="monthly-distribution">
+                        {Object.entries(datosFinancieros.ingresosPorMes).map(([mes, valor], index) => {
+                          const porcentaje = Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0) > 0 
+                            ? (valor / Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0)) * 100 
+                            : 0;
+                            
+                          return (
+                            <div key={index} className="month-stat">
+                              <div className="month-name">{mes.substring(0, 3)}</div>
+                              <div className="month-bar-container">
+                                <div className="month-bar" style={{ height: `${Math.max(4, porcentaje)}%` }}>
+                                  <span className="month-bar-value">{formatMoney(valor)}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Mes</th>
+                            <th>Ingresos</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(datosFinancieros.ingresosPorMes).map(([mes, valor], index) => {
+                            const totalIngresos = Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0);
+                            const porcentaje = totalIngresos > 0 ? (valor / totalIngresos) * 100 : 0;
+                            
+                            return (
+                              <tr key={index}>
+                                <td>{mes}</td>
+                                <td>{formatMoney(valor)}</td>
+                                <td>{porcentaje.toFixed(1)}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               </div>
@@ -664,73 +893,203 @@ const Finanzas = () => {
                 <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Productos más vendidos</h3>
-                    <div className="product-list">
-                      {datosFinancieros.productosMasVendidos.length > 0 ? (
-                        datosFinancieros.productosMasVendidos.map((producto, index) => (
-                          <div key={index} className="product-item">
-                            <div className="product-rank">{index + 1}</div>
-                            <div className="product-info">
-                              <div className="product-name">{producto.nombre}</div>
-                              <div className="product-meta">{producto.ventas} unidades vendidas</div>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.productosMasVendidos)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('productosMasVendidos')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'productosMasVendidos' ? faChartBar : faTable} />
+                      {verTabla === 'productosMasVendidos' ? ' Ver lista' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'productosMasVendidos' ? (
+                      <div className="product-list">
+                        {datosFinancieros.productosMasVendidos.length > 0 ? (
+                          datosFinancieros.productosMasVendidos.map((producto, index) => (
+                            <div key={index} className="product-item">
+                              <div className="product-rank">{index + 1}</div>
+                              <div className="product-info">
+                                <div className="product-name">{producto.nombre}</div>
+                                <div className="product-meta">{producto.ventas} unidades vendidas</div>
+                              </div>
+                              <div className="product-revenue">{formatMoney(producto.ingreso)}</div>
                             </div>
-                            <div className="product-revenue">{formatMoney(producto.ingreso)}</div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="no-data">No hay datos disponibles para el período seleccionado</div>
-                      )}
-                    </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Ranking</th>
+                            <th>Producto</th>
+                            <th>Unidades vendidas</th>
+                            <th>Ingresos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.productosMasVendidos.length > 0 ? (
+                            datosFinancieros.productosMasVendidos.map((producto, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{producto.nombre}</td>
+                                <td>{producto.ventas}</td>
+                                <td>{formatMoney(producto.ingreso)}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="4" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                   
                   <div className="analysis-card">
                     <h3 className="card-title">Categorías por volumen</h3>
-                    <div className="category-volume">
-                      {datosFinancieros.categoriasPorVolumen.length > 0 ? (
-                        datosFinancieros.categoriasPorVolumen.map((categoria, index) => (
-                          <div key={index} className="category-volume-item">
-                            <div className="category-volume-info">
-                              <div className="category-volume-name">{categoria.nombre}</div>
-                              <div className="category-volume-count">{categoria.ventas} unidades</div>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.categoriasPorVolumen)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('categoriasPorVolumen')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'categoriasPorVolumen' ? faChartBar : faTable} />
+                      {verTabla === 'categoriasPorVolumen' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'categoriasPorVolumen' ? (
+                      <div className="category-volume">
+                        {datosFinancieros.categoriasPorVolumen.length > 0 ? (
+                          datosFinancieros.categoriasPorVolumen.map((categoria, index) => (
+                            <div key={index} className="category-volume-item">
+                              <div className="category-volume-info">
+                                <div className="category-volume-name">{categoria.nombre}</div>
+                                <div className="category-volume-count">{categoria.ventas} unidades</div>
+                              </div>
+                              <div className="category-volume-bar-container">
+                                <div className="category-volume-bar" style={{ width: `${categoria.porcentaje}%` }}></div>
+                                <span className="category-volume-percent">{categoria.porcentaje.toFixed(1)}%</span>
+                              </div>
                             </div>
-                            <div className="category-volume-bar-container">
-                              <div className="category-volume-bar" style={{ width: `${categoria.porcentaje}%` }}></div>
-                              <span className="category-volume-percent">{categoria.porcentaje.toFixed(1)}%</span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="no-data">No hay datos disponibles para el período seleccionado</div>
-                      )}
-                    </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Categoría</th>
+                            <th>Unidades vendidas</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.categoriasPorVolumen.length > 0 ? (
+                            datosFinancieros.categoriasPorVolumen.map((categoria, index) => (
+                              <tr key={index}>
+                                <td>{categoria.nombre}</td>
+                                <td>{categoria.ventas}</td>
+                                <td>{categoria.porcentaje.toFixed(1)}%</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
                 
                 <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Inversión por categoría</h3>
-                    <div className="inventory-distribution">
-                      {Object.entries(datosFinancieros.inversionPorCategoria || {})
-                        .sort(([, a], [, b]) => b - a)
-                        .slice(0, 5)
-                        .map(([categoria, valor], index) => {
-                          const porcentaje = datosFinancieros.inversionMercaderia > 0 
-                            ? (valor / datosFinancieros.inversionMercaderia) * 100 
-                            : 0;
-                            
-                          return (
-                            <div key={index} className="inventory-category">
-                              <div className="inventory-category-header">
-                                <span className="inventory-category-name">{categoria}</span>
-                                <span className="inventory-category-value">{formatMoney(valor)}</span>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.inversionPorCategoria)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('inversionPorCategoria')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'inversionPorCategoria' ? faChartBar : faTable} />
+                      {verTabla === 'inversionPorCategoria' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'inversionPorCategoria' ? (
+                      <div className="inventory-distribution">
+                        {Object.entries(datosFinancieros.inversionPorCategoria || {})
+                          .sort(([, a], [, b]) => b - a)
+                          .slice(0, 5)
+                          .map(([categoria, valor], index) => {
+                            const porcentaje = datosFinancieros.inversionMercaderia > 0 
+                              ? (valor / datosFinancieros.inversionMercaderia) * 100 
+                              : 0;
+                              
+                            return (
+                              <div key={index} className="inventory-category">
+                                <div className="inventory-category-header">
+                                  <span className="inventory-category-name">{categoria}</span>
+                                  <span className="inventory-category-value">{formatMoney(valor)}</span>
+                                </div>
+                                <div className="inventory-progress-container">
+                                  <div className="inventory-progress" style={{ width: `${porcentaje}%` }}></div>
+                                  <span className="inventory-percent">{porcentaje.toFixed(1)}%</span>
+                                </div>
                               </div>
-                              <div className="inventory-progress-container">
-                                <div className="inventory-progress" style={{ width: `${porcentaje}%` }}></div>
-                                <span className="inventory-percent">{porcentaje.toFixed(1)}%</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Categoría</th>
+                            <th>Inversión</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(datosFinancieros.inversionPorCategoria || {})
+                            .sort(([, a], [, b]) => b - a)
+                            .map(([categoria, valor], index) => {
+                              const porcentaje = datosFinancieros.inversionMercaderia > 0 
+                                ? (valor / datosFinancieros.inversionMercaderia) * 100 
+                                : 0;
+                                
+                              return (
+                                <tr key={index}>
+                                  <td>{categoria}</td>
+                                  <td>{formatMoney(valor)}</td>
+                                  <td>{porcentaje.toFixed(1)}%</td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                   
                   <div className="analysis-card">
@@ -829,6 +1188,13 @@ const Finanzas = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Tooltip de información */}
+            {activeTooltip && (
+              <div className="tooltip" style={{ top: tooltipPosition.top, left: tooltipPosition.left }}>
+                {activeTooltip}
               </div>
             )}
           </>
