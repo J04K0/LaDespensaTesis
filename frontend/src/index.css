@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-    * {
-      font-family: 'Inter', sans-serif;
-    }
+* {
+  font-family: 'Inter', sans-serif;
+}
 
 html, body, #root {
     background-color: #f5f5f5;
@@ -34,4 +34,33 @@ body:not(.login-page) {
 /* Clase específica para la página de login */
 .login-page {
   padding-top: 0;
+}
+
+/* Estilos optimizados para SweetAlert2 para mejorar rendimiento */
+.swal-optimized-container {
+  z-index: 9999;
+  will-change: auto !important;
+}
+
+.swal-optimized-popup {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  width: 32em;
+  max-width: 90%;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+/* Optimizaciones para evitar lag con transformaciones y transiciones */
+.swal2-show, .swal2-hide {
+  animation: none !important;
+  transition: none !important;
+}
+
+.swal2-backdrop-show, .swal2-backdrop-hide {
+  animation: none !important;
+  transition: none !important;
 }

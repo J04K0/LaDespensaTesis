@@ -11,28 +11,37 @@ import axios from '../services/root.service.js';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
 
-// Función para controlar el scroll del body
+// Función para controlar el scroll del body - Optimizada para reducir lag
 const controlBodyScroll = (disable) => {
-  if (disable) {
-    // Guardar la posición actual del scroll antes de bloquear
-    const scrollY = window.scrollY;
-    
-    // Aplicar clase modal-open que bloquea el scroll
-    document.body.classList.add('modal-open');
-    
-    // Guardar la posición para poder restaurarla después
-    document.body.style.top = `-${scrollY}px`;
-    document.body.setAttribute('data-scroll-position', scrollY);
-  } else {
-    // Eliminar la clase que bloquea el scroll
-    document.body.classList.remove('modal-open');
-    
-    // Restaurar la posición del scroll
-    const scrollY = document.body.getAttribute('data-scroll-position') || 0;
-    document.body.style.top = '';
-    window.scrollTo(0, parseInt(scrollY));
-    document.body.removeAttribute('data-scroll-position');
-  }
+  // Uso de requestAnimationFrame para desacoplar del flujo principal y mejorar rendimiento
+  requestAnimationFrame(() => {
+    if (disable) {
+      // Guardar la posición actual del scroll antes de bloquear
+      const scrollY = window.scrollY;
+      
+      // Usar técnica más directa para bloquear el scroll (mejor rendimiento)
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.overflowY = 'scroll';
+      document.body.dataset.scrollPosition = scrollY;
+    } else {
+      // Restaurar el scroll de manera más eficiente
+      const scrollY = parseInt(document.body.dataset.scrollPosition || '0');
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      document.body.style.overflowY = '';
+      
+      // Restaurar la posición del scroll de manera más suave
+      window.scrollTo({
+        top: scrollY,
+        behavior: 'instant' // Evitar la animación para mejor rendimiento
+      });
+      
+      delete document.body.dataset.scrollPosition;
+    }
+  });
 };
 
 const DeudoresList = () => {
@@ -516,20 +525,25 @@ const DeudoresList = () => {
     return value;
   };
 
-  const handleCancelEdit = async () => {
-    const result = await showConfirmationAlert(
+  const handleCancelEdit = () => {
+    // Desactivar animaciones al abrir la alerta para evitar lag
+    const result = showConfirmationAlert(
       "¿Estás seguro?",
       "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
       "Sí, cancelar",
       "No, volver"
     );
-
-    if (result.isConfirmed) {
-      // Restaurar el scroll
-      controlBodyScroll(false);
-
-      setShowEditModal(false);
-    }
+    
+    // Restaurar el scroll inmediatamente para evitar lag
+    result.then(result => {
+      if (result.isConfirmed) {
+        // Usamos setTimeout para desacoplar del ciclo de eventos principal
+        setTimeout(() => {
+          controlBodyScroll(false);
+          setShowEditModal(false);
+        }, 0);
+      }
+    });
   };
 
   const handleExportPDF = () => {

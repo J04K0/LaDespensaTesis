@@ -111,6 +111,13 @@ export class ExportService {
     const colorSecundario = [17, 138, 178]; // Color #118AB2
     const colorAcento = [239, 71, 111]; // Color #EF476F
     
+    // Formatear la fecha actual para el nombre del archivo
+    const fechaActual = new Date().toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).replace(/\//g, '-');
+    
     // ---- PORTADA ----
     doc.setFontSize(22);
     doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
@@ -130,11 +137,50 @@ export class ExportService {
     doc.setFontSize(16);
     doc.text(`Periodo: ${periodoTexto}`, 105, 90, { align: 'center' });
     
+    // Calcular y formatear el rango de fechas específico
+    const calcularRangoFechas = () => {
+      const hoy = new Date();
+      let inicio = new Date();
+      let fin = new Date();
+      
+      if (timeRange === "semana") {
+        inicio.setDate(hoy.getDate() - 7);
+        inicio.setHours(0, 0, 0, 0);
+        fin = new Date(hoy);
+        fin.setHours(23, 59, 59, 999);
+      } else if (timeRange === "mes") {
+        inicio.setMonth(hoy.getMonth() - 1);
+        inicio.setHours(0, 0, 0, 0);
+        fin = new Date(hoy);
+        fin.setHours(23, 59, 59, 999);
+      } else if (timeRange === "año") {
+        inicio.setFullYear(hoy.getFullYear() - 1);
+        inicio.setHours(0, 0, 0, 0);
+        fin = new Date(hoy);
+        fin.setHours(23, 59, 59, 999);
+      }
+      
+      // Formatear fechas
+      const opciones = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      };
+      
+      return {
+        inicio: inicio.toLocaleDateString('es-AR', opciones),
+        fin: fin.toLocaleDateString('es-AR', opciones)
+      };
+    };
+    
+    const { inicio, fin } = calcularRangoFechas();
+    doc.setFontSize(14);
+    doc.text(`Fechas: desde ${inicio} hasta ${fin}`, 105, 105, { align: 'center' });
+    
     // Fecha de generación
-    const fechaActual = new Date().toLocaleDateString();
     const horaActual = new Date().toLocaleTimeString();
     doc.setFontSize(12);
-    doc.text(`Generado el: ${fechaActual} a las ${horaActual}`, 105, 105, { align: 'center' });
+    doc.text(`Generado el: ${fechaActual} a las ${horaActual}`, 105, 120, { align: 'center' });
     
     // Agregar página nueva para el contenido
     doc.addPage();

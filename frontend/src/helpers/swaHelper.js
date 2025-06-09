@@ -1,16 +1,34 @@
 import Swal from "sweetalert2";
 
+// Configuración común para todas las alertas para mejorar rendimiento
+const swalBaseConfig = {
+  customClass: {
+    container: 'swal-optimized-container',
+    popup: 'swal-optimized-popup'
+  },
+  backdrop: 'rgba(0,0,0,0.4)',
+  allowOutsideClick: false,
+  showClass: {
+    popup: '',  // Desactivar animación de entrada
+  },
+  hideClass: {
+    popup: '', // Desactivar animación de salida
+  }
+};
+
 export const showSuccessAlert = (title, text) => {
   // Guarda el elemento que tiene el foco actual
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
+    ...swalBaseConfig,
     title,
     text,
     icon: "success",
     confirmButtonText: "Aceptar",
     didOpen: () => {
-      document.querySelector('.swal2-confirm').focus();
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
     },
     didClose: () => {
       if (previouslyFocused) {
@@ -24,12 +42,14 @@ export const showErrorAlert = (title, text) => {
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
+    ...swalBaseConfig,
     title,
     text,
     icon: "error",
     confirmButtonText: "Aceptar",
     didOpen: () => {
-      document.querySelector('.swal2-confirm').focus();
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
     },
     didClose: () => {
       if (previouslyFocused) {
@@ -43,12 +63,14 @@ export const showWarningAlert = (title, text) => {
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
+    ...swalBaseConfig,
     title,
     text,
     icon: "warning",
     confirmButtonText: "Aceptar",
     didOpen: () => {
-      document.querySelector('.swal2-confirm').focus();
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
     },
     didClose: () => {
       if (previouslyFocused) {
@@ -62,6 +84,7 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
+    ...swalBaseConfig,
     title,
     text,
     icon: "question",
@@ -69,7 +92,8 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
     confirmButtonText,
     cancelButtonText,
     didOpen: () => {
-      document.querySelector('.swal2-confirm').focus();
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
     },
     didClose: () => {
       if (previouslyFocused) {
@@ -83,6 +107,7 @@ export const showProductNotFoundAlert = (barcode) => {
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
+    ...swalBaseConfig,
     title: "Producto no encontrado",
     text: `No existe un producto con el código de barras ${barcode} en la base de datos. ¿Desea agregarlo?`,
     icon: "question",
@@ -92,7 +117,8 @@ export const showProductNotFoundAlert = (barcode) => {
     confirmButtonColor: "#28a745",
     cancelButtonColor: "#dc3545",
     didOpen: () => {
-      document.querySelector('.swal2-confirm').focus();
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
     },
     didClose: () => {
       if (previouslyFocused) {

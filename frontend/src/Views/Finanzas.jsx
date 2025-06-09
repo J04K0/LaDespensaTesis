@@ -58,6 +58,20 @@ const Finanzas = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [diasPorPagina, setDiasPorPagina] = useState(14); // Mostrar 2 semanas por página
   
+  // Estados para filtros de fecha específicos
+  const [fechaInicio, setFechaInicio] = useState(new Date());
+  const [fechaFin, setFechaFin] = useState(new Date());
+  const [periodoPersonalizado, setPeriodoPersonalizado] = useState(false);
+  const [seleccionSemana, setSeleccionSemana] = useState(0); // 0: esta semana, -1: semana anterior, etc.
+  const [seleccionMes, setSeleccionMes] = useState({
+    mes: new Date().getMonth(),
+    anio: new Date().getFullYear()
+  });
+  const [seleccionAnio, setSeleccionAnio] = useState({
+    anio: new Date().getFullYear(),
+    trimestre: 0 // 0: todo el año, 1-4: trimestres específicos
+  });
+  
   // Nuevos estados para los tooltips de información
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -69,7 +83,7 @@ const Finanzas = () => {
   useEffect(() => {
     obtenerDatosFinancieros();
     obtenerDatosInventario();
-  }, [timeRange]);
+  }, [timeRange, seleccionSemana, seleccionMes.mes, seleccionMes.anio, seleccionAnio.anio, seleccionAnio.trimestre, periodoPersonalizado]);
 
   // Efecto adicional para garantizar la actualización cuando cambia la sección activa
   useEffect(() => {
@@ -117,21 +131,13 @@ const Finanzas = () => {
   };
 
   const procesarDatosFinancieros = (ventas) => {
-    // Filtrar ventas por rango de tiempo
-    const hoy = new Date();
-    const fechaInicio = new Date();
+    // Obtener rango de fechas basado en los filtros seleccionados
+    const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
     
-    if (timeRange === "semana") {
-      fechaInicio.setDate(hoy.getDate() - 7);
-    } else if (timeRange === "mes") {
-      fechaInicio.setMonth(hoy.getMonth() - 1);
-    } else if (timeRange === "año") {
-      fechaInicio.setFullYear(hoy.getFullYear() - 1);
-    }
-  
+    // Filtrar ventas por rango de tiempo
     const ventasFiltradas = ventas.filter(venta => {
       const fechaVenta = new Date(venta.fecha);
-      return fechaVenta >= fechaInicio && fechaVenta <= hoy;
+      return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
     });
     
     // Calcular métricas generales
@@ -143,9 +149,13 @@ const Finanzas = () => {
     const productoVendido = {};
     const ventasPorCategoria = {};
     
-    // Inicializar días en ingresosPorDia
+    // Para calcular márgenes reales por categoría
+    const costosPorCategoria = {};
+    const gananciasPorCategoria = {};
+    
+    // Inicializar días en ingresosPorDia para el período seleccionado
     const fechaActual = new Date(fechaInicio);
-    while (fechaActual <= hoy) {
+    while (fechaActual <= fechaFin) {
       const fechaStr = fechaActual.toISOString().split('T')[0];
       ingresosPorDia[fechaStr] = 0;
       fechaActual.setDate(fechaActual.getDate() + 1);
@@ -198,9 +208,11 @@ const Finanzas = () => {
         if (!ingresosPorCategoria[categoria]) {
           ingresosPorCategoria[categoria] = 0;
           ventasPorCategoria[categoria] = 0;
+          costosPorCategoria[categoria] = 0;
         }
         ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
         ventasPorCategoria[categoria] += producto.cantidad;
+        costosPorCategoria[categoria] += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
 
         // Tracking de productos más vendidos
         const productoKey = producto.nombre;
@@ -238,6 +250,11 @@ const Finanzas = () => {
     const gananciasTotales = ingresosTotales - costosTotales;
     const rentabilidadPromedio = ingresosTotales > 0 ? (gananciasTotales / ingresosTotales) * 100 : 0;
     
+    // Calcular ganancias por categoría
+    Object.keys(ingresosPorCategoria).forEach(categoria => {
+      gananciasPorCategoria[categoria] = ingresosPorCategoria[categoria] - costosPorCategoria[categoria];
+    });
+    
     // Top categorías por ingresos
     const categoriasOrdenadas = Object.keys(ingresosPorCategoria)
       .map(categoria => ({ 
@@ -269,31 +286,43 @@ const Finanzas = () => {
     // Valor promedio por transacción
     const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
     
-    // Márgenes por categoría (simulados, en una app real vendrían de cálculos reales)
-    const margenPorCategoria = [
-      { categoria: "Cigarros y Tabacos", margen: 40, rendimiento: "alto" },
-      { categoria: "Cuidado Personal", margen: 28, rendimiento: "medio" },
-      { categoria: "Limpieza y Hogar", margen: 28, rendimiento: "medio" },
-      { categoria: "Bebidas Alcohólicas", margen: 25, rendimiento: "medio" },
-      { categoria: "Bebidas", margen: 24, rendimiento: "medio" },
-      { categoria: "Almacén", margen: 23, rendimiento: "medio" },
-      { categoria: "Mascotas", margen: 20, rendimiento: "bajo" },
-      { categoria: "Remedios", margen: 15, rendimiento: "bajo" }
-    ];
+    // Calcular márgenes por categoría reales
+    const margenPorCategoria = Object.keys(ingresosPorCategoria)
+      .filter(categoria => ingresosPorCategoria[categoria] > 0 && costosPorCategoria[categoria] > 0)
+      .map(categoria => {
+        const ingresos = ingresosPorCategoria[categoria];
+        const costos = costosPorCategoria[categoria];
+        const ganancias = ingresos - costos;
+        const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
+        
+        let rendimiento = "bajo";
+        if (margen >= 30) {
+          rendimiento = "alto";
+        } else if (margen >= 20) {
+          rendimiento = "medio";
+        }
+        
+        return {
+          categoria,
+          margen: parseFloat(margen.toFixed(2)),
+          rendimiento
+        };
+      })
+      .sort((a, b) => b.margen - a.margen); // Ordenar de mayor a menor margen
     
-    // Rentabilidad temporal (simulada para el periodo actual)
+    // Rentabilidad temporal (para el periodo actual)
     const rentabilidadTemporal = [];
-    // Tomamos los últimos 7 días para mostrar la rentabilidad temporal
-    const ultimos7Dias = Object.keys(ingresosPorDia)
-      .sort((a, b) => new Date(b) - new Date(a))
-      .reverse()
-      .slice(-7);
+    // Tomamos hasta 7 días para mostrar la rentabilidad temporal
+    const dias = Object.keys(ingresosPorDia)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .slice(0, 7);
     
-    ultimos7Dias.forEach(fecha => {
-      const ingresos = Math.floor(Math.random() * 15000) + 10000;
-      const costos = ingresos * (Math.random() * 0.3 + 0.5); // entre 50% y 80% de los ingresos
+    dias.forEach(fecha => {
+      const ingresos = ingresosPorDia[fecha] || 0;
+      // Estimamos los costos como un porcentaje del ingreso para este día
+      const costos = ingresos * (1 - (rentabilidadPromedio / 100));
       const ganancias = ingresos - costos;
-      const margen = (ganancias / ingresos) * 100;
+      const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
       
       rentabilidadTemporal.push({
         fecha: new Date(fecha),
@@ -406,6 +435,23 @@ const Finanzas = () => {
     return 0;
   };
 
+  // Formatear fechas para mostrar el rango de fechas específico
+  const formatFechaRango = () => {
+    const { inicio, fin } = calcularRangoFechas();
+    
+    // Opciones para formatear fechas en español
+    const opciones = { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    };
+    
+    const fechaInicioStr = inicio.toLocaleDateString('es-AR', opciones);
+    const fechaFinStr = fin.toLocaleDateString('es-AR', opciones);
+    
+    return `${fechaInicioStr} - ${fechaFinStr}`;
+  };
+
   // Función auxiliar para paginar los datos de ingresos por día
   const getPaginatedData = () => {
     if (!datosFinancieros.ingresosPorPeriodo) return [];
@@ -454,6 +500,70 @@ const Finanzas = () => {
     }
   };
   
+  // Función para obtener datos de ventas mensuales del último año completo, independientemente del filtro de periodo seleccionado
+  const obtenerDatosVentasAnuales = async () => {
+    try {
+      const response = await obtenerVentasPorTicket();
+      const todasLasVentas = response.data || [];
+      
+      if (!todasLasVentas || todasLasVentas.length === 0) {
+        console.warn("⚠️ No hay datos de ventas disponibles para el año completo.");
+        return {};
+      }
+      
+      // Inicializar ingresos por mes (año actual)
+      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      const ingresosPorMes = {};
+      meses.forEach(mes => {
+        ingresosPorMes[mes] = 0;
+      });
+
+      // Filtrar ventas del último año, independientemente del filtro general
+      const hoy = new Date();
+      const inicioAnio = new Date();
+      inicioAnio.setFullYear(hoy.getFullYear() - 1);
+      
+      const ventasUltimoAnio = todasLasVentas.filter(venta => {
+        const fechaVenta = new Date(venta.fecha);
+        return fechaVenta >= inicioAnio && fechaVenta <= hoy;
+      });
+      
+      // Procesar las ventas del año completo
+      ventasUltimoAnio.forEach(venta => {
+        const fecha = new Date(venta.fecha);
+        const mes = meses[fecha.getMonth()];
+        
+        let ingresoVenta = 0;
+        venta.ventas.forEach(producto => {
+          ingresoVenta += producto.precioVenta * producto.cantidad;
+        });
+        
+        // Actualizar ingresos por mes del año actual
+        if (fecha.getFullYear() === new Date().getFullYear()) {
+          ingresosPorMes[mes] += ingresoVenta;
+        }
+      });
+      
+      return ingresosPorMes;
+    } catch (error) {
+      console.error("Error al obtener datos de ventas anuales:", error);
+      return {};
+    }
+  };
+  
+  // Estado para almacenar los datos de ventas mensuales anuales
+  const [ingresosPorMesAnual, setIngresosPorMesAnual] = useState({});
+  
+  // Efecto para cargar los datos de ventas mensuales anuales cuando se monta el componente
+  useEffect(() => {
+    const cargarDatosAnuales = async () => {
+      const datos = await obtenerDatosVentasAnuales();
+      setIngresosPorMesAnual(datos);
+    };
+    
+    cargarDatosAnuales();
+  }, []);
+  
   // Resetear la página actual cuando cambia el rango de tiempo
   useEffect(() => {
     setPaginaActual(1);
@@ -461,17 +571,16 @@ const Finanzas = () => {
 
   // Mostrar/ocultar tooltips
   const showTooltip = (e, tooltipText) => {
-    if (containerRef.current) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const containerRect = containerRef.current.getBoundingClientRect();
-      
-      setTooltipPosition({
-        top: rect.top - containerRect.top + window.scrollY + rect.height + 10,
-        left: rect.left - containerRect.left + window.scrollX + rect.width / 2
-      });
-      
-      setActiveTooltip(tooltipText);
-    }
+    // Obtener la posición del botón en relación con la ventana
+    const rect = e.currentTarget.getBoundingClientRect();
+    
+    // Posicionar el tooltip debajo del botón
+    setTooltipPosition({
+      top: rect.bottom + 10,
+      left: rect.left + (rect.width / 2)
+    });
+    
+    setActiveTooltip(tooltipText);
   };
   
   const hideTooltip = () => {
@@ -499,8 +608,75 @@ const Finanzas = () => {
     categoriasPorVolumen: "Categorías ordenadas por cantidad de unidades vendidas.",
     inversionPorCategoria: "Valor del inventario actual distribuido por categorías.",
     rotacionInventario: "Indica cuántas veces se renueva el inventario en un año.",
-    margenPorCategoria: "Porcentaje de ganancia por categoría de productos.",
-    comparativaFinanciera: "Comparación entre ingresos, costos y ganancias."
+    margenPorCategoria: "Porcentaje de ganancia por categoría de productos. Los valores superiores al 30% se consideran de alto rendimiento (verde), entre 20-30% de rendimiento medio (amarillo) y menores al 20% de rendimiento bajo (rojo). Permite identificar qué categorías generan mayor rentabilidad para priorizar la inversión o ajustar precios en aquellas con margen bajo.",
+    comparativaFinanciera: "Visualización de la relación entre ingresos, costos y ganancias para el período seleccionado. La barra completa representa el 100% de los ingresos, mientras que las barras de costos y ganancias muestran su proporción respecto a los ingresos. Permite evaluar rápidamente la estructura financiera del negocio e identificar oportunidades para mejorar márgenes."
+  };
+
+  // Función para calcular las fechas de inicio y fin según los filtros seleccionados
+  const calcularRangoFechas = () => {
+    const hoy = new Date();
+    let inicio = new Date();
+    let fin = new Date();
+    
+    if (timeRange === "semana") {
+      // Obtener el lunes de la semana seleccionada
+      const diaSemana = hoy.getDay() || 7; // 0 = domingo, 1-6 = lunes-sábado
+      const diasDesdeInicio = diaSemana - 1; // Días desde el lunes
+      
+      // Inicio: lunes de la semana seleccionada
+      inicio = new Date(hoy);
+      inicio.setDate(hoy.getDate() - diasDesdeInicio + (seleccionSemana * 7));
+      inicio.setHours(0, 0, 0, 0);
+      
+      // Fin: domingo de la semana seleccionada
+      fin = new Date(inicio);
+      fin.setDate(inicio.getDate() + 6);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "mes") {
+      // Primer día del mes seleccionado
+      inicio = new Date(seleccionMes.anio, seleccionMes.mes, 1);
+      inicio.setHours(0, 0, 0, 0);
+      
+      // Último día del mes seleccionado
+      fin = new Date(seleccionMes.anio, seleccionMes.mes + 1, 0);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "año") {
+      if (seleccionAnio.trimestre === 0) {
+        // Año completo
+        inicio = new Date(seleccionAnio.anio, 0, 1);
+        fin = new Date(seleccionAnio.anio, 11, 31);
+      } else {
+        // Trimestre específico (1-4)
+        const trimestre = seleccionAnio.trimestre - 1; // 0-3
+        inicio = new Date(seleccionAnio.anio, trimestre * 3, 1);
+        fin = new Date(seleccionAnio.anio, (trimestre + 1) * 3, 0);
+      }
+      
+      inicio.setHours(0, 0, 0, 0);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "personalizado" && periodoPersonalizado) {
+      // Usar las fechas seleccionadas por el usuario
+      inicio = new Date(fechaInicio);
+      inicio.setHours(0, 0, 0, 0);
+      
+      fin = new Date(fechaFin);
+      fin.setHours(23, 59, 59, 999);
+    } else {
+      // Por defecto, última semana
+      inicio.setDate(hoy.getDate() - 7);
+      inicio.setHours(0, 0, 0, 0);
+    }
+    
+    return { inicio, fin };
+  };
+  
+  const aplicarFiltroPersonalizado = () => {
+    setPeriodoPersonalizado(true);
+    obtenerDatosFinancieros();
+    obtenerDatosInventario();
   };
 
   return (
@@ -529,11 +705,132 @@ const Finanzas = () => {
                   onChange={handleTimeRangeChange}
                   className="form-select"
                 >
-                  <option value="semana">Última semana</option>
-                  <option value="mes">Último mes</option>
-                  <option value="año">Último año</option>
+                  <option value="semana">Semana</option>
+                  <option value="mes">Mes</option>
+                  <option value="año">Año</option>
+                  <option value="personalizado">Personalizado</option>
                 </select>
               </div>
+              
+              {/* Filtros específicos por tipo de período */}
+              {timeRange === "semana" && (
+                <div className="filter-group">
+                  <label className="form-label">Seleccionar:</label>
+                  <select 
+                    value={seleccionSemana} 
+                    onChange={(e) => setSeleccionSemana(parseInt(e.target.value))}
+                    className="form-select"
+                  >
+                    <option value="0">Esta semana</option>
+                    <option value="-1">Semana anterior</option>
+                    <option value="-2">Hace 2 semanas</option>
+                    <option value="-3">Hace 3 semanas</option>
+                    <option value="-4">Hace 4 semanas</option>
+                  </select>
+                </div>
+              )}
+              
+              {timeRange === "mes" && (
+                <>
+                  <div className="filter-group">
+                    <label className="form-label">Mes:</label>
+                    <select 
+                      value={seleccionMes.mes} 
+                      onChange={(e) => setSeleccionMes({...seleccionMes, mes: parseInt(e.target.value)})}
+                      className="form-select"
+                    >
+                      <option value="0">Enero</option>
+                      <option value="1">Febrero</option>
+                      <option value="2">Marzo</option>
+                      <option value="3">Abril</option>
+                      <option value="4">Mayo</option>
+                      <option value="5">Junio</option>
+                      <option value="6">Julio</option>
+                      <option value="7">Agosto</option>
+                      <option value="8">Septiembre</option>
+                      <option value="9">Octubre</option>
+                      <option value="10">Noviembre</option>
+                      <option value="11">Diciembre</option>
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label className="form-label">Año:</label>
+                    <select 
+                      value={seleccionMes.anio} 
+                      onChange={(e) => setSeleccionMes({...seleccionMes, anio: parseInt(e.target.value)})}
+                      className="form-select"
+                    >
+                      {[...Array(6)].map((_, i) => {
+                        const year = new Date().getFullYear() - i;
+                        return <option key={year} value={year}>{year}</option>;
+                      })}
+                    </select>
+                  </div>
+                </>
+              )}
+              
+              {timeRange === "año" && (
+                <>
+                  <div className="filter-group">
+                    <label className="form-label">Año:</label>
+                    <select 
+                      value={seleccionAnio.anio} 
+                      onChange={(e) => setSeleccionAnio({...seleccionAnio, anio: parseInt(e.target.value)})}
+                      className="form-select"
+                    >
+                      {[...Array(6)].map((_, i) => {
+                        const year = new Date().getFullYear() - i;
+                        return <option key={year} value={year}>{year}</option>;
+                      })}
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label className="form-label">Periodo:</label>
+                    <select 
+                      value={seleccionAnio.trimestre} 
+                      onChange={(e) => setSeleccionAnio({...seleccionAnio, trimestre: parseInt(e.target.value)})}
+                      className="form-select"
+                    >
+                      <option value="0">Año completo</option>
+                      <option value="1">Primer trimestre</option>
+                      <option value="2">Segundo trimestre</option>
+                      <option value="3">Tercer trimestre</option>
+                      <option value="4">Cuarto trimestre</option>
+                    </select>
+                  </div>
+                </>
+              )}
+              
+              {timeRange === "personalizado" && (
+                <>
+                  <div className="filter-group filter-date">
+                    <label className="form-label">Desde:</label>
+                    <input 
+                      type="date" 
+                      value={fechaInicio.toISOString().split('T')[0]} 
+                      onChange={(e) => setFechaInicio(new Date(e.target.value))}
+                      className="form-date-input"
+                    />
+                  </div>
+                  <div className="filter-group filter-date">
+                    <label className="form-label">Hasta:</label>
+                    <input 
+                      type="date" 
+                      value={fechaFin.toISOString().split('T')[0]} 
+                      onChange={(e) => setFechaFin(new Date(e.target.value))}
+                      className="form-date-input"
+                    />
+                  </div>
+                  <div className="filter-group">
+                    <button 
+                      className="btn-apply-filter"
+                      onClick={aplicarFiltroPersonalizado}
+                    >
+                      Aplicar
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Navegación entre secciones */}
@@ -580,19 +877,11 @@ const Finanzas = () => {
                       </div>
                       <div className="stat-header-info">
                         <h3>Ingresos totales</h3>
-                        <div className="stat-trend">
-                          {getTendencia('ingresos') > 0 ? (
-                            <span className="trend-up"><FontAwesomeIcon icon={faArrowUp} /> {getTendencia('ingresos')}%</span>
-                          ) : (
-                            <span className="trend-down"><FontAwesomeIcon icon={faArrowDown} /> {Math.abs(getTendencia('ingresos'))}%</span>
-                          )}
-                          <span className="trend-period">vs. periodo anterior</span>
-                        </div>
                       </div>
                     </div>
                     <div className="stat-value">{formatMoney(datosFinancieros.ingresosTotales)}</div>
                     <div className="stat-caption">
-                      <FontAwesomeIcon icon={faCalendarAlt} /> {timeRange === 'semana' ? 'Últimos 7 días' : timeRange === 'mes' ? 'Último mes' : 'Último año'}
+                      <FontAwesomeIcon icon={faCalendarAlt} /> {formatFechaRango()}
                     </div>
                   </div>
 
@@ -603,19 +892,11 @@ const Finanzas = () => {
                       </div>
                       <div className="stat-header-info">
                         <h3>Costos totales</h3>
-                        <div className="stat-trend">
-                          {getTendencia('costos') > 0 ? (
-                            <span className="trend-down"><FontAwesomeIcon icon={faArrowUp} /> {getTendencia('costos')}%</span>
-                          ) : (
-                            <span className="trend-up"><FontAwesomeIcon icon={faArrowDown} /> {Math.abs(getTendencia('costos'))}%</span>
-                          )}
-                          <span className="trend-period">vs. periodo anterior</span>
-                        </div>
                       </div>
                     </div>
                     <div className="stat-value">{formatMoney(datosFinancieros.costosTotales)}</div>
                     <div className="stat-caption">
-                      <FontAwesomeIcon icon={faCalendarAlt} /> {timeRange === 'semana' ? 'Últimos 7 días' : timeRange === 'mes' ? 'Último mes' : 'Último año'}
+                      <FontAwesomeIcon icon={faCalendarAlt} /> {formatFechaRango()}
                     </div>
                   </div>
 
@@ -626,19 +907,11 @@ const Finanzas = () => {
                       </div>
                       <div className="stat-header-info">
                         <h3>Ganancias totales</h3>
-                        <div className="stat-trend">
-                          {getTendencia('ganancias') > 0 ? (
-                            <span className="trend-up"><FontAwesomeIcon icon={faArrowUp} /> {getTendencia('ganancias')}%</span>
-                          ) : (
-                            <span className="trend-down"><FontAwesomeIcon icon={faArrowDown} /> {Math.abs(getTendencia('ganancias'))}%</span>
-                          )}
-                          <span className="trend-period">vs. periodo anterior</span>
-                        </div>
                       </div>
                     </div>
                     <div className="stat-value">{formatMoney(datosFinancieros.gananciasTotales)}</div>
                     <div className="stat-caption">
-                      <div className="profit-margin">Margen: {formatPercent(datosFinancieros.rentabilidadPromedio)}</div>
+                      <FontAwesomeIcon icon={faCalendarAlt} /> {formatFechaRango()}
                     </div>
                   </div>
                 </div>
@@ -737,7 +1010,7 @@ const Finanzas = () => {
                     </button>
 
                     {verTabla !== 'ventasDiaSemana' ? (
-                      <div className="day-distribution">
+                      <div className="category-volume">
                         {datosFinancieros.ventasPorDiaSemana ? (
                           // Verificar si hay datos de ventas
                           Object.values(datosFinancieros.ventasPorDiaSemana).some(valor => valor > 0) ? (
@@ -756,22 +1029,20 @@ const Finanzas = () => {
                                 const porcentaje = totalVentasSemana > 0 ? (valor / totalVentasSemana) * 100 : 0;
                                 
                                 return (
-                                  <div key={index} className="day-stat">
-                                    <div className="day-name">{dia}</div>
-                                    <div className="day-bar-container">
-                                      <div className="day-progress-container">
-                                        <div 
-                                          className="day-progress" 
-                                          style={{ 
-                                            width: valor > 0 ? `${Math.max(5, porcentaje)}%` : '0%',
-                                            display: valor > 0 ? 'block' : 'none'
-                                          }}
-                                        ></div>
-                                      </div>
-                                      <div className="day-bar-values">
-                                        <div className="day-value">{formatMoney(valor)}</div>
-                                        <div className="day-percent">{porcentaje.toFixed(1)}%</div>
-                                      </div>
+                                  <div key={index} className="category-volume-item">
+                                    <div className="category-volume-info">
+                                      <div className="category-volume-name">{dia}</div>
+                                      <div className="category-volume-count">{formatMoney(valor)}</div>
+                                    </div>
+                                    <div className="category-volume-bar-container">
+                                      <div 
+                                        className="category-volume-bar" 
+                                        style={{ 
+                                          width: `${Math.max(2, porcentaje)}%`,
+                                          backgroundColor: index >= 5 ? '#ff9f1c' : '#4f86c6' // Colores diferentes para fin de semana
+                                        }}
+                                      ></div>
+                                      <span className="category-volume-percent">{porcentaje.toFixed(1)}%</span>
                                     </div>
                                   </div>
                                 );
@@ -837,19 +1108,21 @@ const Finanzas = () => {
                     </button>
 
                     {verTabla !== 'ventasMensuales' ? (
-                      <div className="monthly-distribution">
-                        {Object.entries(datosFinancieros.ingresosPorMes).map(([mes, valor], index) => {
-                          const porcentaje = Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0) > 0 
-                            ? (valor / Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0)) * 100 
+                      <div className="category-volume">
+                        {Object.entries(ingresosPorMesAnual).map(([mes, valor], index) => {
+                          const porcentaje = Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0) > 0 
+                            ? (valor / Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0)) * 100 
                             : 0;
                             
                           return (
-                            <div key={index} className="month-stat">
-                              <div className="month-name">{mes.substring(0, 3)}</div>
-                              <div className="month-bar-container">
-                                <div className="month-bar" style={{ height: `${Math.max(4, porcentaje)}%` }}>
-                                  <span className="month-bar-value">{formatMoney(valor)}</span>
-                                </div>
+                            <div key={index} className="category-volume-item">
+                              <div className="category-volume-info">
+                                <div className="category-volume-name">{mes.substring(0, 3)}</div>
+                                <div className="category-volume-count">{formatMoney(valor)}</div>
+                              </div>
+                              <div className="category-volume-bar-container">
+                                <div className="category-volume-bar" style={{ width: `${Math.max(2, porcentaje)}%` }}></div>
+                                <span className="category-volume-percent">{porcentaje.toFixed(1)}%</span>
                               </div>
                             </div>
                           );
@@ -865,8 +1138,8 @@ const Finanzas = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.entries(datosFinancieros.ingresosPorMes).map(([mes, valor], index) => {
-                            const totalIngresos = Object.values(datosFinancieros.ingresosPorMes).reduce((a, b) => a + b, 0);
+                          {Object.entries(ingresosPorMesAnual).map(([mes, valor], index) => {
+                            const totalIngresos = Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0);
                             const porcentaje = totalIngresos > 0 ? (valor / totalIngresos) * 100 : 0;
                             
                             return (
@@ -1091,31 +1364,6 @@ const Finanzas = () => {
                       </table>
                     )}
                   </div>
-                  
-                  <div className="analysis-card">
-                    <h3 className="card-title">Rotación de inventario</h3>
-                    <div className="inventory-turnover">
-                      {/* Datos simulados - En una implementación real, estos vendrían de la API */}
-                      <div className="turnover-gauge">
-                        <div className="turnover-value">4.8</div>
-                        <div className="turnover-label">veces/año</div>
-                      </div>
-                      <div className="turnover-stats">
-                        <div className="turnover-stat">
-                          <div className="turnover-stat-value">76</div>
-                          <div className="turnover-stat-label">días en inventario</div>
-                        </div>
-                        <div className="turnover-stat">
-                          <div className="turnover-stat-value">12%</div>
-                          <div className="turnover-stat-label">bajo mínimo</div>
-                        </div>
-                        <div className="turnover-stat">
-                          <div className="turnover-stat-value">8%</div>
-                          <div className="turnover-stat-label">sobre máximo</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -1128,6 +1376,13 @@ const Finanzas = () => {
                 <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Margen de ganancia por categoría</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.margenPorCategoria)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
                     <div className="margin-by-category">
                       {datosFinancieros.margenPorCategoria.map((cat, index) => (
                         <div key={index} className="margin-category">
@@ -1146,6 +1401,13 @@ const Finanzas = () => {
                   
                   <div className="analysis-card">
                     <h3 className="card-title">Comparativa Ingresos vs. Costos</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.comparativaFinanciera)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
                     <div className="comparison-stats">
                       <div className="comparison-stat">
                         <div className="comparison-header">

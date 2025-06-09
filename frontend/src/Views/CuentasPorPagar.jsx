@@ -186,6 +186,21 @@ const CuentasPorPagar = () => {
     setCurrentPage(1);
   }, [searchQuery, cuentas, yearSelected]);
 
+  // Efectos para manejar el rendimiento del modal
+  useEffect(() => {
+    // Bloquear el scroll del body cuando el modal está abierto
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Limpieza al desmontar el componente
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showModal]);
+
   // Funciones para manejar cambios en los filtros
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);

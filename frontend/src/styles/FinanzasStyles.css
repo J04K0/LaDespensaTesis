@@ -108,36 +108,34 @@
 }
 
 .filters-container {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  background-color: transparent;
-  padding: 0;
-  box-shadow: none;
-  margin-left: 0;
-  align-self: flex-start;
+  width: 100% !important;
+  max-width: 1400px !important;
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 15px !important;
+  margin-bottom: 20px !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  margin-left: 0 !important;
+  align-self: flex-start !important;
 }
 
 .filter-group {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: var(--white);
-  border-radius: 8px;
-  padding: 8px 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  max-width: fit-content;
-  gap: 10px;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.filter-group:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  background-color: var(--white) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+  max-width: fit-content !important;
+  gap: 10px !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
 }
 
 .form-label {
@@ -166,6 +164,36 @@
   border-color: var(--primary);
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+/* Estilos para filtros de fecha */
+.filter-date {
+  min-width: 200px;
+}
+
+.form-date-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  width: 100%;
+}
+
+.btn-apply-filter {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-apply-filter:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Navegación entre secciones */
@@ -1183,8 +1211,7 @@
 }
 
 .tooltip {
-  position: absolute;
-  transform: translateX(-50%);
+  position: fixed;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 8px 12px;
@@ -1194,6 +1221,8 @@
   z-index: 1000;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
   pointer-events: none;
+  transform: translateX(-50%);
+  margin-top: 10px;
 }
 
 .tooltip::before {
