@@ -31,6 +31,9 @@ export const proveedorSchema = Joi.object({
     'any.required': 'El email del proveedor es obligatorio'
   }),
   contactoPrincipal: Joi.string().allow('').optional(),
+  sitioWeb: Joi.string().allow('').uri().optional().messages({
+    'string.uri': 'El sitio web debe tener un formato de URL válido'
+  }),
   direccion: Joi.string().allow('').optional(),
   categorias: Joi.array()
     .items(Joi.string().valid(
@@ -58,8 +61,10 @@ export const proveedorSchema = Joi.object({
       'any.required': 'Debe seleccionar al menos una categoría',
       'array.min': 'Debe seleccionar al menos una categoría'
     }),
-  notas: Joi.string().allow('').optional()
+  notas: Joi.string().allow('').optional(),
+  productos: Joi.array().items(Joi.string()).optional()
 });
+
 export const idProveedorSchema = Joi.object({
   id: Joi.string().custom(objectIdValidator).required()
 }).messages({

@@ -6,7 +6,8 @@ import {
   updateProveedor, 
   deleteProveedor,
   getProductosProveedor,
-  vincularProductos
+  vincularProductos,
+  cambiarEstadoProveedor
 } from '../controllers/proveedor.controller.js';
 
 import { 
@@ -31,5 +32,6 @@ router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), de
 // Agregar estos nuevos endpoints
 router.get('/productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductosProveedor);
 router.post('/vincular-productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), vincularProductos);
+router.patch('/cambiar-estado/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), cambiarEstadoProveedor);
 
 export default router;

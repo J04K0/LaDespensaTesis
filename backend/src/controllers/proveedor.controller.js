@@ -6,17 +6,32 @@ import { proveedorSchema } from '../schema/proveedores.schema.js';
 // Obtener todos los proveedores
 export const getProveedores = async (req, res) => {
   try {
-    const { page = 1, limit = 8 } = req.query;
+    const { page = 1, limit = 8, incluirInactivos = false } = req.query;
     
-    const proveedores = await Proveedor.find()
+    // Crear filtro dependiendo de si queremos incluir inactivos o no
+    let filtro = {};
+    if (incluirInactivos === 'true') {
+      filtro = { activo: false };
+    } else if (incluirInactivos === 'false' || incluirInactivos === false) {
+      filtro = { activo: true };
+    }
+    // Si no se especifica, mostrar todos
+    
+    const proveedores = await Proveedor.find(filtro)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
     
-    const count = await Proveedor.countDocuments();
+    const count = await Proveedor.countDocuments(filtro);
     
+    // Eliminar la condición que devuelve error si no hay proveedores
+    // y en su lugar devolver un array vacío con mensaje informativo
     if (proveedores.length === 0) {
-      return handleErrorClient(res, 404, 'No hay proveedores registrados');
+      return handleSuccess(res, 200, 'No hay proveedores registrados con los criterios seleccionados', {
+        proveedores: [],
+        totalPages: 0,
+        currentPage: page
+      });
     }
     
     handleSuccess(res, 200, 'Proveedores encontrados', {
@@ -127,20 +142,52 @@ export const updateProveedor = async (req, res) => {
   }
 };
 
-// Eliminar un proveedor
+// Eliminar un proveedor (ahora marca como inactivo)
 export const deleteProveedor = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const proveedor = await Proveedor.findByIdAndDelete(id);
+    // En lugar de eliminar, actualizamos el estado a inactivo
+    const proveedor = await Proveedor.findByIdAndUpdate(
+      id,
+      { activo: false },
+      { new: true }
+    );
     
     if (!proveedor) {
       return handleErrorClient(res, 404, 'Proveedor no encontrado');
     }
     
-    handleSuccess(res, 200, 'Proveedor eliminado', proveedor);
+    handleSuccess(res, 200, 'Proveedor marcado como inactivo', proveedor);
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al eliminar el proveedor', err.message);
+    handleErrorServer(res, 500, 'Error al marcar el proveedor como inactivo', err.message);
+  }
+};
+
+// Cambiar el estado de un proveedor (activo/inactivo)
+export const cambiarEstadoProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { activo } = req.body;
+    
+    if (typeof activo !== 'boolean') {
+      return handleErrorClient(res, 400, 'El estado "activo" debe ser un valor booleano');
+    }
+    
+    const proveedor = await Proveedor.findByIdAndUpdate(
+      id,
+      { activo },
+      { new: true }
+    );
+    
+    if (!proveedor) {
+      return handleErrorClient(res, 404, 'Proveedor no encontrado');
+    }
+    
+    const mensaje = activo ? 'Proveedor activado' : 'Proveedor desactivado';
+    handleSuccess(res, 200, mensaje, proveedor);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al cambiar el estado del proveedor', err.message);
   }
 };
 

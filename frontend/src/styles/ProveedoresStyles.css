@@ -512,39 +512,98 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.65);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.25s ease-out;
+  overflow-y: auto;
+  padding: 20px;
+  animation: proveedoresFadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
+@keyframes proveedoresFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes proveedoresSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+/* Eliminar el fondo oscuro y usar fondo blanco para los modales */
 .proveedores-modal-content {
-  background-color: white;
-  border-radius: 12px;
-  padding: 0;
-  width: 90%;
-  max-width: 600px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  max-width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: center;
+  position: relative;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: proveedoresSlideUp 0.4s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
-/* Smooth scrollbar para el modal */
+.proveedores-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.proveedores-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.proveedores-modal-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.proveedores-products-modal,
+.proveedores-view-products-modal {
+  max-width: 900px;
+}
+
+/* Definición unificada para encabezados de modal */
+.proveedores-modal-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+  background-color: #ffffff !important; /* Forzar fondo blanco */
+  background-image: none !important; /* Eliminar cualquier degradado */
+  border-radius: 16px 16px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  color: #002651;
+}
+
+/* Definición unificada para títulos de modal */
+.proveedores-modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #002651 !important; /* Texto azul oscuro */
+  text-align: center;
+  width: 100%;
+  text-shadow: none !important; /* Eliminar sombras de texto */
+}
+
+/* Eliminar estilos duplicados y innecesarios */
+.proveedores-modal-body {
+  padding: 24px;
+}
+
+/* Simplificando el scrollbar para mejor rendimiento */
 .proveedores-modal-content {
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f1f1f1;
@@ -556,7 +615,6 @@
 
 .proveedores-modal-content::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 0 12px 12px 0;
 }
 
 .proveedores-modal-content::-webkit-scrollbar-thumb {
@@ -631,11 +689,6 @@
 .proveedores-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-}
-
-.proveedores-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
 .proveedores-modal-footer {

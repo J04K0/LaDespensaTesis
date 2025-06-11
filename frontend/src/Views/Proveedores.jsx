@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink, faFilePdf, faCheck } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProveedoresStyles.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -13,10 +13,11 @@ import {
   updateProveedor, 
   deleteProveedor,
   getProductosProveedor,
-  vincularProductos
+  vincularProductos,
+  cambiarEstadoProveedor
 } from '../services/proveedores.service.js';
 import { getProducts } from '../services/AddProducts.service.js';
-import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert, showInfoAlert } from '../helpers/swaHelper';
 import ProveedoresSkeleton from '../components/ProveedoresSkeleton';
 import { ExportService } from '../services/export.service.js';
 
@@ -50,6 +51,8 @@ const Proveedores = () => {
   
   const [viewingProveedor, setViewingProveedor] = useState(null);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
+  const [mostrarInactivos, setMostrarInactivos] = useState(false);
+  const [estadoFilter, setEstadoFilter] = useState('activos');
 
   const proveedoresPorPagina = 5;
   const categorias = [
@@ -69,7 +72,8 @@ const Proveedores = () => {
   const fetchProveedores = async () => {
     try {
       setLoading(true);
-      const data = await getProveedores(1, 10000);
+      const incluirInactivos = estadoFilter === 'inactivos';
+      const data = await getProveedores(1, 10000, incluirInactivos);
       const proveedoresArray = data.proveedores || data;
       
       setProveedores(proveedoresArray);
@@ -213,8 +217,8 @@ const Proveedores = () => {
   const handleDeleteProveedor = async (id) => {
     const result = await showConfirmationAlert(
       '¿Estás seguro?',
-      'No podrás revertir esta acción',
-      'Sí, eliminar',
+      'El proveedor será marcado como inactivo y no aparecerá en la lista principal',
+      'Sí, desactivar',
       'Cancelar'
     );
 
@@ -223,15 +227,53 @@ const Proveedores = () => {
         setLoading(true);
         await deleteProveedor(id);
         fetchProveedores();
-        showSuccessAlert('Eliminado', 'El proveedor ha sido eliminado.');
+        showSuccessAlert('Desactivado', 'El proveedor ha sido marcado como inactivo.');
       } catch (error) {
-        console.error('Error al eliminar proveedor:', error);
-        showErrorAlert('Error', 'No se pudo eliminar el proveedor');
+        console.error('Error al desactivar proveedor:', error);
+        showErrorAlert('Error', 'No se pudo desactivar el proveedor');
       } finally {
         setLoading(false);
       }
     }
   };
+  
+  const handleCambiarEstadoProveedor = async (id, activo) => {
+    const mensaje = activo 
+      ? '¿Deseas activar este proveedor?' 
+      : '¿Deseas desactivar este proveedor?';
+    
+    const confirmText = activo ? 'Sí, activar' : 'Sí, desactivar';
+    
+    const result = await showConfirmationAlert(
+      '¿Estás seguro?',
+      mensaje,
+      confirmText,
+      'Cancelar'
+    );
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await cambiarEstadoProveedor(id, activo);
+        fetchProveedores();
+        
+        const successMessage = activo 
+          ? 'El proveedor ha sido activado.' 
+          : 'El proveedor ha sido desactivado.';
+        
+        showSuccessAlert(
+          activo ? 'Activado' : 'Desactivado', 
+          successMessage
+        );
+      } catch (error) {
+        console.error('Error al cambiar estado del proveedor:', error);
+        showErrorAlert('Error', 'No se pudo cambiar el estado del proveedor');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCurrentProveedor({
@@ -400,6 +442,36 @@ const Proveedores = () => {
     }
   };
 
+  const handleEstadoFilterChange = async (e) => {
+    const nuevoEstado = e.target.value;
+    setEstadoFilter(nuevoEstado);
+    
+    try {
+      setLoading(true);
+      const incluirInactivos = nuevoEstado === 'inactivos';
+      const data = await getProveedores(1, 10000, incluirInactivos);
+      const proveedoresArray = data.proveedores || data;
+      
+      setProveedores(proveedoresArray);
+      setFilteredProveedores(proveedoresArray);
+      setTotalPages(Math.ceil(proveedoresArray.length / proveedoresPorPagina));
+      setCurrentPage(1);
+      
+      // Mostrar mensaje informativo al usuario
+      if (nuevoEstado === 'inactivos') {
+        showInfoAlert(
+          'Proveedores inactivos', 
+          'Mostrando proveedores inactivos. Para reactivar un proveedor, utilice el botón de activar.'
+        );
+      }
+    } catch (error) {
+      console.error('Error al cambiar filtro de estado:', error);
+      setError('No se pudieron cargar los proveedores. Inténtelo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const indexOfLastProveedor = currentPage * proveedoresPorPagina;
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
@@ -465,6 +537,17 @@ const Proveedores = () => {
                   </select>
                 </div>
                 
+                <div className="proveedores-filter-group">
+                  <select 
+                    value={estadoFilter} 
+                    onChange={handleEstadoFilterChange}
+                    className="proveedores-form-select"
+                  >
+                    <option value="activos">Proveedores Activos</option>
+                    <option value="inactivos">Proveedores Inactivos</option>
+                  </select>
+                </div>
+                
                 <button onClick={handleClearFilters} className="proveedores-clear-filters-button">
                   <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
                 </button>
@@ -488,6 +571,7 @@ const Proveedores = () => {
                         <th>Dirección</th>
                         <th>Categorías</th>
                         <th>Productos</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
@@ -548,6 +632,11 @@ const Proveedores = () => {
                                 )}
                               </div>
                             </td>
+                            <td>
+                              <span className={`proveedores-badge ${proveedor.activo ? 'proveedores-badge-success' : 'proveedores-badge-danger'}`}>
+                                {proveedor.activo ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </td>
                             <td className="proveedores-d-flex proveedores-gap-sm">
                               <button 
                                 onClick={() => handleEditProveedor(proveedor._id)}
@@ -556,19 +645,30 @@ const Proveedores = () => {
                               >
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
-                              <button 
-                                onClick={() => handleDeleteProveedor(proveedor._id)}
-                                className="proveedores-btn-icon proveedores-btn-danger"
-                                title="Eliminar proveedor"
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
+                              
+                              {proveedor.activo ? (
+                                <button 
+                                  onClick={() => handleCambiarEstadoProveedor(proveedor._id, false)}
+                                  className="proveedores-btn-icon proveedores-btn-danger"
+                                  title="Desactivar proveedor"
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={() => handleCambiarEstadoProveedor(proveedor._id, true)}
+                                  className="proveedores-btn-icon proveedores-btn-success"
+                                  title="Activar proveedor"
+                                >
+                                  <FontAwesomeIcon icon={faCheck} />
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="proveedores-no-data">No hay proveedores disponibles</td>
+                          <td colSpan="9" className="proveedores-no-data">No hay proveedores disponibles</td>
                         </tr>
                       )}
                     </tbody>

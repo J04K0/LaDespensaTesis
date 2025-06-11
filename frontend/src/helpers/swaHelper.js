@@ -80,6 +80,27 @@ export const showWarningAlert = (title, text) => {
   });
 };
 
+export const showInfoAlert = (title, text) => {
+  const previouslyFocused = document.activeElement;
+  
+  return Swal.fire({
+    ...swalBaseConfig,
+    title,
+    text,
+    icon: "info",
+    confirmButtonText: "Aceptar",
+    didOpen: () => {
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
+    },
+    didClose: () => {
+      if (previouslyFocused) {
+        previouslyFocused.focus();
+      }
+    }
+  });
+};
+
 export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", cancelButtonText = "No") => {
   const previouslyFocused = document.activeElement;
   

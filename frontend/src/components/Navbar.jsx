@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/NavbarStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faPerson, faCaretUp, faAdd, faHome, faBoxOpen, faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faCaretDown, faPerson, faCaretUp, faAdd, faHome, faBoxOpen, 
+  faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, 
+  faBars, faTimes, faShoppingCart, faStore, faMoneyBillWave, 
+  faCalculator, faWarehouse, faClipboardList, faCoins, faUsers,
+  faUserCog, faLock, faFileInvoiceDollar, faStoreAlt
+} from '@fortawesome/free-solid-svg-icons';
 import { logout } from '../services/auth.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -15,14 +21,22 @@ import { ExportService } from '../services/export.service.js';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [showProductOptions, setShowProductOptions] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(false);
-  const dropdownRef = useRef(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRefs = {
+    ventas: useRef(null),
+    inventario: useRef(null),
+    finanzas: useRef(null),
+    gestion: useRef(null)
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowProductOptions(false);
+      // Cerrar cualquier dropdown activo si se hace clic fuera de él
+      if (activeDropdown && 
+          dropdownRefs[activeDropdown]?.current && 
+          !dropdownRefs[activeDropdown].current.contains(event.target)) {
+        setActiveDropdown(null);
       }
     };
 
@@ -41,17 +55,17 @@ const Navbar = () => {
       // Cerrar la conexión WebSocket al desmontar
       closeSocket();
     };
-  }, []);
+  }, [activeDropdown]);
 
   const handleNavigation = (path) => {
     navigate(path);
     setIsNavVisible(false); // Cerrar menú en móvil después de navegar
-    setShowProductOptions(false); // Cerrar el menú desplegable de productos
+    setActiveDropdown(null); // Cerrar dropdowns activos
   };
 
-  const toggleProductOptions = (e) => {
+  const toggleDropdown = (dropdown, e) => {
     e.stopPropagation(); // Evitar que el clic se propague
-    setShowProductOptions(!showProductOptions);
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
   const handleLogout = async () => {
@@ -238,15 +252,51 @@ const Navbar = () => {
               <FontAwesomeIcon icon={faHome} /> <span>Inicio</span>
             </li>
             
-            <div className="productos-container" ref={dropdownRef}>
+            {/* VENTAS */}
+            <div className="productos-container" ref={dropdownRefs.ventas}>
               <li className="dropdown">
-                <div className="dropdown-trigger" onClick={toggleProductOptions}>
-                  <FontAwesomeIcon icon={faBoxOpen} /> <span>Productos</span>
-                  <FontAwesomeIcon icon={showProductOptions ? faCaretUp : faCaretDown} className="caret-icon" />
+                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('ventas', e)}>
+                  <FontAwesomeIcon icon={faShoppingCart} /> <span>Ventas</span>
+                  <FontAwesomeIcon icon={activeDropdown === 'ventas' ? faCaretUp : faCaretDown} className="caret-icon" />
                 </div>
               </li>
               
-              {showProductOptions && (
+              {activeDropdown === 'ventas' && (
+                <div className="product-submenu">
+                  <ul className="dropdown-menu">
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/ProductScanner');
+                    }}>
+                      <FontAwesomeIcon icon={faBarcode} /> Terminal de venta
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/HistorySale');
+                    }}>
+                      <FontAwesomeIcon icon={faHistory} /> Historial de ventas
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/deudores');
+                    }}>
+                      <FontAwesomeIcon icon={faPerson} /> Gestión de deudores
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* INVENTARIO */}
+            <div className="productos-container" ref={dropdownRefs.inventario}>
+              <li className="dropdown">
+                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('inventario', e)}>
+                  <FontAwesomeIcon icon={faWarehouse} /> <span>Inventario</span>
+                  <FontAwesomeIcon icon={activeDropdown === 'inventario' ? faCaretUp : faCaretDown} className="caret-icon" />
+                </div>
+              </li>
+              
+              {activeDropdown === 'inventario' && (
                 <div className="product-submenu">
                   <ul className="dropdown-menu">
                     <li onClick={(e) => {
@@ -259,40 +309,47 @@ const Navbar = () => {
                       e.stopPropagation();
                       handleNavigation('/add-product');
                     }}>
-                      <FontAwesomeIcon icon={faAdd} /> Añadir productos
+                      <FontAwesomeIcon icon={faAdd} /> Agregar productos
                     </li>
                     <li onClick={(e) => {
                       e.stopPropagation();
-                      handleNavigation('/ProductScanner');
+                      handleNavigation('/proveedores');
                     }}>
-                      <FontAwesomeIcon icon={faBarcode} /> Vender producto
-                    </li>
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/HistorySale');
-                    }}>
-                      <FontAwesomeIcon icon={faHistory} /> Historial de ventas
+                      <FontAwesomeIcon icon={faTruck} /> Gestión de proveedores
                     </li>
                   </ul>
                 </div>
               )}
             </div>
 
-            <li onClick={() => handleNavigation('/deudores')}>
-              <FontAwesomeIcon icon={faPerson} /> <span>Deudores</span>
-            </li>          
-            
-            <li onClick={() => handleNavigation('/proveedores')}>
-              <FontAwesomeIcon icon={faTruck} /> <span>Proveedores</span>
-            </li>
-
-            <li onClick={() => handleNavigation('/finanzas')}>
-              <FontAwesomeIcon icon={faChartLine} /> <span>Estadísticas</span>
-            </li>
-
-            <li onClick={() => handleNavigation('/cuentas-por-pagar')}>
-              <FontAwesomeIcon icon={faHistory} /> <span>Cuentas por pagar</span>
-            </li>
+            {/* FINANZAS */}
+            <div className="productos-container" ref={dropdownRefs.finanzas}>
+              <li className="dropdown">
+                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('finanzas', e)}>
+                  <FontAwesomeIcon icon={faMoneyBillWave} /> <span>Finanzas</span>
+                  <FontAwesomeIcon icon={activeDropdown === 'finanzas' ? faCaretUp : faCaretDown} className="caret-icon" />
+                </div>
+              </li>
+              
+              {activeDropdown === 'finanzas' && (
+                <div className="product-submenu">
+                  <ul className="dropdown-menu">
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/finanzas');
+                    }}>
+                      <FontAwesomeIcon icon={faChartLine} /> Dashboard financiero
+                    </li>
+                    <li onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigation('/cuentas-por-pagar');
+                    }}>
+                      <FontAwesomeIcon icon={faFileInvoiceDollar} /> Cuentas por pagar
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
             
             <div className="navbar-notifications">
               <NotificationCenter />

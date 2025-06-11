@@ -1,9 +1,9 @@
 import axios from './root.service.js';
 
-export const getProveedores = async (page = 1, limit = 10) => {
+export const getProveedores = async (page = 1, limit = 10, incluirInactivos = false) => {
   try {
     const response = await axios.get('/proveedores', {
-      params: { page, limit }
+      params: { page, limit, incluirInactivos }
     });
     return response.data.data;
   } catch (error) {
@@ -47,7 +47,17 @@ export const deleteProveedor = async (id) => {
     const response = await axios.delete(`/proveedores/eliminar/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error('Error al eliminar proveedor:', error);
+    console.error('Error al desactivar proveedor:', error);
+    throw error;
+  }
+};
+
+export const cambiarEstadoProveedor = async (id, activo) => {
+  try {
+    const response = await axios.patch(`/proveedores/cambiar-estado/${id}`, { activo });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al cambiar estado del proveedor:', error);
     throw error;
   }
 };

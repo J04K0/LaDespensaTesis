@@ -39,6 +39,10 @@ const ProveedorSchema = new Schema({
     type: [Schema.Types.ObjectId],
     ref: 'Product',
     default: []
+  },
+  activo: {
+    type: Boolean,
+    default: true
   }
 }, 
 { 
