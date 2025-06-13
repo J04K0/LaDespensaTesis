@@ -15,6 +15,33 @@
   --white: #ffffff;
 }
 
+/* Estilos para el encabezado de la página */
+.addproducts-page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.addproducts-page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 5px 0;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.addproducts-page-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+  font-weight: normal;
+  text-align: left;
+}
+
 /* Contenedor principal de la aplicación */
 .app-container {
   display: flex;

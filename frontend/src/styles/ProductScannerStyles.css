@@ -236,6 +236,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 650px; /* Asegurar una altura mínima adecuada */
 }
 
 .productscanner-cart-panel h2 {
@@ -270,47 +271,14 @@ body {
   max-height: 450px; /* Aumentamos la altura máxima para mostrar más productos */
 }
 
-.productscanner-cart-panel h2 {
-  color: var(--primary-dark);
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-  margin-top: 0;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Cuando se muestra la opción de deudor, ajustar el tamaño del carrito */
+.productscanner-deudor-option + .productscanner-cart-items-list {
+  max-height: 300px; /* Reducimos para dar espacio al selector de deudor */
 }
 
-.productscanner-empty-cart {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--gray);
-  text-align: center;
-  background-color: #f8fafc;
-  border: 2px dashed #ddd;
-  border-radius: 12px;
-  padding: 40px 20px;
-}
-
-.productscanner-empty-cart-icon {
-  margin-bottom: 15px;
-  opacity: 0.5;
-}
-
-.productscanner-empty-cart p {
-  margin: 5px 0;
-  font-size: 16px;
-}
-
-/* Lista de items en el carrito */
-.productscanner-cart-items-list {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
+/* Ajuste específico para cuando la sección de deudor está visible */
+.productscanner-payment-options:has(.productscanner-deudor-selector) + .productscanner-cart-items-list {
+  max-height: 250px; /* Reducimos aún más cuando el selector de deudor está visible */
 }
 
 .productscanner-cart-item {
@@ -740,6 +708,65 @@ body {
 .productscanner-debt-info span {
   color: #d97706;
   font-weight: 600;
+}
+
+/* Estilos para el popup de creación de deudor */
+.swal2-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.swal2-input-container {
+  text-align: left;
+}
+
+.swal2-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--gray-dark);
+  font-size: 14px;
+}
+
+.swal2-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+}
+
+.swal2-validation-message {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  color: var(--danger) !important;
+  margin-top: 5px !important;
+  padding: 6px 10px !important;
+  font-size: 14px !important;
+  border-radius: var(--border-radius) !important;
+}
+
+/* Contenedor para el selector de deudores y el botón */
+.productscanner-deudor-select-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.productscanner-deudor-select-container .productscanner-deudor-select {
+  flex: 1;
+}
+
+.productscanner-deudor-select-container .productscanner-add-deudor-btn {
+  flex-shrink: 0;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Responsividad */

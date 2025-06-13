@@ -189,6 +189,10 @@ const AddProducts = () => {
     <div className="app-container">
       <Navbar />
       <div className="content-container">
+        <div className="addproducts-page-header">
+          <h1 className="addproducts-page-title">Agregar Producto</h1>
+          <p className="addproducts-page-subtitle">Registra nuevos productos o añade stock a tu inventario</p>
+        </div>
         <div className="addproducts-form-container">
           <div className="addproducts-card">
             <div className="addproducts-card-body">

@@ -4,12 +4,14 @@ import Navbar from "../components/Navbar";
 import { scanProducts, actualizarStockVenta } from "../services/AddProducts.service.js";
 import { registrarVenta } from "../services/venta.service.js";
 import { getDeudoresSimple } from "../services/deudores.service.js";
+import { addDeudor } from "../services/deudores.service.js";
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
 import "../styles/ProductScannerStyles.css";
 import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, 
   faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2'; // Agregando la importación de SweetAlert2
 
 const ProductScanner = () => {
   const navigate = useNavigate();
@@ -344,6 +346,92 @@ const ProductScanner = () => {
     }
   };
 
+  // Función para mostrar un pop-up con formulario para crear un nuevo deudor
+  const handleCreateDeudor = async () => {
+    const fechaActual = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    
+    const { value: formValues, dismiss } = await Swal.fire({
+      title: 'Crear Nuevo Deudor',
+      html: `
+        <div class="swal2-input-group">
+          <div class="swal2-input-container">
+            <label for="nombre" class="swal2-label">Nombre:</label>
+            <input id="nombre" class="swal2-input" placeholder="Nombre completo" required>
+          </div>
+          <div class="swal2-input-container">
+            <label for="fechaPaga" class="swal2-label">Fecha a Pagar:</label>
+            <input id="fechaPaga" type="date" class="swal2-input" value="${fechaActual}" required>
+          </div>
+          <div class="swal2-input-container">
+            <label for="numeroTelefono" class="swal2-label">Número de Teléfono:</label>
+            <input id="numeroTelefono" class="swal2-input" placeholder="Número de teléfono" required>
+          </div>
+          <div class="swal2-input-container">
+            <label for="deudaTotal" class="swal2-label">Deuda Inicial:</label>
+            <input id="deudaTotal" type="number" class="swal2-input" value="0" min="0" required>
+          </div>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#dc3545',
+      customClass: {
+        container: 'swal-optimized-container',
+        popup: 'swal-optimized-popup'
+      },
+      preConfirm: () => {
+        const nombre = document.getElementById('nombre').value;
+        const fechaPaga = document.getElementById('fechaPaga').value;
+        const numeroTelefono = document.getElementById('numeroTelefono').value;
+        const deudaTotal = parseFloat(document.getElementById('deudaTotal').value) || 0;
+        
+        // Validaciones básicas
+        if (!nombre) {
+          Swal.showValidationMessage('Por favor ingrese el nombre');
+          return false;
+        }
+        if (!fechaPaga) {
+          Swal.showValidationMessage('Por favor seleccione una fecha');
+          return false;
+        }
+        if (!numeroTelefono || numeroTelefono.length < 9) {
+          Swal.showValidationMessage('Por favor ingrese un número de teléfono válido (mínimo 9 dígitos)');
+          return false;
+        }
+        
+        return { Nombre: nombre, fechaPaga, numeroTelefono, deudaTotal };
+      }
+    });
+    
+    // Si el usuario canceló, no hacemos nada
+    if (dismiss === Swal.DismissReason.cancel || !formValues) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      // Crear el deudor en la base de datos
+      const deudorCreado = await addDeudor(formValues);
+      
+      // Actualizar la lista de deudores
+      const deudoresActualizados = await getDeudoresSimple();
+      setDeudores(deudoresActualizados);
+      
+      // Seleccionar automáticamente el deudor creado
+      setSelectedDeudorId(deudorCreado._id);
+      
+      showSuccessAlert('Deudor creado', 'El deudor ha sido creado y seleccionado correctamente.');
+    } catch (error) {
+      console.error('Error al crear deudor:', error);
+      showErrorAlert('Error', 'No se pudo crear el deudor. Por favor, intente nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="productscanner-container">
       <Navbar />
@@ -512,25 +600,34 @@ const ProductScanner = () => {
                             {loadingDeudores ? (
                               <div className="productscanner-loading-deudores">Cargando deudores...</div>
                             ) : deudores && deudores.length > 0 ? (
-                              <select
-                                value={selectedDeudorId}
-                                onChange={(e) => setSelectedDeudorId(e.target.value)}
-                                className="productscanner-deudor-select"
-                                disabled={isProcessing}
-                                required={isDeudor}
-                              >
-                                <option value="">Seleccione un deudor</option>
-                                {deudores.map((deudor) => (
-                                  <option key={deudor._id} value={deudor._id}>
-                                    {deudor.Nombre} - Deuda: ${deudor.deudaTotal.toLocaleString()}
-                                  </option>
-                                ))}
-                              </select>
+                              <div className="productscanner-deudor-select-container">
+                                <select
+                                  value={selectedDeudorId}
+                                  onChange={(e) => setSelectedDeudorId(e.target.value)}
+                                  className="productscanner-deudor-select"
+                                  disabled={isProcessing}
+                                  required={isDeudor}
+                                >
+                                  <option value="">Seleccione un deudor</option>
+                                  {deudores.map((deudor) => (
+                                    <option key={deudor._id} value={deudor._id}>
+                                      {deudor.Nombre} - Deuda: ${deudor.deudaTotal.toLocaleString()}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button 
+                                  onClick={handleCreateDeudor}
+                                  className="productscanner-add-deudor-btn"
+                                  type="button"
+                                >
+                                  <FontAwesomeIcon icon={faUserPlus} />
+                                </button>
+                              </div>
                             ) : (
                               <div className="productscanner-no-deudores">
                                 <p>No hay deudores registrados</p>
                                 <button 
-                                  onClick={() => navigate('/agregar-deudor')}
+                                  onClick={handleCreateDeudor}
                                   className="productscanner-add-deudor-btn"
                                   type="button"
                                 >

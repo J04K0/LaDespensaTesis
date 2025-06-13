@@ -7,16 +7,12 @@ import {
   faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, 
   faBars, faTimes, faShoppingCart, faStore, faMoneyBillWave, 
   faCalculator, faWarehouse, faClipboardList, faCoins, faUsers,
-  faUserCog, faLock, faFileInvoiceDollar, faStoreAlt
+  faUserCog, faLock, faFileInvoiceDollar
 } from '@fortawesome/free-solid-svg-icons';
-import { logout } from '../services/auth.service';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { obtenerVentasPorTicket } from '../services/venta.service';
 import { getDeudores } from '../services/deudores.service';
 import NotificationCenter from './NotificationCenter';
 import { initializeSocket, closeSocket } from '../services/socket.service';
-import { showSuccessAlert } from '../helpers/swaHelper';
 import { ExportService } from '../services/export.service.js';
 
 const Navbar = () => {
