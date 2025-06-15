@@ -17,6 +17,12 @@ const ProductInfoModal = React.memo(({
 }) => {
   const [isClosing, setIsClosing] = useState(false);
 
+  // Función para formatear números con punto como separador de miles
+  const formatNumber = (number) => {
+    if (!number && number !== 0) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   // Optimizar control de scroll del body
   useEffect(() => {
     if (isOpen) {
@@ -99,7 +105,7 @@ const ProductInfoModal = React.memo(({
       : '0';
     
     const inventoryValue = productInfo.PrecioCompra && productInfo.Stock
-      ? (productInfo.PrecioCompra * productInfo.Stock).toLocaleString()
+      ? formatNumber(productInfo.PrecioCompra * productInfo.Stock)
       : '0';
 
     return { margin, inventoryValue };
@@ -201,7 +207,7 @@ const ProductInfoModal = React.memo(({
               <div className="modern-product-price-section">
                 <div className="modern-price-display">
                   <span className="modern-price-label">Precio de Venta</span>
-                  <span className="modern-price-value">${productInfo.PrecioVenta.toLocaleString()}</span>
+                  <span className="modern-price-value">${formatNumber(productInfo.PrecioVenta)}</span>
                 </div>
                 <div className="modern-stock-display">
                   <span className="modern-stock-label">Stock Disponible</span>
@@ -262,7 +268,7 @@ const ProductInfoModal = React.memo(({
                   </div>
                   <div className="modern-spec-content">
                     <span className="modern-spec-label">Precio de Compra</span>
-                    <span className="modern-spec-value">${productInfo.PrecioCompra.toLocaleString()}</span>
+                    <span className="modern-spec-value">${formatNumber(productInfo.PrecioCompra)}</span>
                   </div>
                 </div>
 
@@ -297,11 +303,11 @@ const ProductInfoModal = React.memo(({
                 <div className="modern-info-card-content">
                   <div className="modern-info-row">
                     <span className="modern-info-label">Precio de Compra:</span>
-                    <span className="modern-info-value">${productInfo.PrecioCompra.toLocaleString()}</span>
+                    <span className="modern-info-value">${formatNumber(productInfo.PrecioCompra)}</span>
                   </div>
                   <div className="modern-info-row">
                     <span className="modern-info-label">Precio de Venta:</span>
-                    <span className="modern-info-value">${productInfo.PrecioVenta.toLocaleString()}</span>
+                    <span className="modern-info-value">${formatNumber(productInfo.PrecioVenta)}</span>
                   </div>
                   <div className="modern-info-row">
                     <span className="modern-info-label">Margen de Ganancia:</span>
@@ -323,7 +329,7 @@ const ProductInfoModal = React.memo(({
                   </div>
                   <div className="modern-info-row">
                     <span className="modern-info-label">Ingresos Totales:</span>
-                    <span className="modern-info-value">${productStats.ingresos.toLocaleString()}</span>
+                    <span className="modern-info-value">${formatNumber(productStats.ingresos)}</span>
                   </div>
                   {productStats.ultimaVenta && (
                     <div className="modern-info-row">
