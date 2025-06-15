@@ -1,3 +1,4 @@
+/* OPTIMIZADO PARA RENDIMIENTO */
 /* Variables de colores para mantener consistencia en toda la aplicación */
 :root {
   --primary-dark: #002651;      /* Azul oscuro para fondos principales */
@@ -16,10 +17,10 @@
 
 .productcard-container {
   width: 100%;
-  margin-bottom: 10px; /* Reducido de 16px */
-  position: relative; /* Aseguramos que el contenedor tenga posición relativa */
+  margin-bottom: 10px;
+  position: relative;
   padding: auto;
-  max-width: 1200px; /* Aumentamos el ancho máximo */
+  max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -28,43 +29,47 @@
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  /* Sombra simplificada para mejor rendimiento */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #eee;
-  min-height: 140px; /* Reducido de 165px */
-  width: 100%; /* Aseguramos que ocupe todo el ancho disponible */
+  min-height: 140px;
+  width: 100%;
+  /* Optimizaciones de rendering */
+  contain: layout style paint;
+  /* Transición suave optimizada */
+  transition: box-shadow 0.2s ease;
 }
 
 .productcard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  /* Eliminamos transform costoso y usamos solo sombra suave */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .productcard-inner {
-  padding: 15px; /* Reducido de 20px */
+  padding: 15px;
   display: flex;
   align-items: stretch;
-  min-height: 110px; /* Reducido de 130px */
-  width: 100%; /* Aseguramos que ocupe todo el ancho disponible */
+  min-height: 110px;
+  width: 100%;
 }
 
 .productcard-content-wrapper {
-  flex: 3; /* Aumentamos el factor de crecimiento para darle más espacio */
+  flex: 3;
   display: flex;
   flex-direction: column;
-  margin-right: 20px; /* Reducido de 30px */
+  margin-right: 20px;
 }
 
 .productcard-main-info {
   display: flex;
-  gap: 20px; /* Reducido de 30px */
-  margin-bottom: 8px; /* Reducido de 12px */
+  gap: 20px;
+  margin-bottom: 8px;
   height: 100%;
 }
 
 .productcard-image-container {
-  width: 100px; /* Reducido de 120px */
-  height: 100px; /* Reducido de 120px */
+  width: 100px;
+  height: 100px;
   background: #f8f9fa;
   border-radius: 8px;
   overflow: hidden;
@@ -73,21 +78,24 @@
   align-items: center;
   justify-content: center;
   border: 1px solid #eee;
+  /* Optimización para imágenes */
+  contain: layout style;
 }
 
 .productcard-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  /* Optimización de carga de imágenes */
 }
 
 .productcard-basic-info {
   flex: 1;
-  min-width: 300px; /* Aumentamos el ancho mínimo */
+  min-width: 300px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Distribuye el contenido verticalmente */
-  padding: 5px 10px; /* Añadimos padding horizontal */
+  justify-content: space-between;
+  padding: 5px 10px;
 }
 
 .productcard-id {
@@ -106,26 +114,27 @@
 
 .productcard-title {
   margin: 0;
-  font-size: 16px; /* Reducido de 18px */
+  font-size: 16px;
   font-weight: 600;
   color: var(--gray-dark);
-  line-height: 1.3; /* Reducido de 1.4 */
+  line-height: 1.3;
 }
 
 .productcard-stock {
-  font-size: 15px; /* Aumentamos el tamaño de la fuente */
+  font-size: 15px;
   color: #495057;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: auto; /* Para posicionar en la parte inferior */
+  margin-top: auto;
 }
 
 .productcard-stock-indicator {
-  width: 10px; /* Indicador más grande */
-  height: 10px; /* Indicador más grande */
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 .productcard-stock-high { background-color: #28a745; }
@@ -135,10 +144,10 @@
 .productcard-price-section {
   display: flex;
   flex-direction: column;
-  min-width: 180px; /* Aumentamos el ancho mínimo */
+  min-width: 180px;
   align-items: center;
   justify-content: center;
-  padding: 0 20px; /* Aumentamos el padding horizontal */
+  padding: 0 20px;
   border-left: 1px solid #eee;
   margin-left: auto;
 }
@@ -148,13 +157,13 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin: 0 0 15px 0; /* Mayor margen inferior */
+  margin: 0 0 15px 0;
   width: 100%;
   text-align: center;
 }
 
 .productcard-price {
-  font-size: 28px; /* Precio más grande */
+  font-size: 28px;
   font-weight: 700;
   color: #006EDF;
   padding: 0;
@@ -166,7 +175,7 @@
   right: 12px;
   display: flex;
   gap: 8px;
-  z-index: 5; /* Aseguramos que las etiquetas estén por encima de otros elementos */
+  z-index: 5;
 }
 
 .productcard-inline-badges {
@@ -176,7 +185,7 @@
 }
 
 .productcard-badge {
-  padding: 3px 8px; /* Aumentamos un poco el padding */
+  padding: 3px 8px;
   font-size: 11px;
   font-weight: 600;
   border-radius: 4px;
@@ -206,7 +215,7 @@
 
 .productcard-action-btn {
   flex: 1;
-  padding: 10px 12px; /* Botones un poco más grandes */
+  padding: 10px 12px;
   font-size: 14px;
   font-weight: 500;
   color: #495057;
@@ -218,27 +227,28 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  /* Transición optimizada */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .productcard-action-btn:hover {
   background: #f8f9fa;
   border-color: #adb5bd;
   color: #212529;
+  /* Eliminamos cualquier transform costoso */
 }
 
 .productcard-action-btn svg {
   font-size: 16px;
 }
 
-/* Estilo para botón único que ocupa todo el ancho */
 .productcard-action-btn-full {
   flex: 1;
   width: 100%;
   justify-content: center;
 }
 
-/* Estilos específicos para productos sin stock */
+/* Estilos específicos para productos sin stock - Optimizados */
 .productcard.productcard-out-of-stock .productcard-image-container {
   opacity: 0.7;
 }
@@ -257,30 +267,29 @@
 body > .productcard-sin-stock,
 .content-container > .productcard-sin-stock,
 .app-container > .productcard-sin-stock {
-  display: none !important; /* Ocultamos cualquier etiqueta que aparezca fuera de su contexto */
+  display: none !important;
 }
 
-/* Estilos responsivos */
+/* Estilos responsivos optimizados */
 @media (max-width: 768px) {
   .productcard-inner {
     flex-direction: column;
-    padding: 12px; /* Reducido de 16px */
-    min-height: 100px; /* Reducido de 110px */
+    padding: 12px;
+    min-height: 100px;
   }
   
   .productcard-content-wrapper {
     margin-right: 0;
-    margin-bottom: 12px; /* Reducido de 16px */
+    margin-bottom: 12px;
   }
   
   .productcard-main-info {
-    width: 100%;
     gap: 16px;
   }
 
   .productcard-image-container {
-    width: 80px; /* Reducido de 90px */
-    height: 80px; /* Reducido de 90px */
+    width: 80px;
+    height: 80px;
   }
   
   .productcard-basic-info {
@@ -309,14 +318,14 @@ body > .productcard-sin-stock,
   
   .productcard-action-btn {
     white-space: nowrap;
-    padding: 10px 14px; /* Botones más grandes para tocar fácilmente */
+    padding: 10px 14px;
   }
 }
 
 /* Para pantallas muy pequeñas */
 @media (max-width: 480px) {
   .productcard-inner {
-    padding: 10px; /* Reducido de 14px */
+    padding: 10px;
   }
   
   .productcard-main-info {
@@ -324,8 +333,8 @@ body > .productcard-sin-stock,
   }
 
   .productcard-image-container {
-    width: 65px; /* Reducido de 75px */
-    height: 65px; /* Reducido de 75px */
+    width: 65px;
+    height: 65px;
   }
   
   .productcard-title {

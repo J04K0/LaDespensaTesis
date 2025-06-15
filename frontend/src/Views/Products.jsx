@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
+import ProductInfoModal from '../components/ProductInfoModal';
 import PriceHistoryModal from '../components/PriceHistoryModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
-import { obtenerVentas } from '../services/venta.service';
+import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
+import { useVentas } from '../context/VentasContext';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -67,17 +69,84 @@ const Products = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Efecto para controlar el scroll cuando se abren modales
-  useEffect(() => {
-    if (showInfoModal || showEditModal || showPriceHistoryModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
+  // Memoizar cálculos costosos
+  const sortedProducts = useMemo(() => {
+    if (!filteredProducts.length) return [];
     
-    // Limpieza al desmontar
+    const products = [...filteredProducts];
+    if (!sortOption) return products;
+    
+    return products.sort((a, b) => {
+      switch (sortOption) {
+        case 'name-asc': return a.Nombre.localeCompare(b.Nombre);
+        case 'name-desc': return b.Nombre.localeCompare(a.Nombre);
+        case 'stock-asc': return a.Stock - b.Stock;
+        case 'stock-desc': return b.Stock - a.Stock;
+        case 'price-asc': return a.PrecioVenta - b.PrecioVenta;
+        case 'price-desc': return b.PrecioVenta - a.PrecioVenta;
+        default: return 0;
+      }
+    });
+  }, [filteredProducts, sortOption]);
+
+  const filteredAndSearchedProducts = useMemo(() => {
+    if (!searchQuery.trim()) return sortedProducts;
+    const query = searchQuery.toLowerCase();
+    return sortedProducts.filter(product =>
+      product.Nombre.toLowerCase().includes(query)
+    );
+  }, [sortedProducts, searchQuery]);
+
+  const displayedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * productsPerPage;
+    return filteredAndSearchedProducts.slice(startIndex, startIndex + productsPerPage);
+  }, [filteredAndSearchedProducts, currentPage, productsPerPage]);
+
+  // Memoizar cálculo de páginas totales
+  const totalPagesCalculated = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredAndSearchedProducts.length / productsPerPage));
+  }, [filteredAndSearchedProducts.length, productsPerPage]);
+
+  // Optimizar useEffect para páginas
+  useEffect(() => {
+    setTotalPages(totalPagesCalculated);
+    if (currentPage > totalPagesCalculated) {
+      setCurrentPage(1);
+    }
+  }, [totalPagesCalculated, currentPage]);
+
+  // Optimizar control de scroll del modal
+  useEffect(() => {
+    const isModalOpen = showInfoModal || showEditModal || showPriceHistoryModal;
+    
+    if (isModalOpen) {
+      // Usar técnica más eficiente para bloquear scroll
+      const scrollY = window.pageYOffset;
+      document.body.style.cssText = `
+        position: fixed;
+        top: -${scrollY}px;
+        width: 100%;
+        overflow-y: scroll;
+      `;
+      document.body.dataset.scrollY = scrollY;
+    } else {
+      // Restaurar scroll de manera eficiente
+      const scrollY = document.body.dataset.scrollY;
+      document.body.style.cssText = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY));
+      }
+      delete document.body.dataset.scrollY;
+    }
+
     return () => {
-      document.body.style.overflow = 'auto';
+      // Cleanup
+      const scrollY = document.body.dataset.scrollY;
+      document.body.style.cssText = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY));
+      }
+      delete document.body.dataset.scrollY;
     };
   }, [showInfoModal, showEditModal, showPriceHistoryModal]);
 
@@ -88,51 +157,34 @@ const Products = () => {
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
 
-  const handleSortChange = (e) => {
-    setSortOption(e.target.value);
-  };
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortOption === 'name-asc') return a.Nombre.localeCompare(b.Nombre);
-    if (sortOption === 'name-desc') return b.Nombre.localeCompare(a.Nombre);
-    if (sortOption === 'stock-asc') return a.Stock - b.Stock;
-    if (sortOption === 'stock-desc') return b.Stock - a.Stock;
-    if (sortOption === 'price-asc') return a.PrecioVenta - b.PrecioVenta;
-    if (sortOption === 'price-desc') return b.PrecioVenta - a.PrecioVenta;
-    return 0;
-  });
-
-  const filteredAndSearchedProducts = sortedProducts.filter(product =>
-    product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const displayedProducts = filteredAndSearchedProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
-
-  useEffect(() => {
-    // Calcular el número real de páginas basado en los productos filtrados por nombre
-    const filteredBySearch = sortedProducts.filter(product =>
-      product.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const calculatedPages = Math.max(1, Math.ceil(filteredBySearch.length / productsPerPage));
-    
-    // Ajustar el número de páginas
-    setTotalPages(calculatedPages);
-    
-    // Si la página current es mayor que el total de páginas calculadas, resetear a la página 1
-    if (currentPage > calculatedPages) {
-      setCurrentPage(1);
-    }
-  }, [searchQuery, filteredProducts, sortOption]);
-
-  const handleSearchChange = (e) => {
+  // Optimizar handlers con useCallback
+  const handleSearchChange = useCallback((e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleCategoryChange = async (e) => {
+  const handleSortChange = useCallback((e) => {
+    setSortOption(e.target.value);
+    setCurrentPage(1);
+  }, []);
+
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery('');
+    setCategory('');
+    setCategoryFilterActive(false);
+    setProductsByCategory([]);
+    setAvailabilityFilter('Todos');
+    setSortOption('');
+    setFilteredProducts(allProducts);
+    setCurrentPage(1);
+  }, [allProducts]);
+
+  const handleCategoryChange = useCallback(async (e) => {
     const selectedCategory = e.target.value;
     setCategory(selectedCategory);
     setCurrentPage(1);
@@ -157,9 +209,9 @@ const Products = () => {
       setProductsByCategory([]);
       setTotalPages(1);
     }
-  };
+  }, [allProducts, availabilityFilter]);
 
-  const applyAvailabilityFilter = (productsToFilter, filter) => {
+  const applyAvailabilityFilter = useCallback((productsToFilter, filter) => {
     let result = [];
 
     switch (filter) {
@@ -189,18 +241,18 @@ const Products = () => {
         setTotalPages(Math.ceil(productsToFilter.length / productsPerPage));
         break;
     }
-  };
+  }, [categoryFilterActive, category, productsPerPage]);
 
-  const handleAvailabilityChange = (e) => {
+  const handleAvailabilityChange = useCallback((e) => {
     const filter = e.target.value;
     setAvailabilityFilter(filter);
     setCurrentPage(1);
 
     const baseProducts = categoryFilterActive ? productsByCategory : allProducts;
     applyAvailabilityFilter(baseProducts, filter);
-  };
+  }, [categoryFilterActive, productsByCategory, allProducts, applyAvailabilityFilter]);
 
-  const fetchExpiringProducts = async (categoryName = null) => {
+  const fetchExpiringProducts = useCallback(async (categoryName = null) => {
     try {
       setLoading(true);
       const data = await getProductsExpiringSoon();
@@ -219,9 +271,9 @@ const Products = () => {
       setTotalPages(1);
       setLoading(false);
     }
-  };
+  }, [productsPerPage]);
 
-  const fetchExpiredProducts = async (categoryName = null) => {
+  const fetchExpiredProducts = useCallback(async (categoryName = null) => {
     try {
       setLoading(true);
       const data = await getExpiredProducts();
@@ -240,9 +292,9 @@ const Products = () => {
       setTotalPages(1);
       setLoading(false);
     }
-  };
+  }, [productsPerPage]);
 
-  const fetchLowStockProducts = async (categoryName = null) => {
+  const fetchLowStockProducts = useCallback(async (categoryName = null) => {
     try {
       setLoading(true);
       const data = await getLowStockProducts();
@@ -262,8 +314,36 @@ const Products = () => {
       setTotalPages(1);
       setLoading(false);
     }
-  };
+  }, [productsPerPage]);
 
+  // Memoizar función de determinación de color de stock
+  const getStockColorClass = useCallback((stock, categoria) => {
+    const stockMinimoPorCategoria = {
+      'Congelados': 10,
+      'Carnes': 5,
+      'Despensa': 8,
+      'Panaderia y Pasteleria': 10,
+      'Quesos y Fiambres': 5,
+      'Bebidas y Licores': 5,
+      'Lacteos, Huevos y otros': 10,
+      'Desayuno y Dulces': 10,
+      'Bebes y Niños': 10,
+      'Cigarros y Tabacos': 5,
+      'Cuidado Personal': 8,
+      'Remedios': 3,
+      'Limpieza y Hogar': 5,
+      'Mascotas': 5,
+      'Otros': 5
+    };
+
+    const stockMinimo = stockMinimoPorCategoria[categoria] || 5;
+
+    if (stock === 0) return 'modern-stock-value-red';
+    if (stock <= stockMinimo) return 'modern-stock-value-yellow';
+    return 'modern-stock-value-green';
+  }, []);
+
+  // Efecto para cargar productos al montar el componente
   useEffect(() => {
     const fetchAllProducts = async () => {
       setLoading(true);
@@ -435,9 +515,11 @@ const Products = () => {
     setStatsExpanded(false);
 
     try {
-      const response = await obtenerVentas();
-      const ventas = response.data || [];
+      // 🚀 OPTIMIZACIÓN: Usar la nueva función que filtra por producto específico
+      const response = await obtenerVentasProducto(product.codigoBarras, product.Nombre);
+      const ventas = response.data?.ventas || [];
 
+      // Filtrar ventas del producto específico (como medida adicional de seguridad)
       const ventasProducto = ventas.filter(venta =>
         venta.nombre === product.Nombre && venta.codigoBarras === product.codigoBarras
       );
@@ -476,23 +558,6 @@ const Products = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setCategory('');
-    setCategoryFilterActive(false);
-    setProductsByCategory([]);
-    setAvailabilityFilter('Todos');
-    setSortOption('');
-    setFilteredProducts(allProducts);
-    setTotalPages(Math.ceil(allProducts.length / productsPerPage));
-    setCurrentPage(1);
   };
 
   const handleExportToPDF = () => {
@@ -536,6 +601,65 @@ const Products = () => {
       PrecioVenta: prev.PrecioRecomendado.toFixed(2)
     }));
   };
+
+  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
+  const { ventasGlobales, loading: ventasLoading, getVentasProducto } = useVentas();
+
+  // 🚀 OPTIMIZACIÓN: Filtrar ventas del producto específico cuando se abre el modal
+  const ventasProducto = useMemo(() => {
+    return (ventasGlobales || []).filter(v => 
+      v.codigoBarras === productInfo?.codigoBarras && v.nombre === productInfo?.Nombre
+    );
+  }, [ventasGlobales, productInfo]);
+
+  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular estadísticas cuando ya están cargadas las ventas
+  const productStatsOptimized = useMemo(() => {
+    if (!productInfo || !ventasGlobales) {
+      return {
+        totalVentas: 0,
+        ingresos: 0,
+        ultimaVenta: null,
+        ventasPorMes: []
+      };
+    }
+
+    // Filtrar ventas del producto específico usando el cache global
+    const ventasProductoFiltered = getVentasProducto(productInfo.codigoBarras, productInfo.Nombre);
+
+    const totalVentas = ventasProductoFiltered.reduce((sum, venta) => sum + venta.cantidad, 0);
+    const ingresos = ventasProductoFiltered.reduce((sum, venta) => sum + (venta.cantidad * venta.precioVenta), 0);
+
+    let ultimaVenta = null;
+    if (ventasProductoFiltered.length > 0) {
+      const fechas = ventasProductoFiltered.map(v => new Date(v.fecha));
+      ultimaVenta = new Date(Math.max(...fechas));
+    }
+
+    const ventasPorMes = {};
+    ventasProductoFiltered.forEach(venta => {
+      const fecha = new Date(venta.fecha);
+      const mes = `${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+
+      if (!ventasPorMes[mes]) {
+        ventasPorMes[mes] = 0;
+      }
+      ventasPorMes[mes] += venta.cantidad;
+    });
+
+    return {
+      totalVentas,
+      ingresos,
+      ultimaVenta,
+      ventasPorMes: Object.entries(ventasPorMes).map(([mes, cantidad]) => ({ mes, cantidad }))
+    };
+  }, [productInfo, ventasGlobales, getVentasProducto]);
+
+  // Actualizar productStats cuando cambien las estadísticas optimizadas
+  useEffect(() => {
+    if (productInfo && ventasGlobales) {
+      setProductStats(productStatsOptimized);
+    }
+  }, [productStatsOptimized, productInfo, ventasGlobales]);
 
   return (
     <div className="app-container">
@@ -631,15 +755,16 @@ const Products = () => {
               <>
                 {displayedProducts.length > 0 ? (
                   <div className="product-list">
-                    {displayedProducts.map((product, index) => (
+                    {displayedProducts.map((product) => (
                       <ProductCard
-                        key={product._id || index}
+                        key={product._id}
                         image={product.image}
                         name={product.Nombre}
                         marca={product.Marca}
                         stock={product.Stock}
                         venta={product.PrecioVenta}
                         fechaVencimiento={product.fechaVencimiento}
+                        categoria={product.Categoria}
                         codigoBarras={product.codigoBarras}
                         onDelete={() => {
                           showConfirmationAlert(
@@ -730,203 +855,19 @@ const Products = () => {
         )}
       </div>
       
-      {showInfoModal && productInfo && (
-        <div className="modal-overlay" onClick={() => setShowInfoModal(false)}>
-          <div className="modal-content product-detail-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">{productInfo.Nombre}</h2>
-              <button className="modal-close" onClick={() => setShowInfoModal(false)}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="product-header-container">
-                <div className="product-detail-image-container">
-                  <img 
-                    src={productInfo.image || "/default-image.jpg"} 
-                    alt={productInfo.Nombre} 
-                    className="product-detail-image" 
-                  />
-                </div>
-                
-                <div className="product-price-header">
-                  <h3 className="product-price-value">${productInfo.PrecioVenta}</h3>
-                  {(new Date(productInfo.fechaVencimiento) < new Date() || productInfo.Stock === 0) && (
-                    <div className="product-header-badges">
-                      {new Date(productInfo.fechaVencimiento) < new Date() && 
-                        <span className="product-badge product-badge-vencido">Vencido</span>
-                      }
-                      {productInfo.Stock === 0 && 
-                        <span className="product-badge product-badge-sin-stock">Sin stock</span>
-                      }
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="product-price-section">
-                <div className="product-price-row">
-                  <span className="price-label">precio compra:</span>
-                  <span className="price-value">${productInfo.PrecioCompra}</span>
-                </div>
-                
-                <div className="product-price-row">
-                  <span className="price-label">precio venta:</span>
-                  <span className="price-value">${productInfo.PrecioVenta}</span>
-                </div>
-              </div>
-
-              <div className="product-tabs">
-                <button 
-                  className={`product-tab ${!showPriceHistoryTab ? 'active' : ''}`}
-                  onClick={() => setShowPriceHistoryTab(false)}
-                >
-                  Características
-                </button>
-                <button 
-                  className={`product-tab ${showPriceHistoryTab ? 'active' : ''}`}
-                  onClick={() => setShowPriceHistoryTab(true)}
-                >
-                  Historial de Precios
-                </button>
-              </div>
-              
-              {!showPriceHistoryTab ? (
-                <>
-                  <button 
-                    className="detail-section-button"
-                    onClick={() => setCharacteristicsExpanded(!characteristicsExpanded)}
-                  >
-                    Características
-                    <FontAwesomeIcon 
-                      icon={faChevronDown} 
-                      className={`accordion-icon ${characteristicsExpanded ? 'expanded' : ''}`}
-                    />
-                  </button>
-                  
-                  {characteristicsExpanded && (
-                    <div className="accordion-body">
-                      <table className="details-table">
-                        <tbody>
-                          {productInfo.fechaVencimiento && (
-                            <tr>
-                              <td>Fecha vencimiento:</td>
-                              <td>{new Date(productInfo.fechaVencimiento).toLocaleDateString()}</td>
-                            </tr>
-                          )}
-                          <tr>
-                            <td>Categoría:</td>
-                            <td>{productInfo.Categoria}</td>
-                          </tr>
-                          <tr>
-                            <td>Stock:</td>
-                            <td>{productInfo.Stock} unidades</td>
-                          </tr>
-                          <tr>
-                            <td>Código de Barras:</td>
-                            <td>{productInfo.codigoBarras}</td>
-                          </tr>
-                          <tr>
-                            <td>Marca:</td>
-                            <td>{productInfo.Marca}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  
-                  <button 
-                    className="detail-section-button"
-                    onClick={() => setStatsExpanded(!statsExpanded)}
-                  >
-                    Estadísticas de Venta
-                    <FontAwesomeIcon 
-                      icon={faChevronDown} 
-                      className={`accordion-icon ${statsExpanded ? 'expanded' : ''}`}
-                    />
-                  </button>
-                  
-                  {statsExpanded && productStats.totalVentas > 0 && (
-                    <div className="accordion-body">
-                      <table className="details-table">
-                        <tbody>
-                          <tr>
-                            <td>Total Unidades Vendidas:</td>
-                            <td>{productStats.totalVentas}</td>
-                          </tr>
-                          <tr>
-                            <td>Ingresos Generados:</td>
-                            <td>${productStats.ingresos.toLocaleString()}</td>
-                          </tr>
-                          {productStats.ultimaVenta && (
-                            <tr>
-                              <td>Última Venta:</td>
-                              <td>{productStats.ultimaVenta.toLocaleDateString()}</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                      
-                      {productStats.ventasPorMes && productStats.ventasPorMes.length > 0 && (
-                        <div className="sales-by-month">
-                          <h5>Ventas por Mes:</h5>
-                          <ul>
-                            {productStats.ventasPorMes.map((item, idx) => (
-                              <li key={idx}>{item.mes}: {item.cantidad} unidades</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {statsExpanded && productStats.totalVentas === 0 && (
-                    <div className="accordion-body">
-                      <p>Este producto aún no tiene historial de ventas.</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="product-price-history-container">
-                  <PriceHistoryModal 
-                    isOpen={true}
-                    onClose={() => setShowPriceHistoryTab(false)}
-                    productId={productInfo._id}
-                    embedded={true}
-                  />
-                </div>
-              )}
-              
-              <div className="product-detail-actions">
-                <button 
-                  onClick={() => { setShowInfoModal(false); handleEdit(productInfo._id); }} 
-                  className="btn btn-primary"
-                >
-                  <FontAwesomeIcon icon={faPen} /> Editar
-                </button>
-                <button 
-                  onClick={async () => {
-                    const result = await showConfirmationAlert(
-                      '¿Estás seguro?',
-                      'Esta acción no se puede deshacer',
-                      'Sí, eliminar',
-                      'Cancelar'
-                    );
-                    if (result.isConfirmed) {
-                      handleDelete(productInfo._id);
-                      setShowInfoModal(false);
-                    }
-                  }} 
-                  className="btn btn-danger"
-                >
-                  <FontAwesomeIcon icon={faTrash} /> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* NUEVO MODAL SEPARADO Y OPTIMIZADO */}
+      <ProductInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        productInfo={productInfo}
+        productStats={productStats}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onShowPriceHistory={(productId) => {
+          setPriceHistoryData(productId);
+          setShowPriceHistoryModal(true);
+        }}
+      />
       
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
@@ -1114,11 +1055,11 @@ const Products = () => {
         </div>
       )}
       
-      {showPriceHistoryModal && (
+      {showPriceHistoryModal && priceHistoryData && (
         <PriceHistoryModal 
           isOpen={showPriceHistoryModal}
           onClose={() => setShowPriceHistoryModal(false)}
-          productId={displayedProducts.find(p => p._id === priceHistoryData)._id}
+          productId={priceHistoryData}
         />
       )}
     </div>

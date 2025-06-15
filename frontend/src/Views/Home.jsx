@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/HomeStyles.css';
@@ -12,6 +12,7 @@ import ChartSkeleton from '../components/ChartSkeleton';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { useVentas } from '../context/VentasContext';
 
 import { 
   Chart as ChartJS, 
@@ -56,6 +57,9 @@ const Home = () => {
 
   // Referencia al contenedor del gráfico
   const chartRef = useRef(null);
+
+  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
+  const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
 
   useEffect(() => {
     const fetchDeudores = async () => {
@@ -453,7 +457,7 @@ const Home = () => {
     }
   };
 
-  // Obtener el título del gráfico actual
+  // Obtener el título del gráfico current
   const getCurrentChartTitle = () => {
     switch (currentChart) {
       case 0:
@@ -467,7 +471,7 @@ const Home = () => {
     }
   };
   
-  // Obtener los datos del gráfico actual
+  // Obtener los datos del gráfico current
   const getCurrentChartData = () => {
     switch (currentChart) {
       case 0:
@@ -658,6 +662,123 @@ const Home = () => {
         return <p>No hay datos disponibles</p>;
     }
   };
+
+  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular estadísticas cuando ya están cargadas las ventas
+  const datosEstadisticasOptimized = useMemo(() => {
+    if (!ventasGlobales || ventasGlobales.length === 0) {
+      return {
+        ventasPorCategoria: null,
+        topProductos: null,
+        productosPocoVendidos: null
+      };
+    }
+
+    // Filtrar ventas por rango de tiempo usando el cache global
+    const ventasFiltradas = filtrarVentasPorPeriodo(ventasGlobales);
+    
+    // Procesar ventas por categoría
+    const categorias = {};
+    ventasFiltradas.forEach((venta) => {
+      // Manejar tanto el formato de venta individual como array de productos
+      if (venta.ventas && Array.isArray(venta.ventas)) {
+        // Formato de ticket con múltiples productos
+        venta.ventas.forEach(producto => {
+          const categoria = producto.categoria || "Sin categoría";
+          categorias[categoria] = (categorias[categoria] || 0) + producto.cantidad;
+        });
+      } else {
+        // Formato de venta individual
+        const categoria = venta.categoria || "Sin categoría";
+        categorias[categoria] = (categorias[categoria] || 0) + venta.cantidad;
+      }
+    });
+
+    const ventasPorCategoria = {
+      labels: Object.keys(categorias),
+      datasets: [
+        {
+          label: "Ventas por Categoría",
+          data: Object.values(categorias),
+          backgroundColor: [
+            "#4F86C6", "#6A5ACD", "#20B2AA", "#FF6B6B", "#FFD166",
+            "#9A8C98", "#06D6A0", "#EF476F", "#118AB2", "#FF9F1C"
+          ],
+          borderColor: "#fff",
+          borderWidth: 1
+        },
+      ],
+    };
+
+    // Procesar top 5 productos
+    const productos = {};
+    ventasFiltradas.forEach((venta) => {
+      if (venta.ventas && Array.isArray(venta.ventas)) {
+        venta.ventas.forEach(producto => {
+          const nombre = producto.nombre;
+          productos[nombre] = (productos[nombre] || 0) + producto.cantidad;
+        });
+      } else {
+        const nombre = venta.nombre;
+        productos[nombre] = (productos[nombre] || 0) + venta.cantidad;
+      }
+    });
+
+    const topProductosOrdenados = Object.entries(productos)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const topProductos = {
+      labels: topProductosOrdenados.map(([nombre]) => nombre),
+      datasets: [
+        {
+          label: "Top 5 Productos Más Vendidos",
+          data: topProductosOrdenados.map(([, cantidad]) => cantidad),
+          backgroundColor: [
+            "#118AB2", "#06D6A0", "#FFD166", "#EF476F", "#4F86C6"
+          ],
+          borderColor: "#fff",
+          borderWidth: 1
+        },
+      ],
+    };
+
+    // Procesar productos menos vendidos
+    const productosConVentas = Object.entries(productos).filter(([_, cantidad]) => cantidad > 0);
+    const productosOrdenados = productosConVentas
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5);
+    
+    const productosPocoVendidos = {
+      labels: productosOrdenados.map(([nombre]) => nombre),
+      datasets: [
+        {
+          label: "Productos Menos Vendidos",
+          data: productosOrdenados.map(([, cantidad]) => cantidad),
+          backgroundColor: [
+            "#9A8C98", "#C9ADA7", "#F4A261", "#E9C46A", "#2A9D8F"
+          ],
+          borderColor: "#fff",
+          borderWidth: 1
+        },
+      ],
+    };
+
+    return {
+      ventasPorCategoria,
+      topProductos,
+      productosPocoVendidos
+    };
+  }, [ventasGlobales, timeRange]);
+
+  // Actualizar estados cuando cambien las estadísticas optimizadas
+  useEffect(() => {
+    if (ventasGlobales && datosEstadisticasOptimized.ventasPorCategoria) {
+      setVentasPorCategoria(datosEstadisticasOptimized.ventasPorCategoria);
+      setTopProductos(datosEstadisticasOptimized.topProductos);
+      setProductosPocoVendidos(datosEstadisticasOptimized.productosPocoVendidos);
+      setLoading(false);
+    }
+  }, [datosEstadisticasOptimized, ventasGlobales]);
 
   return (
     <div className="home-container">

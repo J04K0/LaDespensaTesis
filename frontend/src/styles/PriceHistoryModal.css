@@ -27,8 +27,11 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
   overflow-y: auto; /* Permitir scroll en el overlay si es necesario */
+  /* Simplificamos la animación */
+  animation: none;
+  will-change: auto;
+  overscroll-behavior: contain;
 }
 
 /* Contenedor del modal */
@@ -42,19 +45,10 @@ body.modal-open {
   max-height: 90vh;
   width: 90%;
   max-width: 800px;
-  animation: modalFadeIn 0.3s ease-out;
+  /* Eliminamos la animación que puede causar lag */
+  animation: none;
   margin: 2rem auto; /* Agregar margen arriba y abajo */
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  will-change: auto;
 }
 
 /* Encabezado del modal */

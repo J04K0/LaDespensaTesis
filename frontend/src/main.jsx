@@ -15,6 +15,7 @@ import Finanzas from './Views/Finanzas.jsx';
 import Proveedores from './Views/Proveedores.jsx';
 import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
 import FooterLayout from './components/FooterLayout';
+import { VentasProvider } from './context/VentasContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -69,5 +70,7 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <VentasProvider>
+    <RouterProvider router={router} />
+  </VentasProvider>
 );

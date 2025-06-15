@@ -14,15 +14,65 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
     }
   };
 
-  export const obtenerVentas = async () => {
+  export const obtenerVentas = async (filtros = {}) => {
     try {
-      const response = await axios.get("/ventas/ventas/obtener");
+      // Construir query parameters desde el objeto filtros
+      const params = new URLSearchParams();
+      
+      if (filtros.codigoBarras) {
+        params.append('codigoBarras', filtros.codigoBarras);
+      }
+      
+      if (filtros.nombre) {
+        params.append('nombre', filtros.nombre);
+      }
+      
+      if (filtros.categoria) {
+        params.append('categoria', filtros.categoria);
+      }
+      
+      if (filtros.fechaInicio) {
+        params.append('fechaInicio', filtros.fechaInicio);
+      }
+      
+      if (filtros.fechaFin) {
+        params.append('fechaFin', filtros.fechaFin);
+      }
+      
+      if (filtros.page) {
+        params.append('page', filtros.page);
+      }
+      
+      if (filtros.limit) {
+        params.append('limit', filtros.limit);
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `/ventas/ventas/obtener?${queryString}` : "/ventas/ventas/obtener";
+      
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       console.error("❌ Error al obtener las ventas:", error);
       throw error;
     }
   }
+
+  // Función específica para obtener ventas de un producto
+  export const obtenerVentasProducto = async (codigoBarras, nombre = null) => {
+    try {
+      const filtros = { codigoBarras };
+      if (nombre) {
+        filtros.nombre = nombre;
+      }
+      
+      const response = await obtenerVentas(filtros);
+      return response;
+    } catch (error) {
+      console.error("❌ Error al obtener las ventas del producto:", error);
+      throw error;
+    }
+  };
 
   export const obtenerVentasPorTicket = async () => {
     try {

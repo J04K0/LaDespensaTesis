@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import Navbar from "../components/Navbar";
-import { obtenerVentasPorTicket } from "../services/venta.service.js";
+import { obtenerVentasPorTicket, obtenerVentas } from "../services/venta.service.js";
+import { useVentas } from "../context/VentasContext";
 import { getProducts } from "../services/AddProducts.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/FinanzasStyles.css";
@@ -80,10 +81,336 @@ const Finanzas = () => {
   // Referencia al contenedor principal para calcular posiciones de tooltips
   const containerRef = useRef(null);
 
+  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
+  const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
+
+  // 📅 FUNCIÓN PARA CALCULAR RANGOS DE FECHAS (memoizada para evitar re-renders)
+  const calcularRangoFechas = useCallback(() => {
+    const hoy = new Date();
+    let inicio = new Date();
+    let fin = new Date();
+    
+    if (timeRange === "semana") {
+      // Obtener el lunes de la semana seleccionada
+      const diaSemana = hoy.getDay() || 7;
+      const diasDesdeInicio = diaSemana - 1;
+      
+      inicio = new Date(hoy);
+      inicio.setDate(hoy.getDate() - diasDesdeInicio + (seleccionSemana * 7));
+      inicio.setHours(0, 0, 0, 0);
+      
+      fin = new Date(inicio);
+      fin.setDate(inicio.getDate() + 6);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "mes") {
+      inicio = new Date(seleccionMes.anio, seleccionMes.mes, 1);
+      inicio.setHours(0, 0, 0, 0);
+      
+      fin = new Date(seleccionMes.anio, seleccionMes.mes + 1, 0);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "año") {
+      if (seleccionAnio.trimestre === 0) {
+        inicio = new Date(seleccionAnio.anio, 0, 1);
+        fin = new Date(seleccionAnio.anio, 11, 31);
+      } else {
+        const trimestre = seleccionAnio.trimestre - 1;
+        inicio = new Date(seleccionAnio.anio, trimestre * 3, 1);
+        fin = new Date(seleccionAnio.anio, (trimestre + 1) * 3, 0);
+      }
+      
+      inicio.setHours(0, 0, 0, 0);
+      fin.setHours(23, 59, 59, 999);
+      
+    } else if (timeRange === "personalizado" && periodoPersonalizado) {
+      inicio = new Date(fechaInicio);
+      inicio.setHours(0, 0, 0, 0);
+      
+      fin = new Date(fechaFin);
+      fin.setHours(23, 59, 59, 999);
+    } else {
+      inicio.setDate(hoy.getDate() - 7);
+      inicio.setHours(0, 0, 0, 0);
+    }
+    
+    return { inicio, fin };
+  }, [timeRange, seleccionSemana, seleccionMes, seleccionAnio, periodoPersonalizado, fechaInicio, fechaFin]);
+
+  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular datos financieros cuando ya están cargadas las ventas
+  const datosFinancierosOptimized = useMemo(() => {
+    if (!ventasGlobales || ventasGlobales.length === 0) {
+      return {
+        ingresosTotales: 0,
+        transacciones: 0,
+        costosTotales: 0,
+        gananciasTotales: 0,
+        rentabilidadPromedio: 0,
+        valorPromedioTransaccion: 0,
+        topCategorias: [],
+        datosDisponibles: false,
+        ingresosPorPeriodo: {},
+        ingresosPorMes: {},
+        productosMasVendidos: [],
+        categoriasPorVolumen: [],
+        margenPorCategoria: [],
+        ventasPorDiaSemana: {},
+        rentabilidadTemporal: []
+      };
+    }
+
+    // Obtener rango de fechas basado en los filtros seleccionados
+    const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
+    
+    // Filtrar ventas por rango de tiempo usando el cache global
+    const ventasFiltradas = getVentasByDateRange(
+      fechaInicio.toISOString().split('T')[0],
+      fechaFin.toISOString().split('T')[0]
+    );
+    
+    // Calcular métricas generales
+    let ingresosTotales = 0;
+    let costosTotales = 0;
+    const ingresosPorCategoria = {};
+    const ingresosPorDia = {};
+    const ingresosPorMes = {};
+    const productoVendido = {};
+    const ventasPorCategoria = {};
+    
+    // Para calcular márgenes reales por categoría
+    const costosPorCategoria = {};
+    const gananciasPorCategoria = {};
+    
+    // Inicializar días en ingresosPorDia para el período seleccionado
+    const fechaActual = new Date(fechaInicio);
+    while (fechaActual <= fechaFin) {
+      const fechaStr = fechaActual.toISOString().split('T')[0];
+      ingresosPorDia[fechaStr] = 0;
+      fechaActual.setDate(fechaActual.getDate() + 1);
+    }
+    
+    // Inicializar meses en ingresosPorMes (año actual)
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    meses.forEach(mes => {
+      ingresosPorMes[mes] = 0;
+    });
+    
+    // Inicializar ventas por día de la semana con valores cero
+    const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const ventasPorDiaSemana = {};
+    diasSemana.forEach(dia => {
+      ventasPorDiaSemana[dia] = 0;
+    });
+    
+    // Mapeo correcto de los días de JavaScript a nuestro array
+    const mapeoJSaDias = {
+      0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb'
+    };
+    
+    // Procesar las ventas - CORREGIDO: Verificar que venta.ventas existe
+    ventasFiltradas.forEach(venta => {
+      const fecha = new Date(venta.fecha);
+      const fechaStr = fecha.toISOString().split('T')[0];
+      const mes = meses[fecha.getMonth()];
+      const diaSemana = fecha.getDay();
+      const diaSemanaKey = mapeoJSaDias[diaSemana];
+      
+      let ingresoVenta = 0;
+      let costoVenta = 0;
+      
+      // 🔧 FIX: Verificar que venta.ventas existe y es un array antes de usar forEach
+      if (venta.ventas && Array.isArray(venta.ventas)) {
+        venta.ventas.forEach(producto => {
+          ingresoVenta += producto.precioVenta * producto.cantidad;
+          costoVenta += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
+          
+          // Agregar a categoría
+          const categoria = producto.categoria || "Sin categoría";
+          if (!ingresosPorCategoria[categoria]) {
+            ingresosPorCategoria[categoria] = 0;
+            ventasPorCategoria[categoria] = 0;
+            costosPorCategoria[categoria] = 0;
+          }
+          ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
+          ventasPorCategoria[categoria] += producto.cantidad;
+          costosPorCategoria[categoria] += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
+
+          // Tracking de productos más vendidos
+          const productoKey = producto.nombre;
+          if (!productoVendido[productoKey]) {
+            productoVendido[productoKey] = {
+              nombre: producto.nombre,
+              ventas: 0,
+              ingreso: 0
+            };
+          }
+          productoVendido[productoKey].ventas += producto.cantidad;
+          productoVendido[productoKey].ingreso += producto.precioVenta * producto.cantidad;
+        });
+      } else {
+        // Si es una venta individual (formato anterior) - también verificar que tenga las propiedades necesarias
+        if (venta.precioVenta && venta.cantidad) {
+          ingresoVenta += venta.precioVenta * venta.cantidad;
+          costoVenta += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
+          
+          const categoria = venta.categoria || "Sin categoría";
+          if (!ingresosPorCategoria[categoria]) {
+            ingresosPorCategoria[categoria] = 0;
+            ventasPorCategoria[categoria] = 0;
+            costosPorCategoria[categoria] = 0;
+          }
+          ingresosPorCategoria[categoria] += venta.precioVenta * venta.cantidad;
+          ventasPorCategoria[categoria] += venta.cantidad;
+          costosPorCategoria[categoria] += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
+
+          const productoKey = venta.nombre;
+          if (!productoVendido[productoKey]) {
+            productoVendido[productoKey] = {
+              nombre: venta.nombre,
+              ventas: 0,
+              ingreso: 0
+            };
+          }
+          productoVendido[productoKey].ventas += venta.cantidad;
+          productoVendido[productoKey].ingreso += venta.precioVenta * venta.cantidad;
+        }
+      }
+      
+      ingresosTotales += ingresoVenta;
+      costosTotales += costoVenta;
+      
+      // Actualizar ingresos por día si es del período actual
+      if (fechaStr in ingresosPorDia) {
+        ingresosPorDia[fechaStr] += ingresoVenta;
+      }
+      
+      // Actualizar ingresos por día de la semana
+      if (diaSemanaKey) {
+        ventasPorDiaSemana[diaSemanaKey] += ingresoVenta;
+      }
+      
+      // Actualizar ingresos por mes del año actual
+      if (fecha.getFullYear() === new Date().getFullYear()) {
+        ingresosPorMes[mes] += ingresoVenta;
+      }
+    });
+    
+    // Calcular ganancias y rentabilidad
+    const gananciasTotales = ingresosTotales - costosTotales;
+    const rentabilidadPromedio = ingresosTotales > 0 ? (gananciasTotales / ingresosTotales) * 100 : 0;
+    
+    // Top categorías por ingresos
+    const categoriasOrdenadas = Object.keys(ingresosPorCategoria)
+      .map(categoria => ({ 
+        nombre: categoria, 
+        ingresos: ingresosPorCategoria[categoria],
+        porcentaje: (ingresosPorCategoria[categoria] / ingresosTotales) * 100
+      }))
+      .sort((a, b) => b.ingresos - a.ingresos)
+      .slice(0, 5);
+    
+    // Categorías por volumen de ventas
+    const categoriasPorVolumen = Object.keys(ventasPorCategoria)
+      .map(categoria => {
+        const totalVentas = Object.values(ventasPorCategoria).reduce((a, b) => a + b, 0);
+        return {
+          nombre: categoria,
+          ventas: ventasPorCategoria[categoria],
+          porcentaje: totalVentas > 0 ? (ventasPorCategoria[categoria] / totalVentas) * 100 : 0
+        };
+      })
+      .sort((a, b) => b.ventas - a.ventas)
+      .slice(0, 5);
+    
+    // Productos más vendidos
+    const productosMasVendidos = Object.values(productoVendido)
+      .sort((a, b) => b.ventas - a.ventas)
+      .slice(0, 5);
+    
+    // Valor promedio por transacción
+    const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
+    
+    // Calcular márgenes por categoría reales
+    const margenPorCategoria = Object.keys(ingresosPorCategoria)
+      .filter(categoria => ingresosPorCategoria[categoria] > 0 && costosPorCategoria[categoria] > 0)
+      .map(categoria => {
+        const ingresos = ingresosPorCategoria[categoria];
+        const costos = costosPorCategoria[categoria];
+        const ganancias = ingresos - costos;
+        const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
+        
+        let rendimiento = "bajo";
+        if (margen >= 30) {
+          rendimiento = "alto";
+        } else if (margen >= 20) {
+          rendimiento = "medio";
+        }
+        
+        return {
+          categoria,
+          margen: parseFloat(margen.toFixed(2)),
+          rendimiento
+        };
+      })
+      .sort((a, b) => b.margen - a.margen);
+    
+    // Rentabilidad temporal
+    const rentabilidadTemporal = [];
+    const dias = Object.keys(ingresosPorDia)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .slice(0, 7);
+    
+    dias.forEach(fecha => {
+      const ingresos = ingresosPorDia[fecha] || 0;
+      const costos = ingresos * (1 - (rentabilidadPromedio / 100));
+      const ganancias = ingresos - costos;
+      const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
+      
+      rentabilidadTemporal.push({
+        fecha: new Date(fecha),
+        ingresos,
+        costos,
+        ganancias,
+        margen
+      });
+    });
+    
+    return {
+      ingresosTotales,
+      transacciones: ventasFiltradas.length,
+      costosTotales,
+      gananciasTotales,
+      rentabilidadPromedio,
+      valorPromedioTransaccion,
+      topCategorias: categoriasOrdenadas,
+      datosDisponibles: true,
+      ingresosPorPeriodo: ingresosPorDia,
+      ingresosPorMes,
+      productosMasVendidos,
+      categoriasPorVolumen,
+      margenPorCategoria,
+      ventasPorDiaSemana,
+      rentabilidadTemporal
+    };
+  }, [ventasGlobales, calcularRangoFechas, getVentasByDateRange]);
+
+  // 🔧 FIX: Simplificar useEffect para evitar bucles infinitos
   useEffect(() => {
-    obtenerDatosFinancieros();
+    if (ventasGlobales && datosFinancierosOptimized.datosDisponibles) {
+      setDatosFinancieros(prevState => ({
+        ...prevState,
+        ...datosFinancierosOptimized
+      }));
+      setLoading(false);
+    } else if (ventasLoading) {
+      setLoading(true);
+    }
+  }, [datosFinancierosOptimized, ventasGlobales, ventasLoading]);
+
+  // Simplificar carga de datos de inventario
+  useEffect(() => {
     obtenerDatosInventario();
-  }, [timeRange, seleccionSemana, seleccionMes.mes, seleccionMes.anio, seleccionAnio.anio, seleccionAnio.trimestre, periodoPersonalizado]);
+  }, []); // Solo al montar el componente
 
   // Efecto adicional para garantizar la actualización cuando cambia la sección activa
   useEffect(() => {
@@ -96,11 +423,20 @@ const Finanzas = () => {
   const obtenerDatosFinancieros = async () => {
     try {
       setLoading(true);
-      const response = await obtenerVentasPorTicket();
-      const ventas = response.data || [];
+      
+      // 🚀 OPTIMIZACIÓN: Usar filtros en lugar de cargar todas las ventas
+      const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
+      
+      const response = await obtenerVentas({
+        fechaInicio: fechaInicio.toISOString().split('T')[0],
+        fechaFin: fechaFin.toISOString().split('T')[0],
+        limit: 1000 // Límite más alto para datos financieros
+      });
+      
+      const ventas = response.data?.ventas || [];
       
       if (!ventas || ventas.length === 0) {
-        console.warn("⚠️ No hay datos de ventas disponibles.");
+        console.warn("⚠️ No hay datos de ventas disponibles para el período seleccionado.");
         setLoading(false);
         return;
       }
@@ -186,46 +522,74 @@ const Finanzas = () => {
       6: 'Sáb'  // Sábado (6 en JS)
     };
     
-    // Procesar las ventas
+    // 🔧 FIX: Procesar las ventas con verificación de venta.ventas
     ventasFiltradas.forEach(venta => {
       const fecha = new Date(venta.fecha);
       const fechaStr = fecha.toISOString().split('T')[0];
       const mes = meses[fecha.getMonth()];
-      
-      // CORREGIDO: Usar mapeo directo para el día de la semana
-      const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+      const diaSemana = fecha.getDay();
       const diaSemanaKey = mapeoJSaDias[diaSemana];
       
       let ingresoVenta = 0;
       let costoVenta = 0;
       
-      venta.ventas.forEach(producto => {
-        ingresoVenta += producto.precioVenta * producto.cantidad;
-        costoVenta += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
-        
-        // Agregar a categoría
-        const categoria = producto.categoria || "Sin categoría";
-        if (!ingresosPorCategoria[categoria]) {
-          ingresosPorCategoria[categoria] = 0;
-          ventasPorCategoria[categoria] = 0;
-          costosPorCategoria[categoria] = 0;
-        }
-        ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
-        ventasPorCategoria[categoria] += producto.cantidad;
-        costosPorCategoria[categoria] += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
+      // 🔧 FIX: Verificar que venta.ventas existe y es un array antes de usar forEach
+      if (venta.ventas && Array.isArray(venta.ventas)) {
+        venta.ventas.forEach(producto => {
+          ingresoVenta += producto.precioVenta * producto.cantidad;
+          costoVenta += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
+          
+          // Agregar a categoría
+          const categoria = producto.categoria || "Sin categoría";
+          if (!ingresosPorCategoria[categoria]) {
+            ingresosPorCategoria[categoria] = 0;
+            ventasPorCategoria[categoria] = 0;
+            costosPorCategoria[categoria] = 0;
+          }
+          ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
+          ventasPorCategoria[categoria] += producto.cantidad;
+          costosPorCategoria[categoria] += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
 
-        // Tracking de productos más vendidos
-        const productoKey = producto.nombre;
-        if (!productoVendido[productoKey]) {
-          productoVendido[productoKey] = {
-            nombre: producto.nombre,
-            ventas: 0,
-            ingreso: 0
-          };
+          // Tracking de productos más vendidos
+          const productoKey = producto.nombre;
+          if (!productoVendido[productoKey]) {
+            productoVendido[productoKey] = {
+              nombre: producto.nombre,
+              ventas: 0,
+              ingreso: 0
+            };
+          }
+          productoVendido[productoKey].ventas += producto.cantidad;
+          productoVendido[productoKey].ingreso += producto.precioVenta * producto.cantidad;
+        });
+      } else {
+        // Si es una venta individual (formato anterior) - también verificar propiedades
+        if (venta.precioVenta && venta.cantidad) {
+          ingresoVenta += venta.precioVenta * venta.cantidad;
+          costoVenta += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
+          
+          const categoria = venta.categoria || "Sin categoría";
+          if (!ingresosPorCategoria[categoria]) {
+            ingresosPorCategoria[categoria] = 0;
+            ventasPorCategoria[categoria] = 0;
+            costosPorCategoria[categoria] = 0;
+          }
+          ingresosPorCategoria[categoria] += venta.precioVenta * venta.cantidad;
+          ventasPorCategoria[categoria] += venta.cantidad;
+          costosPorCategoria[categoria] += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
+
+          const productoKey = venta.nombre;
+          if (!productoVendido[productoKey]) {
+            productoVendido[productoKey] = {
+              nombre: venta.nombre,
+              ventas: 0,
+              ingreso: 0
+            };
+          }
+          productoVendido[productoKey].ventas += venta.cantidad;
+          productoVendido[productoKey].ingreso += venta.precioVenta * venta.cantidad;
         }
-        productoVendido[productoKey].ventas += producto.cantidad;
-        productoVendido[productoKey].ingreso += producto.precioVenta * producto.cantidad;
-      });
+      }
       
       ingresosTotales += ingresoVenta;
       costosTotales += costoVenta;
@@ -382,6 +746,12 @@ const Finanzas = () => {
       inversionMercaderia: inversionTotal,
       inversionPorCategoria
     }));
+  };
+
+  const aplicarFiltroPersonalizado = () => {
+    setPeriodoPersonalizado(true);
+    obtenerDatosFinancieros();
+    obtenerDatosInventario();
   };
 
   const handleTimeRangeChange = (e) => {
@@ -610,73 +980,6 @@ const Finanzas = () => {
     rotacionInventario: "Indica cuántas veces se renueva el inventario en un año.",
     margenPorCategoria: "Porcentaje de ganancia por categoría de productos. Los valores superiores al 30% se consideran de alto rendimiento (verde), entre 20-30% de rendimiento medio (amarillo) y menores al 20% de rendimiento bajo (rojo). Permite identificar qué categorías generan mayor rentabilidad para priorizar la inversión o ajustar precios en aquellas con margen bajo.",
     comparativaFinanciera: "Visualización de la relación entre ingresos, costos y ganancias para el período seleccionado. La barra completa representa el 100% de los ingresos, mientras que las barras de costos y ganancias muestran su proporción respecto a los ingresos. Permite evaluar rápidamente la estructura financiera del negocio e identificar oportunidades para mejorar márgenes."
-  };
-
-  // Función para calcular las fechas de inicio y fin según los filtros seleccionados
-  const calcularRangoFechas = () => {
-    const hoy = new Date();
-    let inicio = new Date();
-    let fin = new Date();
-    
-    if (timeRange === "semana") {
-      // Obtener el lunes de la semana seleccionada
-      const diaSemana = hoy.getDay() || 7; // 0 = domingo, 1-6 = lunes-sábado
-      const diasDesdeInicio = diaSemana - 1; // Días desde el lunes
-      
-      // Inicio: lunes de la semana seleccionada
-      inicio = new Date(hoy);
-      inicio.setDate(hoy.getDate() - diasDesdeInicio + (seleccionSemana * 7));
-      inicio.setHours(0, 0, 0, 0);
-      
-      // Fin: domingo de la semana seleccionada
-      fin = new Date(inicio);
-      fin.setDate(inicio.getDate() + 6);
-      fin.setHours(23, 59, 59, 999);
-      
-    } else if (timeRange === "mes") {
-      // Primer día del mes seleccionado
-      inicio = new Date(seleccionMes.anio, seleccionMes.mes, 1);
-      inicio.setHours(0, 0, 0, 0);
-      
-      // Último día del mes seleccionado
-      fin = new Date(seleccionMes.anio, seleccionMes.mes + 1, 0);
-      fin.setHours(23, 59, 59, 999);
-      
-    } else if (timeRange === "año") {
-      if (seleccionAnio.trimestre === 0) {
-        // Año completo
-        inicio = new Date(seleccionAnio.anio, 0, 1);
-        fin = new Date(seleccionAnio.anio, 11, 31);
-      } else {
-        // Trimestre específico (1-4)
-        const trimestre = seleccionAnio.trimestre - 1; // 0-3
-        inicio = new Date(seleccionAnio.anio, trimestre * 3, 1);
-        fin = new Date(seleccionAnio.anio, (trimestre + 1) * 3, 0);
-      }
-      
-      inicio.setHours(0, 0, 0, 0);
-      fin.setHours(23, 59, 59, 999);
-      
-    } else if (timeRange === "personalizado" && periodoPersonalizado) {
-      // Usar las fechas seleccionadas por el usuario
-      inicio = new Date(fechaInicio);
-      inicio.setHours(0, 0, 0, 0);
-      
-      fin = new Date(fechaFin);
-      fin.setHours(23, 59, 59, 999);
-    } else {
-      // Por defecto, última semana
-      inicio.setDate(hoy.getDate() - 7);
-      inicio.setHours(0, 0, 0, 0);
-    }
-    
-    return { inicio, fin };
-  };
-  
-  const aplicarFiltroPersonalizado = () => {
-    setPeriodoPersonalizado(true);
-    obtenerDatosFinancieros();
-    obtenerDatosInventario();
   };
 
   return (

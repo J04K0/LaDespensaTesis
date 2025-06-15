@@ -108,12 +108,80 @@ export const registrarVenta = async (req, res) => {
   // Llamar a esta función al iniciar la aplicación
     inicializarTicketCounter();
 
-  // ✅ Obtener todas las ventas para estadísticas
+  // ✅ Obtener ventas con filtros optimizados
   export const obtenerVentas = async (req, res) => {
     try {
-        const ventas = await Venta.find();
-        handleSuccess(res, 200, "Historial de ventas obtenido correctamente", ventas);
+        const { codigoBarras, nombre, categoria, fechaInicio, fechaFin, page = 1, limit = 100 } = req.query;
+        
+        // Construir el filtro dinámicamente
+        const filtro = {};
+        
+        // Filtro por código de barras (coincidencia exacta)
+        if (codigoBarras) {
+            filtro.codigoBarras = codigoBarras;
+        }
+        
+        // Filtro por nombre (búsqueda parcial, insensible a mayúsculas)
+        if (nombre) {
+            filtro.nombre = { $regex: nombre, $options: 'i' };
+        }
+        
+        // Filtro por categoría
+        if (categoria) {
+            filtro.categoria = categoria;
+        }
+        
+        // Filtro por rango de fechas
+        if (fechaInicio || fechaFin) {
+            filtro.fecha = {};
+            if (fechaInicio) {
+                filtro.fecha.$gte = new Date(fechaInicio);
+            }
+            if (fechaFin) {
+                const fechaFinDate = new Date(fechaFin);
+                fechaFinDate.setHours(23, 59, 59, 999); // Incluir todo el día
+                filtro.fecha.$lte = fechaFinDate;
+            }
+        }
+        
+        // Calcular paginación
+        const skip = (page - 1) * limit;
+        
+        // Ejecutar consulta con filtros y paginación
+        const ventas = await Venta.find(filtro)
+            .sort({ fecha: -1 }) // Ordenar por fecha descendente
+            .skip(skip)
+            .limit(parseInt(limit))
+            .populate('usuario', 'nombre username') // Incluir datos del usuario
+            .populate('deudorId', 'Nombre'); // Incluir datos del deudor si existe
+        
+        // Contar total de documentos que coinciden con el filtro
+        const totalVentas = await Venta.countDocuments(filtro);
+        const totalPages = Math.ceil(totalVentas / limit);
+        
+        // Preparar respuesta con metadatos de paginación
+        const respuesta = {
+            ventas,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                totalVentas,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+                limit: parseInt(limit)
+            },
+            filtros: {
+                codigoBarras: codigoBarras || null,
+                nombre: nombre || null,
+                categoria: categoria || null,
+                fechaInicio: fechaInicio || null,
+                fechaFin: fechaFin || null
+            }
+        };
+        
+        handleSuccess(res, 200, "Ventas obtenidas correctamente", respuesta);
     } catch (error) {
+        console.error("Error al obtener las ventas:", error);
         handleErrorServer(res, 500, "Error al obtener las ventas", error.message);
     }
   };

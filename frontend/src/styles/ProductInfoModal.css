@@ -1,0 +1,532 @@
+/* OPTIMIZADO PARA RENDIMIENTO - ProductInfoModal Styles */
+/* Variables de colores para mantener consistencia */
+:root {
+  --primary-dark: #002651;
+  --primary: #006EDF;
+  --primary-light: #E3F2FD;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --gray-dark: #343a40;
+  --gray: #6c757d;
+  --white: #ffffff;
+}
+
+/* Overlay del modal - OPTIMIZADO */
+.product-info-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+  /* Eliminamos backdrop-filter costoso */
+  opacity: 1;
+  overscroll-behavior: contain;
+  /* Optimización de animación */
+  animation: fadeInOptimized 0.2s ease-out;
+}
+
+.product-info-modal-overlay.closing {
+  animation: fadeOutOptimized 0.2s ease-in;
+}
+
+@keyframes fadeInOptimized {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutOptimized {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Modal moderno - OPTIMIZADO */
+.modern-product-modal {
+  background: white;
+  border-radius: 20px;
+  width: 95%;
+  max-width: 900px;
+  max-height: 95vh;
+  overflow-y: auto;
+  /* Sombra simplificada */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  position: relative;
+  /* Animación simplificada */
+  animation: slideInOptimized 0.3s ease-out;
+  /* Eliminamos will-change para mejor rendimiento */
+}
+
+@keyframes slideInOptimized {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header del modal moderno */
+.modern-modal-header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.modern-modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+  font-size: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modern-modal-close:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Contenido principal */
+.modern-modal-content {
+  padding: 30px;
+  padding-top: 20px;
+}
+
+/* Sección hero del producto */
+.modern-product-hero {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+  align-items: flex-start;
+}
+
+.modern-product-image-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.modern-product-image-frame {
+  width: 200px;
+  height: 200px;
+  border-radius: 16px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dee2e6;
+  /* Sombra simplificada */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.modern-product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.modern-product-badges {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modern-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modern-badge-success {
+  background: rgba(40, 167, 69, 0.9);
+  color: white;
+}
+
+.modern-badge-danger {
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+}
+
+.modern-badge-warning {
+  background: rgba(255, 193, 7, 0.9);
+  color: #333;
+}
+
+/* Información principal del producto */
+.modern-product-main-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modern-product-header-text {
+  flex: 1;
+}
+
+.modern-product-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.modern-product-subtitle {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modern-product-brand,
+.modern-product-category {
+  padding: 6px 14px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.modern-product-brand {
+  background: linear-gradient(45deg, #006EDF, #4A90E2);
+  color: white;
+  border: none;
+}
+
+/* Sección de precios moderna */
+.modern-product-price-section {
+  display: flex;
+  gap: 24px;
+}
+
+.modern-price-display,
+.modern-stock-display {
+  flex: 1;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.modern-price-label,
+.modern-stock-label {
+  display: block;
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modern-price-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #006EDF;
+  margin: 0;
+}
+
+.modern-stock-value {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modern-stock-value-green { color: #28a745; }
+.modern-stock-value-yellow { color: #ffc107; }
+.modern-stock-value-red { color: #dc3545; }
+
+/* Sección de especificaciones */
+.modern-specifications-section {
+  margin-bottom: 32px;
+}
+
+.modern-section-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #006EDF;
+}
+
+.modern-specs-grid-two-columns {
+  display: flex;
+  gap: 24px;
+}
+
+.modern-specs-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modern-spec-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modern-spec-item:hover {
+  border-color: #006EDF;
+  box-shadow: 0 2px 6px rgba(0, 110, 223, 0.08);
+}
+
+.modern-spec-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.modern-spec-icon-blue {
+  background-color: #006EDF;
+  color: white;
+}
+
+.modern-spec-content {
+  flex: 1;
+}
+
+.modern-spec-label {
+  display: block;
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.modern-spec-value {
+  font-weight: 600;
+  color: #212529;
+  font-size: 14px;
+}
+
+/* Información adicional */
+.modern-additional-info {
+  margin-bottom: 32px;
+}
+
+.modern-info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.modern-info-card {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 16px;
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+}
+
+.modern-info-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.modern-info-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #006EDF;
+}
+
+.modern-info-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modern-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modern-info-label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.modern-info-value {
+  font-weight: 600;
+  color: #212529;
+  font-size: 14px;
+  text-align: right;
+}
+
+/* Botones de acción */
+.modern-action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.modern-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  min-width: 140px;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.modern-btn-primary {
+  background: #006EDF;
+  color: white;
+}
+
+.modern-btn-primary:hover {
+  background: #0056b3;
+}
+
+.modern-btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.modern-btn-secondary:hover {
+  background: #545b62;
+}
+
+.modern-btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.modern-btn-danger:hover {
+  background: #c82333;
+}
+
+/* Responsividad optimizada */
+@media (max-width: 768px) {
+  .modern-product-hero {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .modern-product-image-frame {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+  }
+  
+  .modern-product-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .modern-product-subtitle {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .modern-product-price-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .modern-specs-grid-two-columns {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .modern-specs-column {
+    gap: 12px;
+  }
+  
+  .modern-info-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .modern-action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modern-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-modal-content {
+    padding: 20px;
+  }
+  
+  .modern-product-image-frame {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .modern-product-title {
+    font-size: 1.3rem;
+  }
+  
+  .modern-spec-item {
+    padding: 12px;
+  }
+  
+  .modern-info-card {
+    padding: 16px;
+  }
+}
