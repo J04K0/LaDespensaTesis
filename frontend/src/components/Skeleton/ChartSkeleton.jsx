@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/SkeletonStyles.css';
+import './SkeletonStyles.css';
 
 const ChartSkeleton = () => {
   return (

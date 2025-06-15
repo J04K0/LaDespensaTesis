@@ -62,7 +62,10 @@ export const proveedorSchema = Joi.object({
       'array.min': 'Debe seleccionar al menos una categoría'
     }),
   notas: Joi.string().allow('').optional(),
-  productos: Joi.array().items(Joi.string()).optional()
+  productos: Joi.array().items(Joi.string()).optional(),
+  activo: Joi.boolean().optional(), // Campo activo como opcional
+  createdAt: Joi.date().optional(), // Campo createdAt como opcional
+  updatedAt: Joi.date().optional()  // Campo updatedAt como opcional
 });
 
 export const idProveedorSchema = Joi.object({

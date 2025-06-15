@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import PaymentModal from '../components/PaymentModal';
+import PaymentHistoryModal from '../components/PaymentHistoryModal';
+import EditDeudorModal from '../components/EditDeudorModal';
 import '../styles/DeudoresStyles.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
-import DeudoresListSkeleton from '../components/DeudoresListSkeleton';
+import DeudoresListSkeleton from '../components/Skeleton/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
@@ -74,6 +77,7 @@ const DeudoresList = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedHistoryDeudor, setSelectedHistoryDeudor] = useState(null);
 
+  // Estados para comentarios del modal de historial
   const [expandedComments, setExpandedComments] = useState({});
 
   const toggleCommentExpansion = (commentId) => {
@@ -86,6 +90,108 @@ const DeudoresList = () => {
   const resetExpandedComments = () => {
     setExpandedComments({});
   };
+
+  // Función para determinar el estado de pago
+  const getPaymentStatus = (fechaPaga, deudaTotal) => {
+    const deudaValue = parseFloat(deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+    
+    // Si no tiene deuda, está al día
+    if (deudaValue === 0) {
+      return {
+        status: 'al-dia',
+        label: 'Al día',
+        className: 'deudores-status-al-dia'
+      };
+    }
+    
+    const fechaPago = new Date(fechaPaga);
+    const hoy = new Date();
+    
+    // Resetear las horas para comparar solo fechas
+    fechaPago.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0);
+    
+    if (fechaPago < hoy) {
+      return {
+        status: 'vencido',
+        label: 'Vencido',
+        className: 'deudores-status-vencido'
+      };
+    } else if (fechaPago.getTime() === hoy.getTime()) {
+      return {
+        status: 'hoy',
+        label: 'Vence hoy',
+        className: 'deudores-status-hoy'
+      };
+    } else {
+      return {
+        status: 'pendiente',
+        label: 'Pendiente',
+        className: 'deudores-status-pendiente'
+      };
+    }
+  };
+
+  // Función para calcular estadísticas de deudores
+  const calculateStats = () => {
+    const totalDeudores = allDeudores.length;
+    let totalDeuda = 0;
+    let deudoresConDeuda = 0;
+    let deudoresAlDia = 0;
+    let deudoresPendientes = 0;
+    let deudoresVencidos = 0;
+    let deudoresVencenHoy = 0;
+    let deudaPromedio = 0;
+    let mayorDeuda = 0;
+    let nombreMayorDeudor = '';
+
+    allDeudores.forEach(deudor => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      const status = getPaymentStatus(deudor.fechaPaga, deudor.deudaTotal);
+      
+      totalDeuda += deudaValue;
+      
+      if (deudaValue > 0) {
+        deudoresConDeuda++;
+        if (deudaValue > mayorDeuda) {
+          mayorDeuda = deudaValue;
+          nombreMayorDeudor = deudor.Nombre;
+        }
+      }
+      
+      switch (status.status) {
+        case 'al-dia':
+          deudoresAlDia++;
+          break;
+        case 'pendiente':
+          deudoresPendientes++;
+          break;
+        case 'vencido':
+          deudoresVencidos++;
+          break;
+        case 'hoy':
+          deudoresVencenHoy++;
+          break;
+      }
+    });
+
+    deudaPromedio = deudoresConDeuda > 0 ? totalDeuda / deudoresConDeuda : 0;
+
+    return {
+      totalDeudores,
+      totalDeuda,
+      deudoresConDeuda,
+      deudoresAlDia,
+      deudoresPendientes,
+      deudoresVencidos,
+      deudoresVencenHoy,
+      deudaPromedio,
+      mayorDeuda,
+      nombreMayorDeudor
+    };
+  };
+
+  const stats = calculateStats();
 
   const handleCloseHistoryModal = () => {
     // Restaurar el scroll
@@ -110,43 +216,6 @@ const DeudoresList = () => {
         resetExpandedComments();
       }
     });
-  };
-
-  const renderComment = (comment, commentId) => {
-    if (!comment) return '-';
-
-    if (comment.length <= 20) {
-      return comment;
-    }
-
-    const isExpanded = expandedComments[commentId] || false;
-
-    return (
-      <div className="comment-container">
-        <div className="comment-text">
-          {isExpanded ? comment : `${comment.substring(0, 20)}...`}
-        </div>
-        <button
-          className="expand-comment-button"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleCommentExpansion(commentId);
-          }}
-        >
-          {isExpanded ? (
-            <>
-              <span>Mostrar menos</span>
-              <FontAwesomeIcon icon={faChevronUp} />
-            </>
-          ) : (
-            <>
-              <span>Mostrar más</span>
-              <FontAwesomeIcon icon={faChevronDown} />
-            </>
-          )}
-        </button>
-      </div>
-    );
   };
 
   const handleSearchChange = (e) => {
@@ -241,6 +310,16 @@ const DeudoresList = () => {
       }
       if (sortOption === 'date-asc') return new Date(a.fechaPaga) - new Date(b.fechaPaga);
       if (sortOption === 'date-desc') return new Date(b.fechaPaga) - new Date(a.fechaPaga);
+      if (sortOption === 'status-asc') {
+        const statusA = getPaymentStatus(a.fechaPaga, a.deudaTotal).status;
+        const statusB = getPaymentStatus(b.fechaPaga, b.deudaTotal).status;
+        return statusA.localeCompare(statusB);
+      }
+      if (sortOption === 'status-desc') {
+        const statusA = getPaymentStatus(a.fechaPaga, a.deudaTotal).status;
+        const statusB = getPaymentStatus(b.fechaPaga, b.deudaTotal).status;
+        return statusB.localeCompare(statusA);
+      }
       return 0;
     });
 
@@ -525,27 +604,6 @@ const DeudoresList = () => {
     return value;
   };
 
-  const handleCancelEdit = () => {
-    // Desactivar animaciones al abrir la alerta para evitar lag
-    const result = showConfirmationAlert(
-      "¿Estás seguro?",
-      "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
-      "Sí, cancelar",
-      "No, volver"
-    );
-    
-    // Restaurar el scroll inmediatamente para evitar lag
-    result.then(result => {
-      if (result.isConfirmed) {
-        // Usamos setTimeout para desacoplar del ciclo de eventos principal
-        setTimeout(() => {
-          controlBodyScroll(false);
-          setShowEditModal(false);
-        }, 0);
-      }
-    });
-  };
-
   const handleExportPDF = () => {
     const doc = new jsPDF();
     const tableColumn = ["Nombre", "Fecha a Pagar", "Número de Teléfono", "Deuda Total"];
@@ -559,7 +617,7 @@ const DeudoresList = () => {
         deudor.Nombre || 'Nombre desconocido',
         new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida',
         deudor.numeroTelefono || 'Teléfono desconocido',
-        isZeroDebt ? { content: `${deudor.deudaTotal.toLocaleString()}`, styles: { textColor: [0, 128, 0] } } : { content: `${deudor.deudaTotal.toLocaleString()}`, styles: { textColor: [255, 0, 0] } }
+        isZeroDebt ? { content: `${deudor.deudaTotal.toLocaleString('es-ES')}`, styles: { textColor: [0, 128, 0] } } : { content: `${deudor.deudaTotal.toLocaleString('es-ES')}`, styles: { textColor: [255, 0, 0] } }
       ]);
     });
 
@@ -633,6 +691,8 @@ const DeudoresList = () => {
                   <option value="debt-desc">Deuda (Descendente)</option>
                   <option value="date-asc">Fecha a Pagar (Ascendente)</option>
                   <option value="date-desc">Fecha a Pagar (Descendente)</option>
+                  <option value="status-asc">Estado (Vencido → Al día)</option>
+                  <option value="status-desc">Estado (Al día → Vencido)</option>
                 </select>
               </div>
               
@@ -649,6 +709,7 @@ const DeudoresList = () => {
                     <th>Fecha a pagar</th>
                     <th>Número de teléfono</th>
                     <th>Deuda total</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -656,6 +717,7 @@ const DeudoresList = () => {
                   {displayedDeudores.map((deudor, index) => {
                     const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
                     const isZeroDebt = deudaValue === 0;
+                    const paymentStatus = getPaymentStatus(deudor.fechaPaga, deudor.deudaTotal);
 
                     return (
                       <tr key={index} className={isZeroDebt ? 'deudores-zero-debt-row' : ''}>
@@ -663,7 +725,12 @@ const DeudoresList = () => {
                         <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
                         <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
                         <td className={isZeroDebt ? 'deudores-text-success' : 'deudores-text-danger'}>
-                          ${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}
+                          ${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}
+                        </td>
+                        <td>
+                          <span className={`deudores-status-badge ${paymentStatus.className}`}>
+                            {paymentStatus.label}
+                          </span>
                         </td>
                         <td className="deudores-d-flex deudores-gap-sm">
                           <button onClick={() => handleUpdateDebt(deudor)} className="deudores-btn-icon deudores-btn-success" title="Actualizar deuda">
@@ -699,224 +766,161 @@ const DeudoresList = () => {
               ))}
             </div>
 
+            {/* Cards informativas con estadísticas */}
+            <div className="deudores-stats-container">
+              <h2 className="deudores-stats-title">Estadísticas de Deudores</h2>
+              
+              <div className="deudores-stats-grid">
+                {/* Card de Total de Deuda */}
+                <div className="deudores-stat-card deudores-stat-card-primary">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faMoneyBillWave} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">${stats.totalDeuda.toLocaleString('es-ES')}</h3>
+                    <p className="deudores-stat-label">Total de Deuda</p>
+                  </div>
+                </div>
+
+                {/* Card de Total de Deudores */}
+                <div className="deudores-stat-card deudores-stat-card-info">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faPlus} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">{stats.totalDeudores}</h3>
+                    <p className="deudores-stat-label">Total de Deudores</p>
+                  </div>
+                </div>
+
+                {/* Card de Deudores con Deuda */}
+                <div className="deudores-stat-card deudores-stat-card-warning">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faMoneyBillWave} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">{stats.deudoresConDeuda}</h3>
+                    <p className="deudores-stat-label">Con Deuda Activa</p>
+                  </div>
+                </div>
+
+                {/* Card de Deudores Al Día */}
+                <div className="deudores-stat-card deudores-stat-card-success">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faEdit} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">{stats.deudoresAlDia}</h3>
+                    <p className="deudores-stat-label">Al Día</p>
+                  </div>
+                </div>
+
+                {/* Card de Deudores Vencidos */}
+                <div className="deudores-stat-card deudores-stat-card-danger">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faHistory} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">{stats.deudoresVencidos}</h3>
+                    <p className="deudores-stat-label">Vencidos</p>
+                  </div>
+                </div>
+
+                {/* Card de Deudores Pendientes */}
+                <div className="deudores-stat-card deudores-stat-card-secondary">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faSearch} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">{stats.deudoresPendientes}</h3>
+                    <p className="deudores-stat-label">Pendientes</p>
+                  </div>
+                </div>
+
+                {/* Card de Vencen Hoy */}
+                {stats.deudoresVencenHoy > 0 && (
+                  <div className="deudores-stat-card deudores-stat-card-urgent">
+                    <div className="deudores-stat-icon">
+                      <FontAwesomeIcon icon={faTimes} />
+                    </div>
+                    <div className="deudores-stat-content">
+                      <h3 className="deudores-stat-value">{stats.deudoresVencenHoy}</h3>
+                      <p className="deudores-stat-label">Vencen Hoy</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Card de Deuda Promedio */}
+                <div className="deudores-stat-card deudores-stat-card-light">
+                  <div className="deudores-stat-icon">
+                    <FontAwesomeIcon icon={faFilePdf} />
+                  </div>
+                  <div className="deudores-stat-content">
+                    <h3 className="deudores-stat-value">${stats.deudaPromedio.toLocaleString('es-ES')}</h3>
+                    <p className="deudores-stat-label">Deuda Promedio</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card especial para el mayor deudor */}
+              {stats.mayorDeuda > 0 && (
+                <div className="deudores-highlight-card">
+                  <div className="deudores-highlight-icon">
+                    <FontAwesomeIcon icon={faTrash} />
+                  </div>
+                  <div className="deudores-highlight-content">
+                    <h3 className="deudores-highlight-title">Mayor Deudor</h3>
+                    <p className="deudores-highlight-name">{stats.nombreMayorDeudor}</p>
+                    <p className="deudores-highlight-amount">${stats.mayorDeuda.toLocaleString('es-ES')}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {showModal && selectedDeudor && (
-              <div className="deudores-modal-overlay" onClick={() => {
-                controlBodyScroll(false);
-                setShowModal(false);
-                setComment('');
-                setAmount('');
-              }}>
-                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="deudores-modal-header">
-                    <h2 className="deudores-modal-title">{isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}</h2>
-                  </div>
-                  
-                  <div className="deudores-modal-body">
-                    <div className="deudores-modal-info">
-                      <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
-                      <span className="deuda-actual">
-                        Deuda actual: ${selectedDeudor.deudaTotal}
-                      </span>
-                    </div>
-
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="amount">Monto:</label>
-                      <div className="input-with-icon">
-                        <input
-                          type="number"
-                          id="amount"
-                          value={amount}
-                          onChange={(e) => setAmount(sanitizeNumber(e.target.value))}
-                          placeholder="Ingrese el monto"
-                          min="0"
-                          required
-                          className="deudores-form-control"
-                        />
-                      </div>
-                    </div>
-
-                    {isPayment && (
-                      <div className="deudores-form-group">
-                        <label className="deudores-form-label">Método de Pago:</label>
-                        <div className="deudores-payment-method-select">
-                          <label className="deudores-radio-group">
-                            <input
-                              type="radio"
-                              name="metodoPago"
-                              value="efectivo"
-                              checked={metodoPago === 'efectivo'}
-                              onChange={() => setMetodoPago('efectivo')}
-                            />
-                            <span className="deudores-radio-checkmark"></span>
-                            Efectivo
-                          </label>
-                          <label className="deudores-radio-group">
-                            <input
-                              type="radio"
-                              name="metodoPago"
-                              value="tarjeta"
-                              checked={metodoPago === 'tarjeta'}
-                              onChange={() => setMetodoPago('tarjeta')}
-                            />
-                            <span className="deudores-radio-checkmark"></span>
-                            Tarjeta
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="comment">Comentario (opcional):</label>
-                      <textarea
-                        id="comment"
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        placeholder="Ingrese un comentario (opcional)"
-                        className="deudores-form-control"
-                      ></textarea>
-                    </div>
-                  </div>
-                  
-                  <div className="deudores-modal-footer">
-                    <button className="deudores-btn deudores-btn-secondary" onClick={() => setShowModal(false)}>
-                      <FontAwesomeIcon icon={faTimes} /> Cancelar
-                    </button>
-                    <button className="deudores-btn deudores-btn-primary" onClick={handleDebtUpdate}>
-                      <FontAwesomeIcon icon={faSave} /> {isPayment ? 'Registrar Pago' : 'Añadir a la Deuda'}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              // Usar el componente PaymentModal
+              <PaymentModal
+                show={showModal}
+                onClose={() => {
+                  setComment('');
+                  setAmount('');
+                  setShowModal(false);
+                }}
+                selectedDeudor={selectedDeudor}
+                amount={amount}
+                setAmount={setAmount}
+                isPayment={isPayment}
+                setIsPayment={setIsPayment}
+                comment={comment}
+                setComment={setComment}
+                metodoPago={metodoPago}
+                setMetodoPago={setMetodoPago}
+                onSubmit={handleDebtUpdate}
+                sanitizeNumber={sanitizeNumber}
+              />
             )}
 
+            {/* Usar el componente EditDeudorModal */}
             {showEditModal && (
-              <div className="deudores-modal-overlay" onClick={() => setShowEditModal(false)}>
-                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="deudores-modal-header">
-                    <h2 className="deudores-modal-title">Editar Deudor</h2>
-                  </div>
-                  
-                  <div className="deudores-modal-body">
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="Nombre">Nombre:</label>
-                      <input
-                        type="text"
-                        id="Nombre"
-                        name="Nombre"
-                        value={deudorToEdit.Nombre}
-                        onChange={handleEditChange}
-                        placeholder="Ingrese el nombre"
-                        required
-                        className="deudores-form-control"
-                      />
-                    </div>
-
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="fechaPaga">Fecha a Pagar:</label>
-                      <input
-                        type="date"
-                        id="fechaPaga"
-                        name="fechaPaga"
-                        value={deudorToEdit.fechaPaga}
-                        onChange={handleEditChange}
-                        className="deudores-form-control"
-                      />
-                    </div>
-
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="numeroTelefono">Número de Teléfono:</label>
-                      <input
-                        type="text"
-                        id="numeroTelefono"
-                        name="numeroTelefono"
-                        value={deudorToEdit.numeroTelefono}
-                        onChange={handleEditChange}
-                        placeholder="Ingrese el número de teléfono"
-                        className="deudores-form-control"
-                      />
-                    </div>
-
-                    <div className="deudores-form-group">
-                      <label className="deudores-form-label" htmlFor="deudaTotal">Deuda Total:</label>
-                      <input
-                        type="text"
-                        id="deudaTotal"
-                        name="deudaTotal"
-                        value={deudorToEdit.deudaTotal}
-                        onChange={handleEditChange}
-                        placeholder="Ingrese la deuda total"
-                        className="deudores-form-control"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="deudores-modal-footer">
-                    <button className="deudores-btn deudores-btn-secondary" onClick={() => setShowEditModal(false)}>
-                      <FontAwesomeIcon icon={faTimes} /> Cancelar
-                    </button>
-                    <button className="deudores-btn deudores-btn-primary" onClick={handleEditSubmit}>
-                      <FontAwesomeIcon icon={faSave} /> Guardar Cambios
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <EditDeudorModal
+                show={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                deudorToEdit={deudorToEdit}
+                onInputChange={handleEditChange}
+                onSubmit={handleEditSubmit}
+              />
             )}
 
+            {/* Modal de Historial */}
             {showHistoryModal && selectedHistoryDeudor && (
-              <div className="deudores-modal-overlay" onClick={handleCloseHistoryModal}>
-                <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
-                  <div className="deudores-modal-header">
-                    <h2 className="deudores-modal-title">Historial de Pagos - {selectedHistoryDeudor.Nombre}</h2>
-                  </div>
-                  
-                  <div className="deudores-modal-body">
-                    {selectedHistoryDeudor.historialPagos.length === 0 ? (
-                      <p className="deudores-no-history">No hay historial de pagos disponible para este deudor.</p>
-                    ) : (
-                      <table className="deudores-table">
-                        <thead>
-                          <tr>
-                            <th>Fecha</th>
-                            <th>Monto</th>
-                            <th>Tipo</th>
-                            <th>Método de Pago</th>
-                            <th>Comentario</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedHistoryDeudor.historialPagos.map((pago, idx) => (
-                            <tr key={idx} className={pago.tipo === 'pago' ? 'deudores-payment-row' : 'deudores-debt-row'}>
-                              <td>{new Date(pago.fecha).toLocaleDateString()}</td>
-                              <td>${pago.monto.toLocaleString()}</td>
-                              <td>
-                                <span className={`deudores-state-badge ${pago.tipo === 'pago' ? 'deudores-state-badge-success' : 'deudores-state-badge-danger'}`}>
-                                  {pago.tipo === 'pago' ? 'Pago' : 'Deuda'}
-                                </span>
-                              </td>
-                              <td>
-                                {pago.tipo === 'pago' ? (
-                                  <span className={`deudores-payment-method ${pago.metodoPago === 'efectivo' ? 'efectivo' : 'tarjeta'}`}>
-                                    {pago.metodoPago === 'efectivo' ? 'Efectivo' : 'Tarjeta'}
-                                  </span>
-                                ) : '-'}
-                              </td>
-                              <td className="deudores-comment-cell">
-                                {renderComment(pago.comentario, `history-${idx}`)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                  
-                  <div className="deudores-modal-footer">
-                    <button className="deudores-btn deudores-btn-secondary" onClick={handleCloseHistoryModal}>
-                      <FontAwesomeIcon icon={faTimes} /> Cerrar
-                    </button>
-                  </div>
-                </div>
-              </div>
+              // Usar el componente PaymentHistoryModal
+              <PaymentHistoryModal
+                show={showHistoryModal}
+                onClose={handleCloseHistoryModal}
+                selectedDeudor={selectedHistoryDeudor}
+                expandedComments={expandedComments}
+                onToggleComment={toggleCommentExpansion}
+              />
             )}
           </>
         )}

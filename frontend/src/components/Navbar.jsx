@@ -201,13 +201,13 @@ const Navbar = () => {
       // Crear el objeto con los datos para el reporte
       const resumenCajaData = [
         ["Concepto", "Cantidad", "Monto"],
-        ["Ventas en Efectivo", cantidadVentasEfectivo, `$${totalEfectivo.toLocaleString()}`],
-        ["Ventas con Tarjeta", cantidadVentasTarjeta, `$${totalTarjeta.toLocaleString()}`],
-        ["Ventas a Deudores", cantidadVentasADeudores, `$${ventasADeudores.toLocaleString()}`],
-        ["Pagos de Deudores (Efectivo)", cantidadPagosEfectivo, `$${totalPagosDeudoresEfectivo.toLocaleString()}`],
-        ["Pagos de Deudores (Tarjeta)", cantidadPagosTarjeta, `$${totalPagosDeudoresTarjeta.toLocaleString()}`],
-        ["Nuevas Deudas Registradas", cantidadNuevasDeudas, `$${totalNuevasDeudas.toLocaleString()}`],
-        ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString()}`]
+        ["Ventas en Efectivo", cantidadVentasEfectivo, `$${totalEfectivo.toLocaleString('es-ES')}`],
+        ["Ventas con Tarjeta", cantidadVentasTarjeta, `$${totalTarjeta.toLocaleString('es-ES')}`],
+        ["Ventas a Deudores", cantidadVentasADeudores, `$${ventasADeudores.toLocaleString('es-ES')}`],
+        ["Pagos de Deudores (Efectivo)", cantidadPagosEfectivo, `$${totalPagosDeudoresEfectivo.toLocaleString('es-ES')}`],
+        ["Pagos de Deudores (Tarjeta)", cantidadPagosTarjeta, `$${totalPagosDeudoresTarjeta.toLocaleString('es-ES')}`],
+        ["Nuevas Deudas Registradas", cantidadNuevasDeudas, `$${totalNuevasDeudas.toLocaleString('es-ES')}`],
+        ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString('es-ES')}`]
       ];
       
       // Usar el servicio de exportación centralizado

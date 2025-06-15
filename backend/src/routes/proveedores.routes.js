@@ -31,7 +31,7 @@ router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), de
 
 // Agregar estos nuevos endpoints
 router.get('/productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductosProveedor);
-router.post('/vincular-productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), vincularProductos);
+router.patch('/vincular-productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), vincularProductos);
 router.patch('/cambiar-estado/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), cambiarEstadoProveedor);
 
 export default router;

@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faFilter, faLink, faFilePdf, faCheck } from '@fortawesome/free-solid-svg-icons';
-import '../styles/ProveedoresStyles.css';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
-import { 
-  getProveedores, 
-  getProveedorById, 
-  createProveedor, 
-  updateProveedor, 
-  deleteProveedor,
-  getProductosProveedor,
-  vincularProductos,
-  cambiarEstadoProveedor
-} from '../services/proveedores.service.js';
+import { getProveedores, deleteProveedor, updateProveedor, getProveedorById, createProveedor, cambiarEstadoProveedor, vincularProductosAProveedor, getProductosProveedor } from '../services/proveedores.service.js';
 import { getProducts } from '../services/AddProducts.service.js';
-import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert, showInfoAlert } from '../helpers/swaHelper';
-import ProveedoresSkeleton from '../components/ProveedoresSkeleton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faFilePdf, faLink, faCheck, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert } from '../helpers/swaHelper';
+import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
 import { ExportService } from '../services/export.service.js';
+import '../styles/ProveedoresStyles.css';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -31,8 +20,18 @@ const Proveedores = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [estadoFilter, setEstadoFilter] = useState('activos');
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Estados para el manejo de productos
+  const [allProducts, setAllProducts] = useState([]);
+  const [showProductsModal, setShowProductsModal] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [proveedorProductos, setProveedorProductos] = useState([]);
+  const [showViewProductsModal, setShowViewProductsModal] = useState(false);
+  const [viewingProveedor, setViewingProveedor] = useState(null);
+  
   const [currentProveedor, setCurrentProveedor] = useState({
     nombre: '',
     telefono: '',
@@ -44,16 +43,6 @@ const Proveedores = () => {
     sitioWeb: ''
   });
   
-  const [allProducts, setAllProducts] = useState([]);
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const [proveedorProductos, setProveedorProductos] = useState([]);
-  const [showProductsModal, setShowProductsModal] = useState(false);
-  
-  const [viewingProveedor, setViewingProveedor] = useState(null);
-  const [showViewProductsModal, setShowViewProductsModal] = useState(false);
-  const [mostrarInactivos, setMostrarInactivos] = useState(false);
-  const [estadoFilter, setEstadoFilter] = useState('activos');
-
   const proveedoresPorPagina = 5;
   const categorias = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
@@ -69,11 +58,16 @@ const Proveedores = () => {
     
     inicializarDatos();
   }, []);
-  const fetchProveedores = async () => {
+  const fetchProveedores = async (incluirInactivos = null) => {
     try {
       setLoading(true);
-      const incluirInactivos = estadoFilter === 'inactivos';
-      const data = await getProveedores(1, 10000, incluirInactivos);
+      // Determinar qué proveedores cargar basado en el filtro de estado
+      let parametroIncluirInactivos = incluirInactivos;
+      if (parametroIncluirInactivos === null) {
+        parametroIncluirInactivos = estadoFilter === 'inactivos' ? true : false;
+      }
+      
+      const data = await getProveedores(1, 10000, parametroIncluirInactivos);
       const proveedoresArray = data.proveedores || data;
       
       setProveedores(proveedoresArray);
@@ -87,31 +81,24 @@ const Proveedores = () => {
       setLoading(false);
     }
   };
+
   const fetchAllProducts = async () => {
     try {
-      setLoading(true);
-      const response = await getProducts(1, 1000);
-      setAllProducts(response.products || response.data?.products || []);
+      const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      // Extraer el array de productos de la estructura de respuesta
+      const productsArray = Array.isArray(data.products) 
+        ? data.products 
+        : (data.data && Array.isArray(data.data.products) 
+          ? data.data.products 
+          : []);
+      
+      setAllProducts(productsArray);
     } catch (error) {
-      console.error('Error al cargar productos:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error al obtener productos:', error);
+      setAllProducts([]); // Asegurar que sea un array vacío en caso de error
     }
   };
-  const fetchProveedorProductos = async (proveedorId) => {
-    try {
-      setLoading(true);
-      const productos = await getProductosProveedor(proveedorId);
-      setProveedorProductos(productos);
-      setSelectedProducts(productos.map(p => p._id));
-    } catch (error) {
-      console.error('Error al obtener productos del proveedor:', error);
-      setProveedorProductos([]);
-      setSelectedProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     filterProveedores(e.target.value, sortOption, categoryFilter);
@@ -127,10 +114,20 @@ const Proveedores = () => {
     filterProveedores(searchQuery, sortOption, e.target.value);
   };
 
+  const handleEstadoFilterChange = async (e) => {
+    const nuevoEstado = e.target.value;
+    setEstadoFilter(nuevoEstado);
+    
+    // Recargar proveedores según el nuevo filtro de estado
+    const incluirInactivos = nuevoEstado === 'inactivos';
+    await fetchProveedores(incluirInactivos);
+  };
+
   const handleClearFilters = () => {
     setSearchQuery('');
     setSortOption('');
     setCategoryFilter('');
+    setEstadoFilter('activos');
     setFilteredProveedores(proveedores);
     setTotalPages(Math.ceil(proveedores.length / proveedoresPorPagina));
     setCurrentPage(1);
@@ -182,18 +179,7 @@ const Proveedores = () => {
       contactoPrincipal: '',
       sitioWeb: ''
     });
-    setProveedorProductos([]);
-    setSelectedProducts([]);
     setIsEditing(false);
-    
-    if (allProducts.length === 0) {
-      try {
-        await fetchAllProducts();
-      } catch (error) {
-        console.error('Error al cargar productos:', error);
-      }
-    }
-    
     setShowModal(true);
   };
 
@@ -202,10 +188,22 @@ const Proveedores = () => {
       setLoading(true);
       const proveedor = await getProveedorById(id);
       setCurrentProveedor(proveedor);
+      
+      // Cargar los productos actuales del proveedor para mostrarlos en el modal
+      try {
+        const productosActuales = await getProductosProveedor(id);
+        setProveedorProductos(productosActuales);
+        // También establecer los IDs como selectedProducts por si quiere modificarlos
+        setSelectedProducts(proveedor.productos || []);
+        console.log('🔄 Productos cargados del proveedor:', productosActuales);
+      } catch (error) {
+        console.warn('⚠️ No se pudieron cargar los productos del proveedor:', error);
+        setProveedorProductos([]);
+        setSelectedProducts([]);
+      }
+      
       setIsEditing(true);
       setShowModal(true);
-      
-      await fetchProveedorProductos(id);
     } catch (error) {
       console.error('Error al obtener proveedor para editar:', error);
       showErrorAlert('Error', 'No se pudo cargar la información del proveedor');
@@ -321,23 +319,39 @@ const Proveedores = () => {
 
     try {
       setLoading(true);
+      let proveedorCreado;
 
       if (isEditing) {
         const { _id, ...proveedorData } = currentProveedor;
-        await updateProveedor(_id, proveedorData);
+        proveedorCreado = await updateProveedor(_id, proveedorData);
+        
+        // Si hay productos seleccionados y estamos editando, vincularlos
         if (selectedProducts.length > 0) {
-          await vincularProductos(_id, selectedProducts);
+          await vincularProductosAProveedor(_id, selectedProducts);
         }
+        
         showSuccessAlert('Actualizado', 'Proveedor actualizado con éxito');
       } else {
-        const nuevoProveedorData = { 
-          ...currentProveedor, 
-          productos: selectedProducts 
-        };
-        await createProveedor(nuevoProveedorData);
-        showSuccessAlert('Agregado', 'Proveedor agregado con éxito');
+        // Crear el proveedor
+        proveedorCreado = await createProveedor(currentProveedor);
+        
+        // Si hay productos seleccionados, vincularlos automáticamente
+        if (selectedProducts.length > 0 && proveedorCreado._id) {
+          try {
+            await vincularProductosAProveedor(proveedorCreado._id, selectedProducts);
+            showSuccessAlert('Agregado', 'Proveedor agregado con éxito y productos vinculados');
+          } catch (error) {
+            console.error('Error al vincular productos:', error);
+            showSuccessAlert('Agregado', 'Proveedor agregado con éxito, pero hubo un error al vincular algunos productos');
+          }
+        } else {
+          showSuccessAlert('Agregado', 'Proveedor agregado con éxito');
+        }
       }
 
+      // Limpiar estado
+      setSelectedProducts([]);
+      setProveedorProductos([]);
       fetchProveedores();
       setShowModal(false);
     } catch (error) {
@@ -346,79 +360,6 @@ const Proveedores = () => {
         'Error',
         isEditing ? 'No se pudo actualizar el proveedor' : 'No se pudo crear el proveedor'
       );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLinkProducts = async (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    if (allProducts.length === 0) {
-      try {
-        await fetchAllProducts();
-      } catch (error) {
-        console.error('Error al cargar productos:', error);
-        showErrorAlert('Error', 'No se pudieron cargar los productos');
-        return;
-      }
-    }
-    
-    setShowProductsModal(true);
-  };
-
-  const handleProductSelection = (productId) => {
-    setSelectedProducts(prev => {
-      if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId);
-      } else {
-        return [...prev, productId];
-      }
-    });
-  };
-  
-  const handleProductsSubmit = async () => {
-    try {
-      setLoading(true);
-      
-      if (!currentProveedor._id) {
-        setShowProductsModal(false);
-        return;
-      }
-      
-      await vincularProductos(currentProveedor._id, selectedProducts);
-      await fetchProveedorProductos(currentProveedor._id);
-      
-      showSuccessAlert('Éxito', 'Productos vinculados correctamente al proveedor');
-      
-      setShowProductsModal(false);
-    } catch (error) {
-      console.error('Error al vincular productos:', error);
-      showErrorAlert('Error', 'No se pudieron vincular los productos al proveedor');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewProveedorProductos = async (proveedorId) => {
-    try {
-      setLoading(true);
-      const productos = await getProductosProveedor(proveedorId);
-      const proveedor = proveedores.find(p => p._id === proveedorId);
-      
-      if (proveedor) {
-        setViewingProveedor({
-          ...proveedor,
-          productosDetalle: productos
-        });
-        setShowViewProductsModal(true);
-      }
-    } catch (error) {
-      console.error('Error al cargar productos del proveedor:', error);
-      showErrorAlert('Error', 'No se pudieron cargar los productos');
     } finally {
       setLoading(false);
     }
@@ -438,35 +379,122 @@ const Proveedores = () => {
     );
   
     if (result.isConfirmed) {
-      setShowModal(false); // Cerrar el modal si el usuario confirma
+      // Limpiar estados relacionados con productos
+      setSelectedProducts([]);
+      setProveedorProductos([]);
+      setShowModal(false);
     }
   };
 
-  const handleEstadoFilterChange = async (e) => {
-    const nuevoEstado = e.target.value;
-    setEstadoFilter(nuevoEstado);
+  const handleLinkProducts = (e) => {
+    e.preventDefault();
     
+    // Ya no verificamos si es un nuevo proveedor - permitimos siempre seleccionar productos
+    setShowProductsModal(true);
+  };
+
+  const handleProductSelection = (productId) => {
+    setSelectedProducts(prevSelected => {
+      if (prevSelected.includes(productId)) {
+        return prevSelected.filter(id => id !== productId);
+      } else {
+        return [...prevSelected, productId];
+      }
+    });
+  };
+
+  const handleProductsSubmit = async () => {
+    if (selectedProducts.length === 0) {
+      return showWarningAlert('Advertencia', 'Debes seleccionar al menos un producto');
+    }
+
+    // Si estamos creando un nuevo proveedor (no hay ID), solo cerramos el modal
+    // Los productos se guardarán después de crear el proveedor
+    if (!isEditing || !currentProveedor._id) {
+      setShowProductsModal(false);
+      showSuccessAlert('Productos seleccionados', 'Los productos se vincularán al guardar el proveedor');
+      return;
+    }
+
+    // Solo vinculamos inmediatamente si estamos editando un proveedor existente
+    console.log('🔍 Datos para vincular productos:', {
+      proveedorId: currentProveedor._id,
+      productosSeleccionados: selectedProducts,
+      isEditing: isEditing
+    });
+
     try {
       setLoading(true);
-      const incluirInactivos = nuevoEstado === 'inactivos';
-      const data = await getProveedores(1, 10000, incluirInactivos);
-      const proveedoresArray = data.proveedores || data;
       
-      setProveedores(proveedoresArray);
-      setFilteredProveedores(proveedoresArray);
-      setTotalPages(Math.ceil(proveedoresArray.length / proveedoresPorPagina));
-      setCurrentPage(1);
+      console.log('🚀 Enviando solicitud de vinculación...');
+      const resultado = await vincularProductosAProveedor(currentProveedor._id, selectedProducts);
+      console.log('✅ Respuesta del servidor:', resultado);
+
+      showSuccessAlert('Productos vinculados', 'Los productos se han vinculado correctamente al proveedor');
+      setShowProductsModal(false);
       
-      // Mostrar mensaje informativo al usuario
-      if (nuevoEstado === 'inactivos') {
-        showInfoAlert(
-          'Proveedores inactivos', 
-          'Mostrando proveedores inactivos. Para reactivar un proveedor, utilice el botón de activar.'
-        );
+      try {
+        console.log('🔄 Recargando productos del proveedor en el modal...');
+        const productosActualizados = await getProductosProveedor(currentProveedor._id);
+        setProveedorProductos(productosActualizados);
+        console.log('✅ Productos actualizados en el modal:', productosActualizados);
+        
+        // También actualizar el currentProveedor con los nuevos IDs de productos
+        setCurrentProveedor(prev => ({
+          ...prev,
+          productos: selectedProducts
+        }));
+        
+      } catch (error) {
+        console.warn('⚠️ Error al recargar productos del proveedor:', error);
       }
+      
+      // Limpiar selección para la próxima vez
+      setSelectedProducts([]);
+      
+      // Recargar proveedores para mostrar los productos actualizados en la tabla principal
+      console.log('🔄 Recargando lista de proveedores...');
+      await fetchProveedores(); 
+      
     } catch (error) {
-      console.error('Error al cambiar filtro de estado:', error);
-      setError('No se pudieron cargar los proveedores. Inténtelo de nuevo.');
+      console.error('❌ Error detallado al vincular productos:', error);
+      console.error('📊 Detalles del error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      showErrorAlert('Error', 'Ocurrió un error al vincular los productos. Revisa la consola para más detalles.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewProveedorProductos = async (id) => {
+    try {
+      setLoading(true);
+      
+      // Obtener el proveedor completo
+      const proveedor = proveedores.find(prov => prov._id === id);
+      if (!proveedor) {
+        showErrorAlert('Error', 'Proveedor no encontrado');
+        return;
+      }
+      
+      // Obtener los productos detallados del proveedor
+      const productosDetalle = await getProductosProveedor(id);
+      
+      // Actualizar el proveedor con los productos detallados
+      const proveedorConProductos = {
+        ...proveedor,
+        productosDetalle: productosDetalle
+      };
+      
+      setViewingProveedor(proveedorConProductos);
+      setShowViewProductsModal(true);
+    } catch (error) {
+      console.error('Error al cargar productos del proveedor:', error);
+      showErrorAlert('Error', 'No se pudieron cargar los productos del proveedor');
     } finally {
       setLoading(false);
     }

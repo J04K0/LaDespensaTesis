@@ -227,21 +227,31 @@ export const vincularProductos = async (req, res) => {
     const { id } = req.params;
     const { productos } = req.body;
     
-    if (!Array.isArray(productos)) {
-      return handleErrorClient(res, 400, 'Se esperaba un array de IDs de productos');
+    if (!productos || !Array.isArray(productos)) {
+      return handleErrorClient(res, 400, 'Se requiere un array de IDs de productos');
     }
     
+    // Verificar si el proveedor existe
     const proveedor = await Proveedor.findById(id);
     if (!proveedor) {
       return handleErrorClient(res, 404, 'Proveedor no encontrado');
     }
     
-    // Asignar productos al proveedor
-    proveedor.productos = productos;
-    await proveedor.save();
+    // Verificar que todos los productos existen
+    const productosExistentes = await Product.find({ _id: { $in: productos } });
+    if (productosExistentes.length !== productos.length) {
+      return handleErrorClient(res, 400, 'Algunos productos no existen');
+    }
     
-    handleSuccess(res, 200, 'Productos vinculados al proveedor con éxito', proveedor);
+    // Actualizar el proveedor con los nuevos productos
+    const proveedorActualizado = await Proveedor.findByIdAndUpdate(
+      id,
+      { productos: productos },
+      { new: true }
+    );
+    
+    handleSuccess(res, 200, 'Productos vinculados al proveedor', proveedorActualizado);
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al vincular productos', err.message);
+    handleErrorServer(res, 500, 'Error al vincular productos al proveedor', err.message);
   }
 };

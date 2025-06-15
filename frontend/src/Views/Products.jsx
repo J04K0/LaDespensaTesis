@@ -3,13 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import ProductInfoModal from '../components/ProductInfoModal';
+import ProductEditModal from '../components/ProductEditModal';
 import PriceHistoryModal from '../components/PriceHistoryModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
 import { useVentas } from '../context/VentasContext';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
-import ProductCardSkeleton from '../components/ProductCardSkeleton';
+import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
@@ -870,189 +871,16 @@ const Products = () => {
       />
       
       {showEditModal && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="products-modal-content products-product-edit-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="products-modal-header">
-              <h2 className="products-modal-title">Editar Producto</h2>
-              <button className="products-modal-close" onClick={() => setShowEditModal(false)}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            
-            <div className="products-modal-body">
-              <div className="products-form-grid">
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="Nombre">Nombre del producto</label>
-                  <input
-                    type="text"
-                    id="Nombre"
-                    name="Nombre"
-                    value={productToEdit.Nombre}
-                    onChange={handleEditChange}
-                    required
-                    className="products-form-control"
-                  />
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="codigoBarras">Código de Barras</label>
-                  <input
-                    type="text"
-                    id="codigoBarras"
-                    name="codigoBarras"
-                    value={productToEdit.codigoBarras}
-                    onChange={handleEditChange}
-                    required
-                    className="products-form-control"
-                  />
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="Marca">Marca</label>
-                  <input
-                    type="text"
-                    id="Marca"
-                    name="Marca"
-                    value={productToEdit.Marca}
-                    onChange={handleEditChange}
-                    required
-                    className="products-form-control"
-                  />
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="Categoria">Categoría</label>
-                  <select
-                    id="Categoria"
-                    name="Categoria"
-                    value={productToEdit.Categoria}
-                    onChange={handleEditChange}
-                    required
-                    className="products-form-select"
-                  >
-                    <option value="">Seleccione una categoría</option>
-                    {categories.map((cat, index) => (
-                      <option key={index} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="Stock">Stock</label>
-                  <input
-                    type="number"
-                    id="Stock"
-                    name="Stock"
-                    value={productToEdit.Stock}
-                    onChange={handleEditChange}
-                    required
-                    className="products-form-control"
-                    min="0"
-                  />
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
-                  <input
-                    type="date"
-                    id="fechaVencimiento"
-                    name="fechaVencimiento"
-                    value={productToEdit.fechaVencimiento}
-                    onChange={handleEditChange}
-                    className="products-form-control"
-                  />
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="PrecioCompra">Precio de Compra</label>
-                  <div className="products-input-with-icon">
-                    <span className="products-input-prefix">$</span>
-                    <input
-                      type="number"
-                      id="PrecioCompra"
-                      name="PrecioCompra"
-                      value={productToEdit.PrecioCompra}
-                      onChange={handleEditChange}
-                      required
-                      className="products-form-control"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label">Precio Recomendado (10% sobre precio de compra)</label>
-                  <div className="products-precio-recomendado-container">
-                    <div className="products-input-with-icon">
-                      <span className="products-input-prefix">$</span>
-                      <input
-                        type="text"
-                        value={productToEdit.PrecioRecomendado.toFixed(2)}
-                        className="products-form-control"
-                        disabled
-                      />
-                    </div>
-                    <button 
-                      type="button"
-                      className="products-btn products-btn-usar-recomendado"
-                      onClick={usarPrecioRecomendado}
-                    >
-                      Usar este precio
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="products-form-group">
-                  <label className="products-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
-                  <div className="products-input-with-icon">
-                    <span className="products-input-prefix">$</span>
-                    <input
-                      type="number"
-                      id="PrecioVenta"
-                      name="PrecioVenta"
-                      value={productToEdit.PrecioVenta}
-                      onChange={handleEditChange}
-                      required
-                      className="products-form-control"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-              </div>
-                      
-              <div className="products-form-group-full">
-                <label className="products-form-label" htmlFor="image">Imagen del Producto</label>
-                <input
-                  type="file"
-                  id="image"
-                  name="image"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="products-form-control products-file-input"
-                />
-                <small className="products-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
-                
-                {typeof editImage === 'string' && (
-                  <div className="products-current-image">
-                    <p>Imagen actual:</p>
-                    <img src={editImage} alt="Imagen actual del producto" className="products-preview-image" />
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="products-modal-buttons">
-              <button onClick={handleEditSubmit} className="products-confirm-button">
-                <FontAwesomeIcon icon={faPen} /> Guardar Cambios
-              </button>
-              <button onClick={() => setShowEditModal(false)} className="products-cancel-button">
-                <FontAwesomeIcon icon={faTimes} /> Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProductEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          productToEdit={productToEdit}
+          onProductChange={handleEditChange}
+          onImageChange={handleImageChange}
+          onSubmit={handleEditSubmit}
+          editImage={editImage}
+          loading={loading}
+        />
       )}
       
       {showPriceHistoryModal && priceHistoryData && (

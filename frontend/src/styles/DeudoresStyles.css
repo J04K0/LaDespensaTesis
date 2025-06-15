@@ -384,30 +384,42 @@
   transform: translateY(-2px);
 }
 
-/* Estilos para modales */
+/* Estilos para modales - OPTIMIZADO PARA RENDIMIENTO */
 .deudores-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.65);
+  background-color: rgba(0, 0, 0, 0.6); /* Reducido de 0.65 a 0.6 */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.25s ease-out;
+  /* ELIMINADO: backdrop-filter: blur(3px); - MUY COSTOSO */
+  /* Animación simplificada */
+  animation: fadeInSimple 0.2s ease-out;
+  /* Optimización de rendering */
+  will-change: opacity;
+  overscroll-behavior: contain;
 }
 
-@keyframes fadeIn {
+/* Animación simplificada sin transforms costosos */
+@keyframes fadeInSimple {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+/* Eliminamos slideUp compleja, usamos solo opacity */
+@keyframes slideUpOptimized {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); /* Reducido de 30px a 10px */
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 .deudores-modal-content {
@@ -418,19 +430,27 @@
   max-width: 540px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Sombra simplificada - MUCHO más ligera */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Reducido significativamente */
+  /* Animación optimizada */
+  animation: slideUpOptimized 0.25s ease-out; /* Más rápida y suave */
   transform-origin: center;
+  /* Optimizaciones de rendering */
+  will-change: transform, opacity;
+  /* Mejora el rendering en mobile */
+  -webkit-overflow-scrolling: touch;
 }
 
 .deudores-modal-header {
-  background: linear-gradient(135deg, #002651, #006EDF);
+  /* CAMBIADO: Eliminamos gradient costoso por color sólido */
+  background-color: var(--primary-dark); /* Color sólido en lugar de gradient */
   color: white;
   padding: 20px 25px;
   border-radius: 12px 12px 0 0;
   position: sticky;
   top: 0;
   z-index: 5;
+  /* Eliminamos text-shadow costoso */
 }
 
 .deudores-modal-title {
@@ -438,7 +458,7 @@
   font-size: 22px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  /* ELIMINADO: text-shadow: 0 1px 2px rgba(0,0,0,0.1); */
 }
 
 .deudores-modal-body {
@@ -626,8 +646,9 @@ textarea.deudores-form-control {
   min-height: 80px;
 }
 
-/* Smooth scrollbar para el modal */
+/* Smooth scrollbar optimizado */
 .deudores-modal-content {
+  /* Scrollbar más ligero */
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f1f1f1;
 }
@@ -638,12 +659,12 @@ textarea.deudores-form-control {
 
 .deudores-modal-content::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 0 12px 12px 0;
+  /* ELIMINADO: border-radius costoso en scrollbar */
 }
 
 .deudores-modal-content::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 10px;
+  border-radius: 3px; /* Reducido de 10px a 3px */
 }
 
 .deudores-modal-content::-webkit-scrollbar-thumb:hover {
@@ -693,6 +714,39 @@ textarea.deudores-form-control {
 
 .deudores-state-badge-danger {
   background-color: #dc3545;
+  color: white;
+}
+
+/* Badges de estado de pago */
+.deudores-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-status-al-dia {
+  background-color: #28a745;
+  color: white;
+}
+
+.deudores-status-pendiente {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.deudores-status-vencido {
+  background-color: #dc3545;
+  color: white;
+}
+
+.deudores-status-hoy {
+  background-color: #fd7e14;
   color: white;
 }
 
@@ -774,4 +828,316 @@ textarea.deudores-form-control {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+/* Estadísticas de deudores */
+.deudores-stats-container {
+  margin-top: 40px;
+  padding: 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-stats-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 25px;
+  text-align: center;
+  position: relative;
+}
+
+.deudores-stats-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 2px;
+}
+
+.deudores-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.deudores-stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.deudores-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: 0.1;
+  transform: translate(30%, -30%);
+  transition: all 0.3s ease;
+}
+
+.deudores-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.deudores-stat-card:hover::before {
+  transform: translate(20%, -20%) scale(1.1);
+}
+
+.deudores-stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.deudores-stat-content {
+  flex: 1;
+}
+
+.deudores-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: var(--gray-dark);
+}
+
+.deudores-stat-label {
+  font-size: 14px;
+  color: var(--gray);
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Variantes de colores para las cards */
+.deudores-stat-card-primary {
+  border-left-color: var(--primary);
+}
+
+.deudores-stat-card-primary .deudores-stat-icon {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.deudores-stat-card-primary::before {
+  background: var(--primary);
+}
+
+.deudores-stat-card-info {
+  border-left-color: #17a2b8;
+}
+
+.deudores-stat-card-info .deudores-stat-icon {
+  background: linear-gradient(135deg, #17a2b8, #20c997);
+}
+
+.deudores-stat-card-info::before {
+  background: #17a2b8;
+}
+
+.deudores-stat-card-warning {
+  border-left-color: var(--warning);
+}
+
+.deudores-stat-card-warning .deudores-stat-icon {
+  background: linear-gradient(135deg, var(--warning), #fd7e14);
+}
+
+.deudores-stat-card-warning::before {
+  background: var(--warning);
+}
+
+.deudores-stat-card-success {
+  border-left-color: var(--success);
+}
+
+.deudores-stat-card-success .deudores-stat-icon {
+  background: linear-gradient(135deg, var(--success), #20c997);
+}
+
+.deudores-stat-card-success::before {
+  background: var(--success);
+}
+
+.deudores-stat-card-danger {
+  border-left-color: var(--danger);
+}
+
+.deudores-stat-card-danger .deudores-stat-icon {
+  background: linear-gradient(135deg, var(--danger), #e74c3c);
+}
+
+.deudores-stat-card-danger::before {
+  background: var(--danger);
+}
+
+.deudores-stat-card-secondary {
+  border-left-color: var(--gray-dark);
+}
+
+.deudores-stat-card-secondary .deudores-stat-icon {
+  background: linear-gradient(135deg, var(--gray-dark), #6c757d);
+}
+
+.deudores-stat-card-secondary::before {
+  background: var(--gray-dark);
+}
+
+.deudores-stat-card-urgent {
+  border-left-color: #fd7e14;
+  animation: pulse-urgent 2s infinite;
+}
+
+.deudores-stat-card-urgent .deudores-stat-icon {
+  background: linear-gradient(135deg, #fd7e14, #ff6b35);
+}
+
+.deudores-stat-card-urgent::before {
+  background: #fd7e14;
+}
+
+.deudores-stat-card-light {
+  border-left-color: #6f42c1;
+}
+
+.deudores-stat-card-light .deudores-stat-icon {
+  background: linear-gradient(135deg, #6f42c1, #8e44ad);
+}
+
+.deudores-stat-card-light::before {
+  background: #6f42c1;
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(253, 126, 20, 0.3);
+  }
+}
+
+/* Card destacada para el mayor deudor */
+.deudores-highlight-card {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  border-radius: 15px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  box-shadow: 0 8px 25px rgba(0, 38, 81, 0.2);
+  margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.deudores-highlight-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: rotate(45deg);
+}
+
+.deudores-highlight-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.deudores-highlight-content {
+  flex: 1;
+  z-index: 1;
+}
+
+.deudores-highlight-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.deudores-highlight-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+.deudores-highlight-amount {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive para las cards */
+@media (max-width: 768px) {
+  .deudores-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .deudores-stat-card {
+    padding: 20px;
+  }
+  
+  .deudores-stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .deudores-stat-value {
+    font-size: 24px;
+  }
+  
+  .deudores-highlight-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .deudores-highlight-amount {
+    font-size: 28px;
+  }
 }

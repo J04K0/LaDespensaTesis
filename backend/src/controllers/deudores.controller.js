@@ -20,7 +20,7 @@ export const getDeudores = async (req, res) => {
     }
     const deudoresFormateados = deudores.map(deudor => ({
       ...deudor.toObject(),
-      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-CL")}`
+      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-ES")}`
     }));
 
     handleSuccess(res, 200, 'Deudores encontrados', {

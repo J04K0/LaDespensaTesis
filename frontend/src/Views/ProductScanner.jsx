@@ -6,8 +6,8 @@ import { registrarVenta } from "../services/venta.service.js";
 import { getDeudoresSimple } from "../services/deudores.service.js";
 import { addDeudor } from "../services/deudores.service.js";
 import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
+import ProductScannerSkeleton from '../components/Skeleton/ProductScannerSkeleton';
 import "../styles/ProductScannerStyles.css";
-import ProductScannerSkeleton from '../components/ProductScannerSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, 
   faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus } from '@fortawesome/free-solid-svg-icons';

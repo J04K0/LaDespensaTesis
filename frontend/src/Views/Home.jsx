@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import '../styles/HomeStyles.css';
+import { getProducts } from '../services/AddProducts.service.js';
 import { getDeudores } from '../services/deudores.service.js';
+import { obtenerVentasPorTicket } from '../services/venta.service.js';
+import axios from '../services/root.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faArrowRight, faArrowLeft, faChartPie, faStar, faDownload, faFilePdf, faSpinner, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
-import axios from "../services/root.service.js";
-import { Bar, Pie, Doughnut } from "react-chartjs-2";
-import DeudoresTableSkeleton from '../components/DeudoresTableSkeleton';
-import ChartSkeleton from '../components/ChartSkeleton';
+import { faBoxes, faUsers, faShoppingCart, faMoneyBillWave, faArrowRight, faArrowLeft, faPlus, faEye, faCalendarAlt, faChartLine, faExclamationTriangle, faUser, faStar, faChartPie, faSpinner, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import '../styles/HomeStyles.css';
+import DeudoresTableSkeleton from '../components/Skeleton/DeudoresTableSkeleton';
+import ChartSkeleton from '../components/Skeleton/ChartSkeleton';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -21,11 +22,14 @@ import {
   BarElement, 
   ArcElement, 
   DoughnutController,
+  PieController,
   Title, 
   Tooltip, 
   Legend, 
   PointElement 
 } from "chart.js";
+
+import { Doughnut, Pie } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +37,7 @@ ChartJS.register(
   BarElement,
   ArcElement,
   DoughnutController,
+  PieController,
   PointElement,
   Title,
   Tooltip,
@@ -809,7 +814,7 @@ const Home = () => {
                       return (
                         <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
                           <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                          <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString() : 'N/A'}</td>
+                          <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}</td>
                         </tr>
                       );
                     })}

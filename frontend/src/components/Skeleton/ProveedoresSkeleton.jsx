@@ -1,9 +1,13 @@
 import React from 'react';
-import '../styles/SkeletonStyles.css';
+import './SkeletonStyles.css';
 
-const HistorySaleSkeleton = () => {
+const ProveedoresSkeleton = () => {
   return (
-    <div className="skeleton-history-sale">
+    <div className="skeleton-proveedores">
+      <div className="skeleton-header">
+        <div className="skeleton-title"></div>
+        <div className="skeleton-button"></div>
+      </div>
       <div className="skeleton-controls">
         <div className="skeleton-search"></div>
         <div className="skeleton-dropdown"></div>
@@ -11,17 +15,15 @@ const HistorySaleSkeleton = () => {
       </div>
       <div className="skeleton-table">
         <div className="skeleton-row header">
-          <div className="skeleton-cell"></div>
-          <div className="skeleton-cell"></div>
-          <div className="skeleton-cell"></div>
-          <div className="skeleton-cell"></div>
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className="skeleton-cell"></div>
+          ))}
         </div>
-        {[...Array(6)].map((_, index) => (
+        {[...Array(5)].map((_, index) => (
           <div key={index} className="skeleton-row">
-            <div className="skeleton-cell"></div>
-            <div className="skeleton-cell"></div>
-            <div className="skeleton-cell"></div>
-            <div className="skeleton-cell"></div>
+            {[...Array(8)].map((_, cellIndex) => (
+              <div key={cellIndex} className="skeleton-cell"></div>
+            ))}
           </div>
         ))}
       </div>
@@ -34,4 +36,4 @@ const HistorySaleSkeleton = () => {
   );
 };
 
-export default HistorySaleSkeleton;
+export default ProveedoresSkeleton;

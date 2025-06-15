@@ -49,7 +49,7 @@ export class ExportService {
       
       // Calcular el balance total
       doc.setFontSize(12);
-      doc.text(`Balance en Efectivo: $${balanceEfectivo.toLocaleString()}`, 14, doc.lastAutoTable.finalY + 15);
+      doc.text(`Balance en Efectivo: $${balanceEfectivo.toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 15);
       
       // Si hay datos de deudores, añadir una sección
       if (deudoresData.length > 0) {
@@ -63,9 +63,13 @@ export class ExportService {
         });
       }
       
-      // Agregar pie de página con información del usuario
+      // Añadir información adicional
       doc.setFontSize(10);
-      doc.text(`Reporte generado por: ${usuarioActual.email} - ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
+      doc.text(`Total de transacciones: ${ventasData.length + deudoresData.length}`, 14, doc.lastAutoTable.finalY + 30);
+      doc.text(`Período del reporte: ${sessionStartTime.toLocaleString('es-ES')} - ${new Date().toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 40);
+      
+      // Pie de página con información del usuario
+      doc.text(`Reporte generado por: ${usuarioActual.email} - ${new Date().toLocaleString('es-ES')}`, 14, doc.internal.pageSize.height - 10);
       
       // Guardar el PDF
       const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
@@ -200,13 +204,13 @@ export class ExportService {
     
     // Crear tabla de métricas principales
     const metricasPrincipales = [
-      ["Ingresos totales", `$${ingresosTotales.toLocaleString('es-AR')}`],
-      ["Costos totales", `$${costosTotales.toLocaleString('es-AR')}`],
-      ["Ganancias totales", `$${gananciasTotales.toLocaleString('es-AR')}`],
+      ["Ingresos totales", `$${ingresosTotales.toLocaleString('es-ES')}`],
+      ["Costos totales", `$${costosTotales.toLocaleString('es-ES')}`],
+      ["Ganancias totales", `$${gananciasTotales.toLocaleString('es-ES')}`],
       ["Rentabilidad", `${rentabilidadPromedio.toFixed(2)}%`],
       ["Número de transacciones", transacciones],
-      ["Valor promedio por transacción", `$${valorPromedioTransaccion.toLocaleString('es-AR')}`],
-      ["Inversión en inventario", `$${inversionMercaderia.toLocaleString('es-AR')}`]
+      ["Valor promedio por transacción", `$${valorPromedioTransaccion.toLocaleString('es-ES')}`],
+      ["Inversión en inventario", `$${inversionMercaderia.toLocaleString('es-ES')}`]
     ];
     
     autoTable(doc, {

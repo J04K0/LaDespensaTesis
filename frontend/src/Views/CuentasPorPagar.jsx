@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar } from '../services/cuentasPorPagar.service.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser } from '@fortawesome/free-solid-svg-icons';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton';
 import '../styles/CuentasPorPagarStyles.css';
 import axios from "../services/root.service.js";
 import { ExportService } from '../services/export.service.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faCheckCircle, faSearch, faFilter, faEraser, faCheck, faTimes, faFilePdf, faCalendarAlt, faChartLine } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showWarningAlert, showConfirmationAlert } from '../helpers/swaHelper';
-import CuentasPorPagarSkeleton from '../components/CuentasPorPagarSkeleton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -533,7 +534,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Promedio Mensual</h3>
-                  <p className="summary-value">${(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                  <p className="summary-value">${(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0).toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
                   <span className="summary-label">Facturas a Pagar: {cuentas.length} | Meses activos: {mesesConDatos}</span>
                 </div>
                 <div className="summary-trend">
@@ -548,7 +549,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Total Pagado</h3>
-                  <p className="summary-value">${totalPagado.toLocaleString()}</p>
+                  <p className="summary-value">${totalPagado.toLocaleString('es-ES')}</p>
                   <span className="summary-label">Facturas Pagadas: {cuentas.filter(c => c.Estado === 'Pagado').length}</span>
                 </div>
                 <div className="summary-trend positive">
@@ -563,7 +564,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Total Pendiente</h3>
-                  <p className="summary-value">${totalPendiente.toLocaleString()}</p>
+                  <p className="summary-value">${totalPendiente.toLocaleString('es-ES')}</p>
                   <span className="summary-label">Facturas Pendientes: {cuentas.filter(c => c.Estado === 'Pendiente').length}</span>
                 </div>
                 <div className="summary-trend negative">
@@ -935,9 +936,9 @@ const handleCancel = async () => {
                       </div>
                       <div className="summary-info">
                         <h3>{meses.find(m => m.id === mes)?.nombre}</h3>
-                        <p className="summary-value">${datos.total.toLocaleString()}</p>
+                        <p className="summary-value">${datos.total.toLocaleString('es-ES')}</p>
                         <span className="summary-label">
-                          Pagado: ${datos.pagado.toLocaleString()} | Pendiente: ${datos.pendiente.toLocaleString()}
+                          Pagado: ${datos.pagado.toLocaleString('es-ES')} | Pendiente: ${datos.pendiente.toLocaleString('es-ES')}
                         </span>
                       </div>
                       <div className={`summary-trend ${datos.pendiente > 0 ? 'negative' : 'positive'}`}>
@@ -964,9 +965,9 @@ const handleCancel = async () => {
                   </div>
                   <div className="summary-info">
                     <h3>Total Anual</h3>
-                    <p className="summary-value">${totalGeneral.toLocaleString()}</p>
+                    <p className="summary-value">${totalGeneral.toLocaleString('es-ES')}</p>
                     <span className="summary-label">
-                      Pagado: ${totalPagado.toLocaleString()} | Pendiente: ${totalPendiente.toLocaleString()}
+                      Pagado: ${totalPagado.toLocaleString('es-ES')} | Pendiente: ${totalPendiente.toLocaleString('es-ES')}
                     </span>
                   </div>
                   <div className="progress-circle-container">

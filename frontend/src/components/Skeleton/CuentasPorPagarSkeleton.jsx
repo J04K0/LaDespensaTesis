@@ -1,15 +1,16 @@
 import React from 'react';
-import '../styles/SkeletonStyles.css';
+import './SkeletonStyles.css';
 
-const DeudoresListSkeleton = () => {
+const CuentasPorPagarSkeleton = () => {
   return (
-    <div className="skeleton-deudores-list">
+    <div className="skeleton-cuentas-pagar">
       <div className="skeleton-header">
         <div className="skeleton-title"></div>
         <div className="skeleton-button"></div>
       </div>
       <div className="skeleton-controls">
         <div className="skeleton-search"></div>
+        <div className="skeleton-dropdown"></div>
         <div className="skeleton-dropdown"></div>
         <div className="skeleton-button"></div>
       </div>
@@ -20,9 +21,13 @@ const DeudoresListSkeleton = () => {
           <div className="skeleton-cell"></div>
           <div className="skeleton-cell"></div>
           <div className="skeleton-cell"></div>
+          <div className="skeleton-cell"></div>
+          <div className="skeleton-cell"></div>
         </div>
-        {[...Array(8)].map((_, index) => (
+        {[...Array(6)].map((_, index) => (
           <div key={index} className="skeleton-row">
+            <div className="skeleton-cell"></div>
+            <div className="skeleton-cell"></div>
             <div className="skeleton-cell"></div>
             <div className="skeleton-cell"></div>
             <div className="skeleton-cell"></div>
@@ -44,4 +49,4 @@ const DeudoresListSkeleton = () => {
   );
 };
 
-export default DeudoresListSkeleton;
+export default CuentasPorPagarSkeleton;

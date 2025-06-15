@@ -5,7 +5,7 @@ import { useVentas } from "../context/VentasContext";
 import { getProducts } from "../services/AddProducts.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/FinanzasStyles.css";
-import FinanzasSkeleton from '../components/FinanzasSkeleton';
+import FinanzasSkeleton from '../components/Skeleton/FinanzasSkeleton';
 import { 
   faInfoCircle, 
   faFilePdf, 
@@ -785,7 +785,7 @@ const Finanzas = () => {
 
   // Formatear valores monetarios
   const formatMoney = (value) => {
-    return '$' + value.toLocaleString('es-AR', {
+    return '$' + value.toLocaleString('es-ES', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     });

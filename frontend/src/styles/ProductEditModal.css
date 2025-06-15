@@ -1,0 +1,457 @@
+/* OPTIMIZADO PARA RENDIMIENTO - ProductEditModal Styles */
+/* Variables de colores para mantener consistencia */
+:root {
+  --primary-dark: #002651;
+  --primary: #006EDF;
+  --primary-light: #E3F2FD;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --gray-dark: #343a40;
+  --gray: #6c757d;
+  --gray-light: #f8f9fa;
+  --white: #ffffff;
+}
+
+/* Clase para prevenir scroll en el body cuando el modal está abierto */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Overlay del modal - OPTIMIZADO */
+.product-edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+  opacity: 1;
+  overscroll-behavior: contain;
+  /* Optimización de animación */
+  animation: fadeInOptimized 0.2s ease-out;
+}
+
+.product-edit-modal-overlay.closing {
+  animation: fadeOutOptimized 0.2s ease-in;
+}
+
+@keyframes fadeInOptimized {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutOptimized {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Modal principal - OPTIMIZADO */
+.product-edit-modal {
+  background: white;
+  border-radius: 16px;
+  width: 95%;
+  max-width: 900px;
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  position: relative;
+  animation: slideInOptimized 0.3s ease-out;
+  margin: 2rem auto;
+  will-change: auto;
+  overscroll-behavior: contain;
+}
+
+@keyframes slideInOptimized {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header del modal */
+.product-edit-modal-header {
+  background: var(--primary);
+  color: var(--white);
+  padding: 1.5rem 2rem;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px 16px 0 0;
+}
+
+.product-edit-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--white);
+}
+
+.product-edit-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--white);
+  font-size: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.product-edit-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Contenido del modal */
+.product-edit-modal-body {
+  padding: 2rem;
+}
+
+/* Grid del formulario */
+.product-edit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Grupos de formulario */
+.product-edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-edit-form-group-full {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+/* Labels */
+.product-edit-form-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+  margin-bottom: 0.25rem;
+}
+
+/* Inputs y selects */
+.product-edit-form-control, .product-edit-form-select {
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 2px solid #e1e5e9;
+  background-color: #fff;
+  color: #212529;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.product-edit-form-control:focus, .product-edit-form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+.product-edit-form-control:disabled, .product-edit-form-select:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Input con prefijo de moneda */
+.product-edit-input-with-icon {
+  display: flex;
+  align-items: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e1e5e9;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-edit-input-with-icon:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+.product-edit-input-prefix {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #e1e5e9;
+  color: #495057;
+  font-weight: 500;
+  min-width: 50px;
+  justify-content: center;
+}
+
+.product-edit-input-with-icon .product-edit-form-control {
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  margin: 0;
+}
+
+.product-edit-input-with-icon .product-edit-form-control:focus {
+  box-shadow: none;
+}
+
+/* Contenedor del precio recomendado */
+.product-edit-precio-recomendado-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.product-edit-precio-recomendado-container .product-edit-input-with-icon {
+  flex: 1;
+}
+
+/* Botones */
+.product-edit-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.product-edit-btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.product-edit-btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
+}
+
+.product-edit-btn-secondary {
+  background: var(--gray);
+  color: white;
+}
+
+.product-edit-btn-secondary:hover:not(:disabled) {
+  background: var(--gray-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+.product-edit-btn-usar-recomendado {
+  background: var(--success);
+  color: white;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  min-width: 140px;
+}
+
+.product-edit-btn-usar-recomendado:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.product-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Input de archivo */
+.product-edit-file-input {
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6 !important;
+}
+
+.product-edit-file-input::-webkit-file-upload-button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-edit-file-input::-webkit-file-upload-button:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* Texto de ayuda */
+.product-edit-form-text {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+/* Imagen actual */
+.product-edit-current-image {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.product-edit-current-image p {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-dark);
+}
+
+.product-edit-preview-image {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Footer del modal */
+.product-edit-modal-footer {
+  padding: 1.5rem 2rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .product-edit-modal {
+    width: 95%;
+    margin: 1rem auto;
+    max-height: 90vh;
+  }
+
+  .product-edit-modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .product-edit-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .product-edit-modal-body {
+    padding: 1.5rem;
+  }
+
+  .product-edit-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .product-edit-precio-recomendado-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .product-edit-btn-usar-recomendado {
+    min-width: auto;
+    margin-top: 0.5rem;
+  }
+
+  .product-edit-modal-footer {
+    padding: 1rem 1.5rem;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .product-edit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-edit-modal {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .product-edit-modal-header {
+    border-radius: 0;
+  }
+
+  .product-edit-modal-footer {
+    border-radius: 0;
+  }
+}
+
+/* Estados de carga */
+.product-edit-modal.loading {
+  pointer-events: none;
+}
+
+.product-edit-modal.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+/* Mejoras de accesibilidad */
+.product-edit-form-control:focus,
+.product-edit-form-select:focus,
+.product-edit-btn:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Optimizaciones para mejor rendimiento */
+.product-edit-modal * {
+  box-sizing: border-box;
+}
+
+.product-edit-modal {
+  contain: layout style;
+}
+
+.product-edit-modal-overlay {
+  contain: strict;
+}
