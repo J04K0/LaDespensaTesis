@@ -65,7 +65,7 @@ export class ExportService {
       
       // Añadir información adicional
       doc.setFontSize(10);
-      doc.text(`Total de transacciones: ${ventasData.length + deudoresData.length}`, 14, doc.lastAutoTable.finalY + 30);
+      doc.text(`Total de transacciones: ${ventasSesion.length + deudoresData.length}`, 14, doc.lastAutoTable.finalY + 30);
       doc.text(`Período del reporte: ${sessionStartTime.toLocaleString('es-ES')} - ${new Date().toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 40);
       
       // Pie de página con información del usuario
