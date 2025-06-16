@@ -1,4 +1,4 @@
-/* MODIFICACIONES PARA MEJOR VISUAL EN LA PÁGINA */
+/* OPTIMIZADO PARA RENDIMIENTO - AddProductStyles.css */
 :root {
   --primary-dark: #002651;
   --primary: #006EDF;
@@ -71,15 +71,18 @@
   max-width: 100%;
 }
 
-/* Card contenedora del formulario */
+/* Card contenedora del formulario - OPTIMIZADA */
 .addproducts-card {
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Sombra simplificada para mejor rendimiento */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   margin-bottom: 30px;
   border: 1px solid #e0e0e0;
   width: 100%;
+  /* Optimización de rendering */
+  will-change: auto;
 }
 
 .addproducts-card-body {
@@ -109,19 +112,20 @@
 
 .addproducts-section-icon {
   color: white;
-  font-size: 0.85rem; /* Reducido de 1rem */
+  font-size: 0.85rem;
   background-color: var(--primary);
-  width: 28px; /* Reducido de 34px */
-  height: 28px; /* Reducido de 34px */
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 10px; /* Reducido de 12px */
+  margin-right: 10px;
   box-sizing: border-box;
   position: relative;
   overflow: visible;
-  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2); /* Añadido sombra sutil */
+  /* Sombra simplificada */
+  box-shadow: 0 1px 3px rgba(0, 110, 223, 0.15);
 }
 
 .addproducts-section-title {
@@ -195,9 +199,12 @@
 
 .addproducts-form-control:focus, .addproducts-form-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.12);
+  /* Sombra de foco más ligera */
+  box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.08);
   outline: none;
   background-color: #fff;
+  /* Transición solo en propiedades específicas */
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* Estilos para los grupos de inputs con prefijo */
@@ -301,22 +308,19 @@
 }
 
 .addproducts-btn {
-  padding: 10px 18px; /* Reducido de 12px 20px */
+  padding: 10px 18px;
   border-radius: 8px;
-  font-size: 0.95rem; /* Reducido de 1rem */
+  font-size: 0.95rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px; /* Reducido de 8px */
+  gap: 6px;
   border: none;
   min-width: 120px;
-  font-weight: 500; /* Añadido para mejor legibilidad */
-}
-
-/* Ajustar tamaño de los iconos en los botones */
-.addproducts-btn svg {
-  font-size: 0.95rem; /* Asegurar que los iconos sean proporcionales */
+  font-weight: 500;
+  /* Transición optimizada */
+  transition: background-color 0.2s ease;
 }
 
 .addproducts-btn-primary {
@@ -326,7 +330,9 @@
 
 .addproducts-btn-primary:hover {
   background-color: #0056b3;
-  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
+  /* Sombra más ligera */
+  box-shadow: 0 2px 6px rgba(0, 110, 223, 0.2);
+  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn-secondary {
@@ -336,7 +342,9 @@
 
 .addproducts-btn-secondary:hover {
   background-color: var(--danger-hover);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  /* Sombra más ligera */
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.2);
+  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn:disabled {
@@ -396,7 +404,8 @@
   object-fit: contain;
   border-radius: 8px;
   border: 1px solid #eee;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  /* Sombra simplificada */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 /* Estilos para el contenedor del precio recomendado */
@@ -421,11 +430,15 @@
   min-width: 120px;
   border: none;
   cursor: pointer;
+  /* Transición simplificada */
+  transition: background-color 0.2s ease;
 }
 
 .addproducts-btn-usar-recomendado:hover {
   background-color: var(--success-hover);
-  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+  /* Sombra más ligera */
+  box-shadow: 0 1px 3px rgba(40, 167, 69, 0.2);
+  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn-usar-recomendado:disabled {
@@ -442,7 +455,7 @@
 }
 
 @media (max-width: 992px) {
-  .addproducts-form-row {
+  .addproducts-form_row {
     flex-direction: column;
   }
   
