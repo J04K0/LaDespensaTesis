@@ -8,12 +8,23 @@ export const login = async ({ email, password }) => {
     const { status, data } = response;
     if (status === 200) {
       const { email, roles } = await jwtDecode(data.data.accessToken);
-      localStorage.setItem('user', JSON.stringify({ email, roles }));
-      localStorage.setItem('sessionStartTime', new Date().toISOString()); // Registrar inicio de sesión
+      const userData = { email, roles };
+      
+      // Guardar datos del usuario y token
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('sessionStartTime', new Date().toISOString());
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.data.accessToken}`;
       cookies.set('jwt-auth', data.data.accessToken, { path: '/' });
+
+      console.log('✅ Login exitoso para:', email);
+      
+      // Disparar evento personalizado para notificar al contexto
+      window.dispatchEvent(new CustomEvent('authStateChanged', { 
+        detail: { authenticated: true, user: userData } 
+      }));
     }
   } catch (error) {
+    console.error('❌ Error en login:', error);
     if (error.response && error.response.status === 401) {
       throw new Error('Credenciales incorrectas');
     } else {
@@ -23,9 +34,16 @@ export const login = async ({ email, password }) => {
 };
 
 export const logout = () => {
+  console.log('🔄 Cerrando sesión...');
+  
+  // Limpiar datos locales
   localStorage.removeItem('user');
-  // No eliminamos 'sessionStartTime' porque lo necesitamos para el reporte
   delete axios.defaults.headers.common['Authorization'];
   cookies.remove('jwt');
   cookies.remove('jwt-auth');
+  
+  // Disparar evento de cambio de autenticación
+  window.dispatchEvent(new CustomEvent('authStateChanged', { 
+    detail: { authenticated: false, user: null } 
+  }));
 };

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { obtenerVentasPorTicket } from '../services/venta.service';
+import cookies from 'js-cookie';
 
 // Crear el contexto
 const VentasContext = createContext();
@@ -19,22 +20,48 @@ export const VentasProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastFetch, setLastFetch] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // 🚀 OPTIMIZACIÓN: Cargar ventas una sola vez al inicializar la aplicación
   useEffect(() => {
     const fetchVentas = async () => {
       try {
+        // Verificar que el usuario esté autenticado antes de cargar datos
+        const user = localStorage.getItem('user');
+        const token = cookies.get('jwt-auth');
+        
+        if (!user || !token) {
+          console.log('⏳ Usuario no autenticado, esperando...');
+          setLoading(false);
+          return;
+        }
+
         console.log('🔄 Cargando ventas globales una sola vez...');
         setLoading(true);
+        setError(null);
+        
         const response = await obtenerVentasPorTicket();
         const ventas = response.data || [];
         
         console.log(`✅ Ventas cargadas: ${ventas.length} registros`);
         setVentasGlobales(ventas);
         setLastFetch(new Date());
-        setError(null);
+        setRetryCount(0);
       } catch (err) {
         console.error('❌ Error al cargar ventas globales:', err);
+        
+        // Si es error de autenticación y no hemos reintentado muchas veces
+        if ((err.response?.status === 401 || err.response?.status === 403) && retryCount < 3) {
+          console.log(`🔄 Reintentando carga de ventas (intento ${retryCount + 1}/3)...`);
+          setRetryCount(prev => prev + 1);
+          
+          // Reintentar después de un breve delay
+          setTimeout(() => {
+            fetchVentas();
+          }, 1000 * (retryCount + 1)); // Delay incremental
+          return;
+        }
+        
         setError('Error al cargar los datos de ventas');
         setVentasGlobales([]);
       } finally {
@@ -42,11 +69,47 @@ export const VentasProvider = ({ children }) => {
       }
     };
 
-    // Solo cargar si no tenemos datos aún
-    if (!ventasGlobales) {
+    // Cargar datos si no tenemos datos aún o si el usuario cambió
+    if (!ventasGlobales || retryCount > 0) {
       fetchVentas();
     }
-  }, []);
+  }, [retryCount]);
+
+  // Escuchar cambios en la autenticación
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const user = localStorage.getItem('user');
+      const token = cookies.get('jwt-auth');
+      
+      if (user && token && !ventasGlobales && !loading) {
+        console.log('🔄 Usuario autenticado detectado, cargando datos...');
+        setRetryCount(0);
+      }
+    };
+
+    // Escuchar eventos personalizados de autenticación
+    const handleAuthStateChanged = (e) => {
+      const { authenticated } = e.detail;
+      
+      if (authenticated && !ventasGlobales && !loading) {
+        console.log('🔄 Autenticación exitosa detectada, iniciando carga de datos...');
+        setRetryCount(0);
+      } else if (!authenticated) {
+        console.log('🔄 Usuario desautenticado, limpiando datos...');
+        setVentasGlobales(null);
+        setError(null);
+        setLoading(false);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authStateChanged', handleAuthStateChanged);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthStateChanged);
+    };
+  }, [ventasGlobales, loading]);
 
   // 🧠 FUNCIONES OPTIMIZADAS CON USEMEMO PARA FILTRAR VENTAS
   
