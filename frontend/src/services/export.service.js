@@ -17,30 +17,43 @@ export class ExportService {
         ventasSesion,
         deudoresData,
         resumenCajaData,
-        balanceEfectivo
+        balanceEfectivo,
+        tienePermisoHistorial = true // Por defecto asumimos que tiene permisos completos
       } = data;
       
       // Crear nuevo documento PDF
       const doc = new jsPDF();
       
-      // Título y fecha
+      // Título y fecha - adaptado según permisos
       doc.setFontSize(18);
-      doc.text("La Despensa - Reporte de Cierre de Caja", 14, 15);
+      const titulo = tienePermisoHistorial 
+        ? "La Despensa - Reporte de Cierre de Caja"
+        : "La Despensa - Reporte de Actividad de Sesión";
+      doc.text(titulo, 14, 15);
       
       doc.setFontSize(12);
       doc.text(`Fecha: ${fechaFormateada}`, 14, 25);
-      
       const horaInicioFormateada = new Date(sessionStartTime).toLocaleTimeString();
       doc.text(`Periodo: ${horaInicioFormateada} a ${horaFinFormateada}`, 14, 32);
       doc.text(`Usuario: ${usuarioActual.email}`, 14, 39);
       
+      // Nota sobre permisos limitados si aplica
+      if (!tienePermisoHistorial) {
+        doc.setFontSize(10);
+        doc.setTextColor(200, 100, 0); // Color naranja para advertencia
+        doc.text("* Reporte con datos limitados según permisos de usuario", 14, 46);
+        doc.setTextColor(0, 0, 0); // Volver a negro
+        doc.setFontSize(12);
+      }
+      
       // Resumen de ventas y operaciones
       doc.setFontSize(14);
-      doc.text("Resumen de Operaciones", 14, 50);
+      const yPosTitle = tienePermisoHistorial ? 50 : 55;
+      doc.text("Resumen de Operaciones", 14, yPosTitle);
       
       // Tabla de resumen
       autoTable(doc, {
-        startY: 55,
+        startY: yPosTitle + 5,
         head: [["Concepto", "Cantidad", "Monto"]],
         body: resumenCajaData.slice(1), // Omitir la fila de encabezado
         styles: { fontSize: 10 },
@@ -65,15 +78,25 @@ export class ExportService {
       
       // Añadir información adicional
       doc.setFontSize(10);
-      doc.text(`Total de transacciones: ${ventasSesion.length + deudoresData.length}`, 14, doc.lastAutoTable.finalY + 30);
+      const totalTransacciones = ventasSesion.length + deudoresData.length;
+      doc.text(`Total de transacciones: ${totalTransacciones}`, 14, doc.lastAutoTable.finalY + 30);
       doc.text(`Período del reporte: ${sessionStartTime.toLocaleString('es-ES')} - ${new Date().toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 40);
+      
+      // Nota adicional sobre limitaciones si no tiene permisos completos
+      if (!tienePermisoHistorial) {
+        doc.setTextColor(150, 150, 150); // Color gris
+        doc.text(`Nota: Este reporte incluye solo datos de deudores y operaciones`, 14, doc.lastAutoTable.finalY + 50);
+        doc.text(`disponibles para el rol actual (${usuarioActual.roles?.[0]?.name || 'empleado'}).`, 14, doc.lastAutoTable.finalY + 60);
+        doc.setTextColor(0, 0, 0); // Volver a negro
+      }
       
       // Pie de página con información del usuario
       doc.text(`Reporte generado por: ${usuarioActual.email} - ${new Date().toLocaleString('es-ES')}`, 14, doc.internal.pageSize.height - 10);
       
-      // Guardar el PDF
+      // Guardar el PDF con nombre descriptivo
       const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
-      doc.save(`Cierre_Caja_${usuarioActual.email}_${timestamp}.pdf`);
+      const tipoReporte = tienePermisoHistorial ? 'Cierre_Caja' : 'Actividad_Sesion';
+      doc.save(`${tipoReporte}_${usuarioActual.email}_${timestamp}.pdf`);
       
       return true;
     } catch (error) {

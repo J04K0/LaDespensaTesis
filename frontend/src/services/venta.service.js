@@ -103,3 +103,27 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
       throw error;
     }
   };
+
+  export const obtenerVentasPropias = async (filtros = {}) => {
+    try {
+      // Construir query parameters desde el objeto filtros
+      const params = new URLSearchParams();
+      
+      if (filtros.fechaInicio) {
+        params.append('fechaInicio', filtros.fechaInicio);
+      }
+      
+      if (filtros.fechaFin) {
+        params.append('fechaFin', filtros.fechaFin);
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `/ventas/ventas/mis-ventas?${queryString}` : "/ventas/ventas/mis-ventas";
+      
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Error al obtener las ventas propias:", error);
+      throw error;
+    }
+  };

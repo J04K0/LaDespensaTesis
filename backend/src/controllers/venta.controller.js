@@ -314,3 +314,70 @@ export const editTicket = async (req, res) => {
     handleErrorServer(res, 500, "Error al editar el ticket", error.message);
   }
 };
+
+export const obtenerVentasPropias = async (req, res) => {
+  try {
+    const userId = req.userId; // ID del usuario autenticado
+    const { fechaInicio, fechaFin } = req.query;
+    
+    // Construir filtro para obtener solo las ventas del usuario actual
+    const filtro = { usuario: userId };
+    
+    // Filtro por rango de fechas si se proporciona
+    if (fechaInicio || fechaFin) {
+      filtro.fecha = {};
+      if (fechaInicio) {
+        filtro.fecha.$gte = new Date(fechaInicio);
+      }
+      if (fechaFin) {
+        const fechaFinDate = new Date(fechaFin);
+        fechaFinDate.setHours(23, 59, 59, 999);
+        filtro.fecha.$lte = fechaFinDate;
+      }
+    }
+    
+    // Agrupar ventas por ticket del usuario actual
+    const ventasPorTicket = await Venta.aggregate([
+      // Filtrar solo las ventas del usuario actual
+      { $match: filtro },
+      // Agrupar por ticketId
+      { 
+        $group: { 
+          _id: "$ticketId", 
+          ventas: { $push: "$$ROOT" }, 
+          fecha: { $first: "$fecha" },
+          usuarioId: { $first: "$usuario" },
+          metodoPago: { $first: "$metodoPago" },
+          deudorId: { $first: "$deudorId" }
+        } 
+      },
+      // Ordenar por fecha descendente
+      { $sort: { fecha: -1 } }
+    ]);
+
+    // Poblar la información del usuario y del deudor
+    const ventasCompletas = await Promise.all(ventasPorTicket.map(async (grupo) => {
+      let resultado = { ...grupo };
+      
+      // Buscar el usuario
+      if (grupo.usuarioId) {
+        const User = mongoose.model('User');
+        const usuario = await User.findById(grupo.usuarioId).select('nombre username');
+        resultado.usuario = usuario;
+      }
+      
+      // Buscar el deudor si existe
+      if (grupo.deudorId) {
+        const deudor = await Deudores.findById(grupo.deudorId).select('Nombre');
+        resultado.deudor = deudor;
+      }
+      
+      return resultado;
+    }));
+
+    handleSuccess(res, 200, "Ventas propias obtenidas correctamente", ventasCompletas);
+  } catch (error) {
+    console.error("Error al obtener ventas propias:", error);
+    handleErrorServer(res, 500, "Error al obtener las ventas propias", error.message);
+  }
+};

@@ -4,6 +4,7 @@ import {
   faTimes, faInfo, faEye, faEyeSlash, faPen, faHistory, faTrash 
 } from '@fortawesome/free-solid-svg-icons';
 import { showConfirmationAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 import '../styles/ProductInfoModal.css';
 
 const ProductInfoModal = React.memo(({ 
@@ -16,6 +17,7 @@ const ProductInfoModal = React.memo(({
   onShowPriceHistory 
 }) => {
   const [isClosing, setIsClosing] = useState(false);
+  const { permissions } = useRole();
 
   // Función para formatear números con punto como separador de miles
   const formatNumber = (number) => {
@@ -352,24 +354,28 @@ const ProductInfoModal = React.memo(({
 
           {/* Botones de Acción */}
           <div className="modern-action-buttons">
-            <button 
-              onClick={handleEdit} 
-              className="modern-btn modern-btn-primary"
-            >
-              <FontAwesomeIcon icon={faPen} /> Editar Producto
-            </button>
+            {permissions.canEditProduct && (
+              <button 
+                onClick={handleEdit} 
+                className="modern-btn modern-btn-primary"
+              >
+                <FontAwesomeIcon icon={faPen} /> Editar Producto
+              </button>
+            )}
             <button 
               onClick={handlePriceHistory} 
               className="modern-btn modern-btn-secondary"
             >
               <FontAwesomeIcon icon={faHistory} /> Historial de Precios
             </button>
-            <button 
-              onClick={handleDelete} 
-              className="modern-btn modern-btn-danger"
-            >
-              <FontAwesomeIcon icon={faTrash} /> Eliminar
-            </button>
+            {permissions.canEditProduct && (
+              <button 
+                onClick={handleDelete} 
+                className="modern-btn modern-btn-danger"
+              >
+                <FontAwesomeIcon icon={faTrash} /> Eliminar
+              </button>
+            )}
           </div>
         </div>
       </div>

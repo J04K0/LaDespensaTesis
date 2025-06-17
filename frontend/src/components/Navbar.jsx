@@ -9,7 +9,7 @@ import {
   faCalculator, faWarehouse, faClipboardList, faCoins, faUsers,
   faUserCog, faLock, faFileInvoiceDollar, faFileExport, faSpinner
 } from '@fortawesome/free-solid-svg-icons';
-import { obtenerVentasPorTicket } from '../services/venta.service';
+import { obtenerVentasPorTicket, obtenerVentasPropias } from '../services/venta.service.js';
 import { getDeudores } from '../services/deudores.service';
 import NotificationCenter from './NotificationCenter';
 import { initializeSocket, closeSocket } from '../services/socket.service';
@@ -113,17 +113,7 @@ const Navbar = () => {
       const fechaFormateada = ahora.toLocaleDateString();
       const horaFinFormateada = ahora.toLocaleTimeString();
       
-      // 1. Obtener todas las ventas 
-      const response = await obtenerVentasPorTicket();
-      const todasLasVentas = response.data || [];
-      
-      // Filtrar solo las ventas realizadas durante esta sesión
-      const ventasSesion = todasLasVentas.filter(venta => {
-        const fechaVenta = new Date(venta.fecha);
-        return fechaVenta >= sessionStartTime && fechaVenta <= ahora;
-      });
-      
-      // Calcular totales por método de pago
+      let ventasSesion = [];
       let totalEfectivo = 0;
       let totalTarjeta = 0;
       let totalVentas = 0;
@@ -132,82 +122,133 @@ const Navbar = () => {
       let ventasADeudores = 0;
       let cantidadVentasADeudores = 0;
 
-      ventasSesion.forEach(venta => {
-        const importeVenta = venta.ventas.reduce((sum, producto) => 
-          sum + (producto.precioVenta * producto.cantidad), 0);
+      // 🔧 SIMPLIFICADO: Obtener TODAS las ventas sin restricciones de permisos
+      try {
+        console.log('🔍 DEBUG: Obteniendo todas las ventas para el reporte de sesión...');
+        console.log('📅 Sesión iniciada:', sessionStartTime.toISOString());
+        console.log('📅 Sesión termina:', ahora.toISOString());
         
-        totalVentas += importeVenta;
-
-        // Si es una venta a deudor, no afecta al efectivo ni tarjeta directamente
-        if (venta.deudorId) {
-          ventasADeudores += importeVenta;
-          cantidadVentasADeudores++;
-        } else if (venta.metodoPago === 'tarjeta') {
-          totalTarjeta += importeVenta;
-          cantidadVentasTarjeta++;
-        } else {
-          totalEfectivo += importeVenta;
-          cantidadVentasEfectivo++;
-        }
-      });
-      
-      // 2. Obtener información de deudores
-      const respuestaDeudores = await getDeudores(1, 1000);
-      const deudores = respuestaDeudores.deudores || [];
-      
-      // Filtrar deudores con pagos o deudas realizados durante esta sesión
-      const deudoresSesion = deudores.filter(deudor => {
-        if (!deudor.historialPagos || !Array.isArray(deudor.historialPagos)) return false;
+        const response = await obtenerVentasPorTicket();
+        const todasLasVentas = response.data || [];
         
-        return deudor.historialPagos.some(pago => {
-          const fechaPago = new Date(pago.fecha);
-          return fechaPago >= sessionStartTime && fechaPago <= ahora;
+        console.log('📦 Total de ventas en el sistema:', todasLasVentas.length);
+        
+        // Filtrar solo las ventas realizadas durante esta sesión
+        ventasSesion = todasLasVentas.filter(venta => {
+          const fechaVenta = new Date(venta.fecha);
+          const esDeSesion = fechaVenta >= sessionStartTime && fechaVenta <= ahora;
+          if (esDeSesion) {
+            console.log(`✅ Venta de sesión encontrada: ${venta._id} - ${fechaVenta.toLocaleString()}`);
+          }
+          return esDeSesion;
         });
-      });
+        
+        console.log('🎪 Ventas de esta sesión:', ventasSesion.length);
+        
+        // Calcular totales por método de pago
+        ventasSesion.forEach((venta, index) => {
+          console.log(`🛍️ Procesando venta ${index + 1}:`, venta._id);
+          
+          const importeVenta = Array.isArray(venta.ventas) 
+            ? venta.ventas.reduce((sum, producto) => {
+                const subtotal = producto.precioVenta * producto.cantidad;
+                console.log(`  💰 Producto: ${producto.nombre} - $${producto.precioVenta} x ${producto.cantidad} = $${subtotal}`);
+                return sum + subtotal;
+              }, 0)
+            : 0;
+          
+          console.log(`💵 Importe total de la venta: $${importeVenta}`);
+          
+          totalVentas += importeVenta;
 
-      // Calcular totales de pagos de deudores, separando por método de pago
+          // Clasificar por método de pago
+          if (venta.deudorId) {
+            console.log('👤 Venta a deudor detectada');
+            ventasADeudores += importeVenta;
+            cantidadVentasADeudores++;
+          } else if (venta.metodoPago === 'tarjeta') {
+            console.log('💳 Venta con tarjeta detectada');
+            totalTarjeta += importeVenta;
+            cantidadVentasTarjeta++;
+          } else {
+            console.log('💵 Venta en efectivo detectada');
+            totalEfectivo += importeVenta;
+            cantidadVentasEfectivo++;
+          }
+        });
+        
+        console.log('📈 Totales calculados:', {
+          totalVentas,
+          totalEfectivo,
+          totalTarjeta,
+          ventasADeudores,
+          cantidadVentasTotal: ventasSesion.length
+        });
+        
+      } catch (ventasError) {
+        console.warn("⚠️ No se pudo obtener el historial de ventas:", ventasError);
+        // Continuar con el reporte sin datos de ventas
+      }
+
+      // 2. Obtener información de deudores (disponible para todos los roles)
+      let deudoresData = [];
       let totalPagosDeudoresEfectivo = 0;
       let totalPagosDeudoresTarjeta = 0;
       let cantidadPagosEfectivo = 0;
       let cantidadPagosTarjeta = 0;
       let totalNuevasDeudas = 0;
       let cantidadNuevasDeudas = 0;
-      
-      // Array para almacenar los movimientos de deudores para el reporte
-      const deudoresData = [];
 
-      deudoresSesion.forEach(deudor => {
-        const pagosSesion = deudor.historialPagos.filter(pago => {
-          const fechaPago = new Date(pago.fecha);
-          return fechaPago >= sessionStartTime && fechaPago <= ahora;
-        });
-
-        pagosSesion.forEach(pago => {
-          if (pago.tipo === 'pago') {
-            // Diferenciar entre pagos en efectivo y con tarjeta
-            if (pago.metodoPago === 'tarjeta') {
-              totalPagosDeudoresTarjeta += pago.monto;
-              cantidadPagosTarjeta++;
-            } else {
-              totalPagosDeudoresEfectivo += pago.monto;
-              cantidadPagosEfectivo++;
-            }
-          } else {
-            totalNuevasDeudas += pago.monto;
-            cantidadNuevasDeudas++;
-          }
+      try {
+        const respuestaDeudores = await getDeudores(1, 1000);
+        const deudores = respuestaDeudores.deudores || [];
+        
+        // Filtrar deudores con pagos o deudas realizados durante esta sesión
+        const deudoresSesion = deudores.filter(deudor => {
+          if (!deudor.historialPagos || !Array.isArray(deudor.historialPagos)) return false;
           
-          // Agregar al array de datos para el reporte
-          deudoresData.push([
-            deudor.Nombre,
-            pago.tipo === 'pago' ? 
-              `Pago (${pago.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'})` : 
-              'Aumento de deuda',
-            `$${pago.monto.toLocaleString()}`,
-            pago.comentario || '-'
-          ]);
+          return deudor.historialPagos.some(pago => {
+            const fechaPago = new Date(pago.fecha);
+            return fechaPago >= sessionStartTime && fechaPago <= ahora;
+          });
         });
-      });
+
+        deudoresSesion.forEach(deudor => {
+          const pagosSesion = deudor.historialPagos.filter(pago => {
+            const fechaPago = new Date(pago.fecha);
+            return fechaPago >= sessionStartTime && fechaPago <= ahora;
+          });
+
+          pagosSesion.forEach(pago => {
+            if (pago.tipo === 'pago') {
+              // Diferenciar entre pagos en efectivo y con tarjeta
+              if (pago.metodoPago === 'tarjeta') {
+                totalPagosDeudoresTarjeta += pago.monto;
+                cantidadPagosTarjeta++;
+              } else {
+                totalPagosDeudoresEfectivo += pago.monto;
+                cantidadPagosEfectivo++;
+              }
+            } else {
+              totalNuevasDeudas += pago.monto;
+              cantidadNuevasDeudas++;
+            }
+            
+            // Agregar al array de datos para el reporte
+            deudoresData.push([
+              deudor.Nombre,
+              pago.tipo === 'pago' ? 
+                `Pago (${pago.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo'})` : 
+                'Aumento de deuda',
+              `$${pago.monto.toLocaleString()}`,
+              pago.comentario || '-'
+            ]);
+          });
+        });
+      } catch (deudoresError) {
+        console.warn("⚠️ No se pudo obtener información de deudores:", deudoresError);
+        // Continuar con el reporte sin datos de deudores
+      }
 
       // Balance final de efectivo (solo operaciones en efectivo)
       const balanceEfectivo = totalEfectivo + totalPagosDeudoresEfectivo;
@@ -224,6 +265,9 @@ const Navbar = () => {
         ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString('es-ES')}`]
       ];
       
+      // Mostrar mensaje apropiado según el rol
+      const mensajeExito = "Reporte de actividad de sesión generado exitosamente";
+      
       // Usar el servicio de exportación centralizado
       const result = ExportService.generarReporteCierreCaja({
         usuarioActual,
@@ -233,8 +277,16 @@ const Navbar = () => {
         ventasSesion,
         deudoresData,
         resumenCajaData,
-        balanceEfectivo
+        balanceEfectivo,
+        tienePermisoHistorial: true // Forzar como verdadero para incluir todos los datos
       });
+      
+      if (result) {
+        await showSuccessAlert(
+          "Reporte Generado",
+          mensajeExito
+        );
+      }
       
       // Actualizar el tiempo de inicio de sesión para la próxima sesión
       localStorage.setItem('sessionStartTime', new Date().toISOString());
@@ -242,6 +294,14 @@ const Navbar = () => {
       return result;
     } catch (error) {
       console.error("Error al generar reporte de sesión:", error);
+      
+      // Mostrar mensaje de advertencia pero no fallar el logout
+      await showWarningAlert(
+        "Advertencia",
+        "No se pudo generar el reporte de cierre de sesión, pero el cierre continuará normalmente.",
+        "Entendido"
+      );
+      
       return false;
     }
   };

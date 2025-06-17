@@ -41,8 +41,8 @@ router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, i
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
 
-router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProduct);
-router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProduct);
+router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);
+router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
 

@@ -10,6 +10,7 @@ import HistorySaleSkeleton from '../components/Skeleton/HistorySaleSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye, faUser } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
+import { useRole } from '../hooks/useRole'; // 🔧 Importar hook de roles
 
 const HistorySale = () => {
   const [ventas, setVentas] = useState([]);
@@ -28,6 +29,18 @@ const HistorySale = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editedProducts, setEditedProducts] = useState([]);
+
+  // 🔧 Obtener el rol del usuario para restricciones
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
+
+  // 🔧 Mostrar mensaje informativo para empleados
+  const showEmpleadoAlert = () => {
+    showErrorAlert(
+      "Acceso Restringido", 
+      "Los empleados solo pueden consultar el historial de ventas. Las funciones de edición y eliminación están disponibles solo para administradores y jefes."
+    );
+  };
 
   useEffect(() => {
     fetchVentas();
@@ -126,6 +139,11 @@ const HistorySale = () => {
 
   // Función para manejar la edición de un ticket (devolución parcial)
   const handleEditTicket = (ticket) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+
     setSelectedTicket(ticket);
     // Clonar los productos para poder editarlos
     setEditedProducts([...ticket.ventas.map(item => ({...item}))]);
@@ -505,20 +523,30 @@ const HistorySale = () => {
                               </td>
                               <td className="acciones-cell">
                                 <div className="historysaleactionbuttons">
-                                  <button 
-                                    onClick={() => handleEditTicket(venta)} 
-                                    className="devolver-btn"
-                                    title="Devolver productos"
-                                  >
-                                    <FontAwesomeIcon icon={faEdit} /> Devolver
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDeleteTicket(venta._id)} 
-                                    className="anular-btn"
-                                    title="Anular venta"
-                                  >
-                                    <FontAwesomeIcon icon={faTrash} /> Anular
-                                  </button>
+                                  {isEmpleado ? (
+                                    // 🔧 Mensaje informativo para empleados
+                                    <div className="employee-info-text">
+                                      <span>Solo lectura</span>
+                                    </div>
+                                  ) : (
+                                    // 🔧 Botones completos para admin y jefe
+                                    <>
+                                      <button 
+                                        onClick={() => handleEditTicket(venta)} 
+                                        className="devolver-btn"
+                                        title="Devolver productos"
+                                      >
+                                        <FontAwesomeIcon icon={faEdit} /> Devolver
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteTicket(venta._id)} 
+                                        className="anular-btn"
+                                        title="Anular venta"
+                                      >
+                                        <FontAwesomeIcon icon={faTrash} /> Anular
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </td>
                             </tr>

@@ -28,6 +28,7 @@ export const useRole = () => {
       admin: {
         canAccessHistorySale: true,
         canAddProduct: true,
+        canEditProduct: true,
         canManageProveedores: true,
         canAccessFinanzas: true,
         canAccessCuentasPorPagar: true,
@@ -36,14 +37,16 @@ export const useRole = () => {
       jefe: {
         canAccessHistorySale: true,
         canAddProduct: true,
+        canEditProduct: true,
         canManageProveedores: true,
         canAccessFinanzas: true,
         canAccessCuentasPorPagar: true,
         canAccessAll: true
       },
       empleado: {
-        canAccessHistorySale: false,
+        canAccessHistorySale: true, // 🔧 PERMITIR acceso para visualización solamente
         canAddProduct: false,
+        canEditProduct: false,
         canManageProveedores: false,
         canAccessFinanzas: false,
         canAccessCuentasPorPagar: false,
@@ -62,9 +65,8 @@ export const useRole = () => {
         return true;
       }
 
-      // Rutas restringidas para empleados
+      // 🔧 Rutas restringidas para empleados (quitamos /HistorySale)
       const restrictedRoutes = [
-        '/HistorySale',
         '/add-product', 
         '/proveedores',
         '/finanzas',
