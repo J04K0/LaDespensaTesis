@@ -16,9 +16,11 @@ import { initializeSocket, closeSocket } from '../services/socket.service';
 import { ExportService } from '../services/export.service.js';
 import { DataCollectionService } from '../services/dataCollection.service';
 import { showSuccessAlert, showErrorAlert, showWarningAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { permissions, userRole, canAccessRoute } = useRole();
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isDownloadingMassive, setIsDownloadingMassive] = useState(false);
@@ -57,6 +59,15 @@ const Navbar = () => {
   }, [activeDropdown]);
 
   const handleNavigation = (path) => {
+    // Verificar permisos antes de navegar
+    if (!canAccessRoute(path)) {
+      showErrorAlert(
+        'Acceso Denegado', 
+        `No tienes permisos para acceder a esta sección. Tu rol actual es: ${userRole}`
+      );
+      return;
+    }
+    
     navigate(path);
     setIsNavVisible(false); // Cerrar menú en móvil después de navegar
     setActiveDropdown(null); // Cerrar dropdowns activos
@@ -308,12 +319,15 @@ const Navbar = () => {
                     }}>
                       <FontAwesomeIcon icon={faBarcode} /> Terminal de venta
                     </li>
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/HistorySale');
-                    }}>
-                      <FontAwesomeIcon icon={faHistory} /> Historial de ventas
-                    </li>
+                    {/* Solo mostrar historial de ventas para admin y jefe */}
+                    {permissions.canAccessHistorySale && (
+                      <li onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigation('/HistorySale');
+                      }}>
+                        <FontAwesomeIcon icon={faHistory} /> Historial de ventas
+                      </li>
+                    )}
                     <li onClick={(e) => {
                       e.stopPropagation();
                       handleNavigation('/deudores');
@@ -343,51 +357,61 @@ const Navbar = () => {
                     }}>
                       <FontAwesomeIcon icon={faBoxOpen} /> Ver productos
                     </li>
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/add-product');
-                    }}>
-                      <FontAwesomeIcon icon={faAdd} /> Agregar productos
-                    </li>
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/proveedores');
-                    }}>
-                      <FontAwesomeIcon icon={faTruck} /> Gestión de proveedores
-                    </li>
+                    {/* Solo mostrar agregar productos para admin y jefe */}
+                    {permissions.canAddProduct && (
+                      <li onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigation('/add-product');
+                      }}>
+                        <FontAwesomeIcon icon={faAdd} /> Agregar productos
+                      </li>
+                    )}
+                    {/* Solo mostrar gestión de proveedores para admin y jefe */}
+                    {permissions.canManageProveedores && (
+                      <li onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigation('/proveedores');
+                      }}>
+                        <FontAwesomeIcon icon={faTruck} /> Gestión de proveedores
+                      </li>
+                    )}
                   </ul>
                 </div>
               )}
             </div>
 
-            {/* FINANZAS */}
-            <div className="productos-container" ref={dropdownRefs.finanzas}>
-              <li className="dropdown" onClick={(e) => toggleDropdown('finanzas', e)}>
-                <div className="dropdown-trigger">
-                  <FontAwesomeIcon icon={faMoneyBillWave} /> <span>Finanzas</span>
-                  <FontAwesomeIcon icon={activeDropdown === 'finanzas' ? faCaretUp : faCaretDown} className="caret-icon" />
-                </div>
-              </li>
-              
-              {activeDropdown === 'finanzas' && (
-                <div className="product-submenu">
-                  <ul className="dropdown-menu">
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/finanzas');
-                    }}>
-                      <FontAwesomeIcon icon={faChartLine} /> Dashboard financiero
-                    </li>
-                    <li onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/cuentas-por-pagar');
-                    }}>
-                      <FontAwesomeIcon icon={faFileInvoiceDollar} /> Cuentas por pagar
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
+            {/* FINANZAS - Solo mostrar para admin y jefe */}
+            {permissions.canAccessFinanzas && (
+              <div className="productos-container" ref={dropdownRefs.finanzas}>
+                <li className="dropdown" onClick={(e) => toggleDropdown('finanzas', e)}>
+                  <div className="dropdown-trigger">
+                    <FontAwesomeIcon icon={faMoneyBillWave} /> <span>Finanzas</span>
+                    <FontAwesomeIcon icon={activeDropdown === 'finanzas' ? faCaretUp : faCaretDown} className="caret-icon" />
+                  </div>
+                </li>
+                
+                {activeDropdown === 'finanzas' && (
+                  <div className="product-submenu">
+                    <ul className="dropdown-menu">
+                      <li onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigation('/finanzas');
+                      }}>
+                        <FontAwesomeIcon icon={faChartLine} /> Dashboard financiero
+                      </li>
+                      {permissions.canAccessCuentasPorPagar && (
+                        <li onClick={(e) => {
+                          e.stopPropagation();
+                          handleNavigation('/cuentas-por-pagar');
+                        }}>
+                          <FontAwesomeIcon icon={faFileInvoiceDollar} /> Cuentas por pagar
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Contenedor de acciones especiales a la derecha */}
             <div className="navbar-special-actions">
@@ -395,12 +419,14 @@ const Navbar = () => {
                 <NotificationCenter />
               </div>
               
-              {/* Botón de reporte masivo compacto */}
-              <li onClick={handleMassiveReport} className="massive-report-item">
-                <FontAwesomeIcon icon={faFileExport} />
-                <span>Reporte</span>
-                {isDownloadingMassive && <FontAwesomeIcon icon={faSpinner} className="spinner-icon" />}
-              </li>
+              {/* Botón de reporte masivo compacto - Solo para admin y jefe */}
+              {(permissions.canAccessAll) && (
+                <li onClick={handleMassiveReport} className="massive-report-item">
+                  <FontAwesomeIcon icon={faFileExport} />
+                  <span>Reporte</span>
+                  {isDownloadingMassive && <FontAwesomeIcon icon={faSpinner} className="spinner-icon" />}
+                </li>
+              )}
               
               <li onClick={handleLogout} className="logout-item">
                 <FontAwesomeIcon icon={faSignOutAlt} />

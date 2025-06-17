@@ -29,7 +29,8 @@ import { handleFileSizeLimit , upload } from "../middlewares/multer.middleware.j
 const router = express.Router();
 router.use(authenticationMiddleware);
 
-router.post('/agregar', upload.single('image'), handleFileSizeLimit,authorizeRoles([isEmpleado, isAdmin, isJefe]), addProduct);
+// Restringir agregar productos solo para admin y jefe
+router.post('/agregar', upload.single('image'), handleFileSizeLimit,authorizeRoles([isAdmin, isJefe]), addProduct);
 router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProducts);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductById);
 router.get('/getbycategory/:categoria', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductsByCategory);

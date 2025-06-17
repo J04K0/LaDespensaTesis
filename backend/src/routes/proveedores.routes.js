@@ -23,15 +23,16 @@ const router = Router();
 
 router.use(authenticationMiddleware);
 
-router.post('/agregar', authorizeRoles([isEmpleado, isAdmin, isJefe]), createProveedor);
-router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProveedores);
-router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProveedorById);
-router.patch('/actualizar/:id',authorizeRoles([isEmpleado, isAdmin, isJefe]), updateProveedor);
-router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteProveedor);
+// Restringir todas las rutas de proveedores solo para admin y jefe
+router.post('/agregar', authorizeRoles([isAdmin, isJefe]), createProveedor);
+router.get('/', authorizeRoles([isAdmin, isJefe]), getProveedores);
+router.get('/getbyid/:id', authorizeRoles([isAdmin, isJefe]), getProveedorById);
+router.patch('/actualizar/:id',authorizeRoles([isAdmin, isJefe]), updateProveedor);
+router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProveedor);
 
 // Agregar estos nuevos endpoints
-router.get('/productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductosProveedor);
-router.patch('/vincular-productos/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), vincularProductos);
-router.patch('/cambiar-estado/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), cambiarEstadoProveedor);
+router.get('/productos/:id', authorizeRoles([isAdmin, isJefe]), getProductosProveedor);
+router.patch('/vincular-productos/:id', authorizeRoles([isAdmin, isJefe]), vincularProductos);
+router.patch('/cambiar-estado/:id', authorizeRoles([isAdmin, isJefe]), cambiarEstadoProveedor);
 
 export default router;

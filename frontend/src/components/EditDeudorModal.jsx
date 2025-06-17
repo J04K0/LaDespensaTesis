@@ -1,18 +1,47 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
+import { showConfirmationAlert } from '../helpers/swaHelper';
 
 const EditDeudorModal = ({ 
   show, 
   onClose, 
   deudorToEdit, 
   onInputChange, 
-  onSubmit 
+  onSubmit,
+  originalDeudor // Necesitamos los datos originales para comparar
 }) => {
   if (!show) return null;
 
+  const handleCancel = async () => {
+    // Verificar si hay cambios sin guardar comparando con los datos originales
+    const hasChanges = originalDeudor && (
+      deudorToEdit.Nombre !== originalDeudor.Nombre ||
+      deudorToEdit.fechaPaga !== originalDeudor.fechaPaga ||
+      deudorToEdit.numeroTelefono !== originalDeudor.numeroTelefono ||
+      deudorToEdit.deudaTotal !== originalDeudor.deudaTotal
+    );
+    
+    if (hasChanges) {
+      const result = await showConfirmationAlert(
+        "¿Estás seguro?",
+        "¿Deseas cancelar la edición? Los cambios no guardados se perderán.",
+        "Sí, cancelar",
+        "No, volver"
+      );
+
+      if (!result.isConfirmed) return;
+    }
+
+    onClose();
+  };
+
+  const handleOverlayClick = async () => {
+    await handleCancel();
+  };
+
   return (
-    <div className="deudores-modal-overlay" onClick={onClose}>
+    <div className="deudores-modal-overlay" onClick={handleOverlayClick}>
       <div className="deudores-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="deudores-modal-header">
           <h2 className="deudores-modal-title">Editar Deudor</h2>
@@ -73,7 +102,7 @@ const EditDeudorModal = ({
         </div>
         
         <div className="deudores-modal-footer">
-          <button className="deudores-btn deudores-btn-secondary" onClick={onClose}>
+          <button className="deudores-btn deudores-btn-secondary" onClick={handleCancel}>
             <FontAwesomeIcon icon={faTimes} /> Cancelar
           </button>
           <button className="deudores-btn deudores-btn-primary" onClick={onSubmit}>

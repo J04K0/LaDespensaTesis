@@ -17,6 +17,7 @@ import { useVentas } from '../context/VentasContext';
 import { ExportService } from '../services/export.service';
 import { DataCollectionService } from '../services/dataCollection.service';
 import { showSuccessAlert, showErrorAlert, showWarningAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 
 import { 
   Chart as ChartJS, 
@@ -69,6 +70,11 @@ const Home = () => {
 
   // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
   const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
+  const { userRole: role } = useRole();
+
+  // 🔍 DEBUGGING: Agregar logs para verificar el rol
+  console.log('🔍 Rol detectado en Home:', role);
+  console.log('🔍 ¿Es empleado?:', role === 'empleado');
 
   useEffect(() => {
     const fetchDeudores = async () => {
@@ -792,18 +798,18 @@ const Home = () => {
   return (
     <div className="home-container">
       <Navbar />
-      <div className="home-content">
-        <div className="home-deudores-container">
+      <div className={role === 'empleado' ? 'home-content-employee' : 'home-content'}>
+        <div className={role === 'empleado' ? 'home-deudores-container-centered' : 'home-deudores-container'}>
           {loading ? (
             <DeudoresTableSkeleton />
           ) : (
-            <div className="home-deudores-card">
-              <div className="home-deudores-header">
+            <div className={role === 'empleado' ? 'home-deudores-card-centered' : 'home-deudores-card'}>
+              <div className={role === 'empleado' ? 'home-deudores-header-centered' : 'home-deudores-header'}>
                 <h3>Personas deudoras</h3>
                 <button onClick={handleViewAllClick}>Ver todos</button>
               </div>
-              <div className="home-deudores-table-container">
-                <table className="home-deudores-table">
+              <div className={role === 'empleado' ? 'home-deudores-table-container-centered' : 'home-deudores-table-container'}>
+                <table className={role === 'empleado' ? 'home-deudores-table-centered' : 'home-deudores-table'}>
                   <thead>
                     <tr>
                       <th>Nombre</th>
@@ -829,51 +835,53 @@ const Home = () => {
           )}
         </div>
         
-        <div className="home-stats-container">
-          {loading ? (
-            <ChartSkeleton />
-          ) : (
-            <div className="home-stats-card">
-              <div className="home-stats-controls">
-                <div className="time-filter-container">
-                  <label htmlFor="timeRange">
-                    <FontAwesomeIcon icon={faCalendarAlt} /> Período:
-                  </label>
-                  <select 
-                    id="timeRange" 
-                    value={timeRange} 
-                    onChange={(e) => setTimeRange(e.target.value)}
+        {role !== 'empleado' && (
+          <div className="home-stats-container">
+            {loading ? (
+              <ChartSkeleton />
+            ) : (
+              <div className="home-stats-card">
+                <div className="home-stats-controls">
+                  <div className="time-filter-container">
+                    <label htmlFor="timeRange">
+                      <FontAwesomeIcon icon={faCalendarAlt} /> Período:
+                    </label>
+                    <select 
+                      id="timeRange" 
+                      value={timeRange} 
+                      onChange={(e) => setTimeRange(e.target.value)}
+                    >
+                      <option value="todo">Todo el tiempo</option>
+                      <option value="semana">Última semana</option>
+                      <option value="mes">Último mes</option>
+                      <option value="año">Último año</option>
+                    </select>
+                  </div>
+                  <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>
+                  <button onClick={nextChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowRight} /></button>
+                  <button 
+                    onClick={downloadAllChartsAsPDF} 
+                    className="home-stats-download-button"
+                    disabled={isDownloading}
                   >
-                    <option value="todo">Todo el tiempo</option>
-                    <option value="semana">Última semana</option>
-                    <option value="mes">Último mes</option>
-                    <option value="año">Último año</option>
-                  </select>
+                    {isDownloading ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} spin /> Descargando...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
+                      </>
+                    )}
+                  </button>
                 </div>
-                <button onClick={prevChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowLeft} /></button>
-                <button onClick={nextChart} className="home-stats-nav-button"><FontAwesomeIcon icon={faArrowRight} /></button>
-                <button 
-                  onClick={downloadAllChartsAsPDF} 
-                  className="home-stats-download-button"
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? (
-                    <>
-                      <FontAwesomeIcon icon={faSpinner} spin /> Descargando...
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
-                    </>
-                  )}
-                </button>
+                <div className="home-stats-content">
+                  {renderCurrentChart()}
+                </div>
               </div>
-              <div className="home-stats-content">
-                {renderCurrentChart()}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

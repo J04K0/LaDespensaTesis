@@ -73,6 +73,7 @@ const DeudoresList = () => {
     deudaTotal: '',
     historialPagos: []
   });
+  const [originalDeudor, setOriginalDeudor] = useState(null); // Para comparar cambios
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedHistoryDeudor, setSelectedHistoryDeudor] = useState(null);
@@ -384,6 +385,7 @@ const DeudoresList = () => {
       deudaTotal: parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.')),
       historialPagos: deudor.historialPagos || []
     });
+    setOriginalDeudor(deudor); // Guardar deudor original para comparación
     setShowEditModal(true);
   };
 
@@ -906,6 +908,7 @@ const DeudoresList = () => {
                 show={showEditModal}
                 onClose={() => setShowEditModal(false)}
                 deudorToEdit={deudorToEdit}
+                originalDeudor={originalDeudor}
                 onInputChange={handleEditChange}
                 onSubmit={handleEditSubmit}
               />

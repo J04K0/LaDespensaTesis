@@ -104,6 +104,13 @@ export const showInfoAlert = (title, text) => {
 export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", cancelButtonText = "No") => {
   const previouslyFocused = document.activeElement;
   
+  // Detectar si es una acción de eliminación basándose en el texto del botón o el título
+  const isDeleteAction = confirmButtonText.toLowerCase().includes('eliminar') || 
+                         confirmButtonText.toLowerCase().includes('desactivar') ||
+                         confirmButtonText.toLowerCase().includes('anular') ||
+                         title.toLowerCase().includes('eliminar') ||
+                         title.toLowerCase().includes('desactivar');
+  
   return Swal.fire({
     ...swalBaseConfig,
     title,
@@ -112,6 +119,9 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
     showCancelButton: true,
     confirmButtonText,
     cancelButtonText,
+    // Aplicar colores según el tipo de acción
+    confirmButtonColor: isDeleteAction ? "#dc3545" : "#28a745", // Rojo para eliminar, verde para otras acciones
+    cancelButtonColor: "#007bff", // Azul para cancelar
     didOpen: () => {
       const confirmButton = document.querySelector('.swal2-confirm');
       if (confirmButton) confirmButton.focus();

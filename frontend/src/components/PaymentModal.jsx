@@ -1,6 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faSave } from '@fortawesome/free-solid-svg-icons';
+import { showConfirmationAlert } from '../helpers/swaHelper';
 
 const PaymentModal = ({
   show,
@@ -19,10 +20,28 @@ const PaymentModal = ({
 }) => {
   if (!show || !selectedDeudor) return null;
 
-  const handleOverlayClick = () => {
+  const handleCancel = async () => {
+    // Verificar si hay datos ingresados
+    const hasData = amount || comment;
+    
+    if (hasData) {
+      const result = await showConfirmationAlert(
+        "¿Estás seguro?",
+        "¿Deseas cancelar esta operación? Los datos ingresados se perderán.",
+        "Sí, cancelar",
+        "No, volver"
+      );
+
+      if (!result.isConfirmed) return;
+    }
+
     setComment('');
     setAmount('');
     onClose();
+  };
+
+  const handleOverlayClick = async () => {
+    await handleCancel();
   };
 
   return (
@@ -105,7 +124,7 @@ const PaymentModal = ({
         <div className="deudores-modal-footer">
           <button 
             className="deudores-btn deudores-btn-secondary" 
-            onClick={() => onClose()}
+            onClick={handleCancel}
           >
             <FontAwesomeIcon icon={faTimes} /> Cancelar
           </button>

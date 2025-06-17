@@ -23,9 +23,10 @@ const router = Router();
 
 router.use(authenticationMiddleware);
 
-router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getCuentasPorPagar);
-router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getCuentaPorPagarById);
-router.get('/categoria/:categoria', authorizeRoles([isEmpleado, isAdmin, isJefe]), getCuentasPorCategoria);
+// Restringir todas las rutas de cuentas por pagar solo para admin y jefe
+router.get('/', authorizeRoles([isAdmin, isJefe]), getCuentasPorPagar);
+router.get('/getbyid/:id', authorizeRoles([isAdmin, isJefe]), getCuentaPorPagarById);
+router.get('/categoria/:categoria', authorizeRoles([isAdmin, isJefe]), getCuentasPorCategoria);
 router.post('/agregar', authorizeRoles([isAdmin, isJefe]), createCuentaPorPagar);
 router.patch('/actualizar/:id', authorizeRoles([isAdmin, isJefe]), updateCuentaPorPagar);
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteCuentaPorPagar);

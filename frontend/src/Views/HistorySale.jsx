@@ -149,7 +149,21 @@ const HistorySale = () => {
   };
 
   // Función para cerrar el modal sin guardar cambios
-  const handleCancelEdit = () => {
+  const handleCancelEdit = async () => {
+    // Verificar si hay cambios sin guardar
+    const hasChanges = JSON.stringify(editedProducts) !== JSON.stringify(selectedTicket.ventas);
+    
+    if (hasChanges) {
+      const result = await showConfirmationAlert(
+        "¿Estás seguro?",
+        "¿Deseas cancelar la devolución? Los cambios no se guardarán.",
+        "Sí, cancelar",
+        "No, volver"
+      );
+
+      if (!result.isConfirmed) return;
+    }
+
     setShowEditModal(false);
     setSelectedTicket(null);
     setEditedProducts([]);

@@ -31,7 +31,7 @@
 
 /* Contenedor de botones superiores */
 .home-top-buttons-container {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #004394 100%);
+  background: var(--primary);
   padding: 15px 25px;
   width: calc(100% - 250px);
   margin-right: 250px;
@@ -944,5 +944,256 @@
   
   .home-stats-content canvas {
     min-height: 250px !important;
+  }
+}
+
+/* Estilos específicos para empleados (solo tabla de deudores centrada) */
+.home-content-employee {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding: 25px;
+  box-sizing: border-box;
+  margin-bottom: 100px;
+  flex: 1;
+  min-height: calc(100vh - 200px); /* Asegurar altura mínima */
+}
+
+.home-deudores-container-centered {
+  width: 70%;
+  max-width: 900px;
+  min-width: 600px;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+/* Ajustes específicos para la tarjeta centrada */
+.home-deudores-card-centered {
+  width: 100%;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  min-height: 600px;
+}
+
+.home-deudores-card-centered:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Encabezado mejorado para la vista centrada */
+.home-deudores-header-centered {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary);
+  color: var(--white);
+  padding: 20px 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-deudores-header-centered::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.home-deudores-header-centered h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+  position: relative;
+}
+
+.home-deudores-header-centered button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  z-index: 2;
+  position: relative;
+}
+
+.home-deudores-header-centered button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Tabla mejorada para la vista centrada */
+.home-deudores-table-container-centered {
+  width: 100%;
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px;
+  max-height: 500px;
+}
+
+.home-deudores-table-centered {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+}
+
+.home-deudores-table-centered th {
+  background: var(--primary);
+  color: var(--white) !important;
+  font-weight: 700;
+  text-align: left;
+  padding: 18px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  letter-spacing: 0.8px;
+  font-size: 14px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  text-transform: uppercase;
+}
+
+.home-deudores-table-centered th:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.home-deudores-table-centered th:last-child {
+  border-radius: 0 10px 10px 0;
+  text-align: center;
+}
+
+.home-deudores-table-centered td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  vertical-align: middle;
+  transition: all 0.3s ease;
+}
+
+.home-deudores-table-centered tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.home-deudores-table-centered tr:nth-child(odd) {
+  background-color: var(--white);
+}
+
+.home-deudores-table-centered tr:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.home-deudores-table-centered td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.home-deudores-table-centered td:first-child svg {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.home-deudores-table-centered td:last-child {
+  font-weight: bold;
+  color: var(--gray-dark);
+  text-align: right;
+  font-size: 17px;
+}
+
+/* Estilos específicos para filas de deuda cero en vista centrada */
+.home-deudores-table-centered .zero-debt-row td {
+  color: var(--gray) !important;
+  background-color: #f5f5f5;
+  font-weight: 500 !important;
+}
+
+.home-deudores-table-centered .zero-debt-row:hover {
+  background-color: #eeeeee !important;
+}
+
+.home-deudores-table-centered .zero-debt-row td:first-child svg {
+  color: var(--gray);
+  opacity: 0.6;
+}
+
+/* Responsividad para la vista centrada */
+@media (max-width: 1024px) {
+  .home-deudores-container-centered {
+    width: 85%;
+    min-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-content-employee {
+    padding: 15px;
+  }
+  
+  .home-deudores-container-centered {
+    width: 95%;
+    min-width: 350px;
+  }
+  
+  .home-deudores-header-centered h3 {
+    font-size: 18px;
+  }
+  
+  .home-deudores-table-centered {
+    font-size: 14px;
+  }
+  
+  .home-deudores-table-centered td:first-child {
+    font-size: 14px;
+  }
+  
+  .home-deudores-table-centered td:last-child {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-deudores-container-centered {
+    min-width: 300px;
+  }
+  
+  .home-deudores-table-container-centered {
+    overflow-x: auto;
+  }
+  
+  .home-deudores-table-centered {
+    min-width: 400px;
   }
 }
