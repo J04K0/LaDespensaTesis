@@ -771,189 +771,227 @@ const Proveedores = () => {
         )}
       </div>
 
-      {/* Modal de creación/edición de proveedores */}
+      {/* Modal de creación/edición de proveedores - EXACTAMENTE IGUAL A CUENTAS POR PAGAR */}
       {showModal && (
-        <div className="proveedores-modal-overlay" onClick={() => setShowModal(false)}>
-          <div 
-            className="proveedores-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="proveedores-modal-header">
-              <h2 className="proveedores-modal-title">{isEditing ? 'Editar Proveedor' : 'Agregar Proveedor'}</h2>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title">
+                {isEditing ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor'}
+              </h2>
             </div>
             
-            <form onSubmit={handleSubmit} className="proveedores-form">
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="nombre">Nombre:</label>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  value={currentProveedor.nombre}
-                  onChange={handleInputChange}
-                  required
-                  className="proveedores-form-control"
-                />
+            <div className="form-group">
+              <label className="form-label" htmlFor="nombre">
+                Nombre del Proveedor:
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                value={currentProveedor.nombre}
+                onChange={handleInputChange}
+                required
+                className="form-control"
+                placeholder="Ingrese el nombre del proveedor"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="telefono">
+                Teléfono:
+              </label>
+              <input
+                type="text"
+                id="telefono"
+                name="telefono"
+                value={currentProveedor.telefono}
+                onChange={handleInputChange}
+                required
+                className="form-control"
+                placeholder="Ej: 912345678"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">
+                Email:
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={currentProveedor.email}
+                onChange={handleInputChange}
+                required
+                className="form-control"
+                placeholder="proveedor@empresa.com"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="contactoPrincipal">
+                Persona de Contacto:
+              </label>
+              <input
+                type="text"
+                id="contactoPrincipal"
+                name="contactoPrincipal"
+                value={currentProveedor.contactoPrincipal || ''}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Nombre del contacto principal"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label" htmlFor="sitioWeb">
+                Sitio Web:
+              </label>
+              <input
+                type="url"
+                id="sitioWeb"
+                name="sitioWeb"
+                value={currentProveedor.sitioWeb || ''}
+                onChange={handleInputChange}
+                placeholder="https://ejemplo.com"
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="direccion">
+                Dirección:
+              </label>
+              <input
+                type="text"
+                id="direccion"
+                name="direccion"
+                value={currentProveedor.direccion}
+                onChange={handleInputChange}
+                className="form-control"
+                placeholder="Dirección completa del proveedor"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Categorías de Productos:</label>
+              <div className="categories-grid">
+                {categorias.map((cat, index) => (
+                  <div key={index} className="category-item">
+                    <input
+                      type="checkbox"
+                      id={`cat-${index}`}
+                      name={cat}
+                      checked={currentProveedor.categorias.includes(cat)}
+                      onChange={handleCategoriaCheckboxChange}
+                      className="category-checkbox"
+                    />
+                    <label htmlFor={`cat-${index}`} className="category-label">
+                      {cat}
+                    </label>
+                  </div>
+                ))}
               </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="telefono">Teléfono:</label>
-                <input
-                  type="text"
-                  id="telefono"
-                  name="telefono"
-                  value={currentProveedor.telefono}
-                  onChange={handleInputChange}
-                  required
-                  className="proveedores-form-control"
-                />
-              </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="email">Email:</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={currentProveedor.email}
-                  onChange={handleInputChange}
-                  required
-                  className="proveedores-form-control"
-                />
-              </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="direccion">Dirección:</label>
-                <input
-                  type="text"
-                  id="direccion"
-                  name="direccion"
-                  value={currentProveedor.direccion}
-                  onChange={handleInputChange}
-                  className="proveedores-form-control"
-                />
-              </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label">Categorías:</label>
-                <div className="proveedores-categories-selector">
-                  {categorias.map((cat, index) => (
-                    <div key={index} className="proveedores-category-checkbox-item">
-                      <input
-                        type="checkbox"
-                        id={`cat-${index}`}
-                        name={cat}
-                        checked={currentProveedor.categorias.includes(cat)}
-                        onChange={handleCategoriaCheckboxChange}
-                        className="proveedores-checkbox"
-                      />
-                      <label htmlFor={`cat-${index}`} className="proveedores-checkbox-label">{cat}</label>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Productos que Provee:</label>
+              <div className="productos-info">
+                {isEditing ? (
+                  proveedorProductos.length > 0 ? (
+                    <div className="productos-list">
+                      <p className="productos-count">
+                        {proveedorProductos.length} producto{proveedorProductos.length !== 1 ? 's' : ''} registrado{proveedorProductos.length !== 1 ? 's' : ''}
+                      </p>
+                      <div className="productos-preview-mini">
+                        {proveedorProductos.slice(0, 3).map(producto => (
+                          <span key={producto._id} className="producto-tag">
+                            {producto.nombre}
+                          </span>
+                        ))}
+                        {proveedorProductos.length > 3 && (
+                          <span className="productos-more-tag">
+                            +{proveedorProductos.length - 3} más
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="contactoPrincipal">Persona de Contacto:</label>
-                <input
-                  type="text"
-                  id="contactoPrincipal"
-                  name="contactoPrincipal"
-                  value={currentProveedor.contactoPrincipal || ''}
-                  onChange={handleInputChange}
-                  className="proveedores-form-control"
-                />
-              </div>
-
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="sitioWeb">Sitio Web:</label>
-                <input
-                  type="url"
-                  id="sitioWeb"
-                  name="sitioWeb"
-                  value={currentProveedor.sitioWeb || ''}
-                  onChange={handleInputChange}
-                  placeholder="https://ejemplo.com"
-                  className="proveedores-form-control"
-                />
-              </div>
-              
-              <div className="proveedores-form-group">
-                <label className="proveedores-form-label" htmlFor="notas">Notas adicionales:</label>
-                <textarea
-                  id="notas"
-                  name="notas"
-                  value={currentProveedor.notas}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="proveedores-form-control"
-                ></textarea>
-              </div>
-
-              <div className="proveedores-card">
-                <h3 className="proveedores-card-title">Productos que provee</h3>
-                <div className="proveedores-productos-list">
-                  {isEditing ? (
-                    proveedorProductos.length > 0 ? (
-                      proveedorProductos.map(producto => (
-                        <div key={producto._id} className="proveedores-producto-item">
-                          <img 
-                            src={producto.image} 
-                            alt={producto.nombre} 
-                            className="proveedores-producto-imagen"
-                          />
-                          <span className="proveedores-producto-nombre">{producto.nombre}</span>
-                          <span className="proveedores-producto-marca">{producto.marca}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="proveedores-no-productos">No hay productos registrados de este proveedor</p>
-                    )
                   ) : (
-                    selectedProducts.length > 0 ? (
-                      allProducts
-                        .filter(product => selectedProducts.includes(product._id))
-                        .map(producto => (
-                          <div key={producto._id} className="proveedores-producto-item">
-                            <img 
-                              src={producto.image} 
-                              alt={producto.Nombre} 
-                              className="proveedores-producto-imagen"
-                            />
-                            <span className="proveedores-producto-nombre">{producto.Nombre}</span>
-                            <span className="proveedores-producto-marca">{producto.Marca}</span>
-                          </div>
-                        ))
-                    ) : (
-                      <p className="proveedores-no-productos">No hay productos seleccionados</p>
-                    )
-                  )}
-                </div>
+                    <p className="no-productos">No hay productos registrados para este proveedor</p>
+                  )
+                ) : (
+                  selectedProducts.length > 0 ? (
+                    <div className="productos-list">
+                      <p className="productos-count">
+                        {selectedProducts.length} producto{selectedProducts.length !== 1 ? 's' : ''} seleccionado{selectedProducts.length !== 1 ? 's' : ''}
+                      </p>
+                      <div className="productos-preview-mini">
+                        {allProducts
+                          .filter(product => selectedProducts.includes(product._id))
+                          .slice(0, 3)
+                          .map(producto => (
+                            <span key={producto._id} className="producto-tag">
+                              {producto.Nombre}
+                            </span>
+                          ))}
+                        {selectedProducts.length > 3 && (
+                          <span className="productos-more-tag">
+                            +{selectedProducts.length - 3} más
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="no-productos">No hay productos seleccionados</p>
+                  )
+                )}
+                
                 <button 
                   type="button"
                   onClick={(e) => handleLinkProducts(e)}
-                  className="proveedores-btn proveedores-btn-secondary"
+                  className="btn-link-productos"
                 >
-                  <FontAwesomeIcon icon={faLink} /> Vincular Productos
+                  <FontAwesomeIcon icon={faLink} />
+                  {selectedProducts.length > 0 || proveedorProductos.length > 0 
+                    ? 'Modificar Productos Vinculados' 
+                    : 'Vincular Productos'
+                  }
                 </button>
               </div>
-              
-              <div className="proveedores-modal-footer">
-                <button 
-                  type="submit" 
-                  className="proveedores-btn proveedores-btn-success"
-                >
-                  {isEditing ? 'Actualizar' : 'Guardar'}
-                </button>
-                <button 
-                  type="button" 
-                  className="proveedores-btn proveedores-btn-danger"
-                  onClick={handleCancel}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="notas">
+                Notas y Observaciones:
+              </label>
+              <textarea
+                id="notas"
+                name="notas"
+                value={currentProveedor.notas}
+                onChange={handleInputChange}
+                rows="3"
+                className="form-control"
+                placeholder="Información adicional sobre el proveedor..."
+              ></textarea>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-success"
+                onClick={handleSubmit}
+              >
+                <FontAwesomeIcon icon={faSave} />
+                {isEditing ? 'Guardar Cambios' : 'Agregar Proveedor'}
+              </button>
+              <button 
+                className="btn btn-danger"
+                onClick={handleCancel}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}

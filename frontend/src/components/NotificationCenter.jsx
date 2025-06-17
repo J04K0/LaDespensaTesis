@@ -11,6 +11,19 @@ const NotificationCenter = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
+  // Función para limpiar notificaciones duplicadas
+  const removeDuplicateNotifications = (notifications) => {
+    const seen = new Set();
+    return notifications.filter(notification => {
+      if (seen.has(notification.id)) {
+        console.warn(`Removing duplicate notification with ID: ${notification.id}`);
+        return false;
+      }
+      seen.add(notification.id);
+      return true;
+    });
+  };
+
   useEffect(() => {
     // Conectar al socket cuando el componente se monta
     const socket = getSocket();
@@ -18,7 +31,15 @@ const NotificationCenter = () => {
     // Manejar nuevas alertas recibidas por WebSocket
     socket.on('nueva_alerta', (alerta) => {
       console.log('Nueva alerta recibida:', alerta);
-      setNotifications(prev => [alerta, ...prev]);
+      setNotifications(prev => {
+        // Verificar si ya existe una notificación con el mismo ID
+        const exists = prev.some(n => n.id === alerta.id);
+        if (exists) {
+          console.warn(`Duplicate notification received with ID: ${alerta.id}`);
+          return prev;
+        }
+        return [alerta, ...prev];
+      });
       setUnreadCount(prev => prev + 1);
       
       // Reproducir sonido de notificación
@@ -27,9 +48,19 @@ const NotificationCenter = () => {
     
     // Cargar notificaciones guardadas en localStorage
     const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-    const unreadNotifications = savedNotifications.filter(n => !n.read);
     
-    setNotifications(savedNotifications);
+    // Limpiar duplicados del localStorage
+    const cleanNotifications = removeDuplicateNotifications(savedNotifications);
+    
+    // Si se encontraron duplicados, actualizar localStorage
+    if (cleanNotifications.length !== savedNotifications.length) {
+      console.log(`Cleaned ${savedNotifications.length - cleanNotifications.length} duplicate notifications from localStorage`);
+      localStorage.setItem('notifications', JSON.stringify(cleanNotifications));
+    }
+    
+    const unreadNotifications = cleanNotifications.filter(n => !n.read);
+    
+    setNotifications(cleanNotifications);
     setUnreadCount(unreadNotifications.length);
     
     // Limpiar al desmontar

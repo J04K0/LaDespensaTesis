@@ -1,6 +1,9 @@
 // Servicio para gestionar las alertas en tiempo real
 import { io } from '../server.js';
 
+// Contador para generar IDs únicos
+let alertIdCounter = 0;
+
 // Tipos de alertas
 export const ALERT_TYPES = {
   STOCK_BAJO: 'stock_bajo',
@@ -8,6 +11,17 @@ export const ALERT_TYPES = {
   PRODUCTO_POR_VENCER: 'producto_por_vencer',
   DEUDOR_PAGO_PROXIMO: 'deudor_pago_proximo',
   CUENTA_POR_PAGAR: 'cuenta_por_pagar'
+};
+
+/**
+ * Genera un ID único para las alertas
+ * @returns {string} ID único
+ */
+const generateUniqueId = () => {
+  alertIdCounter++;
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  return `${timestamp}-${alertIdCounter}-${random}`;
 };
 
 /**
@@ -23,7 +37,7 @@ export const emitAlert = (type, data, message) => {
   }
 
   const alert = {
-    id: Date.now().toString(),
+    id: generateUniqueId(), // Usar el nuevo generador de IDs únicos
     type,
     data,
     message,
