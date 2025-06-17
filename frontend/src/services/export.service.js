@@ -692,4 +692,717 @@ export class ExportService {
     
     doc.save(`la_despensa_productos_${new Date().toISOString().split('T')[0]}.pdf`);
   }
+
+  /**
+   * Genera un reporte completo masivo con todos los datos del sistema
+   * @param {Object} data - Todos los datos del sistema para incluir en el reporte
+   * @returns {Promise<boolean>} - true si el reporte se generó exitosamente
+   */
+  static async generarReporteCompletoMasivo(data) {
+    try {
+      const {
+        productos,
+        ventas,
+        deudores,
+        proveedores,
+        cuentasPorPagar,
+        datosFinancieros,
+        estadisticasGenerales,
+        usuario
+      } = data;
+
+      // Crear documento PDF con orientación portrait y formato A4
+      const doc = new jsPDF();
+      
+      // ============ PALETA DE COLORES PROFESIONAL ============
+      const colorPrimario = [13, 71, 161]; // Azul corporativo más elegante #0D47A1
+      const colorSecundario = [33, 150, 243]; // Azul claro #2196F3
+      const colorAcento = [255, 193, 7]; // Amarillo dorado #FFC107
+      const colorExito = [76, 175, 80]; // Verde #4CAF50
+      const colorPeligro = [244, 67, 54]; // Rojo #F44336
+      const colorGris = [117, 117, 117]; // Gris neutro #757575
+      const colorGrisClaro = [245, 245, 245]; // Gris muy claro #F5F5F5
+      
+      const fechaActual = new Date().toLocaleDateString('es-AR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const horaActual = new Date().toLocaleTimeString('es-AR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      // ============ PORTADA REDISEÑADA ============
+      // Fondo degradado simulado con rectángulos
+      doc.setFillColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.rect(0, 0, 210, 297, 'F');
+      
+      // Rectángulo decorativo superior
+      doc.setFillColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.rect(0, 0, 210, 80, 'F');
+      
+      // Elementos decorativos geométricos
+      doc.setFillColor(colorAcento[0], colorAcento[1], colorAcento[2]);
+      doc.circle(180, 25, 15, 'F');
+      doc.setFillColor(255, 255, 255);
+      doc.circle(30, 60, 8, 'F');
+      
+      // Logo/Título principal
+      doc.setFontSize(36);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text("LA DESPENSA", 105, 120, { align: 'center' });
+      
+      // Línea decorativa bajo el título
+      doc.setDrawColor(colorAcento[0], colorAcento[1], colorAcento[2]);
+      doc.setLineWidth(3);
+      doc.line(60, 130, 150, 130);
+      
+      // Subtítulo
+      doc.setFontSize(24);
+      doc.setTextColor(colorAcento[0], colorAcento[1], colorAcento[2]);
+      doc.setFont("helvetica", "normal");
+      doc.text("REPORTE INTEGRAL DEL SISTEMA", 105, 150, { align: 'center' });
+      
+      // Descripción
+      doc.setFontSize(16);
+      doc.setTextColor(200, 200, 200);
+      doc.text("Análisis Completo de Gestión Empresarial", 105, 170, { align: 'center' });
+      
+      // Información del reporte en recuadro
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(40, 190, 130, 60, 8, 8, 'F');
+      
+      doc.setFontSize(14);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.setFont("helvetica", "bold");
+      doc.text("INFORMACIÓN DEL REPORTE", 105, 205, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60, 60, 60);
+      doc.text(`Fecha: ${fechaActual}`, 105, 220, { align: 'center' });
+      doc.text(`Hora: ${horaActual}`, 105, 230, { align: 'center' });
+      doc.text(`Usuario: ${usuario?.email || 'Sistema'}`, 105, 240, { align: 'center' });
+      
+      // Pie de página de portada
+      doc.setFontSize(10);
+      doc.setTextColor(180, 180, 180);
+      doc.text("Sistema de Gestión Integral", 105, 280, { align: 'center' });
+      doc.text("Reporte Generado Automáticamente", 105, 290, { align: 'center' });
+
+      // ============ ÍNDICE MEJORADO ============
+      doc.addPage();
+      
+      // Encabezado del índice
+      doc.setFillColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.rect(0, 0, 210, 50, 'F');
+      
+      doc.setFontSize(28);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text("ÍNDICE DE CONTENIDOS", 105, 30, { align: 'center' });
+      
+      // Contenido del índice con iconos simulados
+      const indiceItems = [
+        { titulo: "📊 Resumen Financiero General", pagina: 3 },
+        { titulo: "📦 Análisis de Productos e Inventario", pagina: 4 },
+        { titulo: "🛒 Historial de Ventas y Transacciones", pagina: 5 },
+        { titulo: "👥 Gestión de Deudores", pagina: 6 },
+        { titulo: "🏢 Directorio de Proveedores", pagina: 7 },
+        { titulo: "💳 Cuentas por Pagar", pagina: 8 },
+        { titulo: "📈 Estadísticas Generales", pagina: 9 },
+        { titulo: "📋 Conclusiones y Recomendaciones", pagina: 10 }
+      ];
+
+      doc.setFontSize(14);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont("helvetica", "normal");
+      let yPos = 70;
+      
+      indiceItems.forEach((item, index) => {
+        // Línea alterna de fondo
+        if (index % 2 === 0) {
+          doc.setFillColor(248, 249, 250);
+          doc.rect(20, yPos - 10, 170, 20, 'F');
+        }
+        
+        // Punto decorativo
+        doc.setFillColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+        doc.circle(30, yPos, 2, 'F');
+        
+        doc.text(item.titulo, 40, yPos + 2);
+        doc.text(item.pagina.toString(), 170, yPos + 2);
+        
+        // Línea punteada
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.line(40, yPos + 5, 165, yPos + 5);
+        doc.setLineDashPattern([], 0);
+        
+        yPos += 20;
+      });
+
+      // ============ SECCIONES MEJORADAS ============
+      
+      // SECCIÓN 1: RESUMEN FINANCIERO
+      doc.addPage();
+      this.agregarEncabezadoSeccion(doc, "📊 RESUMEN FINANCIERO GENERAL", colorPrimario, colorSecundario);
+
+      if (datosFinancieros) {
+        // KPIs principales en tarjetas
+        const kpis = [
+          { 
+            titulo: "Ingresos Totales", 
+            valor: `$${datosFinancieros.ingresosTotales?.toLocaleString('es-AR') || '0'}`,
+            color: colorExito,
+            icono: "💰"
+          },
+          { 
+            titulo: "Ganancia Neta", 
+            valor: `$${datosFinancieros.gananciasTotales?.toLocaleString('es-AR') || '0'}`,
+            color: colorSecundario,
+            icono: "📈"
+          },
+          { 
+            titulo: "Rentabilidad", 
+            valor: `${datosFinancieros.rentabilidadPromedio?.toFixed(2) || '0'}%`,
+            color: colorAcento,
+            icono: "⚡"
+          },
+          { 
+            titulo: "Transacciones", 
+            valor: datosFinancieros.transacciones?.toString() || '0',
+            color: colorPrimario,
+            icono: "🛒"
+          }
+        ];
+
+        this.dibujarTarjetasKPI(doc, kpis, 60);
+
+        // Tabla financiera detallada
+        const metricsFinancieras = [
+          ["Métrica", "Valor", "Estado"],
+          ["Ingresos Totales", `$${datosFinancieros.ingresosTotales?.toLocaleString('es-AR') || '0'}`, "✅ Activo"],
+          ["Costos Totales", `$${datosFinancieros.costosTotales?.toLocaleString('es-AR') || '0'}`, "📊 Controlado"],
+          ["Ganancia Neta", `$${datosFinancieros.gananciasTotales?.toLocaleString('es-AR') || '0'}`, "💹 Positivo"],
+          ["Rentabilidad Promedio", `${datosFinancieros.rentabilidadPromedio?.toFixed(2) || '0'}%`, "📈 Saludable"],
+          ["Valor Promedio/Transacción", `$${datosFinancieros.valorPromedioTransaccion?.toLocaleString('es-AR') || '0'}`, "🎯 Objetivo"],
+          ["Inversión en Mercadería", `$${datosFinancieros.inversionMercaderia?.toLocaleString('es-AR') || '0'}`, "📦 Inventario"]
+        ];
+
+        autoTable(doc, {
+          startY: 160,
+          head: [metricsFinancieras[0]],
+          body: metricsFinancieras.slice(1),
+          headStyles: { 
+            fillColor: [colorPrimario[0], colorPrimario[1], colorPrimario[2]],
+            textColor: [255, 255, 255],
+            fontSize: 12,
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { 
+            fontSize: 11,
+            cellPadding: 8
+          },
+          columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 60 },
+            1: { halign: 'right', cellWidth: 50 },
+            2: { halign: 'center', cellWidth: 40 }
+          },
+          margin: { left: 20, right: 20 }
+        });
+
+        // Top categorías con gráfico visual simulado
+        if (datosFinancieros.topCategorias?.length > 0) {
+          const newY = doc.lastAutoTable.finalY + 25;
+          
+          doc.setFontSize(16);
+          doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+          doc.setFont("helvetica", "bold");
+          doc.text("🏆 TOP CATEGORÍAS POR INGRESOS", 20, newY);
+
+          const categoriasData = datosFinancieros.topCategorias.slice(0, 5).map((cat, index) => [
+            `${index + 1}°`,
+            cat.nombre,
+            `$${cat.ingresos?.toLocaleString('es-AR') || '0'}`,
+            `${cat.porcentaje?.toFixed(1) || '0'}%`,
+            this.generarBarraProgreso(cat.porcentaje || 0)
+          ]);
+
+          autoTable(doc, {
+            startY: newY + 10,
+            head: [["Pos.", "Categoría", "Ingresos", "%", "Rendimiento"]],
+            body: categoriasData,
+            headStyles: { 
+              fillColor: [colorSecundario[0], colorSecundario[1], colorSecundario[2]],
+              textColor: [255, 255, 255],
+              fontSize: 11,
+              fontStyle: 'bold'
+            },
+            alternateRowStyles: { fillColor: [252, 252, 252] },
+            styles: { fontSize: 10, cellPadding: 6 },
+            columnStyles: {
+              0: { halign: 'center', cellWidth: 15 },
+              1: { cellWidth: 50 },
+              2: { halign: 'right', cellWidth: 35 },
+              3: { halign: 'center', cellWidth: 20 },
+              4: { halign: 'center', cellWidth: 50 }
+            },
+            margin: { left: 20, right: 20 }
+          });
+        }
+      }
+
+      // SECCIÓN 2: PRODUCTOS E INVENTARIO
+      doc.addPage();
+      this.agregarEncabezadoSeccion(doc, "📦 ANÁLISIS DE PRODUCTOS E INVENTARIO", colorPrimario, colorSecundario);
+
+      if (productos?.length > 0) {
+        // Estadísticas generales de productos
+        const stockTotal = productos.reduce((sum, p) => sum + (p.Stock || 0), 0);
+        const valorInventario = productos.reduce((sum, p) => sum + ((p.PrecioCompra || 0) * (p.Stock || 0)), 0);
+        const productosBajoStock = productos.filter(p => (p.Stock || 0) < 10).length;
+        const categorias = [...new Set(productos.map(p => p.Categoria))];
+
+        const statsProductos = [
+          ["Total de Productos", productos.length.toString()],
+          ["Stock Total (unidades)", stockTotal.toLocaleString('es-AR')],
+          ["Valor del Inventario", `$${valorInventario.toLocaleString('es-AR')}`],
+          ["Productos con Bajo Stock", productosBajoStock.toString()],
+          ["Categorías Diferentes", categorias.length.toString()],
+          ["Precio Promedio de Venta", `$${(productos.reduce((sum, p) => sum + (p.PrecioVenta || 0), 0) / productos.length).toLocaleString('es-AR')}`]
+        ];
+
+        autoTable(doc, {
+          startY: 40,
+          head: [["Métrica", "Valor"]],
+          body: statsProductos,
+          headStyles: { fillColor: colorPrimario },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { fontSize: 11 },
+          margin: { left: 20, right: 20 }
+        });
+
+        // Top 15 productos por valor de inventario
+        const newY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.text("Top 15 Productos por Valor de Inventario", 20, newY);
+
+        const topProductos = productos
+          .map(p => ({
+            ...p,
+            valorInventario: (p.PrecioCompra || 0) * (p.Stock || 0)
+          }))
+          .sort((a, b) => b.valorInventario - a.valorInventario)
+          .slice(0, 15)
+          .map((p, index) => [
+            index + 1,
+            p.Nombre || 'Sin nombre',
+            p.Categoria || 'Sin categoría',
+            (p.Stock || 0).toString(),
+            `$${(p.PrecioCompra || 0).toLocaleString('es-AR')}`,
+            `$${p.valorInventario.toLocaleString('es-AR')}`
+          ]);
+
+        autoTable(doc, {
+          startY: newY + 5,
+          head: [["#", "Producto", "Categoría", "Stock", "Precio", "Valor Total"]],
+          body: topProductos,
+          headStyles: { fillColor: colorSecundario },
+          styles: { fontSize: 9 },
+          margin: { left: 20, right: 20 }
+        });
+      }
+
+      // ============ SECCIÓN 3: HISTORIAL DE VENTAS ============
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("3. HISTORIAL DE VENTAS Y TRANSACCIONES", 20, 25);
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(20, 30, 190, 30);
+
+      if (ventas?.length > 0) {
+        // Estadísticas de ventas
+        const ventasHoy = ventas.filter(v => {
+          const fechaVenta = new Date(v.fecha);
+          const hoy = new Date();
+          return fechaVenta.toDateString() === hoy.toDateString();
+        });
+
+        const ventasEfectivo = ventas.filter(v => v.metodoPago === 'efectivo').length;
+        const ventasTarjeta = ventas.filter(v => v.metodoPago === 'tarjeta').length;
+        const ventasDeudores = ventas.filter(v => v.deudorId).length;
+
+        const totalVentas = ventas.reduce((sum, v) => {
+          return sum + v.ventas.reduce((acc, p) => acc + (p.precioVenta * p.cantidad), 0);
+        }, 0);
+
+        const statsVentas = [
+          ["Total de Ventas Registradas", ventas.length.toString()],
+          ["Ventas del Día", ventasHoy.length.toString()],
+          ["Valor Total de Ventas", `$${totalVentas.toLocaleString('es-AR')}`],
+          ["Ventas en Efectivo", `${ventasEfectivo} (${((ventasEfectivo/ventas.length)*100).toFixed(1)}%)`],
+          ["Ventas con Tarjeta", `${ventasTarjeta} (${((ventasTarjeta/ventas.length)*100).toFixed(1)}%)`],
+          ["Ventas a Deudores", `${ventasDeudores} (${((ventasDeudores/ventas.length)*100).toFixed(1)}%)`],
+          ["Ticket Promedio", `$${(totalVentas/ventas.length).toLocaleString('es-AR')}`]
+        ];
+
+        autoTable(doc, {
+          startY: 40,
+          head: [["Métrica de Ventas", "Valor"]],
+          body: statsVentas,
+          headStyles: { fillColor: colorPrimario },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { fontSize: 11 },
+          margin: { left: 20, right: 20 }
+        });
+
+        // Últimas 20 ventas
+        const newY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.text("Últimas 20 Transacciones", 20, newY);
+
+        const ultimasVentas = ventas
+          .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+          .slice(0, 20)
+          .map(v => {
+            const total = v.ventas.reduce((acc, p) => acc + (p.precioVenta * p.cantidad), 0);
+            const metodoPago = v.deudorId ? 'Deudor' : v.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo';
+            return [
+              v._id?.substring(0, 8) || 'N/A',
+              new Date(v.fecha).toLocaleDateString('es-AR'),
+              new Date(v.fecha).toLocaleTimeString('es-AR'),
+              metodoPago,
+              `$${total.toLocaleString('es-AR')}`
+            ];
+          });
+
+        autoTable(doc, {
+          startY: newY + 5,
+          head: [["Ticket", "Fecha", "Hora", "Método", "Total"]],
+          body: ultimasVentas,
+          headStyles: { fillColor: colorSecundario },
+          styles: { fontSize: 9 },
+          margin: { left: 20, right: 20 }
+        });
+      }
+
+      // ============ SECCIÓN 4: GESTIÓN DE DEUDORES ============
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("4. GESTIÓN DE DEUDORES", 20, 25);
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(20, 30, 190, 30);
+
+      if (deudores?.length > 0) {
+        // Estadísticas de deudores
+        const deudaTotal = deudores.reduce((sum, d) => {
+          const deuda = parseFloat(d.deudaTotal?.replace(/[\$\.,]/g, '') || '0');
+          return sum + deuda;
+        }, 0);
+
+        const deudoresConDeuda = deudores.filter(d => {
+          const deuda = parseFloat(d.deudaTotal?.replace(/[\$\.,]/g, '') || '0');
+          return deuda > 0;
+        });
+
+        const mayorDeudor = deudores.reduce((max, d) => {
+          const deuda = parseFloat(d.deudaTotal?.replace(/[\$\.,]/g, '') || '0');
+          const maxDeuda = parseFloat(max.deudaTotal?.replace(/[\$\.,]/g, '') || '0');
+          return deuda > maxDeuda ? d : max;
+        }, deudores[0]);
+
+        const statsDeudores = [
+          ["Total de Deudores Registrados", deudores.length.toString()],
+          ["Deudores con Deuda Pendiente", deudoresConDeuda.length.toString()],
+          ["Deuda Total del Sistema", `$${deudaTotal.toLocaleString('es-AR')}`],
+          ["Deuda Promedio", `$${(deudaTotal/deudores.length).toLocaleString('es-AR')}`],
+          ["Mayor Deudor", mayorDeudor?.Nombre || 'N/A'],
+          ["Mayor Deuda Individual", mayorDeudor?.deudaTotal || '$0']
+        ];
+
+        autoTable(doc, {
+          startY: 40,
+          head: [["Métrica de Deudores", "Valor"]],
+          body: statsDeudores,
+          headStyles: { fillColor: colorPrimario },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { fontSize: 11 },
+          margin: { left: 20, right: 20 }
+        });
+
+        // Top 15 deudores
+        const newY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.text("Top 15 Deudores por Monto", 20, newY);
+
+        const topDeudores = deudores
+          .map(d => ({
+            ...d,
+            deudaNum: parseFloat(d.deudaTotal?.replace(/[\$\.,]/g, '') || '0')
+          }))
+          .sort((a, b) => b.deudaNum - a.deudaNum)
+          .slice(0, 15)
+          .map((d, index) => [
+            index + 1,
+            d.Nombre || 'Sin nombre',
+            d.numeroTelefono || 'Sin teléfono',
+            new Date(d.fechaPaga).toLocaleDateString('es-AR'),
+            d.deudaTotal || '$0'
+          ]);
+
+        autoTable(doc, {
+          startY: newY + 5,
+          head: [["#", "Nombre", "Teléfono", "Fecha Pago", "Deuda"]],
+          body: topDeudores,
+          headStyles: { fillColor: colorSecundario },
+          styles: { fontSize: 9 },
+          margin: { left: 20, right: 20 }
+        });
+      }
+
+      // ============ SECCIÓN 5: DIRECTORIO DE PROVEEDORES ============
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("5. DIRECTORIO DE PROVEEDORES", 20, 25);
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(20, 30, 190, 30);
+
+      if (proveedores?.length > 0) {
+        // Estadísticas de proveedores
+        const proveedoresActivos = proveedores.filter(p => p.estado === 'activo');
+        const categoriasProveedores = [...new Set(proveedores.flatMap(p => p.categorias || []))];
+
+        const statsProveedores = [
+          ["Total de Proveedores", proveedores.length.toString()],
+          ["Proveedores Activos", proveedoresActivos.length.toString()],
+          ["Proveedores Inactivos", (proveedores.length - proveedoresActivos.length).toString()],
+          ["Categorías Cubiertas", categoriasProveedores.length.toString()]
+        ];
+
+        autoTable(doc, {
+          startY: 40,
+          head: [["Métrica de Proveedores", "Valor"]],
+          body: statsProveedores,
+          headStyles: { fillColor: colorPrimario },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { fontSize: 11 },
+          margin: { left: 40, right: 40 }
+        });
+
+        // Listado completo de proveedores
+        const newY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.text("Directorio Completo de Proveedores", 20, newY);
+
+        const datosProveedores = proveedores.slice(0, 20).map((p, index) => [
+          index + 1,
+          p.nombre || 'Sin nombre',
+          p.telefono || 'Sin teléfono',
+          p.email || 'Sin email',
+          p.contactoPrincipal || 'Sin contacto',
+          (p.categorias || []).join(', ') || 'Sin categorías'
+        ]);
+
+        autoTable(doc, {
+          startY: newY + 5,
+          head: [["#", "Nombre", "Teléfono", "Email", "Contacto", "Categorías"]],
+          body: datosProveedores,
+          headStyles: { fillColor: colorSecundario },
+          styles: { fontSize: 8 },
+          margin: { left: 20, right: 20 }
+        });
+      }
+
+      // ============ SECCIÓN 6: CUENTAS POR PAGAR ============
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setTextColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+      doc.text("6. CUENTAS POR PAGAR", 20, 25);
+      doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+      doc.line(20, 30, 190, 30);
+
+      if (cuentasPorPagar?.length > 0) {
+        // Estadísticas de cuentas por pagar
+        const cuentasPendientes = cuentasPorPagar.filter(c => c.Estado === 'Pendiente');
+        const cuentasPagadas = cuentasPorPagar.filter(c => c.Estado === 'Pagado');
+        const totalPendiente = cuentasPendientes.reduce((sum, c) => sum + (c.Monto || 0), 0);
+        const totalPagado = cuentasPagadas.reduce((sum, c) => sum + (c.Monto || 0), 0);
+
+        const statsCuentas = [
+          ["Total de Cuentas", cuentasPorPagar.length.toString()],
+          ["Cuentas Pendientes", cuentasPendientes.length.toString()],
+          ["Cuentas Pagadas", cuentasPagadas.length.toString()],
+          ["Monto Total Pendiente", `$${totalPendiente.toLocaleString('es-AR')}`],
+          ["Monto Total Pagado", `$${totalPagado.toLocaleString('es-AR')}`],
+          ["Total General", `$${(totalPendiente + totalPagado).toLocaleString('es-AR')}`]
+        ];
+
+        autoTable(doc, {
+          startY: 40,
+          head: [["Métrica de Cuentas", "Valor"]],
+          body: statsCuentas,
+          headStyles: { fillColor: colorPrimario },
+          alternateRowStyles: { fillColor: [248, 249, 250] },
+          styles: { fontSize: 11 },
+          margin: { left: 40, right: 40 }
+        });
+
+        // Cuentas pendientes más importantes
+        const newY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(14);
+        doc.text("Cuentas Pendientes de Mayor Importe", 20, newY);
+
+        const cuentasPendientesOrdenadas = cuentasPendientes
+          .sort((a, b) => (b.Monto || 0) - (a.Monto || 0))
+          .slice(0, 15)
+          .map((c, index) => [
+            index + 1,
+            c.Nombre || 'Sin nombre',
+            c.numeroVerificador || 'Sin número',
+            c.Categoria || 'Sin categoría',
+            `$${(c.Monto || 0).toLocaleString('es-AR')}`,
+            c.Mes || 'Sin mes'
+          ]);
+
+        autoTable(doc, {
+          startY: newY + 5,
+          head: [["#", "Proveedor", "N° Verificador", "Categoría", "Monto", "Mes"]],
+          body: cuentasPendientesOrdenadas,
+          headStyles: { fillColor: colorSecundario },
+          styles: { fontSize: 9 },
+          margin: { left: 20, right: 20 }
+        });
+      }
+
+      // ============ PIE DE PÁGINA PROFESIONAL ============
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        
+        if (i > 1) { // No agregar pie de página en la portada
+          // Línea superior del pie de página
+          doc.setDrawColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+          doc.setLineWidth(1);
+          doc.line(20, 280, 190, 280);
+          
+          // Información del pie de página
+          doc.setFontSize(9);
+          doc.setTextColor(colorGris[0], colorGris[1], colorGris[2]);
+          doc.setFont("helvetica", "normal");
+          
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          
+          // Izquierda: Nombre del sistema
+          doc.text("La Despensa - Sistema de Gestión", 20, pageHeight - 15);
+          
+          // Centro: Fecha del reporte
+          doc.text(fechaActual, pageWidth / 2, pageHeight - 15, { align: 'center' });
+          
+          // Derecha: Número de página
+          doc.text(`Página ${i} de ${totalPages}`, pageWidth - 20, pageHeight - 15, { align: 'right' });
+          
+          // Línea decorativa final
+          doc.setDrawColor(colorAcento[0], colorAcento[1], colorAcento[2]);
+          doc.setLineWidth(0.5);
+          doc.line(20, pageHeight - 10, 190, pageHeight - 10);
+        }
+      }
+
+      // Guardar el PDF con nombre mejorado
+      const timestamp = new Date().toISOString().split('T')[0];
+      const nombreArchivo = `LaDespensa_ReporteCompleto_${timestamp}.pdf`;
+      doc.save(nombreArchivo);
+
+      return true;
+    } catch (error) {
+      console.error("Error al generar reporte completo masivo:", error);
+      return false;
+    }
+  }
+
+  // ============ MÉTODOS AUXILIARES PARA EL DISEÑO ============
+  
+  /**
+   * Agrega un encabezado de sección profesional
+   */
+  static agregarEncabezadoSeccion(doc, titulo, colorPrimario, colorSecundario) {
+    // Fondo del encabezado
+    doc.setFillColor(colorPrimario[0], colorPrimario[1], colorPrimario[2]);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    // Línea decorativa
+    doc.setFillColor(colorSecundario[0], colorSecundario[1], colorSecundario[2]);
+    doc.rect(0, 35, 210, 5, 'F');
+    
+    // Título
+    doc.setFontSize(20);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text(titulo, 105, 25, { align: 'center' });
+  }
+
+  /**
+   * Dibuja tarjetas KPI estilizadas
+   */
+  static dibujarTarjetasKPI(doc, kpis, startY) {
+    const cardWidth = 40;
+    const cardHeight = 30;
+    const spacing = 5;
+    const startX = (210 - (kpis.length * cardWidth + (kpis.length - 1) * spacing)) / 2;
+
+    kpis.forEach((kpi, index) => {
+      const x = startX + index * (cardWidth + spacing);
+      
+      // Sombra de la tarjeta
+      doc.setFillColor(0, 0, 0, 0.1);
+      doc.roundedRect(x + 1, startY + 1, cardWidth, cardHeight, 3, 3, 'F');
+      
+      // Tarjeta principal
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, startY, cardWidth, cardHeight, 3, 3, 'F');
+      
+      // Borde superior colorido
+      doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2]);
+      doc.roundedRect(x, startY, cardWidth, 4, 3, 3, 'F');
+      
+      // Icono (simulado con texto)
+      doc.setFontSize(16);
+      doc.text(kpi.icono, x + 5, startY + 15);
+      
+      // Título
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
+      doc.text(kpi.titulo, x + cardWidth / 2, startY + 20, { align: 'center' });
+      
+      // Valor
+      doc.setFontSize(12);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont("helvetica", "bold");
+      doc.text(kpi.valor, x + cardWidth / 2, startY + 27, { align: 'center' });
+    });
+  }
+
+  /**
+   * Genera una representación visual de barra de progreso
+   */
+  static generarBarraProgreso(porcentaje) {
+    const maxBarras = 10;
+    const barrasLlenas = Math.round((porcentaje / 100) * maxBarras);
+    let barra = "";
+    
+    for (let i = 0; i < maxBarras; i++) {
+      barra += i < barrasLlenas ? "█" : "░";
+    }
+    
+    return barra;
+  }
 }

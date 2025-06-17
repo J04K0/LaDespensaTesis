@@ -14,6 +14,11 @@
   --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Agregar espaciado correcto para la flecha caret en los dropdowns */
+.caret-icon {
+  margin-left: 8px;
+}
+
 /* Submenú estándar */
 .submenu {
   background-color: var(--submenu-background-color);
@@ -157,6 +162,7 @@
   margin-left: auto;
   display: flex;
   align-items: center;
+  margin-right: 10px;
 }
 
 /* Botón de alternar para móvil */
@@ -190,12 +196,14 @@
 /* Lista de elementos de navegación */
 .navbar-items {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  align-items: center;
   list-style: none;
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
+  gap: 5px;
 }
 
 /* Elementos individuales de navegación */
@@ -204,16 +212,16 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 0 15px;
+  padding: 0 12px;
   cursor: pointer;
   height: 100%;
-  font-size: 16px;
-  flex-grow: 1;
+  font-size: 14px;
   text-align: center;
   transition: all 0.3s ease;
   font-weight: 500;
   letter-spacing: 0.3px;
-  position: relative;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .navbar-items li::after {
@@ -239,11 +247,11 @@
 }
 
 .navbar-items li:active {
-  transform: translateY(2px);
+  transform: translateY(12px);
 }
 
 .navbar-items li span {
-  margin-left: 8px;
+  margin-left: 12px;
 }
 
 /* Estilo para el ícono en los elementos de navegación */
@@ -252,25 +260,80 @@
   margin-right: 2px;
 }
 
-/* Estilos para dropdown */
-.dropdown {
-  position: relative;
-}
-
-.dropdown-trigger {
+/* Contenedor de notificaciones y acciones especiales */
+.navbar-special-actions {
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-left: auto;
   height: 100%;
-  gap: 5px;
 }
 
-.caret-icon {
-  margin-left: 5px;
-  transition: transform 0.2s ease;
+/* Estilo mejorado para el botón de reporte masivo */
+.massive-report-item {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  margin: 0 !important;
+  position: relative !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
+  transition: all 0.3s ease !important;
+  font-size: 13px !important;
+  min-width: 120px !important;
+  max-width: 140px !important;
+  height: 36px !important;
+  flex-shrink: 0 !important;
 }
 
-.dropdown-trigger:hover .caret-icon {
-  transform: translateY(2px);
+.massive-report-item:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.massive-report-item span {
+  font-weight: 600 !important;
+  color: white !important;
+  font-size: 12px !important;
+}
+
+.massive-report-item svg {
+  font-size: 12px !important;
+  margin-right: 6px !important;
+}
+
+.massive-report-item .spinner-icon {
+  margin-left: 6px !important;
+  margin-right: 0 !important;
+  animation: spin 1s linear infinite !important;
+  color: white !important;
+  font-size: 11px !important;
+}
+
+/* Botón de logout mejorado */
+.logout-item {
+  background: rgba(255, 120, 117, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  margin: 0 !important;
+  color: #ff7875 !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  min-width: 100px !important;
+  height: 36px !important;
+  flex-shrink: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+.logout-item:hover {
+  background: rgba(255, 120, 117, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.logout-item svg {
+  color: #ff7875 !important;
+  font-size: 12px !important;
+  margin-right: 6px !important;
 }
 
 /* Menú desplegable */
@@ -360,7 +423,6 @@
   }
   
   .navbar-menu.visible {
-    /* Cambiado para que no ocupe toda la pantalla, solo una parte */
     height: auto;
     max-height: 80vh;
     overflow-y: auto;
@@ -374,6 +436,7 @@
     height: auto;
     width: 100%;
     padding: 10px 0;
+    gap: 0;
   }
   
   .navbar-items li {
@@ -382,6 +445,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     justify-content: flex-start;
     font-size: 16px;
+    min-width: auto;
   }
   
   .navbar-items li::after {
@@ -390,6 +454,41 @@
   
   .navbar-items li:hover {
     background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Contenedor especial para móviles */
+  .navbar-special-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Botones especiales en móvil */
+  .massive-report-item,
+  .logout-item {
+    width: calc(100% - 40px) !important;
+    max-width: none !important;
+    min-width: auto !important;
+    margin: 5px 20px !important;
+    justify-content: center !important;
+    height: 44px !important;
+    font-size: 14px !important;
+  }
+
+  .massive-report-item span,
+  .logout-item span {
+    font-size: 14px !important;
+  }
+
+  /* Notificaciones en móvil */
+  .navbar-notifications {
+    width: 100%;
+    justify-content: center;
+    margin: 10px 0;
+    margin-right: 0;
   }
   
   /* Estilo rediseñado para el dropdown en modo móvil */
@@ -431,16 +530,10 @@
   .caret-icon {
     margin-left: auto;
   }
-  
-  .logout-item {
-    margin-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: rgba(255, 0, 0, 0.1);
-  }
 
   .product-submenu {
     width: 100%;
-    order: 1; /* Asegura que aparezca justo después del elemento Productos */
+    order: 1;
     margin: 0;
     position: static;
   }
@@ -466,5 +559,31 @@
     width: 100%;
     height: auto;
   }
+}
+
+/* Media query para tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .navbar-items li {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .navbar-items li span {
+    margin-left: 6px;
+  }
+
+  .massive-report-item {
+    min-width: 100px !important;
+    max-width: 120px !important;
+  }
+
+  .logout-item {
+    min-width: 80px !important;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 

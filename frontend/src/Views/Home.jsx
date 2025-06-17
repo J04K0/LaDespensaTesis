@@ -6,7 +6,7 @@ import { getDeudores } from '../services/deudores.service.js';
 import { obtenerVentasPorTicket } from '../services/venta.service.js';
 import axios from '../services/root.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faUsers, faShoppingCart, faMoneyBillWave, faArrowRight, faArrowLeft, faPlus, faEye, faCalendarAlt, faChartLine, faExclamationTriangle, faUser, faStar, faChartPie, faSpinner, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faBoxes, faUsers, faShoppingCart, faMoneyBillWave, faArrowRight, faArrowLeft, faPlus, faEye, faCalendarAlt, faChartLine, faExclamationTriangle, faUser, faStar, faChartPie, faSpinner, faFilePdf, faDownload, faFileExport } from '@fortawesome/free-solid-svg-icons';
 import '../styles/HomeStyles.css';
 import DeudoresTableSkeleton from '../components/Skeleton/DeudoresTableSkeleton';
 import ChartSkeleton from '../components/Skeleton/ChartSkeleton';
@@ -14,6 +14,9 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { useVentas } from '../context/VentasContext';
+import { ExportService } from '../services/export.service';
+import { DataCollectionService } from '../services/dataCollection.service';
+import { showSuccessAlert, showErrorAlert, showWarningAlert } from '../helpers/swaHelper';
 
 import { 
   Chart as ChartJS, 
@@ -57,6 +60,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingMassive, setIsDownloadingMassive] = useState(false);
   // Nuevo estado para el filtro temporal
   const [timeRange, setTimeRange] = useState("todo"); // Opciones: "semana", "mes", "año", "todo"
 
@@ -347,13 +351,13 @@ const Home = () => {
       const col2Width = 40;
       
       // Variables para controlar la posición en el PDF
-      let yPos = 40;
+      let pdfYPosition = 40;
       let currentPage = 1;
       
       // Función para añadir un gráfico y su tabla correspondiente
       const addChartDataToPdf = (title, data, colorHex) => {
         // Verificar si queda suficiente espacio en la página actual
-        if (yPos > 220) {
+        if (pdfYPosition > 220) {
           // Añadir pie de página a la página actual
           const pageWidth = doc.internal.pageSize.getWidth();
           const pageHeight = doc.internal.pageSize.getHeight();
@@ -364,14 +368,14 @@ const Home = () => {
           // Crear nueva página
           doc.addPage();
           currentPage++;
-          yPos = 20; // Reiniciar posición en Y
+          pdfYPosition = 20; // Reiniciar posición en Y
         }
         
         // Título del gráfico
         doc.setFontSize(16);
         doc.setTextColor(0, 110, 223); // Color primario
-        doc.text(title, 20, yPos);
-        yPos += 10;
+        doc.text(title, 20, pdfYPosition);
+        pdfYPosition += 10;
         
         if (data && data.labels && data.datasets) {
           const tableData = [];
@@ -388,11 +392,11 @@ const Home = () => {
             doc.setFillColor(0, 110, 223); // Convertir hex a RGB
             doc.setDrawColor(0, 110, 223);
             doc.setTextColor(255, 255, 255);
-            doc.rect(20, yPos, col1Width + col2Width, cellHeight, 'F');
+            doc.rect(20, pdfYPosition, col1Width + col2Width, cellHeight, 'F');
             doc.setFontSize(12);
-            doc.text("Item", 20 + cellPadding, yPos + cellHeight - cellPadding);
-            doc.text("Cantidad", 20 + col1Width + cellPadding, yPos + cellHeight - cellPadding);
-            yPos += cellHeight;
+            doc.text("Item", 20 + cellPadding, pdfYPosition + cellHeight - cellPadding);
+            doc.text("Cantidad", 20 + col1Width + cellPadding, pdfYPosition + cellHeight - cellPadding);
+            pdfYPosition += cellHeight;
             
             // Dibujar filas de datos
             doc.setTextColor(50, 50, 50);
@@ -400,25 +404,25 @@ const Home = () => {
               // Alternar colores de fondo para las filas
               if (i % 2 === 0) {
                 doc.setFillColor(245, 248, 250);
-                doc.rect(20, yPos, col1Width + col2Width, cellHeight, 'F');
+                doc.rect(20, pdfYPosition, col1Width + col2Width, cellHeight, 'F');
               } else {
                 doc.setFillColor(255, 255, 255);
-                doc.rect(20, yPos, col1Width + col2Width, cellHeight, 'F');
+                doc.rect(20, pdfYPosition, col1Width + col2Width, cellHeight, 'F');
               }
               
               // Dibujar borde
               doc.setDrawColor(220, 220, 220);
-              doc.rect(20, yPos, col1Width + col2Width, cellHeight);
+              doc.rect(20, pdfYPosition, col1Width + col2Width, cellHeight);
               
               // Añadir texto
-              doc.text(row[0], 20 + cellPadding, yPos + cellHeight - cellPadding);
-              doc.text(row[1], 20 + col1Width + cellPadding, yPos + cellHeight - cellPadding);
+              doc.text(row[0], 20 + cellPadding, pdfYPosition + cellHeight - cellPadding);
+              doc.text(row[1], 20 + col1Width + cellPadding, pdfYPosition + cellHeight - cellPadding);
               
-              yPos += cellHeight;
+              pdfYPosition += cellHeight;
             });
             
             // Espacio después de la tabla
-            yPos += 20;
+            pdfYPosition += 20;
           }
         }
       };

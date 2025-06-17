@@ -7,18 +7,21 @@ import {
   faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, 
   faBars, faTimes, faShoppingCart, faStore, faMoneyBillWave, 
   faCalculator, faWarehouse, faClipboardList, faCoins, faUsers,
-  faUserCog, faLock, faFileInvoiceDollar
+  faUserCog, faLock, faFileInvoiceDollar, faFileExport, faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import { obtenerVentasPorTicket } from '../services/venta.service';
 import { getDeudores } from '../services/deudores.service';
 import NotificationCenter from './NotificationCenter';
 import { initializeSocket, closeSocket } from '../services/socket.service';
 import { ExportService } from '../services/export.service.js';
+import { DataCollectionService } from '../services/dataCollection.service';
+import { showSuccessAlert, showErrorAlert, showWarningAlert } from '../helpers/swaHelper';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [isDownloadingMassive, setIsDownloadingMassive] = useState(false);
   const dropdownRefs = {
     ventas: useRef(null),
     inventario: useRef(null),
@@ -236,6 +239,45 @@ const Navbar = () => {
     setIsNavVisible(!isNavVisible);
   };
 
+  const handleMassiveReport = async () => {
+    try {
+      setIsDownloadingMassive(true);
+      
+      // Mostrar alerta de inicio
+      await showWarningAlert(
+        "Generando Reporte Completo",
+        "Se está recopilando información de todo el sistema. Este proceso puede tomar unos segundos...",
+        "Entendido"
+      );
+
+      console.log('🚀 Iniciando descarga masiva del reporte completo...');
+      
+      // Recopilar todos los datos del sistema
+      const datosSistema = await DataCollectionService.recopilarDatosSistema();
+      
+      // Generar el reporte completo
+      const resultado = await ExportService.generarReporteCompletoMasivo(datosSistema);
+      
+      if (resultado) {
+        await showSuccessAlert(
+          "¡Reporte Generado Exitosamente!",
+          "El reporte completo del sistema ha sido descargado correctamente. Incluye todos los datos de productos, ventas, deudores, proveedores y análisis financiero."
+        );
+      } else {
+        throw new Error('Error al generar el reporte');
+      }
+
+    } catch (error) {
+      console.error('❌ Error en descarga masiva:', error);
+      await showErrorAlert(
+        "Error al Generar Reporte",
+        "No se pudo generar el reporte completo. Por favor, verifique su conexión e inténtelo nuevamente."
+      );
+    } finally {
+      setIsDownloadingMassive(false);
+    }
+  };
+
   return (
     <header className="navbar-container">
       <div className="navbar-content">
@@ -250,8 +292,8 @@ const Navbar = () => {
             
             {/* VENTAS */}
             <div className="productos-container" ref={dropdownRefs.ventas}>
-              <li className="dropdown">
-                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('ventas', e)}>
+              <li className="dropdown" onClick={(e) => toggleDropdown('ventas', e)}>
+                <div className="dropdown-trigger">
                   <FontAwesomeIcon icon={faShoppingCart} /> <span>Ventas</span>
                   <FontAwesomeIcon icon={activeDropdown === 'ventas' ? faCaretUp : faCaretDown} className="caret-icon" />
                 </div>
@@ -285,8 +327,8 @@ const Navbar = () => {
 
             {/* INVENTARIO */}
             <div className="productos-container" ref={dropdownRefs.inventario}>
-              <li className="dropdown">
-                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('inventario', e)}>
+              <li className="dropdown" onClick={(e) => toggleDropdown('inventario', e)}>
+                <div className="dropdown-trigger">
                   <FontAwesomeIcon icon={faWarehouse} /> <span>Inventario</span>
                   <FontAwesomeIcon icon={activeDropdown === 'inventario' ? faCaretUp : faCaretDown} className="caret-icon" />
                 </div>
@@ -320,8 +362,8 @@ const Navbar = () => {
 
             {/* FINANZAS */}
             <div className="productos-container" ref={dropdownRefs.finanzas}>
-              <li className="dropdown">
-                <div className="dropdown-trigger" onClick={(e) => toggleDropdown('finanzas', e)}>
+              <li className="dropdown" onClick={(e) => toggleDropdown('finanzas', e)}>
+                <div className="dropdown-trigger">
                   <FontAwesomeIcon icon={faMoneyBillWave} /> <span>Finanzas</span>
                   <FontAwesomeIcon icon={activeDropdown === 'finanzas' ? faCaretUp : faCaretDown} className="caret-icon" />
                 </div>
@@ -347,13 +389,24 @@ const Navbar = () => {
               )}
             </div>
             
-            <div className="navbar-notifications">
-              <NotificationCenter />
+            {/* Contenedor de acciones especiales a la derecha */}
+            <div className="navbar-special-actions">
+              <div className="navbar-notifications">
+                <NotificationCenter />
+              </div>
+              
+              {/* Botón de reporte masivo compacto */}
+              <li onClick={handleMassiveReport} className="massive-report-item">
+                <FontAwesomeIcon icon={faFileExport} />
+                <span>Reporte</span>
+                {isDownloadingMassive && <FontAwesomeIcon icon={faSpinner} className="spinner-icon" />}
+              </li>
+              
+              <li onClick={handleLogout} className="logout-item">
+                <FontAwesomeIcon icon={faSignOutAlt} />
+                <span>Salir</span>
+              </li>
             </div>
-        
-            <li onClick={handleLogout} className="logout-item">
-              <FontAwesomeIcon icon={faSignOutAlt} /> <span>Cerrar sesión</span>
-            </li>
           </ul>
         </nav>
       </div>
