@@ -158,3 +158,28 @@ export const showProductNotFoundAlert = (barcode) => {
     }
   });
 };
+
+export const showOutOfStockAlert = (barcode, productName) => {
+  const previouslyFocused = document.activeElement;
+  
+  return Swal.fire({
+    ...swalBaseConfig,
+    title: "Producto sin stock",
+    text: `El producto "${productName}" se ha quedado sin stock. ¿Desea agregar más unidades?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, agregar stock",
+    cancelButtonText: "No, cancelar",
+    confirmButtonColor: "#28a745",
+    cancelButtonColor: "#dc3545",
+    didOpen: () => {
+      const confirmButton = document.querySelector('.swal2-confirm');
+      if (confirmButton) confirmButton.focus();
+    },
+    didClose: () => {
+      if (previouslyFocused) {
+        previouslyFocused.focus();
+      }
+    }
+  });
+};

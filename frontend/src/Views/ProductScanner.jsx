@@ -5,7 +5,7 @@ import { scanProducts, actualizarStockVenta } from "../services/AddProducts.serv
 import { registrarVenta } from "../services/venta.service.js";
 import { getDeudoresSimple } from "../services/deudores.service.js";
 import { addDeudor } from "../services/deudores.service.js";
-import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert } from "../helpers/swaHelper";
+import { showSuccessAlert, showErrorAlert, showWarningAlert, showProductNotFoundAlert, showOutOfStockAlert } from "../helpers/swaHelper";
 import ProductScannerSkeleton from '../components/Skeleton/ProductScannerSkeleton';
 import "../styles/ProductScannerStyles.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -84,12 +84,26 @@ const ProductScanner = () => {
       const productoEncontrado = response.data.data;
 
       if (productoEncontrado) {
-        if (productoEncontrado.stock > 0) {
-          setProductoActual(productoEncontrado);
+        // Verificar si el producto ya existe en el carrito
+        const productoEnCarrito = carrito.find((p) => p.codigoBarras === productoEncontrado.codigoBarras);
+        
+        // Calcular stock disponible real considerando lo que ya está en el carrito
+        let stockDisponibleReal;
+        if (productoEnCarrito) {
+          // Si ya está en el carrito, usar el stock que ya tenemos guardado
+          stockDisponibleReal = stockPorProducto[productoEncontrado.codigoBarras] || 0;
+        } else {
+          // Si no está en el carrito, usar el stock completo del producto
+          stockDisponibleReal = productoEncontrado.stock;
+          // Actualizar el stock en nuestro estado local
           setStockPorProducto(prevStock => ({
             ...prevStock,
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
           }));
+        }
+
+        if (stockDisponibleReal > 0) {
+          setProductoActual(productoEncontrado);
           
           // Verificar si el producto está vencido y mostrar advertencia
           if (productoEncontrado.isExpired) {
@@ -103,7 +117,7 @@ const ProductScanner = () => {
           }
           
           // Agregar automáticamente al carrito con cantidad 1
-          agregarAlCarrito({...productoEncontrado, cantidad: 1});
+          agregarAlCarrito({...productoEncontrado}, 1);
         } else {
           console.warn("⚠️ Producto agotado.");
           showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para este producto.");
@@ -135,8 +149,36 @@ const ProductScanner = () => {
             }
           });
         } else if (statusCode === 400 && errorMessage && errorMessage.includes("stock")) {
-          // Error específico de stock insuficiente
-          showErrorAlert("Stock insuficiente", "No hay stock disponible para este producto.");
+          // Error específico de stock insuficiente - necesitamos obtener el nombre del producto
+          // Primero intentamos obtener la información del producto para mostrar su nombre
+          try {
+            const productResponse = await fetch(`/api/products/creation/${codigoEscaneado}`);
+            if (productResponse.ok) {
+              const productData = await productResponse.json();
+              const productName = productData.data?.nombre || `código ${codigoEscaneado}`;
+              
+              showOutOfStockAlert(codigoEscaneado, productName).then((result) => {
+                if (result.isConfirmed) {
+                  // Navigate to add product page with the barcode pre-filled for stock addition
+                  navigate(`/addproduct?barcode=${codigoEscaneado}`);
+                }
+              });
+            } else {
+              // Si no podemos obtener el nombre, usar el código de barras
+              showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
+                if (result.isConfirmed) {
+                  navigate(`/addproduct?barcode=${codigoEscaneado}`);
+                }
+              });
+            }
+          } catch (fetchError) {
+            // Si hay error al obtener el producto, usar mensaje genérico
+            showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
+              if (result.isConfirmed) {
+                navigate(`/addproduct?barcode=${codigoEscaneado}`);
+              }
+            });
+          }
         } else {
           // Otros errores
           setError("Error al escanear el producto: " + (errorMessage || "Inténtalo de nuevo."));
@@ -166,25 +208,34 @@ const ProductScanner = () => {
     }
   }, [cantidad, productoActual, stockPorProducto]);
 
-  const agregarAlCarrito = (producto) => {
+  const agregarAlCarrito = (producto, cantidadPersonalizada = null) => {
     if (!producto) {
       showWarningAlert("Error", "Debes escanear un producto primero");
       return;
     }
 
-    const stockDisponible = stockPorProducto[producto.codigoBarras] || producto.stock;
+    // Verificar si el producto ya existe en el carrito
+    const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
     
-    if (stockDisponible < cantidad) {
+    // Calcular stock disponible considerando lo que ya está en el carrito
+    // Si no existe en stockPorProducto, usar el stock del producto escaneado
+    const stockDisponible = stockPorProducto[producto.codigoBarras] !== undefined 
+      ? stockPorProducto[producto.codigoBarras] 
+      : producto.stock || 0;
+    
+    // Usar la cantidad personalizada si se proporciona, sino usar la cantidad del estado
+    const cantidadAUsar = cantidadPersonalizada || cantidad;
+    
+    if (stockDisponible < cantidadAUsar) {
       showErrorAlert("Stock insuficiente", "No hay suficiente stock disponible para esta cantidad.");
       return;
     }
-    const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
 
     let nuevoCarrito;
     if (productoEnCarrito) {
       nuevoCarrito = carrito.map((p) =>
         p.codigoBarras === producto.codigoBarras
-          ? { ...p, cantidad: p.cantidad + cantidad }
+          ? { ...p, cantidad: p.cantidad + cantidadAUsar }
           : p
       );
     } else {
@@ -192,16 +243,20 @@ const ProductScanner = () => {
         ...carrito,
         {
           ...producto,
-          cantidad,
+          cantidad: cantidadAUsar,
           precioVenta: producto.precioVenta,
           precioCompra: producto.precioCompra
         }
       ];
     }
+    
     setCarrito(nuevoCarrito);
+    
+    // Actualizar el stock disponible restando la cantidad agregada
+    // Si es la primera vez que agregamos este producto, inicializar con su stock real
     setStockPorProducto(prevStock => ({
       ...prevStock,
-      [producto.codigoBarras]: (prevStock[producto.codigoBarras] || producto.stock) - cantidad
+      [producto.codigoBarras]: stockDisponible - cantidadAUsar
     }));
 
     setCodigoEscaneado("");

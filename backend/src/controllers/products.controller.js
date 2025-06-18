@@ -305,13 +305,23 @@ export const scanProducts = async (req, res) => {
 
     if (!codigoBarras) return handleErrorClient(res, 400, "Código de barras es requerido");
 
+    // Primero buscar si el producto existe en la base de datos (independientemente del stock)
+    const productExists = await Product.findOne({ codigoBarras });
+    
+    if (!productExists) {
+      return handleErrorClient(res, 404, "Producto no encontrado");
+    }
+
+    // Si el producto existe pero no tiene stock, devolver un error específico
+    if (productExists.Stock <= 0) {
+      return handleErrorClient(res, 400, "Este producto se ha quedado sin stock");
+    }
+
     // Buscar el producto con stock disponible y fecha de vencimiento más próxima
     const product = await Product.findOne({
       codigoBarras,
       Stock: { $gt: 0 } // Filtra solo productos con stock disponible
     }).sort({ fechaVencimiento: 1 }); // Ordena para obtener el más próximo a vencer
-
-    if (!product) return handleErrorClient(res, 404, "Producto no encontrado o sin stock disponible");
 
     // Verificar si el producto está vencido pero permitir continuar
     const today = new Date();
