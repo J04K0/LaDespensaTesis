@@ -73,8 +73,8 @@ const Home = () => {
   const { userRole: role } = useRole();
 
   // 🔍 DEBUGGING: Agregar logs para verificar el rol
-  console.log('🔍 Rol detectado en Home:', role);
-  console.log('🔍 ¿Es empleado?:', role === 'empleado');
+  // console.log('🔍 Rol detectado en Home:', role);
+  // console.log('🔍 ¿Es empleado?:', role === 'empleado');
 
   useEffect(() => {
     const fetchDeudores = async () => {

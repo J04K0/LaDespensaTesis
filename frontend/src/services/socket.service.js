@@ -13,11 +13,11 @@ export const initializeSocket = () => {
   socket = io(baseUrl);
   
   socket.on('connect', () => {
-    console.log('Conectado al servidor de alertas');
+    // console.log('Conectado al servidor de alertas');
   });
   
   socket.on('disconnect', () => {
-    console.log('Desconectado del servidor de alertas');
+    // console.log('Desconectado del servidor de alertas');
   });
   
   socket.on('error', (error) => {

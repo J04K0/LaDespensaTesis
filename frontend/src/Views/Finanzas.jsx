@@ -7,27 +7,8 @@ import { ExportService } from '../services/export.service.js';
 import "../styles/FinanzasStyles.css";
 import FinanzasSkeleton from '../components/Skeleton/FinanzasSkeleton';
 import { 
-  faInfoCircle, 
-  faFilePdf, 
-  faChartBar, 
-  faCoins, 
-  faMoneyBillWave, 
-  faShoppingCart,
-  faChartLine,
-  faWarehouse,
-  faPercentage,
-  faArrowUp,
-  faArrowDown,
-  faCalendarAlt,
-  faBoxOpen,
-  faTags,
-  faCashRegister,
-  faPercent,
-  faChartPie,
-  faChevronLeft,
-  faChevronRight,
-  faTable,
-  faQuestionCircle
+  faFilePdf, faChartBar, faCoins, faMoneyBillWave, faShoppingCart, faChartLine, faWarehouse,
+  faPercentage, faCalendarAlt, faBoxOpen, faPercent, faChartPie, faTable, faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -40,8 +21,6 @@ const Finanzas = () => {
     inversionMercaderia: 0,
     rentabilidadPromedio: 0,
     valorPromedioTransaccion: 0,
-    tendenciaIngresos: 10.5, // Ejemplo: +10.5%
-    tendenciaCostos: -2.3,   // Ejemplo: -2.3%
     topCategorias: [],
     datosDisponibles: false,
     ingresosPorPeriodo: {},

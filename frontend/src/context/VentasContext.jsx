@@ -31,19 +31,19 @@ export const VentasProvider = ({ children }) => {
         const token = cookies.get('jwt-auth');
         
         if (!user || !token) {
-          console.log('⏳ Usuario no autenticado, esperando...');
+          // console.log('⏳ Usuario no autenticado, esperando...');
           setLoading(false);
           return;
         }
 
-        console.log('🔄 Cargando ventas globales una sola vez...');
+        // console.log('🔄 Cargando ventas globales una sola vez...');
         setLoading(true);
         setError(null);
         
         const response = await obtenerVentasPorTicket();
         const ventas = response.data || [];
         
-        console.log(`✅ Ventas cargadas: ${ventas.length} registros`);
+        // console.log(`✅ Ventas cargadas: ${ventas.length} registros`);
         setVentasGlobales(ventas);
         setLastFetch(new Date());
         setRetryCount(0);
