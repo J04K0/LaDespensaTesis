@@ -376,10 +376,7 @@ const Finanzas = () => {
   // 🔧 FIX: Simplificar useEffect para evitar bucles infinitos
   useEffect(() => {
     if (ventasGlobales && datosFinancierosOptimized.datosDisponibles) {
-      setDatosFinancieros(prevState => ({
-        ...prevState,
-        ...datosFinancierosOptimized
-      }));
+      setDatosFinancieros(datosFinancierosOptimized);
       setLoading(false);
     } else if (ventasLoading) {
       setLoading(true);
@@ -391,43 +388,10 @@ const Finanzas = () => {
     obtenerDatosInventario();
   }, []); // Solo al montar el componente
 
-  // Efecto adicional para garantizar la actualización cuando cambia la sección activa
+  // Resetear la página actual cuando cambia el rango de tiempo
   useEffect(() => {
-    // No es necesario volver a cargar los datos si ya se cargaron antes
-    if (!loading && datosFinancieros.datosDisponibles) {
-      console.log(`Cambiando a sección: ${seccionActiva} con período: ${timeRange}`);
-    }
-  }, [seccionActiva, loading]);
-
-  const obtenerDatosFinancieros = async () => {
-    try {
-      setLoading(true);
-      
-      // 🚀 OPTIMIZACIÓN: Usar filtros en lugar de cargar todas las ventas
-      const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
-      
-      const response = await obtenerVentas({
-        fechaInicio: fechaInicio.toISOString().split('T')[0],
-        fechaFin: fechaFin.toISOString().split('T')[0],
-        limit: 1000 // Límite más alto para datos financieros
-      });
-      
-      const ventas = response.data?.ventas || [];
-      
-      if (!ventas || ventas.length === 0) {
-        console.warn("⚠️ No hay datos de ventas disponibles para el período seleccionado.");
-        setLoading(false);
-        return;
-      }
-
-      procesarDatosFinancieros(ventas);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error al obtener datos financieros:", error);
-      setError("Error al obtener los datos financieros.");
-      setLoading(false);
-    }
-  };
+    setPaginaActual(1);
+  }, [timeRange]);
 
   const obtenerDatosInventario = async () => {
     try {
@@ -443,258 +407,6 @@ const Finanzas = () => {
     } catch (error) {
       console.error("Error al obtener datos de inventario:", error);
     }
-  };
-
-  const procesarDatosFinancieros = (ventas) => {
-    // Obtener rango de fechas basado en los filtros seleccionados
-    const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
-    
-    // Filtrar ventas por rango de tiempo
-    const ventasFiltradas = ventas.filter(venta => {
-      const fechaVenta = new Date(venta.fecha);
-      return fechaVenta >= fechaInicio && fechaVenta <= fechaFin;
-    });
-    
-    // Calcular métricas generales
-    let ingresosTotales = 0;
-    let costosTotales = 0;
-    const ingresosPorCategoria = {};
-    const ingresosPorDia = {};
-    const ingresosPorMes = {};
-    const productoVendido = {};
-    const ventasPorCategoria = {};
-    
-    // Para calcular márgenes reales por categoría
-    const costosPorCategoria = {};
-    const gananciasPorCategoria = {};
-    
-    // Inicializar días en ingresosPorDia para el período seleccionado
-    const fechaActual = new Date(fechaInicio);
-    while (fechaActual <= fechaFin) {
-      const fechaStr = fechaActual.toISOString().split('T')[0];
-      ingresosPorDia[fechaStr] = 0;
-      fechaActual.setDate(fechaActual.getDate() + 1);
-    }
-    
-    // Inicializar meses en ingresosPorMes (año actual)
-    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    meses.forEach(mes => {
-      ingresosPorMes[mes] = 0;
-    });
-    
-    // Inicializar ventas por día de la semana con valores cero
-    const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    const ventasPorDiaSemana = {};
-    diasSemana.forEach(dia => {
-      ventasPorDiaSemana[dia] = 0;
-    });
-    
-    // Mapeo correcto de los días de JavaScript a nuestro array
-    // getDay() devuelve: 0=Domingo, 1=Lunes, ..., 6=Sábado
-    const mapeoJSaDias = {
-      0: 'Dom', // Domingo (0 en JS)
-      1: 'Lun', // Lunes (1 en JS)
-      2: 'Mar', // Martes (2 en JS)
-      3: 'Mié', // Miércoles (3 en JS)
-      4: 'Jue', // Jueves (4 en JS)
-      5: 'Vie', // Viernes (5 en JS)
-      6: 'Sáb'  // Sábado (6 en JS)
-    };
-    
-    // 🔧 FIX: Procesar las ventas con verificación de venta.ventas
-    ventasFiltradas.forEach(venta => {
-      const fecha = new Date(venta.fecha);
-      const fechaStr = fecha.toISOString().split('T')[0];
-      const mes = meses[fecha.getMonth()];
-      const diaSemana = fecha.getDay();
-      const diaSemanaKey = mapeoJSaDias[diaSemana];
-      
-      let ingresoVenta = 0;
-      let costoVenta = 0;
-      
-      // 🔧 FIX: Verificar que venta.ventas existe y es un array antes de usar forEach
-      if (venta.ventas && Array.isArray(venta.ventas)) {
-        venta.ventas.forEach(producto => {
-          ingresoVenta += producto.precioVenta * producto.cantidad;
-          costoVenta += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
-          
-          // Agregar a categoría
-          const categoria = producto.categoria || "Sin categoría";
-          if (!ingresosPorCategoria[categoria]) {
-            ingresosPorCategoria[categoria] = 0;
-            ventasPorCategoria[categoria] = 0;
-            costosPorCategoria[categoria] = 0;
-          }
-          ingresosPorCategoria[categoria] += producto.precioVenta * producto.cantidad;
-          ventasPorCategoria[categoria] += producto.cantidad;
-          costosPorCategoria[categoria] += (producto.precioCompra || (producto.precioVenta * 0.7)) * producto.cantidad;
-
-          // Tracking de productos más vendidos
-          const productoKey = producto.nombre;
-          if (!productoVendido[productoKey]) {
-            productoVendido[productoKey] = {
-              nombre: producto.nombre,
-              ventas: 0,
-              ingreso: 0
-            };
-          }
-          productoVendido[productoKey].ventas += producto.cantidad;
-          productoVendido[productoKey].ingreso += producto.precioVenta * producto.cantidad;
-        });
-      } else {
-        // Si es una venta individual (formato anterior) - también verificar propiedades
-        if (venta.precioVenta && venta.cantidad) {
-          ingresoVenta += venta.precioVenta * venta.cantidad;
-          costoVenta += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
-          
-          const categoria = venta.categoria || "Sin categoría";
-          if (!ingresosPorCategoria[categoria]) {
-            ingresosPorCategoria[categoria] = 0;
-            ventasPorCategoria[categoria] = 0;
-            costosPorCategoria[categoria] = 0;
-          }
-          ingresosPorCategoria[categoria] += venta.precioVenta * venta.cantidad;
-          ventasPorCategoria[categoria] += venta.cantidad;
-          costosPorCategoria[categoria] += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
-
-          const productoKey = venta.nombre;
-          if (!productoVendido[productoKey]) {
-            productoVendido[productoKey] = {
-              nombre: venta.nombre,
-              ventas: 0,
-              ingreso: 0
-            };
-          }
-          productoVendido[productoKey].ventas += venta.cantidad;
-          productoVendido[productoKey].ingreso += venta.precioVenta * venta.cantidad;
-        }
-      }
-      
-      ingresosTotales += ingresoVenta;
-      costosTotales += costoVenta;
-      
-      // Actualizar ingresos por día si es del período actual
-      if (fechaStr in ingresosPorDia) {
-        ingresosPorDia[fechaStr] += ingresoVenta;
-      }
-      
-      // Actualizar ingresos por día de la semana
-      if (diaSemanaKey) {
-        ventasPorDiaSemana[diaSemanaKey] += ingresoVenta;
-      }
-      
-      // Actualizar ingresos por mes del año actual
-      if (fecha.getFullYear() === new Date().getFullYear()) {
-        ingresosPorMes[mes] += ingresoVenta;
-      }
-    });
-    
-    // Calcular ganancias y rentabilidad
-    const gananciasTotales = ingresosTotales - costosTotales;
-    const rentabilidadPromedio = ingresosTotales > 0 ? (gananciasTotales / ingresosTotales) * 100 : 0;
-    
-    // Calcular ganancias por categoría
-    Object.keys(ingresosPorCategoria).forEach(categoria => {
-      gananciasPorCategoria[categoria] = ingresosPorCategoria[categoria] - costosPorCategoria[categoria];
-    });
-    
-    // Top categorías por ingresos
-    const categoriasOrdenadas = Object.keys(ingresosPorCategoria)
-      .map(categoria => ({ 
-        nombre: categoria, 
-        ingresos: ingresosPorCategoria[categoria],
-        porcentaje: (ingresosPorCategoria[categoria] / ingresosTotales) * 100
-      }))
-      .sort((a, b) => b.ingresos - a.ingresos)
-      .slice(0, 5); // Top 5
-    
-    // Categorías por volumen de ventas
-    const categoriasPorVolumen = Object.keys(ventasPorCategoria)
-      .map(categoria => {
-        const totalVentas = Object.values(ventasPorCategoria).reduce((a, b) => a + b, 0);
-        return {
-          nombre: categoria,
-          ventas: ventasPorCategoria[categoria],
-          porcentaje: totalVentas > 0 ? (ventasPorCategoria[categoria] / totalVentas) * 100 : 0
-        };
-      })
-      .sort((a, b) => b.ventas - a.ventas)
-      .slice(0, 5); // Top 5
-    
-    // Productos más vendidos
-    const productosMasVendidos = Object.values(productoVendido)
-      .sort((a, b) => b.ventas - a.ventas)
-      .slice(0, 5); // Top 5
-    
-    // Valor promedio por transacción
-    const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
-    
-    // Calcular márgenes por categoría reales
-    const margenPorCategoria = Object.keys(ingresosPorCategoria)
-      .filter(categoria => ingresosPorCategoria[categoria] > 0 && costosPorCategoria[categoria] > 0)
-      .map(categoria => {
-        const ingresos = ingresosPorCategoria[categoria];
-        const costos = costosPorCategoria[categoria];
-        const ganancias = ingresos - costos;
-        const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
-        
-        let rendimiento = "bajo";
-        if (margen >= 30) {
-          rendimiento = "alto";
-        } else if (margen >= 20) {
-          rendimiento = "medio";
-        }
-        
-        return {
-          categoria,
-          margen: parseFloat(margen.toFixed(2)),
-          rendimiento
-        };
-      })
-      .sort((a, b) => b.margen - a.margen); // Ordenar de mayor a menor margen
-    
-    // Rentabilidad temporal (para el periodo actual)
-    const rentabilidadTemporal = [];
-    // Tomamos hasta 7 días para mostrar la rentabilidad temporal
-    const dias = Object.keys(ingresosPorDia)
-      .sort((a, b) => new Date(a) - new Date(b))
-      .slice(0, 7);
-    
-    dias.forEach(fecha => {
-      const ingresos = ingresosPorDia[fecha] || 0;
-      // Estimamos los costos como un porcentaje del ingreso para este día
-      const costos = ingresos * (1 - (rentabilidadPromedio / 100));
-      const ganancias = ingresos - costos;
-      const margen = ingresos > 0 ? (ganancias / ingresos) * 100 : 0;
-      
-      rentabilidadTemporal.push({
-        fecha: new Date(fecha),
-        ingresos,
-        costos,
-        ganancias,
-        margen
-      });
-    });
-    
-    // Actualizar estado con todos los datos procesados
-    setDatosFinancieros(prevState => ({
-      ...prevState,
-      ingresosTotales,
-      transacciones: ventasFiltradas.length,
-      costosTotales,
-      gananciasTotales,
-      rentabilidadPromedio,
-      valorPromedioTransaccion,
-      topCategorias: categoriasOrdenadas,
-      datosDisponibles: true,
-      ingresosPorPeriodo: ingresosPorDia,
-      ingresosPorMes,
-      productosMasVendidos,
-      categoriasPorVolumen,
-      margenPorCategoria,
-      ventasPorDiaSemana,
-      rentabilidadTemporal
-    }));
   };
 
   const procesarDatosInventario = (productos) => {
@@ -729,30 +441,18 @@ const Finanzas = () => {
 
   const aplicarFiltroPersonalizado = () => {
     setPeriodoPersonalizado(true);
-    obtenerDatosFinancieros();
-    obtenerDatosInventario();
+    // Los datos se recalcularán automáticamente por el useMemo cuando cambien las fechas
   };
 
   const handleTimeRangeChange = (e) => {
     const newTimeRange = e.target.value;
     setTimeRange(newTimeRange);
-    
-    // Forzar una actualización inmediata de los datos cuando cambia el período
-    // Esto garantiza que las secciones de productos y rentabilidad se actualicen correctamente
-    obtenerDatosFinancieros();
-    obtenerDatosInventario();
-    
-    console.log(`Cambiando período a: ${newTimeRange}, actualizando datos...`);
+    setPeriodoPersonalizado(false); // Reset periodo personalizado al cambiar tipo
+    console.log(`Cambiando período a: ${newTimeRange}`);
   };
 
   const handleCambioSeccion = (seccion) => {
     setSeccionActiva(seccion);
-    
-    // Cuando se cambia a las secciones de productos o rentabilidad,
-    // nos aseguramos de que estén usando los datos actualizados
-    if ((seccion === 'productos' || seccion === 'rentabilidad') && datosFinancieros.datosDisponibles) {
-      console.log(`Actualizando datos para la sección ${seccion} con período ${timeRange}`);
-    }
   };
 
   const descargarReporteFinanciero = () => {
@@ -764,7 +464,10 @@ const Finanzas = () => {
 
   // Formatear valores monetarios
   const formatMoney = (value) => {
-    return '$' + value.toLocaleString('es-ES', {
+    // Verificar si el valor es undefined, null o NaN
+    const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    
+    return '$' + numericValue.toLocaleString('es-ES', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     });
@@ -772,7 +475,10 @@ const Finanzas = () => {
 
   // Formatear valores porcentuales
   const formatPercent = (value) => {
-    return value.toFixed(1) + '%';
+    // Verificar si el valor es undefined, null o NaN
+    const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    
+    return numericValue.toFixed(1) + '%';
   };
 
   // Calcular tendencias (simuladas)
@@ -913,11 +619,6 @@ const Finanzas = () => {
     cargarDatosAnuales();
   }, []);
   
-  // Resetear la página actual cuando cambia el rango de tiempo
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [timeRange]);
-
   // Mostrar/ocultar tooltips
   const showTooltip = (e, tooltipText) => {
     // Obtener la posición del botón en relación con la ventana
