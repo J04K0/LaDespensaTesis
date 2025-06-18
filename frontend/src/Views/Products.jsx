@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
+import ProductTableView from '../components/ProductTableView';
 import ProductInfoModal from '../components/ProductInfoModal';
 import ProductEditModal from '../components/ProductEditModal';
 import PriceHistoryModal from '../components/PriceHistoryModal';
@@ -9,10 +10,11 @@ import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
 import { useVentas } from '../context/VentasContext';
+import { useRole } from '../hooks/useRole';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ExportService } from '../services/export.service.js';
@@ -65,10 +67,18 @@ const Products = () => {
   const [showPriceHistoryTab, setShowPriceHistoryTab] = useState(false);
 
   const [showFilters, setShowFilters] = useState(true);
+  
+  // Estado para controlar la vista (tarjetas o tabla)
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' o 'table'
 
-  const productsPerPage = 10;
+  // Productos por página dinámico según la vista
+  const productsPerPage = viewMode === 'table' ? 20 : 10;
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Obtener el rol del usuario para controlar permisos
+  const { userRole } = useRole();
 
   // Memoizar cálculos costosos
   const sortedProducts = useMemo(() => {
@@ -171,7 +181,14 @@ const Products = () => {
 
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Asegurar que siempre haga scroll al inicio
+    setTimeout(() => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0,
+        behavior: 'smooth' 
+      });
+    }, 100);
   }, []);
 
   const handleClearFilters = useCallback(() => {
@@ -745,6 +762,24 @@ const Products = () => {
                 </select>
               </div>
               
+              {/* Botones de cambio de vista */}
+              <div className="products-view-toggle">
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`view-toggle-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                  title="Vista de tarjetas"
+                >
+                  <FontAwesomeIcon icon={faThLarge} />
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+                  title="Vista de tabla"
+                >
+                  <FontAwesomeIcon icon={faList} />
+                </button>
+              </div>
+              
               <button onClick={handleClearFilters} className="products-clear-filters-button">
                 <FontAwesomeIcon icon={faFilter} /> Limpiar Filtros
               </button>
@@ -756,18 +791,39 @@ const Products = () => {
               <>
                 {displayedProducts.length > 0 ? (
                   <div className="product-list">
-                    {displayedProducts.map((product) => (
-                      <ProductCard
-                        key={product._id}
-                        image={product.image}
-                        name={product.Nombre}
-                        marca={product.Marca}
-                        stock={product.Stock}
-                        venta={product.PrecioVenta}
-                        fechaVencimiento={product.fechaVencimiento}
-                        categoria={product.Categoria}
-                        codigoBarras={product.codigoBarras}
-                        onDelete={() => {
+                    {viewMode === 'cards' ? (
+                      displayedProducts.map((product) => (
+                        <ProductCard
+                          key={product._id}
+                          image={product.image}
+                          name={product.Nombre}
+                          marca={product.Marca}
+                          stock={product.Stock}
+                          venta={product.PrecioVenta}
+                          fechaVencimiento={product.fechaVencimiento}
+                          categoria={product.Categoria}
+                          codigoBarras={product.codigoBarras}
+                          onDelete={() => {
+                            showConfirmationAlert(
+                              '¿Estás seguro?',
+                              '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
+                              'Sí, eliminar',
+                              'Cancelar'
+                            ).then((result) => {
+                              if (result.isConfirmed) {
+                                handleDelete(product._id);
+                              }
+                            });
+                          }}
+                          onEdit={() => handleEdit(product._id)}
+                          onInfo={() => handleProductInfo(product)}
+                          productId={product._id}
+                        />
+                      ))
+                    ) : (
+                      <ProductTableView
+                        products={displayedProducts}
+                        onDelete={(productId) => {
                           showConfirmationAlert(
                             '¿Estás seguro?',
                             '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
@@ -775,15 +831,16 @@ const Products = () => {
                             'Cancelar'
                           ).then((result) => {
                             if (result.isConfirmed) {
-                              handleDelete(product._id);
+                              handleDelete(productId);
                             }
                           });
                         }}
-                        onEdit={() => handleEdit(product._id)}
-                        onInfo={() => handleProductInfo(product)}
-                        productId={product._id}
+                        onEdit={handleEdit}
+                        onInfo={handleProductInfo}
+                        getStockColorClass={getStockColorClass}
+                        userRole={userRole}
                       />
-                    ))}
+                    )}
                   </div>
                 ) : (
                   <div className="no-results">No hay productos disponibles con los filtros seleccionados.</div>

@@ -264,6 +264,10 @@ const ProductScanner = () => {
     setError(null);
     setMontoEntregado(""); 
     setErrorMonto("");
+    // Resetear estados relacionados con deudores
+    setIsDeudor(false);
+    setSelectedDeudorId("");
+    setMetodoPago("efectivo"); // Resetear método de pago a efectivo por defecto
   };
 
   const finalizarVenta = async () => {

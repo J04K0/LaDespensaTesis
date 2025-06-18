@@ -3,7 +3,6 @@ import '../styles/NotificationsStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { getSocket } from '../services/socket.service';
-import { playNotificationSound } from '../services/notification.service';
 
 const NotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
@@ -42,8 +41,7 @@ const NotificationCenter = () => {
       });
       setUnreadCount(prev => prev + 1);
       
-      // Reproducir sonido de notificación
-      playNotificationSound();
+      // Sonido de notificación eliminado - solo notificación visual
     });
     
     // Cargar notificaciones guardadas en localStorage

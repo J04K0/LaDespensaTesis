@@ -1,0 +1,349 @@
+/* ProductTableView Styles */
+.product-table-container {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.product-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.product-table thead {
+  background: linear-gradient(135deg, #006EDF, #4a90e2);
+  color: white;
+}
+
+.product-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.product-table-row {
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.product-table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.product-table-row:last-child {
+  border-bottom: none;
+}
+
+.product-table td {
+  padding: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+/* Imagen */
+.product-table-image-cell {
+  width: 60px;
+  text-align: center;
+}
+
+.product-table-image {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.product-table-no-image {
+  width: 50px;
+  height: 50px;
+  background-color: #f8f9fa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* Nombre del producto */
+.product-table-name {
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.product-name-text {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.product-barcode {
+  display: block;
+  font-size: 11px;
+  color: #6c757d;
+  font-family: 'Courier New', monospace;
+}
+
+/* Marca */
+.product-table-brand {
+  color: #495057;
+  font-weight: 500;
+  min-width: 120px;
+}
+
+/* Categoría */
+.product-table-category {
+  min-width: 130px;
+}
+
+.category-badge {
+  display: inline-block;
+  background: rgba(0, 110, 223, 0.1);
+  color: #006EDF;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid rgba(0, 110, 223, 0.2);
+}
+
+/* Stock */
+.product-table-stock {
+  text-align: center;
+  width: 80px;
+}
+
+.stock-value {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.stock-value.modern-stock-value-green {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.stock-value.modern-stock-value-yellow {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.stock-value.modern-stock-value-red {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Precio */
+.product-table-price {
+  font-weight: 700;
+  color: #006EDF;
+  text-align: right;
+  min-width: 100px;
+}
+
+/* Vencimiento */
+.product-table-expiry {
+  min-width: 120px;
+}
+
+.expiry-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.expiry-date {
+  font-size: 12px;
+  color: #495057;
+}
+
+.expiry-date.expired {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.expiry-date.expiring-soon {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.expiry-warning {
+  font-size: 12px;
+}
+
+.expiry-warning.expired {
+  color: #dc3545;
+}
+
+.expiry-warning.expiring {
+  color: #ffc107;
+}
+
+/* Acciones */
+.product-table-actions {
+  width: 120px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.info-btn {
+  background: rgba(23, 162, 184, 0.1);
+  color: #17a2b8;
+  border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+.info-btn:hover {
+  background: #17a2b8;
+  color: white;
+}
+
+.edit-btn {
+  background: rgba(0, 110, 223, 0.1);
+  color: #006EDF;
+  border: 1px solid rgba(0, 110, 223, 0.3);
+}
+
+.edit-btn:hover {
+  background: #006EDF;
+  color: white;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.delete-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Responsividad */
+@media (max-width: 1200px) {
+  .product-table {
+    font-size: 13px;
+  }
+  
+  .product-table th,
+  .product-table td {
+    padding: 10px 8px;
+  }
+  
+  .product-table-name {
+    min-width: 160px;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-table {
+    font-size: 12px;
+  }
+  
+  .product-table th,
+  .product-table td {
+    padding: 8px 6px;
+  }
+  
+  .product-table-image {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .product-table-no-image {
+    width: 40px;
+    height: 40px;
+    font-size: 9px;
+  }
+  
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-table-row {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Estados de carga */
+.product-table-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.product-table-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.product-table-empty::before {
+  content: "📦";
+  display: block;
+  font-size: 48px;
+  margin-bottom: 16px;
+}

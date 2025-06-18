@@ -1540,3 +1540,44 @@
   background: #c82333;
   /* Eliminamos transform costoso */
 }
+
+/* Botones de cambio de vista */
+.products-view-toggle {
+  display: flex;
+  gap: 2px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 2px;
+  border: 1px solid #dee2e6;
+}
+
+.view-toggle-btn {
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
+.view-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.view-toggle-btn.active {
+  background-color: #006EDF;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.3);
+}
+
+.view-toggle-btn.active:hover {
+  background-color: #0056b3;
+}
