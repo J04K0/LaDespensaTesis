@@ -14,6 +14,8 @@ import {
     getProductByBarcode,
     getProductForCreation,
     getProductPriceHistory,
+    forceCheckExpirations,
+    clearExpirationCache
 } from "../controllers/products.controller.js";
 
 import { 
@@ -45,5 +47,9 @@ router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, aut
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
+
+// 🔧 NUEVAS RUTAS para testing manual de vencimientos
+router.post('/force-check-expirations', authorizeRoles([isAdmin, isJefe]), forceCheckExpirations);
+router.post('/clear-expiration-cache', authorizeRoles([isAdmin, isJefe]), clearExpirationCache);
 
 export default router;

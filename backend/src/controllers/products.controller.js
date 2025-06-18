@@ -237,21 +237,14 @@ export const verificarStock = async (req, res) => {
       return producto.Stock <= stockMinimo;
     });
 
+    // ❌ ELIMINAR: Ya no enviar alertas automáticas desde aquí
+    // Esta función ahora solo devuelve los datos sin enviar alertas
+    
     if (productosFiltrados.length > 0) {
-      try {
-        // Usar el nuevo servicio de email en lugar de WhatsApp
-        await sendLowStockAlert(productosFiltrados);
-        // Emitir alerta por WebSocket
-        emitStockBajoAlert(productosFiltrados);
-      } catch (emailError) {
-        console.error("Error al enviar alerta por correo electrónico:", emailError);
-        // Continuar con la ejecución aunque falle el envío de correo
-      }
-      
       return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
     }
 
-    handleErrorClient(res, 404, 'No hay productos con poco stock');
+    return handleErrorClient(res, 404, 'No hay productos con poco stock');
   } catch (error) {
     handleErrorServer(res, 500, 'Error al verificar el stock', error.message);
   }
@@ -274,15 +267,8 @@ export const getProductsExpiringSoon = async (req, res) => {
       return handleErrorClient(res, 404, 'No hay productos próximos a caducar');
     }
 
-    if (productsExpiringSoon.length > 0) {
-      try {
-        await sendExpirationAlert(productsExpiringSoon, 'porVencer');
-        // Emitir alerta por WebSocket
-        emitProductoPorVencerAlert(productsExpiringSoon);
-      } catch (emailError) {
-        console.error("Error al enviar alerta de productos por vencer:", emailError);
-      }
-    }
+    // ❌ ELIMINAR: Las alertas ahora las maneja el cron job diario
+    // Esta función solo devuelve datos para consultas manuales
 
     handleSuccess(res, 200, 'Productos próximos a caducar', productsExpiringSoon);
   } catch (error) {
@@ -304,14 +290,8 @@ export const getExpiredProducts = async (req, res) => {
       return handleErrorClient(res, 404, 'No hay productos vencidos');
     }
 
-    // Enviar alerta por correo de productos vencidos
-    try {
-      await sendExpirationAlert(expiredProducts, 'vencidos');
-      // Emitir alerta por WebSocket
-      emitProductoVencidoAlert(expiredProducts);
-    } catch (emailError) {
-      console.error("Error al enviar alerta de productos vencidos:", emailError);
-    }
+    // ❌ ELIMINAR: Las alertas ahora las maneja el cron job diario
+    // Esta función solo devuelve datos para consultas manuales
 
     handleSuccess(res, 200, 'Productos vencidos', expiredProducts);
   } catch (error) {
@@ -413,7 +393,7 @@ export const actualizarStockVenta = async (req, res) => {
 
         await producto.save(); // Guardar cambios en la base de datos
         
-        // Si el stock anterior estaba bien pero ahora es bajo, añadir a productos afectados
+        // ✅ NUEVO: Solo revisar stock DESPUÉS de la venta
         const stockMinimo = stockMinimoPorCategoria[producto.Categoria];
         if (stockMinimo && stockAnterior > stockMinimo && producto.Stock <= stockMinimo && producto.Stock > 0) {
           productosAfectadosEnVenta.push(producto);
@@ -430,76 +410,37 @@ export const actualizarStockVenta = async (req, res) => {
       }
     }
 
-    // Buscar TODOS los productos, incluyendo los que tienen stock = 0
-    const todosProductos = await Product.find();
-    
-    // Filtrar los que tienen stock bajo pero no están agotados
-    const todosProductosBajoStock = todosProductos.filter(producto => {
-      const stockMinimo = stockMinimoPorCategoria[producto.Categoria];
-      if (!stockMinimo) return false;
-      return producto.Stock <= stockMinimo && producto.Stock > 0;
-    });
-
-    // Productos que YA estaban agotados (stock = 0) ANTES de esta venta
-    const productosYaAgotados = todosProductos.filter(producto => {
-      return producto.Stock === 0 && 
-        !productosAgotados.some(p => p._id.toString() === producto._id.toString());
-    });
-
-    // Resaltar los productos recién afectados y los agotados
-    const productosEmailInfo = [
-      ...todosProductosBajoStock.map(producto => ({
-        ...producto.toObject(),
-        esRecienAfectado: productosAfectadosEnVenta.some(p => p._id.toString() === producto._id.toString()),
-        esAgotado: false,
-        esYaAgotado: false
-      })),
-      ...productosAgotados.map(producto => ({
-        ...producto.toObject(),
-        esRecienAfectado: false,
-        esAgotado: true,
-        esYaAgotado: false
-      })),
-      ...productosYaAgotados.map(producto => ({
-        ...producto.toObject(),
-        esRecienAfectado: false,
-        esAgotado: false,
-        esYaAgotado: true
-      }))
-    ];
-
-    // Buscar productos vencidos
-    const productosVencidos = await Product.find({
-      fechaVencimiento: { $lt: today }
-    });
-    
-    // Cuando se detecten productos con stock bajo:
-    if (productosEmailInfo.length > 0 || productosVencidos.length > 0) {
+    // ✅ NUEVO: Solo emitir alertas de stock DESPUÉS de ventas (tiempo real)
+    if (productosAfectadosEnVenta.length > 0 || productosAgotados.length > 0) {
+      console.log(`📢 Emitiendo alertas de stock después de venta:`);
+      console.log(`- Productos con stock bajo: ${productosAfectadosEnVenta.length}`);
+      console.log(`- Productos agotados: ${productosAgotados.length}`);
+      
       try {
-        // Enviar correo automático directo (como antes)
+        // Combinar todos los productos afectados para el email
+        const todosLosProductosAfectados = [...productosAfectadosEnVenta, ...productosAgotados];
+        
+        // Enviar email solo una vez con toda la información
         await sendLowStockAlert(
-          productosEmailInfo,
+          todosLosProductosAfectados.map(producto => ({
+            ...producto.toObject(),
+            esRecienAfectado: productosAfectadosEnVenta.some(p => p._id.toString() === producto._id.toString()),
+            esAgotado: productosAgotados.some(p => p._id.toString() === producto._id.toString())
+          })),
           productosAfectadosEnVenta.length > 0,
-          productosAgotados.length > 0,
-          productosYaAgotados.length > 0,
-          productosVencidos
+          productosAgotados.length > 0
         );
 
-        // Emitir alertas por WebSocket si es necesario
+        // Emitir alertas WebSocket individuales
         if (productosAfectadosEnVenta.length > 0) {
           emitStockBajoAlert(productosAfectadosEnVenta);
         }
         if (productosAgotados.length > 0) {
           emitStockBajoAlert(productosAgotados);
         }
-        if (productosYaAgotados.length > 0) {
-          emitStockBajoAlert(productosYaAgotados);
-        }
-        if (productosVencidos.length > 0) {
-          emitProductoVencidoAlert(productosVencidos);
-        }
-      } catch (emailError) {
-        console.error("Error al enviar alerta:", emailError);
+      } catch (alertError) {
+        console.error("❌ Error al enviar alertas de stock:", alertError);
+        // No fallar la venta por errores de alertas
       }
     }
 
@@ -638,6 +579,34 @@ export const getProductPriceHistory = async (req, res) => {
     handleSuccess(res, 200, 'Historial de precios encontrado', respuesta);
   } catch (err) {
     handleErrorServer(res, 500, 'Error al obtener el historial de precios', err.message);
+  }
+};
+
+// 🔧 NUEVO: Endpoint para revisar manualmente vencimientos (solo para testing)
+export const forceCheckExpirations = async (req, res) => {
+  try {
+    const { forceExpirationCheck } = await import('../services/alert.service.js');
+    
+    // Ejecutar revisión manual
+    await forceExpirationCheck();
+    
+    handleSuccess(res, 200, 'Revisión de vencimientos ejecutada manualmente', null);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al ejecutar revisión de vencimientos', err.message);
+  }
+};
+
+// 🧹 NUEVO: Endpoint para limpiar cache de alertas (solo para testing)
+export const clearExpirationCache = async (req, res) => {
+  try {
+    const { clearAlertCache } = await import('../services/alert.service.js');
+    
+    // Limpiar cache
+    clearAlertCache();
+    
+    handleSuccess(res, 200, 'Cache de alertas limpiado correctamente', null);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al limpiar cache de alertas', err.message);
   }
 };
 
