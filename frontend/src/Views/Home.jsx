@@ -795,6 +795,12 @@ const Home = () => {
     }
   }, [datosEstadisticasOptimized, ventasGlobales]);
 
+  // Función helper para formatear números con punto como separador de miles
+  const formatNumberWithDots = (number) => {
+    if (typeof number !== 'number' || isNaN(number)) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   return (
     <div className="home-container">
       <Navbar />
@@ -824,7 +830,7 @@ const Home = () => {
                       return (
                         <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
                           <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                          <td>${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}</td>
+                          <td>${deudor.deudaTotal !== undefined ? formatNumberWithDots(deudor.deudaTotal) : 'N/A'}</td>
                         </tr>
                       );
                     })}

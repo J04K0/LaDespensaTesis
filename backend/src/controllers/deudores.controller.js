@@ -4,6 +4,11 @@ import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/re
 import { emitDeudorPagoProximoAlert } from '../services/alert.service.js';
 import cron from 'node-cron';
 
+const formatNumberWithDots = (number) => {
+  if (typeof number !== 'number' || isNaN(number)) return '0';
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
 export const getDeudores = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -20,7 +25,7 @@ export const getDeudores = async (req, res) => {
     }
     const deudoresFormateados = deudores.map(deudor => ({
       ...deudor.toObject(),
-      deudaTotal: `${deudor.deudaTotal.toLocaleString("es-ES")}`
+      deudaTotal: `$${formatNumberWithDots(deudor.deudaTotal)}`
     }));
 
     handleSuccess(res, 200, 'Deudores encontrados', {
@@ -144,23 +149,3 @@ export const getDeudoresSimple = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener la lista de deudores', err.message);
   }
 };
-
-// Tarea programada para enviar alertas de pago próximo
-cron.schedule('0 9 * * *', async () => {
-  try {
-    const deudores = await Deudores.find();
-    deudores.forEach(deudor => {
-      const fechaPago = new Date(deudor.fechaPaga);
-      const hoy = new Date();
-      // Verificar si el pago es en 3 días
-      const diffTime = Math.abs(fechaPago - hoy);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-      if (diffDays === 3) {
-        emitDeudorPagoProximoAlert(deudor);
-      }
-    });
-  } catch (err) {
-    console.error('Error al enviar alertas de pago próximo:', err.message);
-  }
-});

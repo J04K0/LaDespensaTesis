@@ -189,16 +189,3 @@ export const getCuentasPorCategoria = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener las cuentas por categoría', err.message);
   }
 };
-
-// Tarea programada para emitir alertas de cuentas por pagar
-cron.schedule('0 9 * * *', async () => {
-  try {
-    const cuentasPorPagar = await CuentasPorPagar.find({ Estado: 'Pendiente' });
-    
-    cuentasPorPagar.forEach(cuenta => {
-      emitCuentaPorPagarAlert(cuenta);
-    });
-  } catch (err) {
-    console.error('Error al emitir alertas de cuentas por pagar:', err.message);
-  }
-});

@@ -620,3 +620,18 @@ export const clearExpirationCache = async (req, res) => {
   }
 };
 
+// 🔧 NUEVO: Endpoint para generar reporte diario completo manualmente (solo para testing)
+export const forceDailyCompleteReport = async (req, res) => {
+  try {
+    const { sendDailyCompleteReport } = await import('../services/email.service.js');
+    
+    // Ejecutar el reporte diario completo manualmente
+    const result = await sendDailyCompleteReport();
+    
+    handleSuccess(res, 200, 'Reporte diario completo enviado manualmente', result);
+  } catch (err) {
+    console.error('Error al generar reporte diario:', err);
+    handleErrorServer(res, 500, 'Error al generar reporte diario completo', err.message);
+  }
+};
+

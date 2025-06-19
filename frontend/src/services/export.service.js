@@ -1,5 +1,12 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from 'xlsx';
+
+// Función helper para formatear números con punto como separador de miles
+const formatNumberWithDots = (number) => {
+  if (typeof number !== 'number' || isNaN(number)) return '0';
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
 
 export class ExportService {
   /**
@@ -62,7 +69,7 @@ export class ExportService {
       
       // Calcular el balance total
       doc.setFontSize(12);
-      doc.text(`Balance en Efectivo: $${balanceEfectivo.toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 15);
+      doc.text(`Balance en Efectivo: $${formatNumberWithDots(balanceEfectivo)}`, 14, doc.lastAutoTable.finalY + 15);
       
       // Si hay datos de deudores, añadir una sección
       if (deudoresData.length > 0) {
@@ -227,13 +234,13 @@ export class ExportService {
     
     // Crear tabla de métricas principales
     const metricasPrincipales = [
-      ["Ingresos totales", `$${ingresosTotales.toLocaleString('es-ES')}`],
-      ["Costos totales", `$${costosTotales.toLocaleString('es-ES')}`],
-      ["Ganancias totales", `$${gananciasTotales.toLocaleString('es-ES')}`],
+      ["Ingresos totales", `$${formatNumberWithDots(ingresosTotales)}`],
+      ["Costos totales", `$${formatNumberWithDots(costosTotales)}`],
+      ["Ganancias totales", `$${formatNumberWithDots(gananciasTotales)}`],
       ["Rentabilidad", `${rentabilidadPromedio.toFixed(2)}%`],
       ["Número de transacciones", transacciones],
-      ["Valor promedio por transacción", `$${valorPromedioTransaccion.toLocaleString('es-ES')}`],
-      ["Inversión en inventario", `$${inversionMercaderia.toLocaleString('es-ES')}`]
+      ["Valor promedio por transacción", `$${formatNumberWithDots(valorPromedioTransaccion)}`],
+      ["Inversión en inventario", `$${formatNumberWithDots(inversionMercaderia)}`]
     ];
     
     autoTable(doc, {
@@ -273,7 +280,7 @@ export class ExportService {
       const datosIngresos = Object.entries(ingresosPorPeriodo).map(([fecha, valor]) => {
         return [
           new Date(fecha).toLocaleDateString('es-AR', {weekday: 'short', day: 'numeric', month: 'short'}),
-          `$${valor.toLocaleString('es-AR')}`
+          `$${formatNumberWithDots(valor)}`
         ];
       });
       
@@ -304,7 +311,7 @@ export class ExportService {
       // Datos para la tabla
       const datosTopCategorias = topCategorias.map(cat => [
         cat.nombre,
-        `$${cat.ingresos.toLocaleString('es-AR')}`,
+        `$${formatNumberWithDots(cat.ingresos)}`,
         `${cat.porcentaje.toFixed(2)}%`
       ]);
       
@@ -335,7 +342,7 @@ export class ExportService {
         index + 1,
         prod.nombre,
         prod.ventas,
-        `$${prod.ingreso.toLocaleString('es-AR')}`
+        `$${formatNumberWithDots(prod.ingreso)}`
       ]);
       
       autoTable(doc, {
@@ -392,7 +399,7 @@ export class ExportService {
           const porcentaje = inversionMercaderia > 0 
             ? (valor / inversionMercaderia * 100).toFixed(2) 
             : "0.00";
-          return [categoria, `$${valor.toLocaleString('es-AR')}`, `${porcentaje}%`];
+          return [categoria, `$${formatNumberWithDots(valor)}`, `${porcentaje}%`];
         });
       
       autoTable(doc, {
@@ -439,9 +446,9 @@ export class ExportService {
     doc.text("Comparativa financiera", 20, newY);
     
     const datosComparativos = [
-      ["Ingresos", `$${ingresosTotales.toLocaleString('es-AR')}`, "100%"],
-      ["Costos", `$${costosTotales.toLocaleString('es-AR')}`, `${(costosTotales / ingresosTotales * 100).toFixed(2)}%`],
-      ["Ganancias", `$${gananciasTotales.toLocaleString('es-AR')}`, `${(gananciasTotales / ingresosTotales * 100).toFixed(2)}%`]
+      ["Ingresos", `$${formatNumberWithDots(ingresosTotales)}`, "100%"],
+      ["Costos", `$${formatNumberWithDots(costosTotales)}`, `${(costosTotales / ingresosTotales * 100).toFixed(2)}%`],
+      ["Ganancias", `$${formatNumberWithDots(gananciasTotales)}`, `${(gananciasTotales / ingresosTotales * 100).toFixed(2)}%`]
     ];
     
     autoTable(doc, {
@@ -471,9 +478,9 @@ export class ExportService {
       // Datos para la tabla
       const datosRentabilidad = rentabilidadTemporal.map(dia => [
         `${dia.fecha.getDate()}/${dia.fecha.getMonth() + 1}`,
-        `$${dia.ingresos.toLocaleString('es-AR')}`,
-        `$${dia.costos.toLocaleString('es-AR')}`,
-        `$${dia.ganancias.toLocaleString('es-AR')}`,
+        `$${formatNumberWithDots(dia.ingresos)}`,
+        `$${formatNumberWithDots(dia.costos)}`,
+        `$${formatNumberWithDots(dia.ganancias)}`,
         `${dia.margen.toFixed(2)}%`
       ]);
       
@@ -624,7 +631,7 @@ export class ExportService {
       meses.forEach(mes => {
         const cuentaMes = proveedor.meses[mes.id];
         if (cuentaMes) {
-          rowData.push(`$${cuentaMes.monto.toLocaleString()} (${cuentaMes.estado})`);
+          rowData.push(`$${formatNumberWithDots(cuentaMes.monto)} (${cuentaMes.estado})`);
         } else {
           rowData.push('-');
         }
@@ -695,8 +702,8 @@ export class ExportService {
       producto.Marca || '-',
       producto.Categoria,
       producto.Stock.toString(),
-      `$${producto.PrecioCompra.toLocaleString()}`,
-      `$${producto.PrecioVenta.toLocaleString()}`,
+      `$${formatNumberWithDots(producto.PrecioCompra)}`,
+      `$${formatNumberWithDots(producto.PrecioVenta)}`,
       producto.fechaVencimiento ? new Date(producto.fechaVencimiento).toLocaleDateString() : '-'
     ]);
     
@@ -787,12 +794,12 @@ export class ExportService {
       if (datosFinancieros) {
         // Tabla financiera compacta
         const metricsFinancieras = [
-          ["Ingresos Totales", `$${datosFinancieros.ingresosTotales?.toLocaleString('es-AR') || '0'}`],
-          ["Costos Totales", `$${datosFinancieros.costosTotales?.toLocaleString('es-AR') || '0'}`],
-          ["Ganancia Neta", `$${datosFinancieros.gananciasTotales?.toLocaleString('es-AR') || '0'}`],
+          ["Ingresos Totales", `$${formatNumberWithDots(datosFinancieros.ingresosTotales)}`],
+          ["Costos Totales", `$${formatNumberWithDots(datosFinancieros.costosTotales)}`],
+          ["Ganancia Neta", `$${formatNumberWithDots(datosFinancieros.gananciasTotales)}`],
           ["Rentabilidad", `${datosFinancieros.rentabilidadPromedio?.toFixed(2) || '0'}%`],
           ["Transacciones", datosFinancieros.transacciones?.toString() || '0'],
-          ["Inversion en Mercaderia", `$${datosFinancieros.inversionMercaderia?.toLocaleString('es-AR') || '0'}`]
+          ["Inversion en Mercaderia", `$${formatNumberWithDots(datosFinancieros.inversionMercaderia)}`]
         ];
 
         autoTable(doc, {
@@ -837,8 +844,8 @@ export class ExportService {
 
         const statsProductos = [
           ["Total de Productos", productos.length.toString()],
-          ["Stock Total", stockTotal.toLocaleString('es-AR')],
-          ["Valor del Inventario", `$${valorInventario.toLocaleString('es-AR')}`],
+          ["Stock Total", formatNumberWithDots(stockTotal)],
+          ["Valor del Inventario", `$${formatNumberWithDots(valorInventario)}`],
           ["Productos con Bajo Stock", productosBajoStock.toString()],
           ["Categorias", categorias.length.toString()]
         ];
@@ -879,7 +886,7 @@ export class ExportService {
 
         const statsVentas = [
           ["Total de Ventas", ventas.length.toString()],
-          ["Valor Total", `$${totalVentas.toLocaleString('es-AR')}`],
+          ["Valor Total", `$${formatNumberWithDots(totalVentas)}`],
           ["Ventas en Efectivo", `${ventasEfectivo} (${((ventasEfectivo/ventas.length)*100).toFixed(1)}%)`],
           ["Ventas con Tarjeta", `${ventasTarjeta} (${((ventasTarjeta/ventas.length)*100).toFixed(1)}%)`],
           ["Ventas a Deudores", `${ventasDeudores} (${((ventasDeudores/ventas.length)*100).toFixed(1)}%)`]
@@ -915,7 +922,7 @@ export class ExportService {
               v._id?.substring(0, 8) || 'N/A',
               new Date(v.fecha).toLocaleDateString('es-AR'),
               metodoPago,
-              `$${total.toLocaleString('es-AR')}`
+              `$${formatNumberWithDots(total)}`
             ];
           });
 
@@ -960,8 +967,8 @@ export class ExportService {
         const statsDeudores = [
           ["Total de Deudores", deudores.length.toString()],
           ["Deudores con Deuda", deudoresConDeuda.length.toString()],
-          ["Deuda Total", `$${deudaTotal.toLocaleString('es-AR')}`],
-          ["Deuda Promedio", `$${(deudaTotal/deudores.length).toLocaleString('es-AR')}`]
+          ["Deuda Total", `$${formatNumberWithDots(deudaTotal)}`],
+          ["Deuda Promedio", `$${formatNumberWithDots(deudaTotal/deudores.length)}`]
         ];
 
         autoTable(doc, {
@@ -1066,8 +1073,8 @@ export class ExportService {
           const statsCuentas = [
             ["Total de Cuentas", cuentasPorPagar.length.toString()],
             ["Cuentas Pendientes", cuentasPendientes.length.toString()],
-            ["Monto Pendiente", `$${totalPendiente.toLocaleString('es-AR')}`],
-            ["Monto Pagado", `$${totalPagado.toLocaleString('es-AR')}`]
+            ["Monto Pendiente", `$${formatNumberWithDots(totalPendiente)}`],
+            ["Monto Pagado", `$${formatNumberWithDots(totalPagado)}`]
           ];
 
           autoTable(doc, {

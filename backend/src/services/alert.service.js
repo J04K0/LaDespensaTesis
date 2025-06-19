@@ -288,68 +288,28 @@ export const emitCuentaPorPagarAlert = (cuenta) => {
 
 /**
  * Revisa productos vencidos y próximos a vencer (DIARIO)
+ * ACTUALIZADO: Ahora usa el reporte completo en lugar de envíos separados
  */
 const checkDailyExpirations = async () => {
   try {
-    console.log('🔍 Iniciando revisión diaria de fechas de vencimiento...');
+    console.log('🔍 Iniciando revisión diaria completa...');
     
     // Importar dinámicamente para evitar dependencias circulares
-    const { default: Product } = await import('../models/products.model.js');
-    const { sendExpirationAlert } = await import('./email.service.js');
+    const { sendDailyCompleteReport } = await import('./email.service.js');
     
-    const today = new Date();
-    const fiveDaysFromNow = new Date();
-    fiveDaysFromNow.setDate(today.getDate() + 5);
+    // Enviar el reporte diario completo que incluye todo
+    await sendDailyCompleteReport();
     
-    // Buscar productos vencidos
-    const expiredProducts = await Product.find({
-      fechaVencimiento: { $lt: today }
-    });
-    
-    // Buscar productos próximos a vencer (próximos 5 días)
-    const expiringSoonProducts = await Product.find({
-      fechaVencimiento: {
-        $gte: today,
-        $lte: fiveDaysFromNow
-      }
-    });
-    
-    console.log(`📊 Productos vencidos encontrados: ${expiredProducts.length}`);
-    console.log(`📊 Productos por vencer encontrados: ${expiringSoonProducts.length}`);
-    
-    // Emitir alertas solo si hay productos y no se han enviado recientemente
-    if (expiredProducts.length > 0) {
-      try {
-        await sendExpirationAlert(expiredProducts, 'vencidos');
-        emitProductoVencidoAlert(expiredProducts);
-        console.log(`✅ Alertas de productos vencidos enviadas: ${expiredProducts.length} productos`);
-      } catch (error) {
-        console.error('❌ Error enviando alertas de productos vencidos:', error);
-      }
-    }
-    
-    if (expiringSoonProducts.length > 0) {
-      try {
-        await sendExpirationAlert(expiringSoonProducts, 'porVencer');
-        emitProductoPorVencerAlert(expiringSoonProducts);
-        console.log(`✅ Alertas de productos por vencer enviadas: ${expiringSoonProducts.length} productos`);
-      } catch (error) {
-        console.error('❌ Error enviando alertas de productos por vencer:', error);
-      }
-    }
-    
-    if (expiredProducts.length === 0 && expiringSoonProducts.length === 0) {
-      console.log('✅ No hay productos vencidos o próximos a vencer');
-    }
+    console.log('✅ Reporte diario completo enviado exitosamente');
     
   } catch (error) {
-    console.error('❌ Error en revisión diaria de vencimientos:', error);
+    console.error('❌ Error en revisión diaria completa:', error);
   }
 };
 
 // 📅 PROGRAMAR REVISIÓN DIARIA A LAS 9:00 AM
 cron.schedule('0 9 * * *', () => {
-  console.log('⏰ Ejecutando revisión diaria programada de fechas de vencimiento...');
+  console.log('⏰ Ejecutando reporte diario completo programado...');
   checkDailyExpirations();
 }, {
   timezone: "America/Santiago" // Ajusta según tu zona horaria

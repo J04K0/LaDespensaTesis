@@ -38,9 +38,15 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
     return 'productcard-stock-high';
   }, [stock, categoria]);
 
+  // Función helper para formatear números con punto como separador de miles
+  const formatNumberWithDots = (number) => {
+    if (typeof number !== 'number' || isNaN(number)) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   // Optimizar formato de precio
   const formattedPrice = React.useMemo(() => {
-    return typeof venta === 'number' ? venta.toLocaleString("es-ES") : venta;
+    return typeof venta === 'number' ? formatNumberWithDots(venta) : venta;
   }, [venta]);
 
   // Optimizar las clases CSS del contenedor principal

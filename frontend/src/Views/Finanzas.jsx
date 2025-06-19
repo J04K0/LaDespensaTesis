@@ -467,10 +467,8 @@ const Finanzas = () => {
     // Verificar si el valor es undefined, null o NaN
     const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
     
-    return '$' + numericValue.toLocaleString('es-ES', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
+    // Usar formato con punto como separador de miles
+    return '$' + numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   // Formatear valores porcentuales

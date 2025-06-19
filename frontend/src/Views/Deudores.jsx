@@ -606,6 +606,12 @@ const DeudoresList = () => {
     return value;
   };
 
+  // Función helper para formatear números con punto como separador de miles
+  const formatNumberWithDots = (number) => {
+    if (typeof number !== 'number' || isNaN(number)) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   const handleExportPDF = () => {
     const doc = new jsPDF();
     const tableColumn = ["Nombre", "Fecha a Pagar", "Número de Teléfono", "Deuda Total"];
@@ -619,7 +625,7 @@ const DeudoresList = () => {
         deudor.Nombre || 'Nombre desconocido',
         new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida',
         deudor.numeroTelefono || 'Teléfono desconocido',
-        isZeroDebt ? { content: `${deudor.deudaTotal.toLocaleString('es-ES')}`, styles: { textColor: [0, 128, 0] } } : { content: `${deudor.deudaTotal.toLocaleString('es-ES')}`, styles: { textColor: [255, 0, 0] } }
+        isZeroDebt ? { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [0, 128, 0] } } : { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [255, 0, 0] } }
       ]);
     });
 

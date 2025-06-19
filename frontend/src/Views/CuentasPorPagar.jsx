@@ -503,6 +503,12 @@ const handleCancel = async () => {
     setMesesConDatos(mesesConDatos);
   }, [cuentas, yearSelected]);
 
+  // Función helper para formatear números con punto como separador de miles
+const formatNumberWithDots = (number) => {
+  if (typeof number !== 'number' || isNaN(number)) return '0';
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
   return (
     <div className="app-container">
       <Navbar />
@@ -534,7 +540,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Promedio Mensual</h3>
-                  <p className="summary-value">${(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0).toLocaleString('es-ES', {maximumFractionDigits: 0})}</p>
+                  <p className="summary-value">${formatNumberWithDots(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0)}</p>
                   <span className="summary-label">Facturas a Pagar: {cuentas.length} | Meses activos: {mesesConDatos}</span>
                 </div>
                 <div className="summary-trend">
@@ -549,7 +555,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Total Pagado</h3>
-                  <p className="summary-value">${totalPagado.toLocaleString('es-ES')}</p>
+                  <p className="summary-value">${formatNumberWithDots(totalPagado)}</p>
                   <span className="summary-label">Facturas Pagadas: {cuentas.filter(c => c.Estado === 'Pagado').length}</span>
                 </div>
                 <div className="summary-trend positive">
@@ -564,7 +570,7 @@ const handleCancel = async () => {
                 </div>
                 <div className="summary-info">
                   <h3>Total Pendiente</h3>
-                  <p className="summary-value">${totalPendiente.toLocaleString('es-ES')}</p>
+                  <p className="summary-value">${formatNumberWithDots(totalPendiente)}</p>
                   <span className="summary-label">Facturas Pendientes: {cuentas.filter(c => c.Estado === 'Pendiente').length}</span>
                 </div>
                 <div className="summary-trend negative">
@@ -698,7 +704,7 @@ const handleCancel = async () => {
                               {cuentaMes ? (
                                 <div className="cuenta-mes-info">
                                   <div className="cuenta-monto">
-                                    ${cuentaMes.monto.toLocaleString()}
+                                    ${formatNumberWithDots(cuentaMes.monto)}
                                   </div>
                                   <div className="cuenta-actions">
                                     <button 
@@ -936,9 +942,9 @@ const handleCancel = async () => {
                       </div>
                       <div className="summary-info">
                         <h3>{meses.find(m => m.id === mes)?.nombre}</h3>
-                        <p className="summary-value">${datos.total.toLocaleString('es-ES')}</p>
+                        <p className="summary-value">${formatNumberWithDots(datos.total)}</p>
                         <span className="summary-label">
-                          Pagado: ${datos.pagado.toLocaleString('es-ES')} | Pendiente: ${datos.pendiente.toLocaleString('es-ES')}
+                          Pagado: ${formatNumberWithDots(datos.pagado)} | Pendiente: ${formatNumberWithDots(datos.pendiente)}
                         </span>
                       </div>
                       <div className={`summary-trend ${datos.pendiente > 0 ? 'negative' : 'positive'}`}>
@@ -965,9 +971,9 @@ const handleCancel = async () => {
                   </div>
                   <div className="summary-info">
                     <h3>Total Anual</h3>
-                    <p className="summary-value">${totalGeneral.toLocaleString('es-ES')}</p>
+                    <p className="summary-value">${formatNumberWithDots(totalGeneral)}</p>
                     <span className="summary-label">
-                      Pagado: ${totalPagado.toLocaleString('es-ES')} | Pendiente: ${totalPendiente.toLocaleString('es-ES')}
+                      Pagado: ${formatNumberWithDots(totalPagado)} | Pendiente: ${formatNumberWithDots(totalPendiente)}
                     </span>
                   </div>
                   <div className="progress-circle-container">

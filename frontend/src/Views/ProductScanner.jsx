@@ -372,7 +372,7 @@ const ProductScanner = () => {
       // Si se asignó a un deudor, incluir esa información en el mensaje
       if (deudorIdToSend && response.data.deudor) {
         const deudorInfo = response.data.deudor;
-        mensaje += ` La deuda de ${deudorInfo.nombre} ha sido actualizada a $${deudorInfo.deudaTotal.toLocaleString()}.`;
+        mensaje += ` La deuda de ${deudorInfo.nombre} ha sido actualizada a $${formatNumberWithDots(deudorInfo.deudaTotal)}.`;
       }
       
       showSuccessAlert("Venta realizada", mensaje);
@@ -491,6 +491,12 @@ const ProductScanner = () => {
     }
   };
 
+  // Función helper para formatear números con punto como separador de miles
+  const formatNumberWithDots = (number) => {
+    if (typeof number !== 'number' || isNaN(number)) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  };
+
   return (
     <div className="productscanner-container">
       <Navbar />
@@ -537,10 +543,7 @@ const ProductScanner = () => {
                     <p><strong>Marca:</strong> {productoActual.marca}</p>
                     <p><strong>Categoría:</strong> {productoActual.categoria}</p>
                     <p><strong>Código:</strong> {productoActual.codigoBarras}</p>
-                    <p className="productscanner-product-price"><strong>Precio de venta:</strong> ${productoActual.precioVenta.toLocaleString('es-ES', {
-                      maximumFractionDigits: 0,
-                      useGrouping: true
-                    }).replace(/,/g, '.')}</p>
+                    <p className="productscanner-product-price"><strong>Precio de venta:</strong> ${formatNumberWithDots(productoActual.precioVenta)}</p>
                     <p><strong>Stock:</strong> <span className={stockPorProducto[productoActual.codigoBarras] < 5 ? "productscanner-low-stock" : ""}>
                       {stockPorProducto[productoActual.codigoBarras] || 0} unidades
                     </span></p>
@@ -585,10 +588,7 @@ const ProductScanner = () => {
                         <div key={index} className="productscanner-cart-item">
                           <div className="productscanner-cart-item-info">
                             <h4>{producto.nombre}</h4>
-                            <p className="productscanner-cart-item-price">${producto.precioVenta.toLocaleString('es-ES', {
-                              maximumFractionDigits: 0,
-                              useGrouping: true
-                            }).replace(/,/g, '.')}</p>
+                            <p className="productscanner-cart-item-price">${formatNumberWithDots(producto.precioVenta)}</p>
                           </div>
                           
                           <div className="productscanner-cart-item-controls">
@@ -608,10 +608,7 @@ const ProductScanner = () => {
                               </button>
                             </div>
                             
-                            <p className="productscanner-item-subtotal">${(producto.precioVenta * producto.cantidad).toLocaleString('es-ES', {
-                              maximumFractionDigits: 0,
-                              useGrouping: true
-                            }).replace(/,/g, '.')}</p>
+                            <p className="productscanner-item-subtotal">${formatNumberWithDots(producto.precioVenta * producto.cantidad)}</p>
                             
                             <button 
                               className="productscanner-remove-item-btn"
@@ -627,10 +624,7 @@ const ProductScanner = () => {
                     <div className="productscanner-checkout-section">
                       <div className="productscanner-cart-summary">
                         <h3>Resumen de Compra</h3>
-                        <p className="productscanner-total-price">Total a pagar: <span>${total.toLocaleString('es-ES', {
-                          maximumFractionDigits: 0,
-                          useGrouping: true
-                        }).replace(/,/g, '.')}</span></p>
+                        <p className="productscanner-total-price">Total a pagar: <span>${formatNumberWithDots(total)}</span></p>
                       </div>
                       
                       <div className="productscanner-payment-options">
@@ -670,7 +664,7 @@ const ProductScanner = () => {
                                   <option value="">Seleccione un deudor</option>
                                   {deudores.map((deudor) => (
                                     <option key={deudor._id} value={deudor._id}>
-                                      {deudor.Nombre} - Deuda: ${deudor.deudaTotal.toLocaleString()}
+                                      {deudor.Nombre} - Deuda: ${formatNumberWithDots(deudor.deudaTotal)}
                                     </option>
                                   ))}
                                 </select>
@@ -697,7 +691,7 @@ const ProductScanner = () => {
                             
                             {isDeudor && selectedDeudorId && (
                               <div className="productscanner-debt-info">
-                                <div>Total a añadir a la deuda: <span>${total.toLocaleString('es-ES')}</span></div>
+                                <div>Total a añadir a la deuda: <span>${formatNumberWithDots(total)}</span></div>
                               </div>
                             )}
                           </div>
@@ -743,10 +737,7 @@ const ProductScanner = () => {
                             )}
                             {montoEntregado && parseFloat(montoEntregado) >= total && (
                               <div className="productscanner-change-amount">
-                                Cambio a devolver: <span>${vuelto.toLocaleString('es-ES', {
-                                  maximumFractionDigits: 0,
-                                  useGrouping: true
-                                }).replace(/,/g, '.')}</span>
+                                Cambio a devolver: <span>${formatNumberWithDots(vuelto)}</span>
                               </div>
                             )}
                           </div>

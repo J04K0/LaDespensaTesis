@@ -15,7 +15,8 @@ import {
     getProductForCreation,
     getProductPriceHistory,
     forceCheckExpirations,
-    clearExpirationCache
+    clearExpirationCache,
+    forceDailyCompleteReport
 } from "../controllers/products.controller.js";
 
 import { 
@@ -51,5 +52,8 @@ router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJe
 // 🔧 NUEVAS RUTAS para testing manual de vencimientos
 router.post('/force-check-expirations', authorizeRoles([isAdmin, isJefe]), forceCheckExpirations);
 router.post('/clear-expiration-cache', authorizeRoles([isAdmin, isJefe]), clearExpirationCache);
+
+// 📧 NUEVA RUTA para generar reporte diario completo manualmente
+router.post('/force-daily-report', authorizeRoles([isAdmin, isJefe]), forceDailyCompleteReport);
 
 export default router;
