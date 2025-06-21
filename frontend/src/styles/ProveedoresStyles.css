@@ -1525,37 +1525,23 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: rgba(255, 255, 255, 0.2);
   transition: left 0.6s ease;
 }
 
 .btn-link-productos:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(0, 110, 223, 0.4);
-  background: linear-gradient(135deg, #0056b3, #3a7bc8);
-}
-
-.btn-link-productos:hover::before {
-  left: 100%;
-}
-
-.btn-link-productos:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 110, 223, 0.3);
-}
-
-.btn-link-productos svg {
-  font-size: 16px;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  background: #0056b3;
 }
 
 /* Estado cuando hay productos ya vinculados */
 .btn-link-productos.has-products {
-  background: linear-gradient(135deg, #17a2b8, #20c997);
+  background: #17a2b8;
 }
 
 .btn-link-productos.has-products:hover {
-  background: linear-gradient(135deg, #138496, #1c7a6b);
+  background: #138496;
   box-shadow: 0 8px 20px rgba(23, 162, 184, 0.4);
 }
 
@@ -1603,14 +1589,14 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: rgba(255, 255, 255, 0.2);
   transition: left 0.6s ease;
 }
 
 .btn-link-products:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(0, 110, 223, 0.4);
-  background: linear-gradient(135deg, #0056b3, #3a7bc8);
+  background: #0056b3;
 }
 
 .btn-link-products:hover::before {

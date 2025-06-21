@@ -271,7 +271,7 @@
 
 /* Estilo mejorado para el botón de reporte masivo */
 .massive-report-item {
-  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  background-color: red;
   border-radius: 8px !important;
   padding: 8px 12px !important;
   margin: 0 !important;
@@ -286,7 +286,7 @@
 }
 
 .massive-report-item:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  background: #ab0e1e !important; 
   box-shadow: 0 4px 12px rgba(220, 53, 69, 0.5) !important;
   transform: translateY(-1px) !important;
 }
@@ -305,7 +305,6 @@
 .massive-report-item .spinner-icon {
   margin-left: 6px !important;
   margin-right: 0 !important;
-  animation: spin 1s linear infinite !important;
   color: white !important;
   font-size: 11px !important;
 }

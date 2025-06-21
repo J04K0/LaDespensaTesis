@@ -1252,7 +1252,7 @@
 }
 
 .modern-product-brand {
-  background: linear-gradient(135deg, #006EDF, #4a90e2);
+  background-color: var(--primary);
   color: white;
   padding: 4px 12px;
   border-radius: 12px;

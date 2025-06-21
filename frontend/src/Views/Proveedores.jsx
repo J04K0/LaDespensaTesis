@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash, faEye, faSearch, faSort, faFilter, faCheck, faTimes, faExclamationTriangle, faShoppingCart, faBox } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEdit, faTrash, faEye, faSearch, faSort, faFilter, faCheck, faTimes, faExclamationTriangle, faShoppingCart, faBox, faLink, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../components/Navbar';
 import SmartPagination from '../components/SmartPagination';
 import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
-import { getProveedores, deleteProveedor, updateProveedor, createProveedor, activateProveedor, deactivateProveedor, getProductosProveedor } from '../services/proveedores.service';
+import { getProveedores, deleteProveedor, updateProveedor, createProveedor, cambiarEstadoProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
 import { getProducts } from '../services/AddProducts.service';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert } from '../helpers/swaHelper';
+import { ExportService } from '../services/export.service';
 import '../styles/ProveedoresStyles.css';
 import '../styles/SmartPagination.css';
 

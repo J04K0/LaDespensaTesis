@@ -834,7 +834,6 @@ textarea.deudores-form-control {
 .deudores-stats-container {
   margin-top: 40px;
   padding: 30px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -856,7 +855,6 @@ textarea.deudores-form-control {
   transform: translateX(-50%);
   width: 80px;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
   border-radius: 2px;
 }
 
@@ -941,10 +939,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-primary .deudores-stat-icon {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-}
-
-.deudores-stat-card-primary::before {
   background: var(--primary);
 }
 
@@ -953,10 +947,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-info .deudores-stat-icon {
-  background: linear-gradient(135deg, #17a2b8, #20c997);
-}
-
-.deudores-stat-card-info::before {
   background: #17a2b8;
 }
 
@@ -965,10 +955,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-warning .deudores-stat-icon {
-  background: linear-gradient(135deg, var(--warning), #fd7e14);
-}
-
-.deudores-stat-card-warning::before {
   background: var(--warning);
 }
 
@@ -977,10 +963,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-success .deudores-stat-icon {
-  background: linear-gradient(135deg, var(--success), #20c997);
-}
-
-.deudores-stat-card-success::before {
   background: var(--success);
 }
 
@@ -989,10 +971,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-danger .deudores-stat-icon {
-  background: linear-gradient(135deg, var(--danger), #e74c3c);
-}
-
-.deudores-stat-card-danger::before {
   background: var(--danger);
 }
 
@@ -1001,10 +979,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-secondary .deudores-stat-icon {
-  background: linear-gradient(135deg, var(--gray-dark), #6c757d);
-}
-
-.deudores-stat-card-secondary::before {
   background: var(--gray-dark);
 }
 
@@ -1014,10 +988,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-urgent .deudores-stat-icon {
-  background: linear-gradient(135deg, #fd7e14, #ff6b35);
-}
-
-.deudores-stat-card-urgent::before {
   background: #fd7e14;
 }
 
@@ -1026,10 +996,6 @@ textarea.deudores-form-control {
 }
 
 .deudores-stat-card-light .deudores-stat-icon {
-  background: linear-gradient(135deg, #6f42c1, #8e44ad);
-}
-
-.deudores-stat-card-light::before {
   background: #6f42c1;
 }
 
@@ -1044,7 +1010,7 @@ textarea.deudores-form-control {
 
 /* Card destacada para el mayor deudor */
 .deudores-highlight-card {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  background: var(--primary-dark);
   color: white;
   border-radius: 15px;
   padding: 30px;
