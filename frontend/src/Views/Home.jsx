@@ -830,7 +830,7 @@ const Home = () => {
                       return (
                         <tr key={index} className={isZeroDebt ? 'zero-debt-row' : ''}>
                           <td><FontAwesomeIcon icon={faUser} /> {deudor.Nombre || 'Nombre desconocido'}</td>
-                          <td>${deudor.deudaTotal !== undefined ? formatNumberWithDots(deudor.deudaTotal) : 'N/A'}</td>
+                          <td>{deudor.deudaTotal !== undefined ? deudor.deudaTotal : 'N/A'}</td>
                         </tr>
                       );
                     })}

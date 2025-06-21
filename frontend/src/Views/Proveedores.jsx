@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { getProveedores, deleteProveedor, updateProveedor, getProveedorById, createProveedor, cambiarEstadoProveedor, vincularProductosAProveedor, getProductosProveedor } from '../services/proveedores.service.js';
-import { getProducts } from '../services/AddProducts.service.js';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faFilePdf, faLink, faCheck, faFilter } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert } from '../helpers/swaHelper';
+import { faPlus, faEdit, faTrash, faEye, faSearch, faSort, faFilter, faCheck, faTimes, faExclamationTriangle, faShoppingCart, faBox } from '@fortawesome/free-solid-svg-icons';
+import Navbar from '../components/Navbar';
+import SmartPagination from '../components/SmartPagination';
 import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
-import { ExportService } from '../services/export.service.js';
+import { getProveedores, deleteProveedor, updateProveedor, createProveedor, activateProveedor, deactivateProveedor, getProductosProveedor } from '../services/proveedores.service';
+import { getProducts } from '../services/AddProducts.service';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import '../styles/ProveedoresStyles.css';
+import '../styles/SmartPagination.css';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([]);
@@ -703,68 +703,12 @@ const Proveedores = () => {
                   </table>
                 </div>
                 
-                {/* Paginación mejorada similar a la de Productos */}
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <button 
-                      onClick={() => handlePageChange(1)}
-                      className="pagination-button"
-                      disabled={currentPage === 1}
-                    >
-                      « Primera
-                    </button>
-                    <button 
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className="pagination-button"
-                      disabled={currentPage === 1}
-                    >
-                      ‹ Anterior
-                    </button>
-                    
-                    {[...Array(totalPages).keys()].map(page => {
-                      const pageNum = page + 1;
-                      // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
-                      if (
-                        pageNum === 1 || 
-                        pageNum === totalPages || 
-                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                      ) {
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(pageNum)}
-                            className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
-                            disabled={pageNum === currentPage}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      } else if (
-                        (pageNum === currentPage - 3 && currentPage > 4) || 
-                        (pageNum === currentPage + 3 && currentPage < totalPages - 3)
-                      ) {
-                        // Mostrar puntos suspensivos para indicar páginas omitidas
-                        return <span key={page} className="pagination-ellipsis">...</span>;
-                      }
-                      return null;
-                    })}
-                    
-                    <button 
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="pagination-button"
-                      disabled={currentPage === totalPages}
-                    >
-                      Siguiente ›
-                    </button>
-                    <button 
-                      onClick={() => handlePageChange(totalPages)}
-                      className="pagination-button"
-                      disabled={currentPage === totalPages}
-                    >
-                      Última »
-                    </button>
-                  </div>
-                )}
+                <SmartPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  maxVisiblePages={5}
+                />
               </>
             )}
           </>

@@ -5,12 +5,14 @@ import { useVentas } from "../context/VentasContext";
 import { getProducts } from "../services/AddProducts.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/FinanzasStyles.css";
+import "../styles/SmartPagination.css";
 import FinanzasSkeleton from '../components/Skeleton/FinanzasSkeleton';
 import { 
   faFilePdf, faChartBar, faCoins, faMoneyBillWave, faShoppingCart, faChartLine, faWarehouse,
   faPercentage, faCalendarAlt, faBoxOpen, faPercent, faChartPie, faTable, faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import SmartPagination from '../components/SmartPagination';
 
 const Finanzas = () => {
   const [datosFinancieros, setDatosFinancieros] = useState({

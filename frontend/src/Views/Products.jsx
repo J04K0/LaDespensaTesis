@@ -18,6 +18,7 @@ import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronD
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ExportService } from '../services/export.service.js';
+import SmartPagination from '../components/SmartPagination';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -846,67 +847,12 @@ const Products = () => {
                   <div className="no-results">No hay productos disponibles con los filtros seleccionados.</div>
                 )}
                 
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <button 
-                      onClick={() => handlePageChange(1)}
-                      className="pagination-button"
-                      disabled={currentPage === 1}
-                    >
-                      « Primera
-                    </button>
-                    <button 
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className="pagination-button"
-                      disabled={currentPage === 1}
-                    >
-                      ‹ Anterior
-                    </button>
-                    
-                    {[...Array(totalPages).keys()].map(page => {
-                      const pageNum = page + 1;
-                      // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
-                      if (
-                        pageNum === 1 || 
-                        pageNum === totalPages || 
-                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                      ) {
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(pageNum)}
-                            className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
-                            disabled={pageNum === currentPage}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      } else if (
-                        (pageNum === currentPage - 3 && currentPage > 4) || 
-                        (pageNum === currentPage + 3 && currentPage < totalPages - 3)
-                      ) {
-                        // Mostrar puntos suspensivos para indicar páginas omitidas
-                        return <span key={page} className="pagination-ellipsis">...</span>;
-                      }
-                      return null;
-                    })}
-                    
-                    <button 
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="pagination-button"
-                      disabled={currentPage === totalPages}
-                    >
-                      Siguiente ›
-                    </button>
-                    <button 
-                      onClick={() => handlePageChange(totalPages)}
-                      className="pagination-button"
-                      disabled={currentPage === totalPages}
-                    >
-                      Última »
-                    </button>
-                  </div>
-                )}
+                <SmartPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  maxVisiblePages={5}
+                />
               </>
             )}
           </>

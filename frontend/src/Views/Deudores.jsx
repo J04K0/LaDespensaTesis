@@ -5,6 +5,7 @@ import PaymentModal from '../components/PaymentModal';
 import PaymentHistoryModal from '../components/PaymentHistoryModal';
 import EditDeudorModal from '../components/EditDeudorModal';
 import '../styles/DeudoresStyles.css';
+import '../styles/SmartPagination.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +14,7 @@ import DeudoresListSkeleton from '../components/Skeleton/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+import SmartPagination from '../components/SmartPagination';
 
 // Función para controlar el scroll del body - Optimizada para reducir lag
 const controlBodyScroll = (disable) => {
@@ -761,18 +763,11 @@ const DeudoresList = () => {
               </table>
             </div>
             
-            <div className="deudores-pagination">
-              {[...Array(totalPages).keys()].map(page => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page + 1)}
-                  className={`deudores-pagination-button ${page + 1 === currentPage ? 'deudores-active' : ''}`}
-                  disabled={page + 1 === currentPage}
-                >
-                  {page + 1}
-                </button>
-              ))}
-            </div>
+            <SmartPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
 
             {/* Cards informativas con estadísticas */}
             <div className="deudores-stats-container">

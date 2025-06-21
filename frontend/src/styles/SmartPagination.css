@@ -1,0 +1,106 @@
+/* ===============================================
+   COMPONENTE DE PAGINACIÓN INTELIGENTE
+   =============================================== */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.pagination-button {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.pagination-button.active {
+  background-color: #006EDF;
+  color: white;
+  border-color: #006EDF;
+  box-shadow: 0 2px 5px rgba(0, 110, 223, 0.3);
+}
+
+.pagination-button.active:hover {
+  background-color: #0056b3;
+  transform: none;
+}
+
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  color: #6c757d;
+  font-weight: bold;
+  font-size: 16px;
+  min-width: 30px;
+  height: 44px;
+}
+
+/* Responsividad para dispositivos móviles */
+@media (max-width: 768px) {
+  .pagination {
+    gap: 3px;
+    margin: 15px 0;
+  }
+  
+  .pagination-button {
+    padding: 8px 10px;
+    font-size: 12px;
+    min-width: 36px;
+    height: 36px;
+  }
+  
+  .pagination-ellipsis {
+    height: 36px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-button {
+    padding: 6px 8px;
+    font-size: 11px;
+    min-width: 32px;
+    height: 32px;
+  }
+  
+  .pagination-ellipsis {
+    height: 32px;
+    font-size: 12px;
+  }
+}

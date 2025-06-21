@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import SmartPagination from '../components/SmartPagination';
 import { obtenerVentasPorTicket, eliminarTicket, editarTicket } from "../services/venta.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/HistorySaleStyles.css";
@@ -560,22 +561,15 @@ const HistorySale = () => {
                     </table>
                   </div>
                   
-                  <div className="historysalepagination">
-                    {Array.from(
-                      { length: Math.ceil(filteredVentas.length / ventasPerPage) },
-                      (_, index) => (
-                        <button
-                          key={index}
-                          className={`historysalepaginationbutton ${
-                            index + 1 === currentPage ? "active" : ""
-                          }`}
-                          onClick={() => paginate(index + 1)}
-                        >
-                          {index + 1}
-                        </button>
-                      )
-                    )}
-                  </div>
+                  <SmartPagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredVentas.length / ventasPerPage)}
+                    onPageChange={paginate}
+                    className="historysalepagination"
+                    buttonClassName="historysalepaginationbutton"
+                    activeClassName="active"
+                    maxVisiblePages={5}
+                  />
                 </>
               )}
             </div>

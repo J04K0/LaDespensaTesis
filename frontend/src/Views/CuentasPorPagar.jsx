@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import SmartPagination from '../components/SmartPagination';
 import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar } from '../services/cuentasPorPagar.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton';
 import '../styles/CuentasPorPagarStyles.css';
+import '../styles/SmartPagination.css';
 import axios from "../services/root.service.js";
 import { ExportService } from '../services/export.service.js';
 import jsPDF from 'jspdf';
@@ -540,7 +542,7 @@ const formatNumberWithDots = (number) => {
                 </div>
                 <div className="summary-info">
                   <h3>Promedio Mensual</h3>
-                  <p className="summary-value">${formatNumberWithDots(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0)}</p>
+                  <p className="summary-value">${formatNumberWithDots(Math.round(mesesConDatos > 0 ? totalGeneral / mesesConDatos : 0))}</p>
                   <span className="summary-label">Facturas a Pagar: {cuentas.length} | Meses activos: {mesesConDatos}</span>
                 </div>
                 <div className="summary-trend">
@@ -751,67 +753,12 @@ const formatNumberWithDots = (number) => {
               </table>
             </div>
             
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button 
-                  onClick={() => handlePageChange(1)}
-                  className="pagination-button"
-                  disabled={currentPage === 1}
-                >
-                  « Primera
-                </button>
-                <button 
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className="pagination-button"
-                  disabled={currentPage === 1}
-                >
-                  ‹ Anterior
-                </button>
-                
-                {[...Array(totalPages).keys()].map(page => {
-                  const pageNum = page + 1;
-                  // Solo mostrar el número actual y algunos números cercanos para no sobrecargar la UI
-                  if (
-                    pageNum === 1 || 
-                    pageNum === totalPages || 
-                    (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-                  ) {
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`pagination-button ${pageNum === currentPage ? 'active' : ''}`}
-                        disabled={pageNum === currentPage}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  } else if (
-                    (pageNum === currentPage - 3 && currentPage > 4) || 
-                    (pageNum === currentPage + 3 && currentPage < totalPages - 3)
-                  ) {
-                    // Mostrar puntos suspensivos para indicar páginas omitidas
-                    return <span key={page} className="pagination-ellipsis">...</span>;
-                  }
-                  return null;
-                })}
-                
-                <button 
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className="pagination-button"
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente ›
-                </button>
-                <button 
-                  onClick={() => handlePageChange(totalPages)}
-                  className="pagination-button"
-                  disabled={currentPage === totalPages}
-                >
-                  Última »
-                </button>
-              </div>
-            )}
+            <SmartPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              maxVisiblePages={5}
+            />
             
             {/* Modal para agregar/editar cuenta */}
             {showModal && (
