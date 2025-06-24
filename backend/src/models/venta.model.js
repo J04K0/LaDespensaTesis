@@ -11,7 +11,21 @@ const VentaSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now },
   usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   metodoPago: { type: String, enum: ['efectivo', 'tarjeta'], default: 'efectivo' },
-  deudorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Deudor', default: null }
+  deudorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Deudor', default: null },
+  // Nuevos campos para control de estado y auditoría
+  estado: { 
+    type: String, 
+    enum: ['activa', 'anulada', 'devuelta_parcial'], 
+    default: 'activa' 
+  },
+  fechaAnulacion: { type: Date, default: null },
+  usuarioAnulacion: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  motivoAnulacion: { type: String, default: null },
+  // Para devoluciones parciales, guardamos la cantidad original
+  cantidadOriginal: { type: Number, default: null },
+  fechaDevolucion: { type: Date, default: null },
+  usuarioDevolucion: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  comentarioDevolucion: { type: String, default: null } // 🆕 Campo para comentario de devolución
 });
 
 const Venta = mongoose.model("Venta", VentaSchema);

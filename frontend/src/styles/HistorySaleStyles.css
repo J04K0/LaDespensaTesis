@@ -80,9 +80,18 @@
   background-color: var(--success);
 }
 
+.historysaleexportbtn.anuladas {
+  background-color: #6f42c1;
+  border: 1px solid #5a2d91;
+}
+
 .historysaleexportbtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.historysaleexportbtn.anuladas:hover {
+  background-color: #5a2d91;
 }
 
 /* Contenedor de filtros */
@@ -777,51 +786,136 @@
   }
 }
 
+/* ===== NUEVOS ESTILOS PARA VENTAS ANULADAS ===== */
+
+/* Advertencia para ventas anuladas */
+.anuladas-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botón para ver ventas anuladas */
+.historysaleexportbtn.anuladas {
+  background-color: #6f42c1;
+  border: 1px solid #5a2d91;
+}
+
+.historysaleexportbtn.anuladas:hover {
+  background-color: #5a2d91;
+}
+
+/* Estilos para filas de ventas anuladas */
+.venta-anulada {
+  background-color: #fff5f5 !important;
+  opacity: 0.8;
+}
+
+.venta-anulada:hover {
+  background-color: #fed7d7 !important;
+}
+
+/* Badge de estado anulada */
+.estado-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+.estado-badge.anulada {
+  background-color: #fed7d7;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+}
+
+/* Columnas específicas para ventas anuladas */
+.anulacion-column,
+.anulado-por-column,
+.motivo-column {
+  width: 12%;
+  min-width: 120px;
+}
+
+.anulacion-cell,
+.anulado-por-cell {
+  font-size: 13px;
+  color: #4a5568;
+}
+
+.motivo-cell {
+  max-width: 200px;
+}
+
+.motivo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tipo-anulacion {
+  background-color: #e6fffa;
+  color: #285e61;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+/* Cantidad original para productos devueltos */
+.cantidad-original {
+  font-size: 11px;
+  color: #718096;
+  font-style: italic;
+  margin-left: 8px;
+}
+
+/* Ajustes responsivos para ventas anuladas */
+@media (max-width: 1200px) {
+  .anulacion-column,
+  .anulado-por-column,
+  .motivo-column {
+    width: 10%;
+    min-width: 100px;
+  }
+  
+  .motivo-content {
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 768px) {
-  .historysalefilters {
-    padding: 15px;
-  }
-
-  .historysaleheader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .historysaleexportbuttons {
-    width: 100%;
-  }
-
-  .historysalefiltercontrols {
-    flex-direction: column;
+  .anuladas-warning {
+    font-size: 13px;
+    padding: 8px 12px;
   }
   
-  .historysalefilterdates, 
-  .historysaletotals {
-    width: 100%;
-  }
-
-  .historysaleclearfiltersbtn {
-    width: 100%;
+  .estado-badge {
+    font-size: 9px;
+    padding: 2px 6px;
   }
   
-  .producto-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .producto-nombre {
-    max-width: 100%;
+  .anulacion-cell,
+  .anulado-por-cell,
+  .motivo-cell {
+    font-size: 11px;
+    padding: 8px 6px;
   }
 }
 
 @media (max-width: 576px) {
-  .historysalefilterdates, 
-  .historysaletotals {
-    flex-direction: column;
-  }
-
   .historysaletable td, 
   .historysaletable th {
     padding: 10px 8px;
@@ -834,6 +928,59 @@
   }
 }
 
+/* Estilos para el campo de comentario de devolución */
+.comentario-column {
+  width: 15%;
+  min-width: 150px;
+  text-align: left;
+}
+
+.comentario-cell {
+  padding: 8px;
+  max-width: 200px;
+  word-wrap: break-word;
+  font-size: 13px;
+}
+
+.comentario-devolucion-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f7fafc;
+}
+
+.comentario-devolucion-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.comentario-devolucion-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  background-color: white;
+}
+
+.comentario-devolucion-textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.comentario-devolucion-textarea::placeholder {
+  color: #a0aec0;
+  font-style: italic;
+}
+
 /* Animación fade-in para elementos */
 @keyframes fadeIn {
   from {
@@ -844,4 +991,27 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Estilos para ventas anuladas */
+.motivo-column {
+  width: 20%;
+  min-width: 180px;
+  text-align: left;
+}
+
+.motivo-cell {
+  padding: 8px;
+  max-width: 250px;
+  word-wrap: break-word;
+  font-size: 13px;
+}
+
+.motivo-content {
+  line-height: 1.4;
+}
+
+.motivo-content strong {
+  color: #2d3748;
+  font-size: 12px;
 }

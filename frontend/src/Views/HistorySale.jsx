@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import SmartPagination from '../components/SmartPagination';
-import { obtenerVentasPorTicket, eliminarTicket, editarTicket } from "../services/venta.service.js";
+import { obtenerVentasPorTicket, eliminarTicket, editarTicket, obtenerVentasAnuladas } from "../services/venta.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
@@ -30,6 +30,10 @@ const HistorySale = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editedProducts, setEditedProducts] = useState([]);
+  const [comentarioDevolucion, setComentarioDevolucion] = useState(''); // 🆕 Nuevo estado para el comentario
+
+  // Estado para mostrar u ocultar ventas anuladas
+  const [showVentasAnuladas, setShowVentasAnuladas] = useState(false);
 
   // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
@@ -45,20 +49,58 @@ const HistorySale = () => {
 
   useEffect(() => {
     fetchVentas();
-  }, []);
+  }, [showVentasAnuladas]);
 
   const fetchVentas = async () => {
     try {
       setLoading(true);
-      const response = await obtenerVentasPorTicket();
+      setError(null); // Limpiar errores previos
+      let response;
       
-      const ventasData = response.data || [];
+      console.log('🔍 Fetching ventas, showVentasAnuladas:', showVentasAnuladas); // DEBUG
+      
+      if (showVentasAnuladas) {
+        // Obtener ventas anuladas
+        console.log('📞 Llamando a obtenerVentasAnuladas()'); // DEBUG
+        response = await obtenerVentasAnuladas();
+        console.log('📊 Respuesta de ventas anuladas:', response); // DEBUG
+      } else {
+        // Obtener ventas activas (comportamiento normal)
+        console.log('📞 Llamando a obtenerVentasPorTicket()'); // DEBUG
+        response = await obtenerVentasPorTicket();
+        console.log('📊 Respuesta de ventas activas:', response); // DEBUG
+      }
+      
+      // 🔧 FIX: Acceder correctamente a los datos según el tipo de respuesta
+      let ventasData = [];
+      if (showVentasAnuladas) {
+        // Para ventas anuladas: response.data.ventas
+        ventasData = Array.isArray(response?.data?.ventas) ? response.data.ventas : [];
+      } else {
+        // Para ventas activas: response.data
+        ventasData = Array.isArray(response?.data) ? response.data : [];
+      }
+      
+      console.log('📋 Datos finales de ventas:', ventasData); // DEBUG
+      
       setVentas(ventasData);
       setFilteredVentas(ventasData);
+      setCurrentPage(1); // Resetear página al cambiar tipo de ventas
+      
+      // Limpiar filtros cuando se cambia de tipo de vista
+      setSearchQuery("");
+      setSortOption("");
+      setCategoryFilter("");
+      setDateRange({ start: "", end: "" });
+      setTotalRange({ min: "", max: "" });
+      
       setLoading(false);
     } catch (error) {
       console.error("Error al obtener el historial de ventas:", error);
       setError("Error al obtener el historial de ventas.");
+      // Asegurar que tenemos arrays vacíos en caso de error
+      setVentas([]);
+      setFilteredVentas([]);
       setLoading(false);
     }
   };
@@ -116,25 +158,83 @@ const HistorySale = () => {
 
   // Función para manejar la eliminación de un ticket
   const handleDeleteTicket = async (ticketId) => {
-    const result = await showConfirmationAlert(
-      "¿Estás seguro?",
-      "¿Deseas anular esta venta? Esta acción no se puede deshacer.",
-      "Sí, anular venta",
-      "Cancelar"
-    );
+    // Usar SweetAlert2 directamente para tener más control sobre el input
+    const Swal = (await import('sweetalert2')).default;
+    
+    const { value: motivo, dismiss } = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas anular esta venta? El registro se conservará para auditoría.',
+      input: 'textarea',
+      inputLabel: 'Motivo de anulación (requerido)',
+      inputPlaceholder: 'Escribe el motivo de la anulación...',
+      inputAttributes: {
+        maxlength: 255,
+        'aria-label': 'Motivo de anulación',
+        required: 'true'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Sí, anular venta',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#e53e3e',
+      cancelButtonColor: '#718096',
+      showLoaderOnConfirm: true,
+      preConfirm: (value) => {
+        // Validar que el motivo no esté vacío
+        if (!value || value.trim() === '') {
+          Swal.showValidationMessage('El motivo de anulación es obligatorio');
+          return false;
+        }
+        if (value.trim().length < 3) {
+          Swal.showValidationMessage('El motivo debe tener al menos 3 caracteres');
+          return false;
+        }
+        if (value.trim().length > 255) {
+          Swal.showValidationMessage('El motivo no puede exceder 255 caracteres');
+          return false;
+        }
+        return value.trim();
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    });
 
-    if (result.isConfirmed) {
-      try {
-        setLoading(true);
-        await eliminarTicket(ticketId);
-        showSuccessAlert("Éxito", "Venta anulada correctamente");
-        // Refrescar la lista de ventas
-        await fetchVentas();
-      } catch (error) {
-        console.error("Error al eliminar ticket:", error);
-        showErrorAlert("Error", "No se pudo anular la venta");
-        setLoading(false);
+    // Si el usuario canceló, no hacer nada
+    if (dismiss === Swal.DismissReason.cancel || dismiss === Swal.DismissReason.backdrop) {
+      return;
+    }
+
+    // Si llegamos aquí, el motivo ya fue validado y no está vacío
+    try {
+      setLoading(true);
+      
+      console.log('🔍 Motivo validado a enviar:', motivo); // DEBUG
+      
+      await eliminarTicket(ticketId, motivo);
+      showSuccessAlert("Éxito", "Venta anulada correctamente. El registro se ha conservado para auditoría.");
+      // Refrescar la lista de ventas
+      await fetchVentas();
+    } catch (error) {
+      console.error("Error al anular ticket:", error);
+      
+      // 🔧 MEJORAR: Manejo de errores más específico
+      let errorMessage = "No se pudo anular la venta";
+      
+      if (error.message) {
+        // Si es un error de validación, mostrar el mensaje específico
+        if (error.message.includes('motivo') || error.message.includes('ticket')) {
+          errorMessage = error.message;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.status === 404) {
+          errorMessage = "La venta no fue encontrada o ya fue anulada";
+        } else if (error.response?.status === 403) {
+          errorMessage = "No tienes permisos para anular esta venta";
+        } else if (error.response?.status >= 500) {
+          errorMessage = "Error del servidor. Por favor, intente nuevamente";
+        }
       }
+      
+      showErrorAlert("Error", errorMessage);
+      setLoading(false);
     }
   };
 
@@ -148,14 +248,26 @@ const HistorySale = () => {
     setSelectedTicket(ticket);
     // Clonar los productos para poder editarlos
     setEditedProducts([...ticket.ventas.map(item => ({...item}))]);
+    setComentarioDevolucion(''); // Reiniciar comentario al editar
     setShowEditModal(true);
   };
 
   // Función para guardar los cambios en un ticket
   const handleSaveEdit = async () => {
+    // 🆕 Validar que el comentario no esté vacío
+    if (!comentarioDevolucion.trim()) {
+      showErrorAlert("Comentario requerido", "Debe ingresar un comentario explicando el motivo de la devolución.");
+      return;
+    }
+    
+    if (comentarioDevolucion.trim().length < 5) {
+      showErrorAlert("Comentario muy corto", "El comentario debe tener al menos 5 caracteres.");
+      return;
+    }
+    
     try {
       setLoading(true);
-      await editarTicket(selectedTicket._id, editedProducts);
+      await editarTicket(selectedTicket._id, editedProducts, comentarioDevolucion);
       setShowEditModal(false);
       showSuccessAlert("Éxito", "Venta actualizada correctamente");
       // Refrescar la lista de ventas
@@ -186,6 +298,7 @@ const HistorySale = () => {
     setShowEditModal(false);
     setSelectedTicket(null);
     setEditedProducts([]);
+    setComentarioDevolucion(''); // Reiniciar comentario al cerrar
   };
 
   // Función para modificar la cantidad de un producto
@@ -253,7 +366,7 @@ const HistorySale = () => {
     setFilteredVentas(filtered);
   }, [categoryFilter, dateRange, totalRange, ventas]);
 
-  const sortedVentas = [...filteredVentas].sort((a, b) => {
+  const sortedVentas = (Array.isArray(filteredVentas) ? [...filteredVentas] : []).sort((a, b) => {
     if (sortOption === "date-asc") return new Date(a.fecha) - new Date(b.fecha);
     if (sortOption === "date-desc")
       return new Date(b.fecha) - new Date(a.fecha);
@@ -331,10 +444,31 @@ const HistorySale = () => {
             <div className="historysalemaincontent">
               <div className="historysaleheader">
                 <div className="title-container">
-                  <h1 className="historysaletitle">Historial de Ventas</h1>
-                  <p className="historysale-subtitle">Consulta, gestiona y analiza todas las transacciones realizadas en tu negocio</p>
+                  <h1 className="historysaletitle">
+                    {showVentasAnuladas ? 'Historial de Ventas Anuladas' : 'Historial de Ventas'}
+                  </h1>
+                  <p className="historysale-subtitle">
+                    {showVentasAnuladas 
+                      ? 'Consulta el registro de todas las ventas anuladas para auditoría y control'
+                      : 'Consulta, gestiona y analiza todas las transacciones realizadas en tu negocio'
+                    }
+                  </p>
+                  {showVentasAnuladas && (
+                    <div className="anuladas-warning">
+                      ⚠️ Estas ventas han sido anuladas y se mantienen únicamente para auditoría
+                    </div>
+                  )}
                 </div>
                 <div className="historysaleexportbuttons">
+                  {!isEmpleado && (
+                    <button 
+                      className="historysaleexportbtn anuladas" 
+                      onClick={() => setShowVentasAnuladas(!showVentasAnuladas)}
+                    >
+                      <FontAwesomeIcon icon={faEye} /> 
+                      {showVentasAnuladas ? 'Ver Ventas Activas' : 'Ver Ventas Anuladas'}
+                    </button>
+                  )}
                   <button className="historysaleexportbtn pdf" onClick={exportToPDF}>
                     <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                   </button>
@@ -472,15 +606,28 @@ const HistorySale = () => {
                           <th className="metodo-column">MÉTODO DE PAGO</th>
                           <th className="productos-column">DETALLE DE PRODUCTOS</th>
                           <th className="total-column">IMPORTE TOTAL</th>
-                          <th className="acciones-column">ACCIONES</th>
+                          {showVentasAnuladas ? (
+                            <>
+                              <th className="anulacion-column">FECHA ANULACIÓN</th>
+                              <th className="anulado-por-column">ANULADO POR</th>
+                              <th className="motivo-column">MOTIVO / COMENTARIO</th>
+                            </>
+                          ) : (
+                            <th className="acciones-column">ACCIONES</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
                         {currentVentas.length > 0 ? (
                           currentVentas.map((venta, index) => (
-                            <tr key={index}>
+                            <tr key={index} className={showVentasAnuladas ? 'venta-anulada' : ''}>
                               <td className="codigo-cell">
-                                <div className="ticket-code">{venta._id}</div>
+                                <div className="ticket-code">
+                                  {venta._id}
+                                  {showVentasAnuladas && (
+                                    <span className="estado-badge anulada">ANULADA</span>
+                                  )}
+                                </div>
                               </td>
                               <td>{new Date(venta.fecha).toLocaleDateString()}</td>
                               <td>{venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido"}</td>
@@ -508,6 +655,11 @@ const HistorySale = () => {
                                   <div key={i} className="producto-item">
                                     <div className="producto-nombre">
                                       {producto.nombre}
+                                      {showVentasAnuladas && producto.cantidadOriginal && (
+                                        <span className="cantidad-original">
+                                          (Original: {producto.cantidadOriginal})
+                                        </span>
+                                      )}
                                     </div>
                                     <div className="producto-cantidad">
                                       <span className="cantidad-badge">{producto.cantidad}x</span>
@@ -522,39 +674,84 @@ const HistorySale = () => {
                                   0
                                 ).toLocaleString()}
                               </td>
-                              <td className="acciones-cell">
-                                <div className="historysaleactionbuttons">
-                                  {isEmpleado ? (
-                                    // 🔧 Mensaje informativo para empleados
-                                    <div className="employee-info-text">
-                                      <span>Solo lectura</span>
+                              {showVentasAnuladas ? (
+                                <>
+                                  <td className="anulacion-cell">
+                                    {venta.fechaAnulacion ? 
+                                      new Date(venta.fechaAnulacion).toLocaleDateString() : 
+                                      (venta.fechaDevolucion ? new Date(venta.fechaDevolucion).toLocaleDateString() : 'N/A')
+                                    }
+                                  </td>
+                                  <td className="anulado-por-cell">
+                                    {venta.usuarioAnulacion ? 
+                                      (venta.usuarioAnulacion.nombre || venta.usuarioAnulacion.username) :
+                                      (venta.usuarioDevolucion ? 
+                                        (venta.usuarioDevolucion.nombre || venta.usuarioDevolucion.username) : 'N/A')
+                                    }
+                                  </td>
+                                  <td className="motivo-cell">
+                                    <div className="motivo-content">
+                                      {/* Mostrar motivo de anulación o comentario de devolución según el tipo */}
+                                      {venta.estado === 'anulada' ? (
+                                        // Para ventas anuladas totalmente
+                                        <div>
+                                          <strong>Motivo de Anulación:</strong>
+                                          <br />
+                                          {venta.motivoAnulacion || 'Sin motivo especificado'}
+                                        </div>
+                                      ) : venta.estado === 'devuelta_parcial' ? (
+                                        // Para devoluciones parciales
+                                        <div>
+                                          <strong>Devolución Parcial:</strong>
+                                          <br />
+                                          {venta.comentarioDevolucion || 'Sin comentario de devolución'}
+                                        </div>
+                                      ) : (
+                                        // Fallback
+                                        <div>
+                                          {venta.motivoAnulacion || venta.comentarioDevolucion || 'Sin información disponible'}
+                                        </div>
+                                      )}
                                     </div>
-                                  ) : (
-                                    // 🔧 Botones completos para admin y jefe
-                                    <>
-                                      <button 
-                                        onClick={() => handleEditTicket(venta)} 
-                                        className="devolver-btn"
-                                        title="Devolver productos"
-                                      >
-                                        <FontAwesomeIcon icon={faEdit} /> Devolver
-                                      </button>
-                                      <button 
-                                        onClick={() => handleDeleteTicket(venta._id)} 
-                                        className="anular-btn"
-                                        title="Anular venta"
-                                      >
-                                        <FontAwesomeIcon icon={faTrash} /> Anular
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
+                                  </td>
+                                </>
+                              ) : (
+                                <td className="acciones-cell">
+                                  <div className="historysaleactionbuttons">
+                                    {isEmpleado ? (
+                                      // 🔧 Mensaje informativo para empleados
+                                      <div className="employee-info-text">
+                                        <span>Solo lectura</span>
+                                      </div>
+                                    ) : (
+                                      // 🔧 Botones completos para admin y jefe
+                                      <>
+                                        <button 
+                                          onClick={() => handleEditTicket(venta)} 
+                                          className="devolver-btn"
+                                          title="Devolver productos"
+                                        >
+                                          <FontAwesomeIcon icon={faEdit} /> Devolver
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteTicket(venta._id)} 
+                                          className="anular-btn"
+                                          title="Anular venta"
+                                        >
+                                          <FontAwesomeIcon icon={faTrash} /> Anular
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </td>
+                              )}
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="7" className="no-data-cell">No hay ventas registradas</td>
+                            <td colSpan={showVentasAnuladas ? "9" : "7"} className="no-data-cell">
+                              {showVentasAnuladas ? 'No hay ventas anuladas registradas' : 'No hay ventas registradas'}
+                            </td>
                           </tr>
                         )}
                       </tbody>
@@ -563,7 +760,7 @@ const HistorySale = () => {
                   
                   <SmartPagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(filteredVentas.length / ventasPerPage)}
+                    totalPages={Math.ceil((Array.isArray(filteredVentas) ? filteredVentas.length : 0) / ventasPerPage)}
                     onPageChange={paginate}
                     className="historysalepagination"
                     buttonClassName="historysalepaginationbutton"
@@ -654,6 +851,17 @@ const HistorySale = () => {
                           </tr>
                         </tfoot>
                       </table>
+                    </div>
+                    
+                    <div className="comentario-devolucion-container">
+                      <label className="comentario-devolucion-label">Comentario de Devolución (Requerido):</label>
+                      <textarea
+                        value={comentarioDevolucion}
+                        onChange={(e) => setComentarioDevolucion(e.target.value)}
+                        className="comentario-devolucion-textarea"
+                        placeholder="Ingrese el motivo de la devolución (mínimo 5 caracteres)..."
+                        required
+                      />
                     </div>
                   </div>
                   

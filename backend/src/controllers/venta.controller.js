@@ -111,10 +111,20 @@ export const registrarVenta = async (req, res) => {
   // ✅ Obtener ventas con filtros optimizados
   export const obtenerVentas = async (req, res) => {
     try {
-        const { codigoBarras, nombre, categoria, fechaInicio, fechaFin, page = 1, limit = 100 } = req.query;
+        const { codigoBarras, nombre, categoria, fechaInicio, fechaFin, page = 1, limit = 100, incluirAnuladas = false } = req.query;
         
         // Construir el filtro dinámicamente
         const filtro = {};
+        
+        // Por defecto, solo mostrar ventas activas, a menos que se solicite explícitamente incluir anuladas
+        if (incluirAnuladas !== 'true') {
+          filtro.$or = [
+            { estado: 'activa' },
+            { estado: { $exists: false } }, // Ventas anteriores sin campo estado
+            { estado: null }, // Ventas con estado null
+            { estado: 'devuelta_parcial', cantidad: { $gt: 0 } } // 🆕 Devoluciones parciales que aún tienen cantidad
+          ];
+        }
         
         // Filtro por código de barras (coincidencia exacta)
         if (codigoBarras) {
@@ -153,6 +163,8 @@ export const registrarVenta = async (req, res) => {
             .skip(skip)
             .limit(parseInt(limit))
             .populate('usuario', 'nombre username') // Incluir datos del usuario
+            .populate('usuarioAnulacion', 'nombre username') // Incluir datos del usuario que anuló
+            .populate('usuarioDevolucion', 'nombre username') // Incluir datos del usuario que hizo devolución
             .populate('deudorId', 'Nombre'); // Incluir datos del deudor si existe
         
         // Contar total de documentos que coinciden con el filtro
@@ -175,7 +187,8 @@ export const registrarVenta = async (req, res) => {
                 nombre: nombre || null,
                 categoria: categoria || null,
                 fechaInicio: fechaInicio || null,
-                fechaFin: fechaFin || null
+                fechaFin: fechaFin || null,
+                incluirAnuladas: incluirAnuladas === 'true'
             }
         };
         
@@ -188,8 +201,26 @@ export const registrarVenta = async (req, res) => {
 
   export const obtenerVentasPorTicket = async (req, res) => {
     try {
+      const { incluirAnuladas = false } = req.query;
+      
+      // Construir filtro para el aggregate
+      const matchStage = {};
+      
+      // 🔧 FIX: Incluir ventas que no tienen estado definido (ventas anteriores) y ventas activas
+      if (incluirAnuladas !== 'true') {
+        // Incluir ventas activas Y ventas sin estado definido (ventas anteriores) Y devoluciones parciales con cantidad > 0
+        matchStage.$or = [
+          { estado: 'activa' },
+          { estado: { $exists: false } }, // Ventas anteriores sin campo estado
+          { estado: null }, // Ventas con estado null
+          { estado: 'devuelta_parcial', cantidad: { $gt: 0 } } // 🆕 Devoluciones parciales que aún tienen cantidad
+        ];
+      }
+      
       // Primero obtenemos el primer registro de cada ticketId para conseguir el ID del usuario
       const ventasPorTicket = await Venta.aggregate([
+        // Filtrar ventas según el estado
+        { $match: matchStage },
         // Agrupar por ticketId
         { 
           $group: { 
@@ -198,7 +229,11 @@ export const registrarVenta = async (req, res) => {
             fecha: { $first: "$fecha" },
             usuarioId: { $first: "$usuario" }, // Obtener el ID del usuario
             metodoPago: { $first: "$metodoPago" }, // Obtener el método de pago
-            deudorId: { $first: "$deudorId" } // Obtener el ID del deudor si existe
+            deudorId: { $first: "$deudorId" }, // Obtener el ID del deudor si existe
+            estado: { $first: "$estado" }, // Obtener el estado del ticket
+            fechaAnulacion: { $first: "$fechaAnulacion" },
+            usuarioAnulacion: { $first: "$usuarioAnulacion" },
+            motivoAnulacion: { $first: "$motivoAnulacion" }
           } 
         },
         // Ordenar por fecha descendente
@@ -214,6 +249,13 @@ export const registrarVenta = async (req, res) => {
           const User = mongoose.model('User');
           const usuario = await User.findById(grupo.usuarioId).select('nombre username');
           resultado.usuario = usuario;
+        }
+        
+        // Buscar el usuario que anuló si existe
+        if (grupo.usuarioAnulacion) {
+          const User = mongoose.model('User');
+          const usuarioAnulacion = await User.findById(grupo.usuarioAnulacion).select('nombre username');
+          resultado.usuarioAnulacion = usuarioAnulacion;
         }
         
         // Buscar el deudor si existe
@@ -235,29 +277,131 @@ export const registrarVenta = async (req, res) => {
 export const deleteTicket = async (req, res) => {
   try {
     const { ticketId } = req.params;
+    const { motivo } = req.body;
     
-    if (!ticketId) {
-      return handleErrorClient(res, 400, "ID de ticket es requerido");
+    // 🔧 VALIDACIÓN MEJORADA: Verificar parámetros con más detalle
+    if (!ticketId || typeof ticketId !== 'string' || ticketId.trim() === '') {
+      return handleErrorClient(res, 400, "ID de ticket es requerido y debe ser válido");
     }
 
-    // Encontrar y eliminar todas las ventas asociadas a este ticket
-    const result = await Venta.deleteMany({ ticketId });
+    if (!motivo || typeof motivo !== 'string' || motivo.trim() === '') {
+      return handleErrorClient(res, 400, "El motivo de anulación es obligatorio");
+    }
+
+    const motivoLimpio = motivo.trim();
     
-    if (result.deletedCount === 0) {
-      return handleErrorClient(res, 404, "Ticket no encontrado o ya fue eliminado");
+    if (motivoLimpio.length < 3) {
+      return handleErrorClient(res, 400, "El motivo debe tener al menos 3 caracteres");
+    }
+
+    if (motivoLimpio.length > 255) {
+      return handleErrorClient(res, 400, "El motivo no puede exceder 255 caracteres");
+    }
+
+    // 🔧 SEGURIDAD: Sanitizar motivo para prevenir inyecciones
+    const motivoSanitizado = motivoLimpio.replace(/[<>]/g, ''); // Remover caracteres peligrosos básicos
+    
+    console.log('🔍 Backend - ticketId:', ticketId.trim());
+    console.log('🔍 Backend - motivo sanitizado:', motivoSanitizado);
+
+    // Buscar todas las ventas del ticket para verificar que existan y estén activas
+    const ventasTicket = await Venta.find({ 
+      ticketId: ticketId.trim(),
+      $or: [
+        { estado: 'activa' },
+        { estado: { $exists: false } }, // Ventas anteriores sin campo estado
+        { estado: null } // Ventas con estado null
+      ]
+    });
+    
+    if (ventasTicket.length === 0) {
+      return handleErrorClient(res, 404, "Ticket no encontrado o ya fue anulado");
+    }
+
+    // Obtener el ID del usuario que está anulando
+    const usuarioAnulacion = req.userId;
+
+    // 🔧 TRANSACCIÓN: Usar transacción para asegurar consistencia
+    const session = await Venta.startSession();
+    
+    try {
+      await session.withTransaction(async () => {
+        // Marcar todas las ventas del ticket como anuladas
+        const result = await Venta.updateMany(
+          { 
+            ticketId: ticketId.trim(),
+            $or: [
+              { estado: 'activa' },
+              { estado: { $exists: false } }, // Ventas anteriores sin campo estado
+              { estado: null } // Ventas con estado null
+            ]
+          },
+          {
+            $set: {
+              estado: 'anulada',
+              fechaAnulacion: new Date(),
+              usuarioAnulacion: usuarioAnulacion,
+              motivoAnulacion: motivoSanitizado
+            }
+          },
+          { session }
+        );
+        
+        if (result.modifiedCount === 0) {
+          throw new Error("No se pudieron anular las ventas del ticket");
+        }
+
+        // Si había un deudor asociado, revertir la deuda
+        const ventaConDeudor = ventasTicket.find(venta => venta.deudorId);
+        if (ventaConDeudor && ventaConDeudor.deudorId) {
+          const deudor = await Deudores.findById(ventaConDeudor.deudorId).session(session);
+          if (deudor) {
+            // Calcular el total de la venta anulada
+            const totalAnulado = ventasTicket.reduce((total, venta) => 
+              total + (venta.precioVenta * venta.cantidad), 0
+            );
+
+            // Restar la deuda del total
+            deudor.deudaTotal = Math.max(0, deudor.deudaTotal - totalAnulado);
+
+            // Agregar registro en el historial de pagos
+            deudor.historialPagos.push({
+              fecha: new Date(),
+              monto: -totalAnulado,
+              tipo: 'anulacion',
+              comentario: `Anulación de ticket ${ticketId.trim()} - Motivo: ${motivoSanitizado}`
+            });
+
+            await deudor.save({ session });
+          }
+        }
+      });
+      
+      await session.endSession();
+      
+      handleSuccess(res, 200, "Venta anulada correctamente (registro conservado)", { 
+        ticketId: ticketId.trim(), 
+        ventasAnuladas: ventasTicket.length,
+        fechaAnulacion: new Date(),
+        motivo: motivoSanitizado
+      });
+      
+    } catch (transactionError) {
+      await session.endSession();
+      console.error("Error en la transacción:", transactionError);
+      return handleErrorServer(res, 500, "Error al procesar la anulación", transactionError.message);
     }
     
-    handleSuccess(res, 200, "Ticket eliminado correctamente", { ticketId, deletedCount: result.deletedCount });
   } catch (error) {
-    console.error("Error al eliminar ticket:", error);
-    handleErrorServer(res, 500, "Error al eliminar el ticket", error.message);
+    console.error("Error al anular ticket:", error);
+    handleErrorServer(res, 500, "Error al anular el ticket", error.message);
   }
 };
 
 export const editTicket = async (req, res) => {
   try {
     const { ticketId } = req.params;
-    const { productos } = req.body;
+    const { productos, comentario = '' } = req.body; // 🆕 Recibir comentario obligatorio
     
     if (!ticketId) {
       return handleErrorClient(res, 400, "ID de ticket es requerido");
@@ -267,51 +411,150 @@ export const editTicket = async (req, res) => {
       return handleErrorClient(res, 400, "Lista de productos es requerida");
     }
 
-    // Obtener una venta original para preservar el usuario, método de pago y deudor
-    const ventaOriginal = await Venta.findOne({ ticketId });
-    const usuarioOriginal = ventaOriginal ? ventaOriginal.usuario : null;
-    const metodoPagoOriginal = ventaOriginal ? ventaOriginal.metodoPago : 'efectivo';
-    const deudorIdOriginal = ventaOriginal ? ventaOriginal.deudorId : null;
-
-    // Primero eliminamos todas las ventas asociadas a este ticket
-    await Venta.deleteMany({ ticketId });
+    // 🆕 Validar que el comentario sea obligatorio
+    if (!comentario || comentario.trim() === '') {
+      return handleErrorClient(res, 400, "El comentario de devolución es obligatorio");
+    }
     
-    // Luego creamos nuevos registros con los productos actualizados
-    const ventasActualizadas = [];
-    for (const producto of productos) {
-      // Solo crear registros para productos con cantidad > 0
-      if (producto.cantidad > 0) {
-        const nuevaVenta = new Venta({
-          ticketId,
-          nombre: producto.nombre,
-          codigoBarras: producto.codigoBarras,
-          categoria: producto.categoria,
-          cantidad: producto.cantidad,
-          precioVenta: producto.precioVenta,
-          precioCompra: producto.precioCompra,
-          fecha: new Date(),
-          usuario: usuarioOriginal, // Mantener el usuario original que hizo la venta
-          metodoPago: metodoPagoOriginal, // Mantener el método de pago original
-          deudorId: deudorIdOriginal // Mantener el deudor original
-        });
+    if (comentario.trim().length < 5) {
+      return handleErrorClient(res, 400, "El comentario debe tener al menos 5 caracteres");
+    }
+
+    // 🆕 Sanitizar comentario
+    const comentarioSanitizado = comentario.trim().replace(/[<>]/g, '');
+
+    // Obtener las ventas originales del ticket que están activas
+    // 🔧 FIX: Obtener las ventas originales del ticket, incluyendo devoluciones parciales con cantidad > 0
+    const ventasOriginales = await Venta.find({ 
+      ticketId,
+      $or: [
+        { estado: 'activa' },
+        { estado: { $exists: false } }, // Ventas anteriores sin campo estado
+        { estado: null }, // Ventas con estado null
+        { estado: 'devuelta_parcial', cantidad: { $gt: 0 } } // 🆕 Devoluciones parciales que aún tienen cantidad
+      ]
+    });
+    
+    if (ventasOriginales.length === 0) {
+      return handleErrorClient(res, 404, "Ticket no encontrado o ya fue procesado");
+    }
+
+    const usuarioDevolucion = req.userId;
+    const fechaDevolucion = new Date();
+    
+    // Procesar cada producto original comparándolo con los nuevos
+    for (const ventaOriginal of ventasOriginales) {
+      const productoActualizado = productos.find(p => 
+        p.codigoBarras === ventaOriginal.codigoBarras && 
+        p.nombre === ventaOriginal.nombre
+      );
+      
+      if (!productoActualizado || productoActualizado.cantidad === 0) {
+        // El producto fue completamente devuelto - marcar como devuelto
+        await Venta.updateOne(
+          { _id: ventaOriginal._id },
+          {
+            $set: {
+              estado: 'devuelta_parcial',
+              cantidadOriginal: ventaOriginal.cantidad,
+              cantidad: 0,
+              fechaDevolucion,
+              usuarioDevolucion,
+              comentarioDevolucion: comentarioSanitizado // 🆕 Guardar comentario
+            }
+          }
+        );
+      } else if (productoActualizado.cantidad < ventaOriginal.cantidad) {
+        // 🔧 FIX: Devolución parcial - solo marcar como 'devuelta_parcial' si la cantidad final es 0
+        // Si la cantidad final > 0, mantener como 'activa' pero guardar la información de devolución
+        const estadoFinal = productoActualizado.cantidad > 0 ? 'activa' : 'devuelta_parcial';
         
-        await nuevaVenta.save();
-        ventasActualizadas.push(nuevaVenta);
+        await Venta.updateOne(
+          { _id: ventaOriginal._id },
+          {
+            $set: {
+              estado: estadoFinal,
+              cantidadOriginal: ventaOriginal.cantidad,
+              cantidad: productoActualizado.cantidad,
+              fechaDevolucion,
+              usuarioDevolucion,
+              comentarioDevolucion: comentarioSanitizado // 🆕 Guardar comentario
+            }
+          }
+        );
+      }
+      // Si la cantidad es igual o mayor, no se hace nada (no hay devolución)
+    }
+
+    // Obtener las ventas actualizadas para la respuesta
+    const ventasActualizadas = await Venta.find({ 
+      ticketId,
+      $or: [
+        { estado: 'activa' },
+        { estado: 'devuelta_parcial', cantidad: { $gt: 0 } }
+      ]
+    });
+    
+    // Calcular el monto total devuelto para actualizar deuda si es necesario
+    const ventaConDeudor = ventasOriginales.find(venta => venta.deudorId);
+    if (ventaConDeudor && ventaConDeudor.deudorId) {
+      try {
+        const deudor = await Deudores.findById(ventaConDeudor.deudorId);
+        if (deudor) {
+          // Calcular el monto total original y el nuevo monto
+          const montoOriginal = ventasOriginales.reduce((total, venta) => 
+            total + (venta.precioVenta * venta.cantidad), 0
+          );
+          
+          const montoNuevo = ventasActualizadas.reduce((total, venta) => 
+            total + (venta.precioVenta * venta.cantidad), 0
+          );
+          
+          const montoDevuelto = montoOriginal - montoNuevo;
+          
+          if (montoDevuelto > 0) {
+            // Reducir la deuda
+            deudor.deudaTotal = Math.max(0, deudor.deudaTotal - montoDevuelto);
+            
+            // 🆕 Incluir comentario en el historial si existe
+            const comentarioHistorial = comentarioSanitizado 
+              ? `Devolución parcial en ticket ${ticketId} - ${comentarioSanitizado}`
+              : `Devolución parcial en ticket ${ticketId}`;
+            
+            // Agregar registro en el historial
+            deudor.historialPagos.push({
+              fecha: fechaDevolucion,
+              monto: -montoDevuelto,
+              tipo: 'devolucion',
+              comentario: comentarioHistorial
+            });
+            
+            await deudor.save();
+          }
+        }
+      } catch (deudorError) {
+        console.error("Error al actualizar deuda del deudor:", deudorError);
+        // No fallar la devolución por error en deudor
       }
     }
     
-    // Si no quedan productos, eliminamos completamente el ticket
     if (ventasActualizadas.length === 0) {
-      handleSuccess(res, 200, "Ticket eliminado ya que no quedan productos", { ticketId });
+      handleSuccess(res, 200, "Ticket completamente devuelto (registro conservado)", { 
+        ticketId,
+        estadoFinal: 'completamente_devuelto',
+        comentario: comentarioSanitizado // 🆕 Incluir comentario en respuesta
+      });
     } else {
-      handleSuccess(res, 200, "Ticket actualizado correctamente", { 
+      handleSuccess(res, 200, "Devolución parcial procesada correctamente", { 
         ticketId, 
-        productos: ventasActualizadas 
+        productos: ventasActualizadas,
+        fechaDevolucion,
+        comentario: comentarioSanitizado // 🆕 Incluir comentario en respuesta
       });
     }
   } catch (error) {
-    console.error("Error al editar ticket:", error);
-    handleErrorServer(res, 500, "Error al editar el ticket", error.message);
+    console.error("Error al procesar devolución:", error);
+    handleErrorServer(res, 500, "Error al procesar la devolución", error.message);
   }
 };
 
@@ -379,5 +622,83 @@ export const obtenerVentasPropias = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener ventas propias:", error);
     handleErrorServer(res, 500, "Error al obtener las ventas propias", error.message);
+  }
+};
+
+export const obtenerVentasAnuladas = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin, page = 1, limit = 50 } = req.query;
+    
+    // Construir filtro para ventas anuladas
+    const filtro = { 
+      estado: { $in: ['anulada', 'devuelta_parcial'] }
+    };
+    
+    // Filtro por rango de fechas
+    if (fechaInicio || fechaFin) {
+      filtro.fechaAnulacion = {};
+      if (fechaInicio) {
+        filtro.fechaAnulacion.$gte = new Date(fechaInicio);
+      }
+      if (fechaFin) {
+        const fechaFinDate = new Date(fechaFin);
+        fechaFinDate.setHours(23, 59, 59, 999);
+        filtro.fechaAnulacion.$lte = fechaFinDate;
+      }
+    }
+    
+    // Calcular paginación
+    const skip = (page - 1) * limit;
+    
+    // Obtener ventas anuladas con información completa
+    const ventasAnuladas = await Venta.find(filtro)
+      .sort({ fechaAnulacion: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('usuario', 'nombre username')
+      .populate('usuarioAnulacion', 'nombre username')
+      .populate('usuarioDevolucion', 'nombre username')
+      .populate('deudorId', 'Nombre');
+    
+    // Agrupar por ticket para mostrar información completa
+    const ventasPorTicket = {};
+    ventasAnuladas.forEach(venta => {
+      if (!ventasPorTicket[venta.ticketId]) {
+        ventasPorTicket[venta.ticketId] = {
+          _id: venta.ticketId,
+          ventas: [],
+          fecha: venta.fecha,
+          fechaAnulacion: venta.fechaAnulacion,
+          fechaDevolucion: venta.fechaDevolucion,
+          usuario: venta.usuario,
+          usuarioAnulacion: venta.usuarioAnulacion,
+          usuarioDevolucion: venta.usuarioDevolucion,
+          metodoPago: venta.metodoPago,
+          deudor: venta.deudorId,
+          motivoAnulacion: venta.motivoAnulacion,
+          comentarioDevolucion: venta.comentarioDevolucion, // 🆕 Incluir comentario de devolución
+          estado: venta.estado
+        };
+      }
+      ventasPorTicket[venta.ticketId].ventas.push(venta);
+    });
+    
+    const totalVentas = await Venta.countDocuments(filtro);
+    const totalPages = Math.ceil(totalVentas / limit);
+    
+    handleSuccess(res, 200, "Historial de ventas anuladas obtenido", {
+      ventas: Object.values(ventasPorTicket),
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalVentas,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error al obtener ventas anuladas:", error);
+    handleErrorServer(res, 500, "Error al obtener el historial de ventas anuladas", error.message);
   }
 };

@@ -47,6 +47,11 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
         params.append('limit', filtros.limit);
       }
       
+      // Nuevo parámetro para incluir ventas anuladas
+      if (filtros.incluirAnuladas) {
+        params.append('incluirAnuladas', filtros.incluirAnuladas);
+      }
+      
       const queryString = params.toString();
       const url = queryString ? `/ventas/ventas/obtener?${queryString}` : "/ventas/ventas/obtener";
       
@@ -74,9 +79,10 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
     }
   };
 
-  export const obtenerVentasPorTicket = async () => {
+  export const obtenerVentasPorTicket = async (incluirAnuladas = false) => {
     try {
-      const response = await axios.get("/ventas/ventas/tickets");
+      const params = incluirAnuladas ? '?incluirAnuladas=true' : '';
+      const response = await axios.get(`/ventas/ventas/tickets${params}`);
       return response.data;
     } catch (error) {
       console.error("❌ Error al obtener las ventas por ticket:", error);
@@ -84,19 +90,80 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
     }
   };
 
-  export const eliminarTicket = async (ticketId) => {
+  // Nueva función para obtener ventas anuladas
+  export const obtenerVentasAnuladas = async (filtros = {}) => {
     try {
-      const response = await axios.delete(`/ventas/ticket/${ticketId}`);
+      const params = new URLSearchParams();
+      
+      if (filtros.fechaInicio) {
+        params.append('fechaInicio', filtros.fechaInicio);
+      }
+      
+      if (filtros.fechaFin) {
+        params.append('fechaFin', filtros.fechaFin);
+      }
+      
+      if (filtros.page) {
+        params.append('page', filtros.page);
+      }
+      
+      if (filtros.limit) {
+        params.append('limit', filtros.limit);
+      }
+      
+      const queryString = params.toString();
+      const url = queryString ? `/ventas/ventas/anuladas?${queryString}` : "/ventas/ventas/anuladas";
+      
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
-      console.error("❌ Error al eliminar el ticket:", error);
+      console.error("❌ Error al obtener las ventas anuladas:", error);
       throw error;
     }
   };
 
-  export const editarTicket = async (ticketId, productos) => {
+  export const eliminarTicket = async (ticketId, motivo) => {
     try {
-      const response = await axios.put(`/ventas/ticket/${ticketId}`, { productos });
+      // 🔧 VALIDACIÓN: Verificar parámetros antes de enviar
+      if (!ticketId || typeof ticketId !== 'string' || ticketId.trim() === '') {
+        throw new Error('ID de ticket inválido');
+      }
+      
+      if (!motivo || typeof motivo !== 'string' || motivo.trim() === '') {
+        throw new Error('El motivo de anulación es obligatorio');
+      }
+      
+      if (motivo.trim().length < 3) {
+        throw new Error('El motivo debe tener al menos 3 caracteres');
+      }
+      
+      if (motivo.trim().length > 255) {
+        throw new Error('El motivo no puede exceder 255 caracteres');
+      }
+      
+      console.log('🔍 Motivo validado a enviar:', motivo.trim()); // DEBUG
+      
+      const response = await axios.delete(`/ventas/ticket/${encodeURIComponent(ticketId.trim())}`, { 
+        data: { motivo: motivo.trim() } 
+      });
+      return response.data;
+    } catch (error) {
+      console.error("❌ Error al anular el ticket:", error);
+      // Propagar errores de validación tal como están
+      if (error.message.includes('motivo') || error.message.includes('ticket')) {
+        throw error;
+      }
+      // Para otros errores, crear un mensaje más amigable
+      throw new Error('No se pudo anular la venta. Por favor, intente nuevamente.');
+    }
+  };
+
+  export const editarTicket = async (ticketId, productos, comentario = '') => {
+    try {
+      const response = await axios.put(`/ventas/ticket/${ticketId}`, { 
+        productos,
+        comentario: comentario.trim() // 🆕 Enviar comentario al backend
+      });
       return response.data;
     } catch (error) {
       console.error("❌ Error al editar el ticket:", error);
