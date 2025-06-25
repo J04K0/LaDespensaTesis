@@ -164,6 +164,7 @@
   flex-shrink: 0;
   border: 3px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
 .movement-icon {
@@ -299,6 +300,25 @@
 
 .btn-secondary:hover {
   background-color: #545b62;
+}
+
+/* 🆕 NUEVOS ESTILOS para comentarios de restauración */
+.restore-comment {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid #28a745;
+  margin-left: 8px;
+  display: block;
+  margin-top: 4px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Mejora visual para restauraciones */
+.timeline-item:has(.restore-comment) .timeline-marker {
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
 /* Responsive */

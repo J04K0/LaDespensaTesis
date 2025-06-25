@@ -747,6 +747,44 @@ const Products = () => {
     }
   }, [productStatsOptimized, productInfo, ventasGlobales]);
 
+  // Agregar función para refrescar productos cuando se entra desde productos eliminados
+  const refreshProductsFromDeleted = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
+      setAllProducts(productsArray);
+      
+      // Mantener filtros actuales
+      if (categoryFilterActive) {
+        const categoryProducts = productsArray.filter(product => product.Categoria === category);
+        setProductsByCategory(categoryProducts);
+        applyAvailabilityFilter(categoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(productsArray, availabilityFilter);
+      }
+      
+    } catch (error) {
+      console.error('Error al actualizar productos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
+
+  // Efecto para detectar cuando se navega desde productos eliminados
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const fromDeleted = searchParams.get('fromDeleted');
+    
+    if (fromDeleted === 'true') {
+      refreshProductsFromDeleted();
+      
+      // Limpiar el parámetro de la URL sin recargar la página
+      const newUrl = window.location.pathname + window.location.search.replace(/[?&]fromDeleted=true/, '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [location.search, refreshProductsFromDeleted]);
+
   return (
     <div className="app-container">
       <Navbar />

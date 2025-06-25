@@ -70,6 +70,20 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
     }
   };
 
+  // 🆕 NUEVA función para detectar si es una restauración
+  const isRestoreMovement = (motivo) => {
+    return motivo && motivo.toLowerCase().includes('producto restaurado');
+  };
+
+  // 🆕 NUEVA función para extraer el comentario de restauración
+  const extractRestoreComment = (motivo) => {
+    if (isRestoreMovement(motivo)) {
+      const match = motivo.match(/Producto restaurado: (.+)/);
+      return match ? match[1] : motivo;
+    }
+    return motivo;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -110,14 +124,27 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
             <div className="history-timeline">
               {historialStock.map((cambio, index) => (
                 <div key={index} className="timeline-item">
-                  <div className="timeline-marker" style={{ backgroundColor: tipoMovimientoColors[cambio.tipoMovimiento] }}>
-                    <span className="movement-icon">{getMovementIcon(cambio.tipoMovimiento)}</span>
+                  <div className="timeline-marker" style={{ 
+                    backgroundColor: isRestoreMovement(cambio.motivo) 
+                      ? '#28a745' // Verde para restauraciones
+                      : tipoMovimientoColors[cambio.tipoMovimiento] 
+                  }}>
+                    <span className="movement-icon">
+                      {isRestoreMovement(cambio.motivo) ? '🔄' : getMovementIcon(cambio.tipoMovimiento)}
+                    </span>
                   </div>
                   
                   <div className="timeline-content">
                     <div className="timeline-header">
-                      <span className="movement-type" style={{ color: tipoMovimientoColors[cambio.tipoMovimiento] }}>
-                        {tipoMovimientoLabels[cambio.tipoMovimiento] || cambio.tipoMovimiento}
+                      <span className="movement-type" style={{ 
+                        color: isRestoreMovement(cambio.motivo) 
+                          ? '#28a745' 
+                          : tipoMovimientoColors[cambio.tipoMovimiento] 
+                      }}>
+                        {isRestoreMovement(cambio.motivo) 
+                          ? 'Producto Restaurado' 
+                          : (tipoMovimientoLabels[cambio.tipoMovimiento] || cambio.tipoMovimiento)
+                        }
                       </span>
                       <span className="movement-date">
                         <FontAwesomeIcon icon={faCalendarAlt} />
@@ -136,7 +163,16 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
                     
                     <div className="movement-details">
                       <p className="movement-reason">
-                        <strong>Motivo:</strong> {cambio.motivo}
+                        <strong>
+                          {isRestoreMovement(cambio.motivo) ? 'Comentario de restauración:' : 'Motivo:'}
+                        </strong> 
+                        {isRestoreMovement(cambio.motivo) ? (
+                          <span className="restore-comment">
+                            {extractRestoreComment(cambio.motivo)}
+                          </span>
+                        ) : (
+                          cambio.motivo
+                        )}
                       </p>
                       {cambio.usuario && (
                         <p className="movement-user">

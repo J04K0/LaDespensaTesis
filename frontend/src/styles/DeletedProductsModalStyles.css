@@ -507,6 +507,124 @@
   opacity: 0.6;
 }
 
+/* 🆕 NUEVOS ESTILOS para sección de auditoría */
+.audit-section {
+  margin-top: 15px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 15px;
+}
+
+.audit-toggle-btn {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.audit-toggle-btn:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+}
+
+.audit-details {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.audit-details h5 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.audit-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.audit-event {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid;
+}
+
+.audit-event.elimination {
+  background: #fff5f5;
+  border-left-color: #dc3545;
+}
+
+.audit-event.restoration {
+  background: #f0fff4;
+  border-left-color: #28a745;
+}
+
+.audit-icon {
+  font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.audit-content {
+  flex: 1;
+}
+
+.audit-content h6 {
+  margin: 0 0 8px 0;
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.audit-content p {
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.audit-comment {
+  margin-top: 8px;
+}
+
+.comment-box {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #495057;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.restoration-item {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.restoration-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .deleted-products-modal {

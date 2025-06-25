@@ -28,6 +28,9 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [productToRestore, setProductToRestore] = useState(null);
   const [restoreComment, setRestoreComment] = useState('');
+  
+  // 🆕 NUEVO: Flag para evitar fetch automático después de restaurar
+  const [skipNextFetch, setSkipNextFetch] = useState(false);
 
   const categories = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
@@ -37,8 +40,13 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   ];
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !skipNextFetch) {
       fetchDeletedProducts();
+    }
+    
+    // Resetear el flag después de cada efecto
+    if (skipNextFetch) {
+      setSkipNextFetch(false);
     }
   }, [isOpen, currentPage]);
 
@@ -69,17 +77,64 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
 
     try {
       setLoading(true);
-      await restoreProduct(productToRestore._id, {
+      
+      const response = await restoreProduct(productToRestore._id, {
         comentarioRestauracion: restoreComment.trim()
       });
       
-      showSuccessAlert('Producto restaurado', 'El producto ha sido restaurado exitosamente');
+      // Actualizar estado local inmediatamente
+      const productIdToRemove = productToRestore._id;
+      setDeletedProducts(prevProducts => {
+        const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
+        
+        // Calcular nueva página si es necesario
+        const itemsPerPage = 10;
+        const remainingItems = updatedProducts.length;
+        const newTotalPages = Math.ceil(remainingItems / itemsPerPage) || 1;
+        
+        // Si la página actual queda vacía y no es la primera página
+        if (remainingItems === 0 && currentPage > 1) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(prev => prev - 1);
+          }, 50);
+        } else if (currentPage > newTotalPages) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(newTotalPages);
+          }, 50);
+        }
+        
+        setTotalPages(newTotalPages);
+        return updatedProducts;
+      });
+      
+      // Mostrar mensaje de éxito
+      showSuccessAlert(
+        'Producto restaurado exitosamente', 
+        'El producto ha sido restaurado y está disponible en el inventario principal.',
+        {
+          showConfirmButton: true,
+          confirmButtonText: 'Ver en inventario',
+          showCancelButton: true,
+          cancelButtonText: 'Continuar aquí',
+          confirmButtonColor: '#28a745'
+        }
+      ).then((result) => {
+        if (result.isConfirmed) {
+          onClose();
+          // Usar window.location para asegurar que se recarga la vista principal
+          window.location.href = '/products?fromDeleted=true';
+        }
+      });
+      
+      // Cerrar modal
       setShowRestoreModal(false);
       setProductToRestore(null);
       setRestoreComment('');
-      fetchDeletedProducts();
+      
     } catch (error) {
-      console.error('Error restoring product:', error);
+      console.error('Error en restauración:', error);
       showErrorAlert('Error', 'No se pudo restaurar el producto');
     } finally {
       setLoading(false);

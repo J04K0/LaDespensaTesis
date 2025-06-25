@@ -18,6 +18,36 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
     { value: 'otro', label: 'Otro motivo' }
   ];
 
+  // Optimizar control de scroll del body
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.pageYOffset;
+      document.body.style.cssText = `
+        position: fixed;
+        top: -${scrollY}px;
+        width: 100%;
+        overflow-y: scroll;
+      `;
+      document.body.dataset.scrollY = scrollY;
+    } else {
+      const scrollY = document.body.dataset.scrollY;
+      document.body.style.cssText = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY));
+      }
+      delete document.body.dataset.scrollY;
+    }
+
+    return () => {
+      const scrollY = document.body.dataset.scrollY;
+      document.body.style.cssText = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY));
+      }
+      delete document.body.dataset.scrollY;
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       setMotivoEliminacion('');
@@ -76,16 +106,16 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
   if (!isOpen) return null;
 
   return (
-    <div className="product-delete-modal-overlay" onClick={handleOverlayClick}>
-      <div className="product-delete-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="product-delete-modal-header">
-          <div className="product-delete-modal-icon">
+    <div className="delete-modal-overlay" onClick={handleOverlayClick}>
+      <div className="delete-modal-container" onClick={(e) => e.stopPropagation()}>
+        {/* Header del Modal */}
+        <div className="delete-modal-header">
+          <div className="delete-modal-icon">
             <FontAwesomeIcon icon={faExclamationTriangle} />
           </div>
-          <h2 className="product-delete-modal-title">Eliminar Producto</h2>
+          <h2 className="delete-modal-title">Eliminar Producto</h2>
           <button 
-            className="product-delete-modal-close"
+            className="delete-modal-close"
             onClick={handleClose}
             disabled={loading}
           >
@@ -93,77 +123,85 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           </button>
         </div>
 
-        {/* Content */}
-        <div className="product-delete-modal-body">
-          <div className="product-delete-warning">
-            <p>
-              ¿Está seguro de que desea eliminar el producto 
-              <strong> "{productName}"</strong>?
-            </p>
-            <p className="warning-text">
-              Esta acción marcará el producto como eliminado. El producto no se eliminará 
-              físicamente y podrá ser restaurado posteriormente desde la sección de productos eliminados.
-            </p>
+        {/* Contenido Principal */}
+        <div className="delete-modal-content">
+          {/* Advertencia */}
+          <div className="delete-warning-card">
+            <div className="delete-warning-icon">
+              <FontAwesomeIcon icon={faExclamationTriangle} />
+            </div>
+            <div className="delete-warning-content">
+              <h4>¿Está seguro de que desea eliminar el producto?</h4>
+              <p className="delete-product-name">"{productName}"</p>
+              <p className="delete-warning-description">
+                Esta acción marcará el producto como eliminado. El producto no se eliminará 
+                físicamente y podrá ser restaurado posteriormente desde la sección de productos eliminados.
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="product-delete-form">
-            <div className="form-group">
-              <label htmlFor="motivoEliminacion" className="form-label">
-                Motivo de la eliminación <span className="required">*</span>
-              </label>
-              <select
-                id="motivoEliminacion"
-                value={motivoEliminacion}
-                onChange={(e) => setMotivoEliminacion(e.target.value)}
-                className={`form-select ${errors.motivo ? 'error' : ''}`}
-                disabled={loading}
-                required
-              >
-                {motivosDisponibles.map((motivo) => (
-                  <option key={motivo.value} value={motivo.value}>
-                    {motivo.label}
-                  </option>
-                ))}
-              </select>
-              {errors.motivo && <span className="error-message">{errors.motivo}</span>}
-            </div>
+          {/* Formulario */}
+          <form onSubmit={handleSubmit} className="delete-form">
+            <div className="delete-form-grid">
+              <div className="delete-form-group">
+                <label htmlFor="motivoEliminacion" className="delete-form-label">
+                  Motivo de la eliminación <span className="required">*</span>
+                </label>
+                <select
+                  id="motivoEliminacion"
+                  value={motivoEliminacion}
+                  onChange={(e) => setMotivoEliminacion(e.target.value)}
+                  className={`delete-form-control ${errors.motivo ? 'error' : ''}`}
+                  disabled={loading}
+                  required
+                >
+                  {motivosDisponibles.map((motivo) => (
+                    <option key={motivo.value} value={motivo.value}>
+                      {motivo.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.motivo && <span className="error-message">{errors.motivo}</span>}
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="comentarioEliminacion" className="form-label">
-                Comentario adicional <span className="required">*</span>
-              </label>
-              <textarea
-                id="comentarioEliminacion"
-                value={comentarioEliminacion}
-                onChange={(e) => setComentarioEliminacion(e.target.value)}
-                placeholder="Proporcione detalles adicionales sobre la eliminación del producto..."
-                className={`form-textarea ${errors.comentario ? 'error' : ''}`}
-                rows={4}
-                disabled={loading}
-                required
-              />
-              <small className="form-help">
-                Mínimo 10 caracteres. Este comentario se guardará para auditoría.
-              </small>
-              {errors.comentario && <span className="error-message">{errors.comentario}</span>}
+              <div className="delete-form-group delete-form-group-full">
+                <label htmlFor="comentarioEliminacion" className="delete-form-label">
+                  Comentario adicional <span className="required">*</span>
+                </label>
+                <textarea
+                  id="comentarioEliminacion"
+                  value={comentarioEliminacion}
+                  onChange={(e) => setComentarioEliminacion(e.target.value)}
+                  placeholder="Proporcione detalles adicionales sobre la eliminación del producto..."
+                  className={`delete-form-control delete-textarea ${errors.comentario ? 'error' : ''}`}
+                  rows={4}
+                  disabled={loading}
+                  required
+                />
+                <small className="delete-form-help">
+                  Mínimo 10 caracteres. Este comentario se guardará para auditoría.
+                </small>
+                {errors.comentario && <span className="error-message">{errors.comentario}</span>}
+              </div>
             </div>
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="product-delete-modal-footer">
+        {/* Footer del Modal */}
+        <div className="delete-modal-footer">
           <button
             type="button"
             onClick={handleClose}
-            className="btn btn-secondary"
+            className="delete-btn delete-btn-secondary"
             disabled={loading}
           >
+            <FontAwesomeIcon icon={faTimes} />
             Cancelar
           </button>
           <button
             type="submit"
             onClick={handleSubmit}
-            className="btn btn-danger"
+            className="delete-btn delete-btn-danger"
             disabled={loading || !motivoEliminacion || !comentarioEliminacion.trim()}
           >
             <FontAwesomeIcon icon={faTrash} />

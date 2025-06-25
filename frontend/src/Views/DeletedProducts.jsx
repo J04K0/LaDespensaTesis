@@ -28,6 +28,9 @@ const DeletedProducts = () => {
   const [motivoFilter, setMotivoFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   
+  // 🆕 NUEVO: Flag para evitar fetch automático después de restaurar
+  const [skipNextFetch, setSkipNextFetch] = useState(false);
+  
   const navigate = useNavigate();
   const productsPerPage = 15;
 
@@ -44,6 +47,11 @@ const DeletedProducts = () => {
 
   // Cargar productos eliminados
   const fetchDeletedProducts = useCallback(async () => {
+    if (skipNextFetch) {
+      setSkipNextFetch(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       const response = await getDeletedProducts(currentPage, productsPerPage);
@@ -57,7 +65,7 @@ const DeletedProducts = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, productsPerPage]);
+  }, [currentPage, productsPerPage, skipNextFetch]);
 
   useEffect(() => {
     fetchDeletedProducts();
@@ -103,7 +111,9 @@ const DeletedProducts = () => {
       'Cancelar'
     );
 
-    if (!result.isConfirmed) return;
+    if (!result.isConfirmed) {
+      return;
+    }
 
     // Pedir comentario de restauración
     const { value: comentario } = await Swal.fire({
@@ -124,27 +134,60 @@ const DeletedProducts = () => {
       }
     });
 
-    if (!comentario) return;
+    if (!comentario) {
+      return;
+    }
 
     try {
       setLoading(true);
-      await restoreProduct(product._id, { comentarioRestauracion: comentario.trim() });
       
-      // Actualizar la lista inmediatamente eliminando el producto restaurado
-      setDeletedProducts(prevProducts => 
-        prevProducts.filter(p => p._id !== product._id)
-      );
+      const response = await restoreProduct(product._id, { 
+        comentarioRestauracion: comentario.trim() 
+      });
       
-      // También actualizar la página actual si queda vacía
-      const remainingProducts = deletedProducts.filter(p => p._id !== product._id);
-      if (remainingProducts.length === 0 && currentPage > 1) {
-        setCurrentPage(prev => prev - 1);
-      } else {
-        // Refrescar para obtener datos actualizados del servidor
-        await fetchDeletedProducts();
-      }
+      // Actualizar estado local inmediatamente
+      const productIdToRemove = product._id;
+      setDeletedProducts(prevProducts => {
+        const updatedProducts = prevProducts.filter(p => p._id !== productIdToRemove);
+        
+        // Calcular nueva página si es necesario
+        const remainingItems = updatedProducts.length;
+        const newTotalPages = Math.ceil(remainingItems / productsPerPage) || 1;
+        
+        // Si la página actual queda vacía y no es la primera página
+        if (remainingItems === 0 && currentPage > 1) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(prev => prev - 1);
+          }, 50);
+        } else if (currentPage > newTotalPages) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(newTotalPages);
+          }, 50);
+        }
+        
+        setTotalPages(newTotalPages);
+        return updatedProducts;
+      });
       
-      showSuccessAlert('Producto restaurado', 'El producto ha sido restaurado exitosamente');
+      // Mostrar mensaje de éxito con opción de navegar
+      showSuccessAlert(
+        'Producto restaurado exitosamente', 
+        'El producto ha sido restaurado y está disponible en el inventario principal.',
+        {
+          showConfirmButton: true,
+          confirmButtonText: 'Ver en inventario',
+          showCancelButton: true,
+          cancelButtonText: 'Continuar aquí',
+          confirmButtonColor: '#28a745'
+        }
+      ).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/products?fromDeleted=true');
+        }
+      });
+      
     } catch (error) {
       console.error('Error restoring product:', error);
       showErrorAlert('Error', 'No se pudo restaurar el producto');

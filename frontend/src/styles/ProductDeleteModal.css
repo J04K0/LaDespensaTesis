@@ -1,35 +1,66 @@
-/* Estilos para el Modal de Eliminación de Productos */
-.product-delete-modal-overlay {
+/* MODAL DE ELIMINACIÓN CON PREFIJO ÚNICO - No interfiere con otros modales */
+/* Variables de colores para mantener consistencia */
+:root {
+  --primary-dark: #002651;
+  --primary: #006EDF;
+  --primary-light: #E3F2FD;
+  --success: #28a745;
+  --danger: #dc3545;
+  --danger-dark: #c82333;
+  --warning: #ffc107;
+  --gray-dark: #343a40;
+  --gray: #6c757d;
+  --gray-light: #f8f9fa;
+  --white: #ffffff;
+}
+
+/* Overlay del modal - CENTRADO PERFECTO */
+.delete-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  overflow-y: auto;
+  padding: 20px;
+  opacity: 1;
+  overscroll-behavior: contain;
+  animation: fadeInOptimized 0.2s ease-out;
+  box-sizing: border-box;
+  min-height: 100vh;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInOptimized {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.product-delete-modal {
+/* Modal principal moderno - CENTRADO PERFECTO */
+.delete-modal-container {
   background: white;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 550px;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: slideInOptimized 0.3s ease-out;
+  margin: auto;
+  will-change: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  justify-self: center;
 }
 
-@keyframes slideIn {
+@keyframes slideInOptimized {
   from {
     opacity: 0;
     transform: translateY(-20px) scale(0.95);
@@ -40,40 +71,46 @@
   }
 }
 
-/* Header */
-.product-delete-modal-header {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  color: white;
+/* Header del modal moderno - CENTRADO */
+.delete-modal-header {
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  color: var(--white);
   padding: 1.5rem 2rem;
-  border-radius: 16px 16px 0 0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px 20px 0 0;
+  text-align: center;
+  gap: 1rem;
+  flex-direction: row;
 }
 
-.product-delete-modal-icon {
+.delete-modal-icon {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.75rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  backdrop-filter: blur(10px);
 }
 
-.product-delete-modal-title {
-  font-size: 1.4rem;
+.delete-modal-title {
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  flex: 1;
+  color: var(--white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.product-delete-modal-close {
+.delete-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  color: white;
-  padding: 0.5rem;
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -81,223 +118,378 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  color: var(--white);
+  font-size: 16px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
 }
 
-.product-delete-modal-close:hover:not(:disabled) {
+.delete-modal-close:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
 }
 
-.product-delete-modal-close:disabled {
+.delete-modal-close:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Body */
-.product-delete-modal-body {
-  padding: 2rem;
-}
-
-.product-delete-warning {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 8px;
-}
-
-.product-delete-warning p {
-  margin: 0 0 1rem 0;
-  color: #856404;
-  font-weight: 500;
-}
-
-.product-delete-warning p:last-child {
-  margin-bottom: 0;
-}
-
-.warning-text {
-  font-size: 0.9rem !important;
-  font-weight: 400 !important;
-  opacity: 0.9;
-}
-
-/* Form */
-.product-delete-form {
+/* Contenido principal - CENTRADO */
+.delete-modal-content {
+  padding: 1.5rem 2rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  text-align: center;
 }
 
-.form-group {
+/* Tarjeta de advertencia moderna - CENTRADA */
+.delete-warning-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+  border: 2px solid #ffeaa7;
+  border-radius: 16px;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.1);
+  width: 100%;
+  max-width: 450px;
+}
+
+.delete-warning-icon {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--danger);
+  padding: 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  border: 2px solid rgba(220, 53, 69, 0.2);
+}
+
+.delete-warning-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.delete-warning-content h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #856404;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.delete-product-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--danger);
+  margin: 0 0 1rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 10px;
+  display: inline-block;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.delete-warning-description {
+  color: #856404;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* Formulario moderno - CENTRADO */
+.delete-form {
+  margin-top: 0;
+  width: 100%;
+  max-width: 450px;
+}
+
+.delete-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.delete-form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  text-align: left;
 }
 
-.form-label {
+.delete-form-group-full {
+  grid-column: 1 / -1;
+}
+
+.delete-form-label {
   font-weight: 600;
-  color: #343a40;
+  color: var(--gray-dark);
   font-size: 0.95rem;
+  margin-bottom: 0.5rem;
 }
 
 .required {
-  color: #dc3545;
+  color: var(--danger);
   font-weight: bold;
 }
 
-.form-select,
-.form-textarea {
-  padding: 0.75rem;
+.delete-form-control {
+  width: 100%;
+  padding: 0.875rem;
   border: 2px solid #e1e5e9;
   border-radius: 8px;
   font-size: 0.95rem;
-  background-color: white;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--white);
+  transition: all 0.2s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
-.form-select:focus,
-.form-textarea:focus {
+.delete-form-control:focus {
   outline: none;
-  border-color: #dc3545;
+  border-color: var(--danger);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  transform: translateY(-1px);
 }
 
-.form-select:disabled,
-.form-textarea:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
+.delete-form-control:disabled {
+  background-color: var(--gray-light);
+  color: var(--gray);
   cursor: not-allowed;
 }
 
-.form-textarea {
+.delete-textarea {
   resize: vertical;
   min-height: 100px;
   line-height: 1.4;
 }
 
-.form-help {
-  color: #6c757d;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+.delete-form-help {
+  color: var(--gray);
+  font-size: 0.825rem;
+  margin-top: 0.5rem;
+  font-style: italic;
 }
 
 .error {
-  border-color: #dc3545 !important;
+  border-color: var(--danger) !important;
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
 }
 
 .error-message {
-  color: #dc3545;
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin-top: 0.25rem;
+  color: var(--danger);
+  font-size: 0.825rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
 }
 
-/* Footer */
-.product-delete-modal-footer {
-  padding: 1.5rem 2rem;
-  background-color: #f8f9fa;
-  border-top: 1px solid #eee;
-  border-radius: 0 0 16px 16px;
+/* Footer del modal - CENTRADO */
+.delete-modal-footer {
+  padding: 1.25rem 2rem 1.5rem;
+  background-color: var(--gray-light);
+  border-top: 1px solid #e1e5e9;
+  border-radius: 0 0 20px 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 1rem;
 }
 
-/* Buttons */
-.btn {
-  padding: 0.75rem 1.5rem;
+/* Botones modernos - CENTRADOS */
+.delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   transition: all 0.2s ease;
   text-decoration: none;
   min-height: 44px;
   min-width: 120px;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn:disabled {
+.delete-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.delete-btn:hover:before {
+  left: 100%;
+}
+
+.delete-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.btn-secondary {
-  background: #6c757d;
-  color: white;
+.delete-btn:disabled:before {
+  display: none;
 }
 
-.btn-secondary:hover:not(:disabled) {
+.delete-btn-secondary {
+  background: var(--gray);
+  color: var(--white);
+  border: 2px solid transparent;
+}
+
+.delete-btn-secondary:hover:not(:disabled) {
   background: #5a6268;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
 }
 
-.btn-danger {
-  background: #dc3545;
-  color: white;
+.delete-btn-danger {
+  background: var(--danger);
+  color: var(--white);
+  border: 2px solid transparent;
 }
 
-.btn-danger:hover:not(:disabled) {
-  background: #c82333;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+.delete-btn-danger:hover:not(:disabled) {
+  background: var(--danger-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
 }
 
-/* Responsividad */
+/* Responsividad - MEJORADA */
 @media (max-width: 768px) {
-  .product-delete-modal {
-    width: 95%;
-    margin: 1rem;
+  .delete-modal-overlay {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
   }
 
-  .product-delete-modal-header {
-    padding: 1rem 1.5rem;
+  .delete-modal-container {
+    width: 100%;
+    max-width: none;
+    max-height: 90vh;
+    margin: 0;
   }
 
-  .product-delete-modal-title {
-    font-size: 1.2rem;
+  .delete-modal-header {
+    padding: 1.25rem 1.5rem;
+    flex-direction: column;
+    text-align: center;
   }
 
-  .product-delete-modal-body {
-    padding: 1.5rem;
+  .delete-modal-icon {
+    margin-bottom: 0.5rem;
   }
 
-  .product-delete-modal-footer {
-    padding: 1rem 1.5rem;
+  .delete-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .delete-modal-content {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .delete-warning-card {
+    padding: 1.25rem;
+  }
+
+  .delete-modal-footer {
+    padding: 1rem 1.5rem 1.25rem;
     flex-direction: column-reverse;
     gap: 0.75rem;
   }
 
-  .btn {
+  .delete-btn {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .product-delete-modal {
-    width: 100%;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-    margin: 0;
+  .delete-modal-overlay {
+    padding: 0.5rem;
   }
 
-  .product-delete-modal-header {
-    border-radius: 0;
+  .delete-modal-container {
+    border-radius: 15px;
   }
 
-  .product-delete-modal-footer {
-    border-radius: 0;
+  .delete-modal-header {
+    border-radius: 15px 15px 0 0;
+    padding: 1rem;
   }
+
+  .delete-modal-title {
+    font-size: 1.1rem;
+  }
+
+  .delete-modal-content {
+    padding: 1rem;
+  }
+
+  .delete-modal-footer {
+    border-radius: 0 0 15px 15px;
+    padding: 1rem;
+  }
+}
+
+/* Estados de carga */
+.delete-modal-container.loading {
+  pointer-events: none;
+}
+
+.delete-modal-container.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  z-index: 10;
+}
+
+/* Mejoras de accesibilidad */
+.delete-form-control:focus,
+.delete-btn:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Optimizaciones para mejor rendimiento */
+.delete-modal-container * {
+  box-sizing: border-box;
+}
+
+.delete-modal-container {
+  contain: layout style;
+}
+
+.delete-modal-overlay {
+  contain: strict;
 }
