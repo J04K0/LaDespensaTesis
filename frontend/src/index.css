@@ -64,3 +64,38 @@ body:not(.login-page) {
   animation: none !important;
   transition: none !important;
 }
+
+/* 🔧 NUEVO: Evitar problemas de accesibilidad con aria-hidden */
+.swal2-container {
+  position: fixed !important;
+  z-index: 10000 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Asegurar que el popup tenga foco correcto */
+.swal2-popup {
+  outline: none !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+/* Mejorar visibilidad de botones de foco */
+.swal2-confirm:focus,
+.swal2-cancel:focus,
+.swal2-input:focus,
+.swal2-textarea:focus {
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px !important;
+}
+
+/* Evitar que el root tenga aria-hidden cuando hay modales */
+#root[aria-hidden="true"] {
+  aria-hidden: false !important;
+}

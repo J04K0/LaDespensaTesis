@@ -835,6 +835,11 @@
     padding: 12px 0;
     font-size: 18px;
   }
+
+  .summary-info {
+    margin-right: 0;
+    text-align: center;
+  }
 }
 
 /* Estilos mejorados para los cuadros de resumen */
@@ -849,7 +854,7 @@
 .summary-card {
   background-color: white;
   border-radius: 12px;
-  padding: 22px;
+  padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
@@ -857,7 +862,8 @@
   flex: 1;
   min-width: 220px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 120px;
 }
 
 .summary-card:hover {
@@ -865,6 +871,80 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* Optimización específica para la tarjeta con gráfico circular */
+.summary-card:has(.progress-circle-container) {
+  padding: 20px;
+  min-width: 320px; /* Aumentado ligeramente para más espacio */
+  min-height: 140px; /* Altura específica para acomodar el gráfico */
+  overflow: hidden; /* Asegurar que nada se desborde */
+  position: relative; /* Para controlar el posicionamiento */
+}
+
+/* Fallback para navegadores que no soportan :has() */
+.summary-card:last-child {
+  padding: 20px;
+  min-width: 320px;
+  min-height: 140px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Contenedor del gráfico circular completamente rediseñado */
+.progress-circle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  flex-shrink: 0;
+  width: 85px; /* Reducido de 100px a 85px */
+  height: 85px; /* Reducido de 100px a 85px */
+  position: relative;
+  margin-left: auto; /* Empujar hacia la derecha */
+  margin-top: 0; /* Asegurar que no se desplace hacia arriba */
+  align-self: center; /* Centrar verticalmente en el contenedor */
+}
+
+.progress-circle {
+  width: 80px; /* Reducido de 90px a 80px */
+  height: 80px; /* Reducido de 90px a 80px */
+  border-radius: 50%;
+  background: conic-gradient(
+    #17a2b8 0% var(--progress, 50%), 
+    #e9ecef var(--progress, 50%) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* Sombra más sutil */
+}
+
+.progress-circle::before {
+  content: '';
+  width: 62px; /* Reducido de 70px a 62px */
+  height: 62px; /* Reducido de 70px a 62px */
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04); /* Sombra interior más sutil */
+}
+
+.progress-circle-value {
+  position: relative;
+  font-weight: 700;
+  font-size: 13px; /* Reducido de 15px a 13px */
+  color: #343a40;
+  z-index: 2;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Iconos y estilos de tarjetas de resumen */
 .summary-icon {
   width: 50px;
   height: 50px;
@@ -873,8 +953,16 @@
   align-items: center;
   justify-content: center;
   margin-right: 18px;
-  font-size: 22px;
+  font-size: 20px;
   color: white;
+  flex-shrink: 0;
+}
+
+.summary-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px;
+  max-height: 20px;
 }
 
 .summary-icon.total {
@@ -893,8 +981,10 @@
   background-color: #17a2b8;
 }
 
+/* Contenedor de información optimizado */
 .summary-info {
   flex: 1;
+  margin-right: 15px;
 }
 
 .summary-info h3 {
@@ -909,7 +999,7 @@
 .summary-value {
   font-size: 26px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 5px 0;
   color: #343a40;
   line-height: 1.2;
 }
@@ -919,6 +1009,7 @@
   color: #6c757d;
   display: block;
   margin-top: 5px;
+  line-height: 1.3;
 }
 
 /* Indicadores de tendencia */
@@ -926,11 +1017,11 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  padding: 6px 10px; /* Reducido de 8px 12px */
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 11px; /* Reducido de 12px */
+  font-size: 11px;
   border-top-left-radius: 8px;
   background-color: rgba(0, 0, 0, 0.03);
 }
@@ -945,50 +1036,12 @@
 
 .trend-percentage {
   font-weight: 700;
-  font-size: 14px; /* Reducido de 16px */
+  font-size: 14px;
 }
 
 .trend-label {
-  font-size: 10px; /* Reducido de 11px */
+  font-size: 10px;
   opacity: 0.8;
-}
-
-/* Círculo de progreso para el cuadro de análisis */
-.progress-circle-container {
-  display: flex;
-  justify-content: center;
-  margin: 10px 0;
-}
-
-.progress-circle {
-  width: 80px; /* Aumentado de 70px a 80px para dar más espacio */
-  height: 80px; /* Aumentado de 70px a 80px para dar más espacio */
-  border-radius: 50%;
-  background: conic-gradient(
-    #17a2b8 0% var(--progress, 50%), 
-    #e9ecef var(--progress, 50%) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.progress-circle::before {
-  content: '';
-  width: 62px; /* Aumentado de 56px a 62px para mantener proporción */
-  height: 62px; /* Aumentado de 56px a 62px para mantener proporción */
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-}
-
-.progress-circle-value {
-  position: relative;
-  font-weight: 700;
-  font-size: 16px; /* Reducido de 18px a 16px para mejor ajuste */
-  color: #343a40;
-  padding: 2px; /* Añadido padding para evitar que el texto toque los bordes */
 }
 
 /* Estilos responsivos para pantallas pequeñas */
@@ -999,5 +1052,34 @@
   
   .summary-card {
     width: 100%;
+    min-width: 100%;
+  }
+  
+  .summary-card:has(.progress-circle-container),
+  .summary-card:last-child {
+    min-width: 100%;
+  }
+  
+  .progress-circle-container {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .progress-circle {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .progress-circle::before {
+    width: 54px;
+    height: 54px;
+  }
+  
+  .progress-circle-value {
+    font-size: 13px;
+  }
+  
+  .summary-info {
+    margin-right: 10px;
   }
 }

@@ -72,15 +72,14 @@ const Home = () => {
   const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
   const { userRole: role } = useRole();
 
-  // 🔍 DEBUGGING: Agregar logs para verificar el rol
-  // console.log('🔍 Rol detectado en Home:', role);
-  // console.log('🔍 ¿Es empleado?:', role === 'empleado');
+  // 🔧 FIX: Sincronizar el estado de loading con el contexto
+  const isDataLoading = ventasLoading || !ventasGlobales;
 
   useEffect(() => {
     const fetchDeudores = async () => {
       try {
         // Obtener todos los deudores disponibles
-        const data = await getDeudores(1, 1000); // Un número grande para traer todos los disponibles
+        const data = await getDeudores(1, 1000);
         
         // Separar deudores con y sin deuda
         const deudoresConDeuda = data.deudores.filter(deudor => {
@@ -102,14 +101,9 @@ const Home = () => {
           a.Nombre.localeCompare(b.Nombre)
         );
         
-        // Mostrar más deudores para que el panel sea más grande
-        // Ahora mostraremos al menos 15 deudores en total o más si hay suficientes con deuda
         const minDeudoresTotales = 12;
-        
-        // Si hay suficientes deudores con deuda, mostrar todos ellos
         let deudoresFinales = [...deudoresConDeudaOrdenados];
         
-        // Si necesitamos más deudores para llenar el panel, añadir deudores sin deuda
         if (deudoresFinales.length < minDeudoresTotales) {
           const espacioDisponible = minDeudoresTotales - deudoresFinales.length;
           deudoresFinales = [
@@ -121,49 +115,22 @@ const Home = () => {
         setDeudores(deudoresFinales);
       } catch (error) {
         console.error('Error fetching deudores:', error);
+        setError("Error al cargar los deudores");
       }
     };
 
     fetchDeudores();
-    obtenerVentas();
   }, []);
 
-  // Efecto para recargar los datos cuando cambia el filtro de tiempo
-  useEffect(() => {
-    if (!loading) {
-      obtenerVentas();
-    }
-  }, [timeRange]);
-
-  const obtenerVentas = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/ventas/ventas/obtener");
-      const todasLasVentas = response.data.data;
-
-      if (todasLasVentas && todasLasVentas.length > 0) {
-        // Filtrar las ventas según el período seleccionado
-        const ventasFiltradas = filtrarVentasPorPeriodo(todasLasVentas);
-        procesarDatos(ventasFiltradas);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error al obtener las ventas:", error);
-      setError("Error al obtener los datos de ventas.");
-      setLoading(false);
-    }
-  };
-
-  // Función para filtrar ventas según el período seleccionado
+  // 🔧 FIX: Función para filtrar ventas usando los datos del contexto
   const filtrarVentasPorPeriodo = (ventas) => {
-    if (timeRange === "todo") {
-      return ventas; // Devolver todas las ventas sin filtrar
+    if (!ventas || timeRange === "todo") {
+      return ventas || [];
     }
 
     const fechaActual = new Date();
     const fechaInicio = new Date();
     
-    // Configurar la fecha de inicio según el período seleccionado
     if (timeRange === "semana") {
       fechaInicio.setDate(fechaActual.getDate() - 7);
     } else if (timeRange === "mes") {
@@ -172,7 +139,6 @@ const Home = () => {
       fechaInicio.setFullYear(fechaActual.getFullYear() - 1);
     }
 
-    // Filtrar ventas que estén dentro del rango de fechas
     return ventas.filter(venta => {
       const fechaVenta = new Date(venta.fecha);
       return fechaVenta >= fechaInicio && fechaVenta <= fechaActual;
@@ -785,15 +751,20 @@ const Home = () => {
     };
   }, [ventasGlobales, timeRange]);
 
-  // Actualizar estados cuando cambien las estadísticas optimizadas
+  // Actualizar estados cuando cambien las estadísticas optimizadas o el contexto
   useEffect(() => {
     if (ventasGlobales && datosEstadisticasOptimized.ventasPorCategoria) {
       setVentasPorCategoria(datosEstadisticasOptimized.ventasPorCategoria);
       setTopProductos(datosEstadisticasOptimized.topProductos);
       setProductosPocoVendidos(datosEstadisticasOptimized.productosPocoVendidos);
       setLoading(false);
+    } else if (isDataLoading) {
+      setLoading(true);
+    } else if (ventasGlobales && ventasGlobales.length === 0) {
+      // Si las ventas están cargadas pero vacías, mostrar mensaje apropiado
+      setLoading(false);
     }
-  }, [datosEstadisticasOptimized, ventasGlobales]);
+  }, [datosEstadisticasOptimized, ventasGlobales, isDataLoading]);
 
   // Función helper para formatear números con punto como separador de miles
   const formatNumberWithDots = (number) => {
@@ -806,7 +777,7 @@ const Home = () => {
       <Navbar />
       <div className={role === 'empleado' ? 'home-content-employee' : 'home-content'}>
         <div className={role === 'empleado' ? 'home-deudores-container-centered' : 'home-deudores-container'}>
-          {loading ? (
+          {isDataLoading ? (
             <DeudoresTableSkeleton />
           ) : (
             <div className={role === 'empleado' ? 'home-deudores-card-centered' : 'home-deudores-card'}>
@@ -843,7 +814,7 @@ const Home = () => {
         
         {role !== 'empleado' && (
           <div className="home-stats-container">
-            {loading ? (
+            {isDataLoading ? (
               <ChartSkeleton />
             ) : (
               <div className="home-stats-card">

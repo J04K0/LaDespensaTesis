@@ -14,14 +14,18 @@ import {
 
 export const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 5 } = req.query;
-    const products = await Product.find()
+    const { page = 1, limit = 5, incluirEliminados = false } = req.query;
+    
+    // Filtrar productos eliminados por defecto
+    const filter = incluirEliminados === 'true' ? {} : { eliminado: { $ne: true } };
+    
+    const products = await Product.find(filter)
       .collation({ locale: 'es', strength: 2 }) // Ordenación insensible a mayúsculas/minúsculas
       .sort({ Nombre: 1 }) 
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
-    const count = await Product.countDocuments();
+    const count = await Product.countDocuments(filter);
 
     if (products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 
@@ -123,6 +127,25 @@ export const updateProduct = async (req, res) => {
       });
     }
 
+    // 🆕 NUEVO: Verificar si hay cambios en el stock y registrarlos
+    if (value.Stock !== product.Stock) {
+      const { motivo, tipoMovimiento = 'ajuste_manual' } = req.body;
+      
+      if (!motivo) {
+        return handleErrorClient(res, 400, 'Se requiere un motivo para cambiar el stock manualmente');
+      }
+
+      // Registrar el cambio en el historial de stock
+      product.historialStock.push({
+        stockAnterior: product.Stock,
+        stockNuevo: value.Stock,
+        tipoMovimiento,
+        motivo,
+        usuario: req.userId, // Obtenido del middleware de autenticación
+        fecha: new Date()
+      });
+    }
+
     // Obtener los márgenes por categoría (mismos valores que en el modelo)
     const margenesPorCategoria = {
       'Congelados': 0.25,
@@ -153,6 +176,7 @@ export const updateProduct = async (req, res) => {
         ...value, 
         image: imageUrl,
         historialPrecios: product.historialPrecios,
+        historialStock: product.historialStock,
         PrecioRecomendado: precioRecomendado
       }, 
       { new: true, runValidators: true }
@@ -167,18 +191,122 @@ export const updateProduct = async (req, res) => {
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const { motivoEliminacion, comentarioEliminacion } = req.body;
 
     const { value, error } = idProductSchema.validate({ id }, { convert: false });
-
     if (error) return handleErrorClient(res, 400, error.message);
 
-    const product = await Product.findByIdAndDelete(value.id);
+    // Validar que se proporcionen motivo y comentario
+    if (!motivoEliminacion || !comentarioEliminacion) {
+      return handleErrorClient(res, 400, 'Se requiere motivo y comentario para eliminar el producto');
+    }
+
+    // Validar que el motivo sea válido
+    const motivosValidos = ['sin_stock_permanente', 'producto_dañado', 'vencido', 'descontinuado', 'error_registro', 'otro'];
+    if (!motivosValidos.includes(motivoEliminacion)) {
+      return handleErrorClient(res, 400, 'Motivo de eliminación no válido');
+    }
+
+    const product = await Product.findById(value.id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // 🆕 NUEVO: En lugar de eliminar físicamente, marcar como eliminado con auditoría
+    const updatedProduct = await Product.findByIdAndUpdate(
+      value.id,
+      {
+        eliminado: true,
+        fechaEliminacion: new Date(),
+        motivoEliminacion,
+        comentarioEliminacion: comentarioEliminacion.trim(),
+        usuarioEliminacion: req.userId
+      },
+      { new: true, runValidators: true }
+    );
+
+    handleSuccess(res, 200, 'Producto eliminado con auditoría', {
+      producto: updatedProduct,
+      mensaje: 'El producto ha sido marcado como eliminado y se conserva el registro para auditoría'
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al eliminar un producto', err.message);
+  }
+};
+
+// 🆕 NUEVO: Endpoint para obtener historial de stock de un producto
+export const getStockHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id)
+      .populate('historialStock.usuario', 'username email')
+      .populate('usuarioEliminacion', 'username email');
 
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-    handleSuccess(res, 200, 'Producto eliminado', product);
+    handleSuccess(res, 200, 'Historial de stock obtenido', {
+      producto: {
+        _id: product._id,
+        Nombre: product.Nombre,
+        Marca: product.Marca,
+        stockActual: product.Stock
+      },
+      historialStock: product.historialStock,
+      eliminado: product.eliminado,
+      infoEliminacion: product.eliminado ? {
+        fechaEliminacion: product.fechaEliminacion,
+        motivoEliminacion: product.motivoEliminacion,
+        comentarioEliminacion: product.comentarioEliminacion,
+        usuarioEliminacion: product.usuarioEliminacion
+      } : null
+    });
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al eliminar un producto', err.message);
+    handleErrorServer(res, 500, 'Error al obtener el historial de stock', err.message);
+  }
+};
+
+// 🆕 NUEVO: Endpoint para restaurar un producto eliminado (solo para administradores)
+export const restoreProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { comentarioRestauracion } = req.body;
+
+    if (!comentarioRestauracion) {
+      return handleErrorClient(res, 400, 'Se requiere un comentario para restaurar el producto');
+    }
+
+    const product = await Product.findById(id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    if (!product.eliminado) {
+      return handleErrorClient(res, 400, 'El producto no está eliminado');
+    }
+
+    // Registrar la restauración en el historial de stock
+    product.historialStock.push({
+      stockAnterior: product.Stock,
+      stockNuevo: product.Stock,
+      tipoMovimiento: 'correccion',
+      motivo: `Producto restaurado: ${comentarioRestauracion}`,
+      usuario: req.userId,
+      fecha: new Date()
+    });
+
+    const restoredProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        eliminado: false,
+        fechaEliminacion: null,
+        motivoEliminacion: null,
+        comentarioEliminacion: null,
+        usuarioEliminacion: null,
+        historialStock: product.historialStock
+      },
+      { new: true, runValidators: true }
+    );
+
+    handleSuccess(res, 200, 'Producto restaurado correctamente', restoredProduct);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al restaurar el producto', err.message);
   }
 };
 
@@ -632,6 +760,33 @@ export const forceDailyCompleteReport = async (req, res) => {
   } catch (err) {
     console.error('Error al generar reporte diario:', err);
     handleErrorServer(res, 500, 'Error al generar reporte diario completo', err.message);
+  }
+};
+
+// 🆕 NUEVO: Endpoint para obtener productos eliminados (solo para administradores)
+export const getDeletedProducts = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    
+    const deletedProducts = await Product.find({ eliminado: true })
+      .populate('usuarioEliminacion', 'username email')
+      .collation({ locale: 'es', strength: 2 })
+      .sort({ fechaEliminacion: -1 }) // Más recientes primero
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+      
+    const count = await Product.countDocuments({ eliminado: true });
+
+    // Cambiar para devolver 200 siempre, incluso si no hay productos eliminados
+    handleSuccess(res, 200, deletedProducts.length > 0 ? 'Productos eliminados encontrados' : 'No hay productos eliminados', {
+      products: deletedProducts,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page),
+      totalCount: count
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al obtener productos eliminados', err.message);
   }
 };
 

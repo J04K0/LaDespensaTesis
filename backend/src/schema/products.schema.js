@@ -40,15 +40,15 @@ export const productSchema = Joi.object({
       'Panaderia y Pasteleria', 
       'Quesos y Fiambres', 
       'Bebidas y Licores', 
-      'Lacteos, Huevos y Refrigerados', 
+      'Lacteos, Huevos y otros',  // Corregido para coincidir con el controlador
       'Desayuno y Dulces', 
       'Bebes y Niños', 
-      'Mascotas',
+      'Cigarros y Tabacos',  // Corregido el orden
       'Cuidado Personal',
       'Limpieza y Hogar',
+      'Mascotas',
       'Remedios',
-      'Otros',
-      'Cigarros')
+      'Otros')
     .required()
     .messages({
       'any.only': 'Categoría no válida',
@@ -81,6 +81,20 @@ export const productSchema = Joi.object({
   image: Joi.string().optional().allow(null).messages({
     "string.base": "El archivo debe ser de tipo string.",
   }),
+  // 🆕 NUEVOS CAMPOS OPCIONALES para cambios de stock
+  motivo: Joi.string().min(10).max(500).optional().messages({
+    'string.min': 'El motivo debe tener al menos 10 caracteres',
+    'string.max': 'El motivo no puede exceder los 500 caracteres',
+    'string.base': 'El motivo debe ser texto'
+  }),
+  tipoMovimiento: Joi.string().valid('ajuste_manual', 'venta', 'devolucion', 'perdida', 'entrada_inicial', 'correccion').optional().messages({
+    'any.only': 'Tipo de movimiento no válido',
+    'string.base': 'El tipo de movimiento debe ser texto'
+  })
+}).options({ 
+  // 🆕 IMPORTANTE: Permitir campos adicionales desconocidos
+  allowUnknown: true,
+  stripUnknown: true
 });
 
 export const idProductSchema = Joi.object({

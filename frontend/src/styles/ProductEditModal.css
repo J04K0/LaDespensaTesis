@@ -435,6 +435,63 @@ body.modal-open {
   border-radius: 16px;
 }
 
+/* 🆕 NUEVOS ESTILOS para campo de motivo de stock */
+.product-edit-form-group.motivo-stock {
+  grid-column: 1 / -1;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid #ffc107;
+  margin: 1rem 0;
+}
+
+.product-edit-form-group.motivo-stock .product-edit-form-label {
+  color: #856404;
+  font-weight: 700;
+}
+
+.stock-change-notice {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+}
+
+.stock-change-text {
+  color: #856404;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.product-edit-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.required {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Asegurar que el campo de motivo sea visible */
+.product-edit-form-group.motivo-stock {
+  grid-column: 1 / -1;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid #ffc107;
+  margin: 1rem 0;
+}
+
+.product-edit-form-group.motivo-stock .product-edit-form-label {
+  color: #856404;
+  font-weight: 700;
+}
+
 /* Mejoras de accesibilidad */
 .product-edit-form-control:focus,
 .product-edit-form-select:focus,

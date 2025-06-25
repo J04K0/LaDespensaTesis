@@ -6,6 +6,9 @@ import ProductTableView from '../components/ProductTableView';
 import ProductInfoModal from '../components/ProductInfoModal';
 import ProductEditModal from '../components/ProductEditModal';
 import PriceHistoryModal from '../components/PriceHistoryModal';
+import ProductDeleteModal from '../components/ProductDeleteModal';
+import StockHistoryModal from '../components/StockHistoryModal';
+import DeletedProductsModal from '../components/DeletedProductsModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
@@ -14,7 +17,7 @@ import { useRole } from '../hooks/useRole';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ExportService } from '../services/export.service.js';
@@ -62,6 +65,16 @@ const Products = () => {
 
   const [showPriceHistoryModal, setShowPriceHistoryModal] = useState(false);
   const [priceHistoryData, setPriceHistoryData] = useState([]);
+
+  // 🆕 NUEVOS ESTADOS para los modales de eliminación y historial de stock
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [showStockHistoryModal, setShowStockHistoryModal] = useState(false);
+  const [stockHistoryProductId, setStockHistoryProductId] = useState(null);
+  const [stockHistoryProductName, setStockHistoryProductName] = useState('');
+  
+  // 🆕 NUEVO ESTADO para el modal de productos eliminados
+  const [showDeletedProductsModal, setShowDeletedProductsModal] = useState(false);
 
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
   const [statsExpanded, setStatsExpanded] = useState(true);
@@ -412,6 +425,50 @@ const Products = () => {
     }
   }, [location.search, allProducts]);
 
+  // 🆕 NUEVA función para manejar eliminación con modal de confirmación
+  const handleDeleteClick = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  // 🆕 NUEVA función para confirmar eliminación con comentario
+  const handleDeleteConfirm = async (deleteData) => {
+    if (!productToDelete) return;
+
+    try {
+      setLoading(true);
+      await deleteProduct(productToDelete._id, deleteData);
+      
+      // Actualizar la lista de productos
+      const updatedProducts = allProducts.filter(product => product._id !== productToDelete._id);
+      setAllProducts(updatedProducts);
+
+      if (categoryFilterActive) {
+        const updatedCategoryProducts = productsByCategory.filter(product => product._id !== productToDelete._id);
+        setProductsByCategory(updatedCategoryProducts);
+        applyAvailabilityFilter(updatedCategoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(updatedProducts, availabilityFilter);
+      }
+
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      showSuccessAlert('Producto eliminado', 'El producto ha sido marcado como eliminado correctamente.');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      showErrorAlert('Error al eliminar', 'No se pudo eliminar el producto. Verifique la consola para más detalles.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 NUEVA función para mostrar historial de stock
+  const handleShowStockHistory = (product) => {
+    setStockHistoryProductId(product._id);
+    setStockHistoryProductName(product.Nombre);
+    setShowStockHistoryModal(true);
+  };
+
   const handleDelete = async (id) => {
     try {
       await deleteProduct(id);
@@ -442,12 +499,17 @@ const Products = () => {
         ? new Date(data.fechaVencimiento).toISOString().split('T')[0]
         : '';
 
+      // 🆕 IMPORTANTE: Mantener el stock original sin conversión innecesaria
+      const stockOriginal = data.Stock; // Mantener el valor tal como viene del servidor
+      
+      console.log('🔍 DATOS DEL SERVIDOR - Stock:', data.Stock, 'Tipo:', typeof data.Stock);
+
       setProductToEdit({
         _id: id,
         Nombre: data.Nombre || '',
         codigoBarras: data.codigoBarras || '',
         Marca: data.Marca || '',
-        Stock: Number(data.Stock) || 0,
+        Stock: stockOriginal, // Usar el valor original
         Categoria: data.Categoria || '',
         PrecioVenta: Number(data.PrecioVenta) || 0,
         PrecioCompra: Number(data.PrecioCompra) || 0,
@@ -480,7 +542,8 @@ const Products = () => {
     setEditImage(e.target.files[0]);
   };
 
-  const handleEditSubmit = async () => {
+  // 🆕 MODIFICAR función de edición para pasar datos adicionales
+  const handleEditSubmit = async (additionalData = {}) => {
     try {
       setLoading(true);
 
@@ -497,11 +560,15 @@ const Products = () => {
         }
       });
 
+      // 🆕 NUEVO: Agregar datos adicionales (como motivo de stock)
+      Object.keys(additionalData).forEach(key => {
+        formData.append(key, additionalData[key]);
+      });
+
       // Si hay una nueva imagen seleccionada (un archivo), la añadimos al FormData
       if (editImage instanceof File) {
         formData.append('image', editImage);
       }
-      // No enviamos imageUrl, ya que no está permitido en el esquema del backend
 
       await updateProduct(_id, formData);
 
@@ -701,6 +768,9 @@ const Products = () => {
                 <button className="products-btn products-btn-primary" onClick={() => navigate('/add-product')}>
                   <FontAwesomeIcon icon={faPlus} /> Nuevo Producto
                 </button>
+                <button className="products-btn products-btn-secondary" onClick={() => setShowDeletedProductsModal(true)}>
+                  <FontAwesomeIcon icon={faTrashRestore} /> Productos eliminados
+                </button>
                 <button className="products-btn products-btn-export-pdf" onClick={handleExportToPDF}>
                   <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
@@ -804,19 +874,6 @@ const Products = () => {
                           fechaVencimiento={product.fechaVencimiento}
                           categoria={product.Categoria}
                           codigoBarras={product.codigoBarras}
-                          onDelete={() => {
-                            showConfirmationAlert(
-                              '¿Estás seguro?',
-                              '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
-                              'Sí, eliminar',
-                              'Cancelar'
-                            ).then((result) => {
-                              if (result.isConfirmed) {
-                                handleDelete(product._id);
-                              }
-                            });
-                          }}
-                          onEdit={() => handleEdit(product._id)}
                           onInfo={() => handleProductInfo(product)}
                           productId={product._id}
                         />
@@ -824,18 +881,7 @@ const Products = () => {
                     ) : (
                       <ProductTableView
                         products={displayedProducts}
-                        onDelete={(productId) => {
-                          showConfirmationAlert(
-                            '¿Estás seguro?',
-                            '¿Deseas eliminar este producto? Esta acción no se puede deshacer.',
-                            'Sí, eliminar',
-                            'Cancelar'
-                          ).then((result) => {
-                            if (result.isConfirmed) {
-                              handleDelete(productId);
-                            }
-                          });
-                        }}
+                        onDelete={handleDeleteClick}
                         onEdit={handleEdit}
                         onInfo={handleProductInfo}
                         getStockColorClass={getStockColorClass}
@@ -866,11 +912,12 @@ const Products = () => {
         productInfo={productInfo}
         productStats={productStats}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={handleDeleteClick}
         onShowPriceHistory={(productId) => {
           setPriceHistoryData(productId);
           setShowPriceHistoryModal(true);
         }}
+        onShowStockHistory={handleShowStockHistory}
       />
       
       {showEditModal && (
@@ -883,6 +930,7 @@ const Products = () => {
           onSubmit={handleEditSubmit}
           editImage={editImage}
           loading={loading}
+          categories={categories}
         />
       )}
       
@@ -893,6 +941,37 @@ const Products = () => {
           productId={priceHistoryData}
         />
       )}
+      
+      {/* 🆕 NUEVO MODAL DE ELIMINACIÓN */}
+      <ProductDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setProductToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        productName={productToDelete?.Nombre || ''}
+        loading={loading}
+      />
+      
+      {/* 🆕 NUEVO MODAL DE HISTORIAL DE STOCK */}
+      <StockHistoryModal
+        isOpen={showStockHistoryModal}
+        onClose={() => {
+          setShowStockHistoryModal(false);
+          setStockHistoryProductId(null);
+          setStockHistoryProductName('');
+        }}
+        productId={stockHistoryProductId}
+        productName={stockHistoryProductName}
+      />
+      
+      {/* 🆕 NUEVO MODAL PARA PRODUCTOS ELIMINADOS */}
+      <DeletedProductsModal
+        isOpen={showDeletedProductsModal}
+        onClose={() => setShowDeletedProductsModal(false)}
+        // Aquí puedes agregar más props si es necesario
+      />
     </div>
   );
 };

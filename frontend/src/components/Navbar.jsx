@@ -7,7 +7,7 @@ import {
   faHistory, faChartLine, faTruck, faSignOutAlt, faBarcode, 
   faBars, faTimes, faShoppingCart, faStore, faMoneyBillWave, 
   faCalculator, faWarehouse, faClipboardList, faCoins, faUsers,
-  faUserCog, faLock, faFileInvoiceDollar, faFileExport, faSpinner
+  faUserCog, faLock, faFileInvoiceDollar, faFileExport, faSpinner, faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import { obtenerVentasPorTicket, obtenerVentasPropias } from '../services/venta.service.js';
 import { getDeudores } from '../services/deudores.service';

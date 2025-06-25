@@ -14,7 +14,8 @@ const ProductInfoModal = React.memo(({
   productStats, 
   onEdit, 
   onDelete, 
-  onShowPriceHistory 
+  onShowPriceHistory,
+  onShowStockHistory  // 🆕 NUEVA prop para mostrar historial de stock
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const { permissions } = useRole();
@@ -128,16 +129,15 @@ const ProductInfoModal = React.memo(({
   };
 
   const handleDelete = async () => {
-    const result = await showConfirmationAlert(
-      '¿Estás seguro?',
-      'Esta acción no se puede deshacer',
-      'Sí, eliminar',
-      'Cancelar'
-    );
-    if (result.isConfirmed) {
-      onDelete(productInfo._id);
-      handleClose();
-    }
+    // 🆕 NUEVO: Ya no usar confirmación aquí, dejar que el componente padre maneje el modal
+    onDelete(productInfo);
+    handleClose();
+  };
+
+  // 🆕 NUEVA función para mostrar historial de stock
+  const handleStockHistory = () => {
+    onShowStockHistory(productInfo);
+    handleClose();
   };
 
   const handleEdit = () => {
@@ -367,6 +367,13 @@ const ProductInfoModal = React.memo(({
               className="modern-btn modern-btn-secondary"
             >
               <FontAwesomeIcon icon={faHistory} /> Historial de Precios
+            </button>
+            {/* 🆕 NUEVO botón para historial de stock */}
+            <button 
+              onClick={handleStockHistory} 
+              className="modern-btn modern-btn-info"
+            >
+              <FontAwesomeIcon icon={faHistory} /> Historial de Stock
             </button>
             {permissions.canEditProduct && (
               <button 

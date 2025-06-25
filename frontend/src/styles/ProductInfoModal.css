@@ -456,6 +456,46 @@
   background: #c82333;
 }
 
+.modern-btn-info {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.modern-btn-info:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  border-color: #117a8b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+}
+
+/* Mensajes y notificaciones */
+.required {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.stock-change-notice {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+}
+
+.stock-change-text {
+  color: #856404;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+/* Estilos para el modal de edición */
+.product-edit-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.4;
+}
+
 /* Responsividad optimizada */
 @media (max-width: 768px) {
   .modern-product-hero {

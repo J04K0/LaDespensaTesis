@@ -44,12 +44,58 @@ export const getProducts = async (page, limit) => {
   }
 };
 
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id, deleteData) => {
   try {
-    const response = await axios.delete(`/products/eliminar/${id}`);
-    return response.data.data;
+    const response = await axios.delete(`/products/eliminar/${id}`, {
+      data: deleteData
+    });
+    return response.data;
   } catch (error) {
     console.error('Error deleting product:', error);
+    throw error;
+  }
+};
+
+// 🆕 NUEVO: Función para obtener historial de stock
+export const getStockHistory = async (productId) => {
+  try {
+    const response = await axios.get(`/products/historial-stock/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching stock history:', error);
+    throw error;
+  }
+};
+
+// 🆕 NUEVO: Función para obtener productos eliminados
+export const getDeletedProducts = async (page = 1, limit = 10) => {
+  try {
+    const response = await axios.get(`/products/eliminados?page=${page}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    // Si el error es 404, significa que no hay productos eliminados, devolver estructura vacía
+    if (error.response && error.response.status === 404) {
+      return {
+        data: {
+          products: [],
+          totalPages: 1,
+          currentPage: 1,
+          totalCount: 0
+        }
+      };
+    }
+    console.error('Error fetching deleted products:', error);
+    throw error;
+  }
+};
+
+// 🆕 NUEVO: Función para restaurar un producto eliminado
+export const restoreProduct = async (productId, restoreData) => {
+  try {
+    const response = await axios.patch(`/products/restaurar/${productId}`, restoreData);
+    return response.data;
+  } catch (error) {
+    console.error('Error restoring product:', error);
     throw error;
   }
 };

@@ -16,7 +16,10 @@ import {
     getProductPriceHistory,
     forceCheckExpirations,
     clearExpirationCache,
-    forceDailyCompleteReport
+    forceDailyCompleteReport,
+    getStockHistory,
+    restoreProduct,
+    getDeletedProducts
 } from "../controllers/products.controller.js";
 
 import { 
@@ -43,6 +46,10 @@ router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpired
 router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
+// 🆕 NUEVAS RUTAS para auditoría
+router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
+router.get('/eliminados', authorizeRoles([isAdmin]), getDeletedProducts);
+router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
 
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);

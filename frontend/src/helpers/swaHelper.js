@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 
-// Configuración común para todas las alertas para mejorar rendimiento
+// Configuración común para todas las alertas para mejorar rendimiento y accesibilidad
 const swalBaseConfig = {
   customClass: {
     container: 'swal-optimized-container',
@@ -8,6 +8,23 @@ const swalBaseConfig = {
   },
   backdrop: 'rgba(0,0,0,0.4)',
   allowOutsideClick: false,
+  // Evitar problemas de aria-hidden
+  target: document.body,
+  returnFocus: false,
+  // Configurar correctamente el manejo del foco
+  didOpen: (popup) => {
+    // Asegurarse de que el popup tenga el foco correcto
+    const confirmButton = popup.querySelector('.swal2-confirm');
+    const cancelButton = popup.querySelector('.swal2-cancel');
+    const input = popup.querySelector('.swal2-input, .swal2-textarea');
+    
+    // Dar foco al primer elemento interactivo disponible
+    if (input) {
+      input.focus();
+    } else if (confirmButton) {
+      confirmButton.focus();
+    }
+  },
   showClass: {
     popup: '',  // Desactivar animación de entrada
   },
@@ -26,10 +43,6 @@ export const showSuccessAlert = (title, text) => {
     text,
     icon: "success",
     confirmButtonText: "Aceptar",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -47,10 +60,6 @@ export const showErrorAlert = (title, text) => {
     text,
     icon: "error",
     confirmButtonText: "Aceptar",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -68,10 +77,6 @@ export const showWarningAlert = (title, text) => {
     text,
     icon: "warning",
     confirmButtonText: "Aceptar",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -89,10 +94,6 @@ export const showInfoAlert = (title, text) => {
     text,
     icon: "info",
     confirmButtonText: "Aceptar",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -122,10 +123,6 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
     // Aplicar colores según el tipo de acción
     confirmButtonColor: isDeleteAction ? "#dc3545" : "#28a745", // Rojo para eliminar, verde para otras acciones
     cancelButtonColor: "#007bff", // Azul para cancelar
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -147,10 +144,6 @@ export const showProductNotFoundAlert = (barcode) => {
     cancelButtonText: "No, cancelar",
     confirmButtonColor: "#28a745",
     cancelButtonColor: "#dc3545",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -172,10 +165,6 @@ export const showOutOfStockAlert = (barcode, productName) => {
     cancelButtonText: "No, cancelar",
     confirmButtonColor: "#28a745",
     cancelButtonColor: "#dc3545",
-    didOpen: () => {
-      const confirmButton = document.querySelector('.swal2-confirm');
-      if (confirmButton) confirmButton.focus();
-    },
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();

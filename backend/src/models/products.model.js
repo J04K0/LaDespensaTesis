@@ -11,7 +11,39 @@ const PrecioHistorialSchema = new Schema({
   },
   fecha: {
     type: Date,
+    required: true,
     default: Date.now,
+  }
+});
+
+// Nuevo schema para historial de cambios de stock
+const StockHistorialSchema = new Schema({
+  stockAnterior: {
+    type: Number,
+    required: true
+  },
+  stockNuevo: {
+    type: Number,
+    required: true
+  },
+  motivo: {
+    type: String,
+    required: true
+  },
+  tipoMovimiento: {
+    type: String,
+    enum: ['ajuste_manual', 'venta', 'devolucion', 'perdida', 'entrada_inicial', 'correccion'],
+    required: true
+  },
+  fecha: {
+    type: Date,
+    required: true,
+    default: Date.now
+  },
+  usuario: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 });
 
@@ -36,17 +68,18 @@ const ProductSchema = new Schema({
     type: Number,
     required: true,
   },
-  PrecioCompra: { 
+  PrecioCompra: {
     type: Number,
     required: true,
   },
   PrecioRecomendado: {
     type: Number,
-    default: function() {
-      return this.PrecioCompra * 1.2; // 20% por encima del precio de compra
-    }
+    required: false,
+    default: 0,
   },
   historialPrecios: [PrecioHistorialSchema],
+  // Nuevo campo para historial de cambios de stock
+  historialStock: [StockHistorialSchema],
   fechaVencimiento: {
     type: Date,
     required: true,
@@ -59,6 +92,29 @@ const ProductSchema = new Schema({
     type: String,
     required: false,
     default: null
+  },
+  // NUEVOS CAMPOS para auditoría de eliminación
+  eliminado: {
+    type: Boolean,
+    default: false
+  },
+  fechaEliminacion: {
+    type: Date,
+    required: false
+  },
+  usuarioEliminacion: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
+  motivoEliminacion: {
+    type: String,
+    enum: ['sin_stock_permanente', 'producto_dañado', 'vencido', 'descontinuado', 'error_registro', 'otro'],
+    required: false
+  },
+  comentarioEliminacion: {
+    type: String,
+    required: false
   }
 }, 
 { 

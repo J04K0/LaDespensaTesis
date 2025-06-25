@@ -1,30 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPen } from '@fortawesome/free-solid-svg-icons';
-import { showConfirmationAlert } from '../helpers/swaHelper';
+import { faPen, faTimes, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
 import '../styles/ProductEditModal.css';
 
-const ProductEditModal = React.memo(({
-  isOpen,
-  onClose,
-  productToEdit,
-  onProductChange,
-  onImageChange,
-  onSubmit,
-  editImage,
-  loading = false
-}) => {
-  const [isClosing, setIsClosing] = useState(false);
+const ProductEditModal = forwardRef(({ 
+  isOpen, 
+  onClose, 
+  productToEdit, 
+  onProductChange, 
+  onImageChange, 
+  editImage, 
+  onSubmit, 
+  loading, 
+  categories 
+}, ref) => {
+  // 🆕 NUEVOS ESTADOS para manejo de stock y motivo
+  const [stockOriginal, setStockOriginal] = useState(0);
+  const [showMotivoStock, setShowMotivoStock] = useState(false);
+  const [motivoStock, setMotivoStock] = useState('');
 
-  // Categorías disponibles
-  const categories = [
-    'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
-    'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
-  ];
-
-  // Definir márgenes por categoría (mismos valores que en el backend)
+  // Márgenes por categoría (mismos que el backend)
   const margenesPorCategoria = {
     'Congelados': 0.25, // 25% (promedio de 20-30%)
     'Carnes': 0.20, // 20% (promedio de 15-25%)
@@ -73,70 +69,152 @@ const ProductEditModal = React.memo(({
     };
   }, [isOpen]);
 
-  // Función para usar el precio recomendado
   const usarPrecioRecomendado = () => {
-    const event = {
+    const margen = margenesPorCategoria[productToEdit.Categoria] || 0.23;
+    const precioRecomendado = productToEdit.PrecioCompra * (1 + margen);
+    
+    onProductChange({
       target: {
         name: 'PrecioVenta',
-        value: productToEdit.PrecioRecomendado.toFixed(2)
+        value: precioRecomendado.toFixed(2)
       }
-    };
-    onProductChange(event);
+    });
   };
 
-  const handleClose = async () => {
-    const result = await showConfirmationAlert(
-      "¿Estás seguro?",
-      "¿Deseas cancelar la edición? Los cambios no se guardarán.",
-      "Sí, cancelar",
-      "No, volver"
-    );
-
-    if (result.isConfirmed) {
-      setIsClosing(true);
-      setTimeout(() => {
-        setIsClosing(false);
-        onClose();
-      }, 200);
-    }
+  // 🆕 NUEVO: Manejar cambio en el motivo del stock
+  const handleMotivoStockChange = (e) => {
+    setMotivoStock(e.target.value);
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
-
+  // 🆕 NUEVO: Validar antes de enviar
   const handleSubmit = async () => {
-    const result = await showConfirmationAlert(
-      "¿Estás seguro?",
-      "¿Deseas guardar los cambios realizados a este producto?",
-      "Sí, guardar",
-      "No, cancelar"
-    );
+    // DEBUG: Agregar logs para depuración
+    console.log('🔍 DEBUG - Stock original:', stockOriginal);
+    console.log('🔍 DEBUG - Stock actual:', productToEdit.Stock);
+    console.log('🔍 DEBUG - Tipos:', typeof stockOriginal, typeof productToEdit.Stock);
+    
+    // Primero, verificar si hay cambio de stock directamente
+    const hayCambioStock = Number(productToEdit.Stock) !== Number(stockOriginal);
+    
+    console.log('🔍 DEBUG - ¿Hay cambio de stock?', hayCambioStock);
+    console.log('🔍 DEBUG - Motivo actual:', motivoStock);
+    
+    // Si hay cambio de stock y no se ha proporcionado motivo, mostrar popup
+    if (hayCambioStock && !motivoStock.trim()) {
+      console.log('🚨 Mostrando popup de motivo');
+      
+      const { value: motivo } = await Swal.fire({
+        title: 'Cambio de Stock Detectado',
+        html: `
+          <div style="text-align: left; margin-bottom: 15px;">
+            <p><strong>Stock original:</strong> ${stockOriginal}</p>
+            <p><strong>Nuevo stock:</strong> ${productToEdit.Stock}</p>
+            <p style="color: #e74c3c; font-weight: bold;">Se requiere un motivo para este cambio:</p>
+          </div>
+        `,
+        input: 'textarea',
+        inputPlaceholder: 'Explique el motivo del cambio de stock (ej: producto dañado, corrección de inventario, etc.)',
+        inputValidator: (value) => {
+          if (!value || value.trim().length < 10) {
+            return 'El motivo debe tener al menos 10 caracteres'
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Guardar con motivo',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#dc3545',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      });
+
+      if (!motivo) {
+        console.log('❌ Usuario canceló o no proporcionó motivo');
+        return; // Usuario canceló
+      }
+
+      // Guardar el motivo y proceder
+      setMotivoStock(motivo.trim());
+      console.log('✅ Motivo capturado:', motivo.trim());
+      
+      // Proceder con el envío
+      console.log('📤 Enviando datos con motivo:', { motivo: motivo.trim() });
+      onSubmit({ motivo: motivo.trim() });
+      return;
+    }
+
+    // Si no hay cambio de stock O ya se proporcionó motivo, proceder normalmente
+    console.log('📝 Procediendo con la confirmación final');
+    
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: hayCambioStock 
+        ? `¿Deseas guardar los cambios realizados a este producto?\n\nCambio de stock: ${stockOriginal} → ${productToEdit.Stock}\nMotivo: ${motivoStock}`
+        : "¿Deseas guardar los cambios realizados a este producto?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, guardar",
+      cancelButtonText: "No, cancelar"
+    });
 
     if (result.isConfirmed) {
-      onSubmit();
+      // Incluir motivo si hay cambio de stock
+      const submitData = hayCambioStock ? { motivo: motivoStock.trim() } : {};
+      console.log('📤 Enviando datos:', submitData);
+      onSubmit(submitData);
     }
   };
 
-  if (!isOpen || !productToEdit) return null;
+  // 🆕 NUEVO: Controlar cuando el stock cambia para mostrar campo de motivo
+  useEffect(() => {
+    if (isOpen && productToEdit) {
+      console.log('🔄 Modal abierto, capturando stock original:', productToEdit.Stock);
+      setStockOriginal(Number(productToEdit.Stock)); // Asegurar que sea número
+      setMotivoStock('');
+      setShowMotivoStock(false);
+    }
+  }, [isOpen, productToEdit._id]); // Usar _id como dependencia para detectar cuando cambia el producto
+
+  // 🆕 NUEVO: Detectar cambios en el stock
+  useEffect(() => {
+    if (productToEdit && stockOriginal !== undefined) {
+      const hayCambio = Number(productToEdit.Stock) !== Number(stockOriginal);
+      console.log('📊 Detectando cambio de stock:', hayCambio, 'Original:', stockOriginal, 'Actual:', productToEdit.Stock);
+      setShowMotivoStock(hayCambio);
+      if (!hayCambio) {
+        setMotivoStock(''); // Limpiar motivo si no hay cambio
+      }
+    }
+  }, [productToEdit.Stock, stockOriginal]);
+
+  const handleClose = () => {
+    setMotivoStock('');
+    setShowMotivoStock(false);
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div 
-      className={`product-edit-modal-overlay ${isClosing ? 'closing' : ''}`} 
-      onClick={handleOverlayClick}
-    >
+    <div className="product-edit-modal-overlay" onClick={handleClose}>
       <div className="product-edit-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header del Modal */}
         <div className="product-edit-modal-header">
-          <h2 className="product-edit-modal-title">Editar Producto</h2>
-          <button className="product-edit-modal-close" onClick={handleClose}>
+          <h2 className="product-edit-modal-title">
+            <FontAwesomeIcon icon={faPen} /> Editar Producto
+          </h2>
+          <button 
+            className="product-edit-modal-close"
+            onClick={handleClose}
+            disabled={loading}
+          >
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
         
-        {/* Contenido del Modal */}
+        {/* Body del Modal */}
         <div className="product-edit-modal-body">
           <div className="product-edit-form-grid">
             <div className="product-edit-form-group">
@@ -247,47 +325,68 @@ const ProductEditModal = React.memo(({
             </div>
             
             <div className="product-edit-form-group">
-              <label className="product-edit-form-label">Precio Recomendado (Según categoría)</label>
+              <label className="product-edit-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
               <div className="product-edit-precio-recomendado-container">
                 <div className="product-edit-input-with-icon">
                   <span className="product-edit-input-prefix">$</span>
                   <input
-                    type="text"
-                    value={productToEdit.PrecioRecomendado ? productToEdit.PrecioRecomendado.toFixed(2) : '0.00'}
+                    type="number"
+                    id="PrecioVenta"
+                    name="PrecioVenta"
+                    value={productToEdit.PrecioVenta}
+                    onChange={onProductChange}
+                    required
                     className="product-edit-form-control"
-                    disabled
+                    min="0"
+                    step="0.01"
+                    disabled={loading}
                   />
                 </div>
-                <button 
-                  type="button"
-                  className="product-edit-btn product-edit-btn-usar-recomendado"
-                  onClick={usarPrecioRecomendado}
-                  disabled={loading || !productToEdit.PrecioRecomendado}
-                >
-                  Usar este precio
-                </button>
-              </div>
-            </div>
-            
-            <div className="product-edit-form-group">
-              <label className="product-edit-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
-              <div className="product-edit-input-with-icon">
-                <span className="product-edit-input-prefix">$</span>
-                <input
-                  type="number"
-                  id="PrecioVenta"
-                  name="PrecioVenta"
-                  value={productToEdit.PrecioVenta}
-                  onChange={onProductChange}
-                  required
-                  className="product-edit-form-control"
-                  min="0"
-                  step="0.01"
-                  disabled={loading}
-                />
+                {productToEdit.PrecioCompra > 0 && productToEdit.Categoria && (
+                  <button
+                    type="button"
+                    onClick={usarPrecioRecomendado}
+                    className="product-edit-btn product-edit-btn-usar-recomendado"
+                    disabled={loading}
+                  >
+                    Usar Precio Recomendado
+                    <br />
+                    <small>$
+                      {(productToEdit.PrecioCompra * 
+                        (1 + (margenesPorCategoria[productToEdit.Categoria] || 0.23))
+                      ).toFixed(2)}
+                    </small>
+                  </button>
+                )}
               </div>
             </div>
           </div>
+
+          {/* 🆕 NUEVO: Campo de motivo cuando hay cambio de stock */}
+          {showMotivoStock && (
+            <div className="product-edit-form-group product-edit-form-group-full motivo-stock">
+              <label className="product-edit-form-label" htmlFor="motivoStock">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="text-warning" />
+                Motivo del cambio de stock *
+              </label>
+              <textarea
+                id="motivoStock"
+                name="motivoStock"
+                value={motivoStock}
+                onChange={handleMotivoStockChange}
+                required
+                className="product-edit-form-control product-edit-textarea"
+                rows="3"
+                placeholder="Explique el motivo del cambio de stock (ej: producto dañado, corrección de inventario, etc.)"
+                disabled={loading}
+              />
+              <div className="stock-change-notice">
+                <p className="stock-change-text">
+                  Este comentario se guardará en el historial de cambios del producto
+                </p>
+              </div>
+            </div>
+          )}
                   
           <div className="product-edit-form-group-full">
             <label className="product-edit-form-label" htmlFor="image">Imagen del Producto</label>

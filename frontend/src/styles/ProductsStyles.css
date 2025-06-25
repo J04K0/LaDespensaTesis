@@ -994,15 +994,16 @@
 }
 
 .products-btn-secondary {
-  background-color: #f8f9fa;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  background-color: var(--primary-dark); /* Cambiado de #f8f9fa a --primary-dark para coincidir con navbar */
+  color: white; /* Cambiado de #495057 a white para mejor contraste */
+  border: 1px solid var(--primary-dark); /* Cambiado border para coincidir */
 }
 
 .products-btn-secondary:hover {
-  background-color: #e9ecef;
+  background-color: #001a3d; /* Color hover más oscuro que --primary-dark */
+  color: white; /* Mantener texto blanco */
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 38, 81, 0.3); /* Sombra con el color de la navbar */
 }
 
 .products-clear-filters-button {

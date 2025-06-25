@@ -81,8 +81,8 @@
 }
 
 .historysaleexportbtn.anuladas {
-  background-color: #6f42c1;
-  border: 1px solid #5a2d91;
+  background-color: var(--primary-dark);
+  border: 1px solid var(--primary-dark);
 }
 
 .historysaleexportbtn:hover {
@@ -91,7 +91,7 @@
 }
 
 .historysaleexportbtn.anuladas:hover {
-  background-color: #5a2d91;
+  background-color: #001f40;
 }
 
 /* Contenedor de filtros */
@@ -805,12 +805,12 @@
 
 /* Botón para ver ventas anuladas */
 .historysaleexportbtn.anuladas {
-  background-color: #6f42c1;
-  border: 1px solid #5a2d91;
+  background-color: var(--primary-dark);
+  border: 1px solid var(--primary-dark);
 }
 
 .historysaleexportbtn.anuladas:hover {
-  background-color: #5a2d91;
+  background-color: #001f40;
 }
 
 /* Estilos para filas de ventas anuladas */
