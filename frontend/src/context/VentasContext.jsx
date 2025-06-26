@@ -31,19 +31,19 @@ export const VentasProvider = ({ children }) => {
         const token = cookies.get('jwt-auth');
         
         if (!user || !token) {
-          // console.log('⏳ Usuario no autenticado, esperando...');
+          console.log('⏳ Usuario no autenticado, esperando...');
           setLoading(false);
           return;
         }
 
-        // console.log('🔄 Cargando ventas globales una sola vez...');
+        console.log('🔄 Cargando ventas globales...');
         setLoading(true);
         setError(null);
         
         const response = await obtenerVentasPorTicket();
         const ventas = response.data || [];
         
-        // console.log(`✅ Ventas cargadas: ${ventas.length} registros`);
+        console.log(`✅ Ventas cargadas exitosamente: ${ventas.length} registros`);
         setVentasGlobales(ventas);
         setLastFetch(new Date());
         setRetryCount(0);
@@ -51,14 +51,14 @@ export const VentasProvider = ({ children }) => {
         console.error('❌ Error al cargar ventas globales:', err);
         
         // Si es error de autenticación y no hemos reintentado muchas veces
-        if ((err.response?.status === 401 || err.response?.status === 403) && retryCount < 3) {
-          console.log(`🔄 Reintentando carga de ventas (intento ${retryCount + 1}/3)...`);
+        if ((err.response?.status === 401 || err.response?.status === 403) && retryCount < 2) {
+          console.log(`🔄 Reintentando carga de ventas (intento ${retryCount + 1}/2)...`);
           setRetryCount(prev => prev + 1);
           
           // Reintentar después de un breve delay
           setTimeout(() => {
             fetchVentas();
-          }, 1000 * (retryCount + 1)); // Delay incremental
+          }, 1000);
           return;
         }
         
@@ -69,11 +69,9 @@ export const VentasProvider = ({ children }) => {
       }
     };
 
-    // Cargar datos si no tenemos datos aún o si el usuario cambió
-    if (!ventasGlobales || retryCount > 0) {
-      fetchVentas();
-    }
-  }, [retryCount]);
+    // 🔧 FIX: Cargar datos inmediatamente si hay usuario autenticado
+    fetchVentas();
+  }, [retryCount]); // Simplificar dependencias
 
   // Escuchar cambios en la autenticación
   useEffect(() => {

@@ -97,7 +97,7 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
 
           <div className="productcard-price-section">
             <div className="productcard-price-container">
-              <span className="productcard-price">${formattedPrice}</span>
+              <span className="productcard-price">$&nbsp;{formattedPrice}</span>
             </div>
             
             <div className="productcard-action-buttons">

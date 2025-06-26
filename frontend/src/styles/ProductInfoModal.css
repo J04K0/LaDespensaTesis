@@ -425,8 +425,12 @@
   cursor: pointer;
   text-decoration: none;
   min-width: 140px;
+  max-width: 140px; /* Agregar max-width para forzar el mismo tamaño */
+  width: 140px; /* Agregar width fijo */
+  height: 44px; /* Agregar altura fija */
   justify-content: center;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  box-sizing: border-box; /* Asegurar que el padding no afecte el tamaño */
 }
 
 .modern-btn-primary {
@@ -436,6 +440,7 @@
 
 .modern-btn-primary:hover {
   background: #0056b3;
+  transform: translateY(-1px); /* Efecto hover consistente */
 }
 
 .modern-btn-secondary {
@@ -445,6 +450,7 @@
 
 .modern-btn-secondary:hover {
   background: #545b62;
+  transform: translateY(-1px); /* Efecto hover consistente */
 }
 
 .modern-btn-danger {
@@ -454,19 +460,19 @@
 
 .modern-btn-danger:hover {
   background: #c82333;
+  transform: translateY(-1px); /* Efecto hover consistente */
 }
 
 .modern-btn-info {
-  background: linear-gradient(135deg, #17a2b8, #138496);
+  background: #17a2b8; /* Simplificar el gradiente para consistencia */
   color: white;
   border: 2px solid transparent;
 }
 
 .modern-btn-info:hover {
-  background: linear-gradient(135deg, #138496, #117a8b);
+  background: #138496; /* Simplificar el gradiente para consistencia */
   border-color: #117a8b;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+  transform: translateY(-1px); /* Efecto hover consistente, sin sombra excesiva */
 }
 
 /* Mensajes y notificaciones */

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getProducts } from '../services/AddProducts.service.js';
@@ -53,32 +53,49 @@ const Home = () => {
   const [deudores, setDeudores] = useState([]);
   const navigate = useNavigate();
   
-  const [ventasPorProducto, setVentasPorProducto] = useState(null);
-  const [ventasPorCategoria, setVentasPorCategoria] = useState(null);
-  const [topProductos, setTopProductos] = useState(null);
-  const [productosPocoVendidos, setProductosPocoVendidos] = useState(null);
+  // Remover estados innecesarios que se manejan con useMemo
   const [currentChart, setCurrentChart] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isDownloadingMassive, setIsDownloadingMassive] = useState(false);
-  // Nuevo estado para el filtro temporal
-  const [timeRange, setTimeRange] = useState("todo"); // Opciones: "semana", "mes", "año", "todo"
+  const [timeRange, setTimeRange] = useState("todo");
 
   // Referencia al contenedor del gráfico
   const chartRef = useRef(null);
 
   // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
-  const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
+  const { ventasGlobales, loading: ventasLoading, error: ventasError } = useVentas();
   const { userRole: role } = useRole();
 
-  // 🔧 FIX: Sincronizar el estado de loading con el contexto
-  const isDataLoading = ventasLoading || !ventasGlobales;
+  // 🔧 FIX: Mejorar la condición de loading
+  const isDataLoading = ventasLoading;
+
+  // 🔧 FIX: Usar useCallback para evitar recreaciones innecesarias
+  const filtrarVentasPorPeriodo = useCallback((ventas) => {
+    if (!ventas || timeRange === "todo") {
+      return ventas || [];
+    }
+
+    const fechaActual = new Date();
+    const fechaInicio = new Date();
+    
+    if (timeRange === "semana") {
+      fechaInicio.setDate(fechaActual.getDate() - 7);
+    } else if (timeRange === "mes") {
+      fechaInicio.setMonth(fechaActual.getMonth() - 1);
+    } else if (timeRange === "año") {
+      fechaInicio.setFullYear(fechaActual.getFullYear() - 1);
+    }
+
+    return ventas.filter(venta => {
+      const fechaVenta = new Date(venta.fecha);
+      return fechaVenta >= fechaInicio && fechaVenta <= fechaActual;
+    });
+  }, [timeRange]);
 
   useEffect(() => {
     const fetchDeudores = async () => {
       try {
-        // Obtener todos los deudores disponibles
         const data = await getDeudores(1, 1000);
         
         // Separar deudores con y sin deuda
@@ -122,121 +139,7 @@ const Home = () => {
     fetchDeudores();
   }, []);
 
-  // 🔧 FIX: Función para filtrar ventas usando los datos del contexto
-  const filtrarVentasPorPeriodo = (ventas) => {
-    if (!ventas || timeRange === "todo") {
-      return ventas || [];
-    }
-
-    const fechaActual = new Date();
-    const fechaInicio = new Date();
-    
-    if (timeRange === "semana") {
-      fechaInicio.setDate(fechaActual.getDate() - 7);
-    } else if (timeRange === "mes") {
-      fechaInicio.setMonth(fechaActual.getMonth() - 1);
-    } else if (timeRange === "año") {
-      fechaInicio.setFullYear(fechaActual.getFullYear() - 1);
-    }
-
-    return ventas.filter(venta => {
-      const fechaVenta = new Date(venta.fecha);
-      return fechaVenta >= fechaInicio && fechaVenta <= fechaActual;
-    });
-  };
-
-  const procesarDatos = (ventas) => {
-    // Procesar ventas por categoría
-    const categorias = {};
-    ventas.forEach(({ categoria, cantidad }) => {
-      categorias[categoria] = (categorias[categoria] || 0) + cantidad;
-    });
-
-    setVentasPorCategoria({
-      labels: Object.keys(categorias),
-      datasets: [
-        {
-          label: "Ventas por Categoría",
-          data: Object.values(categorias),
-          backgroundColor: [
-            "#4F86C6", // Azul
-            "#6A5ACD", // Slate blue
-            "#20B2AA", // Verde azulado
-            "#FF6B6B", // Coral
-            "#FFD166", // Amarillo
-            "#9A8C98", // Morado grisáceo
-            "#06D6A0", // Turquesa
-            "#EF476F", // Rosa
-            "#118AB2", // Azul oscuro
-            "#FF9F1C"  // Naranja
-          ],
-          borderColor: "#fff",
-          borderWidth: 1
-        },
-      ],
-    });
-
-    // Procesar top 5 productos
-    const productos = {};
-    ventas.forEach(({ nombre, cantidad }) => {
-      productos[nombre] = (productos[nombre] || 0) + cantidad;
-    });
-
-    const topProductosOrdenados = Object.entries(productos)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
-    setTopProductos({
-      labels: topProductosOrdenados.map(([nombre]) => nombre),
-      datasets: [
-        {
-          label: "Top 5 Productos Más Vendidos",
-          data: topProductosOrdenados.map(([, cantidad]) => cantidad),
-          backgroundColor: [
-            "#118AB2", // Azul
-            "#06D6A0", // Turquesa
-            "#FFD166", // Amarillo
-            "#EF476F", // Rosa
-            "#4F86C6"  // Azul claro
-          ],
-          borderColor: "#fff",
-          borderWidth: 1
-        },
-      ],
-    });
-
-    // Procesar productos menos vendidos
-    procesarProductosPocoVendidos(productos);
-  };
-
-  const procesarProductosPocoVendidos = (productos) => {
-    // Filtrar productos con al menos una venta
-    const productosConVentas = Object.entries(productos).filter(([_, cantidad]) => cantidad > 0);
-    
-    // Ordenar por cantidad ascendente y tomar los 5 con menos ventas
-    const productosOrdenados = productosConVentas
-      .sort((a, b) => a[1] - b[1])
-      .slice(0, 5);
-    
-    setProductosPocoVendidos({
-      labels: productosOrdenados.map(([nombre]) => nombre),
-      datasets: [
-        {
-          label: "Productos Menos Vendidos",
-          data: productosOrdenados.map(([, cantidad]) => cantidad),
-          backgroundColor: [
-            "#9A8C98", // Morado grisáceo
-            "#C9ADA7", // Beige rosado
-            "#F4A261", // Naranja suave
-            "#E9C46A", // Amarillo mostaza
-            "#2A9D8F"  // Verde azulado
-          ],
-          borderColor: "#fff",
-          borderWidth: 1
-        },
-      ],
-    });
-  };
+  // ELIMINAR procesarDatos y procesarProductosPocoVendidos - no se usan
 
   const nextChart = () => {
     setCurrentChart((prevChart) => (prevChart + 1) % 3);
@@ -749,22 +652,18 @@ const Home = () => {
       topProductos,
       productosPocoVendidos
     };
-  }, [ventasGlobales, timeRange]);
+  }, [ventasGlobales, filtrarVentasPorPeriodo]);
 
-  // Actualizar estados cuando cambien las estadísticas optimizadas o el contexto
+  // 🔧 FIX: Extraer datos del useMemo optimizado
+  const { ventasPorCategoria, topProductos, productosPocoVendidos } = datosEstadisticasOptimized;
+
+  // Actualizar estado de loading basado en los datos disponibles
   useEffect(() => {
-    if (ventasGlobales && datosEstadisticasOptimized.ventasPorCategoria) {
-      setVentasPorCategoria(datosEstadisticasOptimized.ventasPorCategoria);
-      setTopProductos(datosEstadisticasOptimized.topProductos);
-      setProductosPocoVendidos(datosEstadisticasOptimized.productosPocoVendidos);
-      setLoading(false);
-    } else if (isDataLoading) {
-      setLoading(true);
-    } else if (ventasGlobales && ventasGlobales.length === 0) {
-      // Si las ventas están cargadas pero vacías, mostrar mensaje apropiado
+    // 🔧 FIX: Simplificar la lógica de loading
+    if (!ventasLoading) {
       setLoading(false);
     }
-  }, [datosEstadisticasOptimized, ventasGlobales, isDataLoading]);
+  }, [ventasLoading]);
 
   // Función helper para formatear números con punto como separador de miles
   const formatNumberWithDots = (number) => {
@@ -777,7 +676,7 @@ const Home = () => {
       <Navbar />
       <div className={role === 'empleado' ? 'home-content-employee' : 'home-content'}>
         <div className={role === 'empleado' ? 'home-deudores-container-centered' : 'home-deudores-container'}>
-          {isDataLoading ? (
+          {loading || isDataLoading ? (
             <DeudoresTableSkeleton />
           ) : (
             <div className={role === 'empleado' ? 'home-deudores-card-centered' : 'home-deudores-card'}>
@@ -814,7 +713,7 @@ const Home = () => {
         
         {role !== 'empleado' && (
           <div className="home-stats-container">
-            {isDataLoading ? (
+            {loading || isDataLoading ? (
               <ChartSkeleton />
             ) : (
               <div className="home-stats-card">

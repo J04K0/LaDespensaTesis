@@ -215,17 +215,26 @@
   justify-content: center;
 }
 
+/* BOTONES DE ACCIÓN - FORZAR TAMAÑOS EXACTOS */
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 12px !important;
   transition: all 0.2s ease;
+  /* Forzar que todos los botones tengan exactamente el mismo tamaño */
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .action-btn:hover {
@@ -233,6 +242,15 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.action-btn svg {
+  /* Forzar que todos los iconos tengan exactamente el mismo tamaño */
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 14px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Estilos específicos para cada tipo de botón */
 .info-btn {
   background: rgba(23, 162, 184, 0.1);
   color: #17a2b8;
@@ -258,7 +276,7 @@
 .delete-btn {
   background: rgba(220, 53, 69, 0.1);
   color: #dc3545;
-  border: 1px solid rgba(220, 53, 69, 0.3);
+  border: 1px solid rgba(220, 53, 69, 0.3) !important;
 }
 
 .delete-btn:hover {
