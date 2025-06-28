@@ -9,7 +9,8 @@ import '../styles/SmartPagination.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 import DeudoresListSkeleton from '../components/Skeleton/DeudoresListSkeleton';
 import axios from '../services/root.service.js';
 import { jsPDF } from "jspdf";
@@ -652,6 +653,43 @@ const DeudoresList = () => {
     doc.save(`deudores_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
+  // 🔧 Obtener el rol del usuario para restricciones
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
+
+  // 🔧 Función para mostrar alerta de empleado
+  const showEmpleadoAlert = () => {
+    showEmpleadoAccessDeniedAlert("la gestión de deudores", "Los deudores pueden ser consultados pero solo administradores y jefes pueden crear, editar o eliminar.");
+  };
+
+  // 🆕 Función para manejar clic en "Agregar Deudor" con verificación de permisos
+  const handleAddDeudorClick = () => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    navigate('/agregar-deudor');
+  };
+
+  // 🆕 Función para manejar edición con verificación de permisos
+  const handleEditClick = (deudor) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    setDeudorToEdit(deudor);
+    setShowEditModal(true);
+  };
+
+  // 🆕 Función para manejar eliminación con verificación de permisos
+  const handleDeleteClick = async (id) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    await handleDelete(id);
+  };
+
   return (
     <div className="deudores-container">
       <Navbar />
@@ -666,7 +704,7 @@ const DeudoresList = () => {
                 <p className="deudores-page-subtitle">Administra tus clientes con crédito y su historial de pagos</p>
               </div>
               <div className="deudores-actions">
-                <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudor}>
+                <button className="deudores-btn deudores-btn-primary" onClick={handleAddDeudorClick}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Deudor
                 </button>
                 <button className="deudores-btn-export-pdf" onClick={handleExportPDF}>
@@ -749,12 +787,17 @@ const DeudoresList = () => {
                           <button onClick={() => handleViewHistory(deudor)} className="deudores-btn-icon deudores-btn-secondary" title="Ver historial">
                             <FontAwesomeIcon icon={faHistory} />
                           </button>
-                          <button onClick={() => handleEdit(deudor)} className="deudores-btn-icon deudores-btn-primary" title="Editar deudor">
-                            <FontAwesomeIcon icon={faEdit} />
-                          </button>
-                          <button onClick={() => handleDelete(deudor._id)} className="deudores-btn-icon deudores-btn-danger" title="Eliminar deudor">
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
+                          {/* Solo mostrar botones de editar y eliminar si NO es empleado */}
+                          {!isEmpleado && (
+                            <>
+                              <button onClick={() => handleEditClick(deudor)} className="deudores-btn-icon deudores-btn-primary" title="Editar deudor">
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button onClick={() => handleDeleteClick(deudor._id)} className="deudores-btn-icon deudores-btn-danger" title="Eliminar deudor">
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     );

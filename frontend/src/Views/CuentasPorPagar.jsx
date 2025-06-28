@@ -5,7 +5,8 @@ import SmartPagination from '../components/SmartPagination';
 import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar } from '../services/cuentasPorPagar.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton';
 import '../styles/CuentasPorPagarStyles.css';
 import '../styles/SmartPagination.css';
@@ -511,6 +512,51 @@ const formatNumberWithDots = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
+// 🔧 Obtener el rol del usuario para restricciones
+const { userRole } = useRole();
+const isEmpleado = userRole === 'empleado';
+
+// 🔧 Función para mostrar alerta de empleado
+const showEmpleadoAlert = () => {
+  showEmpleadoAccessDeniedAlert("la gestión de cuentas por pagar", "Las cuentas pueden ser consultadas pero solo administradores y jefes pueden crear, editar o eliminar.");
+};
+
+// 🆕 Función para manejar clic en "Agregar Cuenta" con verificación de permisos
+const handleAddCuentaClick = () => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+  handleAddCuenta();
+};
+
+// 🆕 Función para manejar edición con verificación de permisos
+const handleEditMesClick = (proveedor, mes) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+  handleEditMes(proveedor, mes);
+};
+
+// 🆕 Función para manejar eliminación con verificación de permisos
+const handleDeleteClick = async (id) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+  await handleDelete(id);
+};
+
+// 🆕 Función para manejar toggle de pago con verificación de permisos
+const handleTogglePaidClick = async (id, estadoActual) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+  await handleTogglePaid(id, estadoActual);
+};
+
   return (
     <div className="app-container">
       <Navbar />
@@ -525,7 +571,7 @@ const formatNumberWithDots = (number) => {
                 <p className="page-subtitle">Controla y gestiona tus pagos mensuales a proveedores y servicios</p>
               </div>
               <div className="header-buttons">
-                <button className="btn btn-primary add-btn" onClick={handleAddCuenta}>
+                <button className="btn btn-primary add-btn" onClick={handleAddCuentaClick}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Cuenta
                 </button>
                 <button className="btn-export-pdf download-btn" onClick={exportarPDF}>
@@ -714,7 +760,7 @@ const formatNumberWithDots = (number) => {
                                       title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagada' : 'Marcar como pagada'}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleTogglePaid(cuentaMes._id, cuentaMes.estado);
+                                        handleTogglePaidClick(cuentaMes._id, cuentaMes.estado);
                                       }}
                                     >
                                       <FontAwesomeIcon icon={faCheck} />
@@ -724,7 +770,7 @@ const formatNumberWithDots = (number) => {
                                       title="Eliminar"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleDelete(cuentaMes._id);
+                                        handleDeleteClick(cuentaMes._id);
                                       }}
                                     >
                                       <FontAwesomeIcon icon={faTrash} />

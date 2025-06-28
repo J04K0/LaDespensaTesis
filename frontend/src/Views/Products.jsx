@@ -14,7 +14,7 @@ import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringS
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
 import { useVentas } from '../context/VentasContext';
 import { useRole } from '../hooks/useRole';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
@@ -93,6 +93,7 @@ const Products = () => {
 
   // Obtener el rol del usuario para controlar permisos
   const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
 
   // Memoizar cálculos costosos
   const sortedProducts = useMemo(() => {
@@ -785,6 +786,29 @@ const Products = () => {
     }
   }, [location.search, refreshProductsFromDeleted]);
 
+  // 🔧 Mostrar mensaje informativo para empleados usando el helper común
+  const showEmpleadoAlert = () => {
+    showEmpleadoAccessDeniedAlert("la gestión de productos eliminados");
+  };
+
+  // 🆕 NUEVA función para manejar el clic en "Nuevo Producto" con verificación de permisos
+  const handleAddProductClick = () => {
+    if (isEmpleado) {
+      showEmpleadoAccessDeniedAlert("la creación de productos nuevos", "Puede consultar productos existentes pero no crear nuevos.");
+      return;
+    }
+    navigate('/add-product');
+  };
+
+  // 🆕 NUEVA función para manejar el clic en "Productos eliminados" con verificación de permisos
+  const handleDeletedProductsClick = () => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    setShowDeletedProductsModal(true);
+  };
+
   return (
     <div className="app-container">
       <Navbar />
@@ -803,10 +827,10 @@ const Products = () => {
                 <p className="products-page-subtitle">Gestiona tu inventario de manera eficiente</p>
               </div>
               <div className="products-actions">
-                <button className="products-btn products-btn-primary" onClick={() => navigate('/add-product')}>
+                <button className="products-btn products-btn-primary" onClick={handleAddProductClick}>
                   <FontAwesomeIcon icon={faPlus} /> Nuevo Producto
                 </button>
-                <button className="products-btn products-btn-secondary" onClick={() => setShowDeletedProductsModal(true)}>
+                <button className="products-btn products-btn-secondary" onClick={handleDeletedProductsClick}>
                   <FontAwesomeIcon icon={faTrashRestore} /> Productos eliminados
                 </button>
                 <button className="products-btn products-btn-export-pdf" onClick={handleExportToPDF}>

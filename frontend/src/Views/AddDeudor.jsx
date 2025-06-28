@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/AddDeudorStyles.css';
 import { addDeudor } from '../services/deudores.service.js';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 
 const AddDeudor = () => {
   const [nombre, setNombre] = useState('');
@@ -11,6 +12,24 @@ const AddDeudor = () => {
   const [numeroTelefono, setNumeroTelefono] = useState('');
   const [deudaTotal, setDeudaTotal] = useState('');
   const navigate = useNavigate();
+
+  // 🔧 Obtener el rol del usuario para restricciones
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
+
+  // 🔧 Verificar permisos al cargar el componente
+  useEffect(() => {
+    if (isEmpleado) {
+      showEmpleadoAccessDeniedAlert("la creación de deudores", "Solo administradores y jefes pueden agregar nuevos deudores al sistema.");
+      navigate('/deudores');
+      return;
+    }
+  }, [isEmpleado, navigate]);
+
+  // Si es empleado, no renderizar nada (ya fue redirigido)
+  if (isEmpleado) {
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

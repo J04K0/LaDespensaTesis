@@ -172,3 +172,25 @@ export const showOutOfStockAlert = (barcode, productName) => {
     }
   });
 };
+
+// 🆕 NUEVO: Helper específico para mostrar alertas de restricción para empleados
+export const showEmpleadoAccessDeniedAlert = (funcionalidad, descripcion = null) => {
+  const previouslyFocused = document.activeElement;
+  
+  const mensajeBase = `Los empleados no tienen acceso a ${funcionalidad}. Esta función está disponible solo para administradores y jefes.`;
+  const mensajeFinal = descripcion ? `${mensajeBase}\n\n${descripcion}` : mensajeBase;
+  
+  return Swal.fire({
+    ...swalBaseConfig,
+    title: "Acceso Restringido",
+    text: mensajeFinal,
+    icon: "warning",
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#e74c3c",
+    didClose: () => {
+      if (previouslyFocused) {
+        previouslyFocused.focus();
+      }
+    }
+  });
+};

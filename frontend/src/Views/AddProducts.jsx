@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import '../styles/AddProductStyles.css';
+import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
+import { useRole } from '../hooks/useRole';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faSave, faTimes, faImage, faClipboardList } from '@fortawesome/free-solid-svg-icons';
 
@@ -50,6 +51,19 @@ const AddProducts = () => {
     'Remedios': 0.15, // 15% (promedio de 10-20%)
     'Otros': 0.23  // 23% (promedio de 15-30%)
   };
+
+  // 🔧 Obtener el rol del usuario para restricciones
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
+
+  // 🔧 Verificar permisos al cargar el componente
+  useEffect(() => {
+    if (isEmpleado) {
+      showEmpleadoAccessDeniedAlert("la creación de productos nuevos", "Solo administradores y jefes pueden agregar productos al inventario.");
+      navigate('/products');
+      return;
+    }
+  }, [isEmpleado, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -184,6 +198,11 @@ const AddProducts = () => {
       navigate('/products');
     }
   };
+
+  // Si es empleado, no renderizar nada (ya fue redirigido)
+  if (isEmpleado) {
+    return null;
+  }
 
   return (
     <div className="app-container">

@@ -6,8 +6,9 @@ import SmartPagination from '../components/SmartPagination';
 import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
 import { getProveedores, deleteProveedor, updateProveedor, createProveedor, cambiarEstadoProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
 import { getProducts } from '../services/AddProducts.service';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert } from '../helpers/swaHelper';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { ExportService } from '../services/export.service';
+import { useRole } from '../hooks/useRole';
 import '../styles/ProveedoresStyles.css';
 import '../styles/SmartPagination.css';
 
@@ -51,6 +52,11 @@ const Proveedores = () => {
     'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
+  
+  // 🔧 Obtener el rol del usuario para restricciones
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
+
   useEffect(() => {
     const inicializarDatos = async () => {
       await fetchProveedores();
@@ -505,6 +511,47 @@ const Proveedores = () => {
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
 
+  // 🔧 Función para mostrar alerta de empleado
+  const showEmpleadoAlert = () => {
+    showEmpleadoAccessDeniedAlert("la gestión de proveedores", "Los proveedores pueden ser consultados pero solo administradores y jefes pueden crear, editar o eliminar.");
+  };
+
+  // 🆕 Función para manejar clic en "Agregar Proveedor" con verificación de permisos
+  const handleAddProveedorClick = () => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    handleAddProveedor();
+  };
+
+  // 🆕 Función para manejar edición con verificación de permisos
+  const handleEditProveedorClick = async (id) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    await handleEditProveedor(id);
+  };
+
+  // 🆕 Función para manejar eliminación con verificación de permisos
+  const handleDeleteProveedorClick = async (id) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    await handleDeleteProveedor(id);
+  };
+
+  // 🆕 Función para manejar cambio de estado con verificación de permisos
+  const handleCambiarEstadoProveedorClick = async (id, activo) => {
+    if (isEmpleado) {
+      showEmpleadoAlert();
+      return;
+    }
+    await handleCambiarEstadoProveedor(id, activo);
+  };
+
   return (
     <div className="app-container">
       <Navbar />
@@ -519,7 +566,7 @@ const Proveedores = () => {
                 <p className="proveedores-page-subtitle">Administra tus proveedores y vincula productos a cada uno de ellos</p>
               </div>
               <div className="header-buttons">
-                <button className="btn btn-primary add-btn" onClick={handleAddProveedor}>
+                <button className="btn btn-primary add-btn" onClick={handleAddProveedorClick}>
                   <FontAwesomeIcon icon={faPlus} /> Agregar Proveedor
                 </button>
                 <button className="btn-export-pdf download-btn" onClick={exportarPDF}>
@@ -668,7 +715,7 @@ const Proveedores = () => {
                             </td>
                             <td className="proveedores-d-flex proveedores-gap-sm">
                               <button 
-                                onClick={() => handleEditProveedor(proveedor._id)}
+                                onClick={() => handleEditProveedorClick(proveedor._id)}
                                 className="proveedores-btn-icon proveedores-btn-primary"
                                 title="Editar proveedor"
                               >
@@ -677,7 +724,7 @@ const Proveedores = () => {
                               
                               {proveedor.activo ? (
                                 <button 
-                                  onClick={() => handleCambiarEstadoProveedor(proveedor._id, false)}
+                                  onClick={() => handleCambiarEstadoProveedorClick(proveedor._id, false)}
                                   className="proveedores-btn-icon proveedores-btn-danger"
                                   title="Desactivar proveedor"
                                 >
@@ -685,7 +732,7 @@ const Proveedores = () => {
                                 </button>
                               ) : (
                                 <button 
-                                  onClick={() => handleCambiarEstadoProveedor(proveedor._id, true)}
+                                  onClick={() => handleCambiarEstadoProveedorClick(proveedor._id, true)}
                                   className="proveedores-btn-icon proveedores-btn-success"
                                   title="Activar proveedor"
                                 >
