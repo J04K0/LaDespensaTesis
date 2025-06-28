@@ -394,117 +394,276 @@ export const sendDailyCompleteReport = async () => {
     // Obtener productos agotados
     const productosAgotados = todosLosProductos.filter(producto => producto.Stock === 0);
 
-    let hayAlertas = false;
+    let hayAlertas = productosAgotados.length > 0 || productosStockBajo.length > 0 || productosVencidos.length > 0 || productosPorVencer.length > 0;
+    
+    // Estructura principal del email con diseño específico solicitado
     let contenidoCompleto = `
-      <h1 style="color: #1976d2;">📊 REPORTE DIARIO - La Despensa</h1>
-      <p><strong>Fecha:</strong> ${today.toLocaleDateString('es-ES')}</p>
-      <hr>
+      <div style="
+        max-width: 800px; 
+        margin: 0 auto; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        padding: 20px;
+      ">
+        <!-- CONTENEDOR PRINCIPAL CON CUADRO -->
+        <div style="
+          background-color: #ffffff;
+          border: 2px solid #002651;
+          border-radius: 12px;
+          padding: 30px;
+          box-shadow: 0 4px 15px rgba(0, 38, 81, 0.1);
+        ">
+          
+          <!-- ENCABEZADO -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="
+              background-color: #002651;
+              color: white;
+              padding: 15px 20px;
+              border-radius: 8px;
+              display: inline-block;
+              margin-bottom: 15px;
+            ">
+              <h1 style="margin: 0; font-size: 18px; font-weight: 600;">
+                📊 REPORTE DIARIO COMPLETO
+              </h1>
+            </div>
+            <p style="margin: 0; font-size: 14px; color: #6c757d;">
+              Reporte generado el ${today.toLocaleDateString('es-ES', { 
+                day: '2-digit',
+                month: '2-digit', 
+                year: 'numeric'
+              })} ${today.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+          </div>
+
+          <!-- CONTENIDO DE ALERTAS -->
     `;
 
-    // Productos vencidos
-    if (productosVencidos.length > 0) {
-      hayAlertas = true;
-      contenidoCompleto += `
-        <h2 style="color: #d32f2f;">🚨 PRODUCTOS VENCIDOS (${productosVencidos.length})</h2>
-        ${crearTablaProductos(productosVencidos, 'vencidos')}
-      `;
-    }
-
-    // Productos por vencer
-    if (productosPorVencer.length > 0) {
-      hayAlertas = true;
-      contenidoCompleto += `
-        <h2 style="color: #e65100;">⚠️ PRODUCTOS POR VENCER (${productosPorVencer.length})</h2>
-        ${crearTablaProductos(productosPorVencer, 'por_vencer')}
-      `;
-    }
-
-    // Productos agotados
+    // 📦 PRODUCTOS SIN STOCK (Agotados)
     if (productosAgotados.length > 0) {
-      hayAlertas = true;
       contenidoCompleto += `
-        <h2 style="color: #d32f2f;">❌ PRODUCTOS AGOTADOS (${productosAgotados.length})</h2>
-        <table border="1" cellpadding="5" style="border-collapse: collapse; margin-bottom: 20px; width: 100%;">
-          <tr style="background-color: #ffebee;">
-            <th>Producto</th>
-            <th>Marca</th>
-            <th>Categoría</th>
-            <th>Código de Barras</th>
-          </tr>
+        <div style="
+          background-color: #fff5f5;
+          border: 2px solid #dc3545;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+        ">
+          <h2 style="
+            color: #dc3545; 
+            margin: 0 0 10px 0; 
+            font-size: 16px; 
+            font-weight: 600;
+            display: flex; 
+            align-items: center;
+            gap: 8px;
+          ">
+            📦 PRODUCTOS SIN STOCK (${productosAgotados.length})
+          </h2>
+          <p style="margin: 0 0 15px 0; font-size: 14px; color: #495057;">
+            Estos productos están completamente agotados:
+          </p>
+          
+          <table style="
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px;
+            background-color: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          ">
+            <tr style="background-color: #dc3545; color: white;">
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #c82333;">Producto</th>
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #c82333;">Marca</th>
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #c82333;">Categoría</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600; border: 1px solid #c82333;">Estado</th>
+            </tr>
       `;
       
-      productosAgotados.forEach(producto => {
+      productosAgotados.forEach((producto, index) => {
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#fff5f5';
         contenidoCompleto += `
-          <tr style="background-color: #ffcdd2;">
-            <td><strong>${producto.Nombre}</strong></td>
-            <td>${producto.Marca}</td>
-            <td>${producto.Categoria}</td>
-            <td>${producto.codigoBarras}</td>
+          <tr style="background-color: ${bgColor};">
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Nombre}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Marca}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Categoria}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef; text-align: center; color: #dc3545; font-weight: 600;">AGOTADO</td>
           </tr>
         `;
       });
       
       contenidoCompleto += `
-        </table>
-        <p style="color: #d32f2f;">
-          <strong>⚠️ Estos productos necesitan reposición inmediata.</strong>
-        </p>
+          </table>
+        </div>
       `;
     }
 
-    // Productos con stock bajo
+    // 📉 PRODUCTOS CON STOCK BAJO
     if (productosStockBajo.length > 0) {
-      hayAlertas = true;
       contenidoCompleto += `
-        <h2 style="color: #f57c00;">📉 PRODUCTOS CON STOCK BAJO (${productosStockBajo.length})</h2>
-        <table border="1" cellpadding="5" style="border-collapse: collapse; margin-bottom: 20px; width: 100%;">
-          <tr style="background-color: #fff8e1;">
-            <th>Producto</th>
-            <th>Marca</th>
-            <th>Categoría</th>
-            <th>Stock Actual</th>
-            <th>Stock Mínimo</th>
-          </tr>
+        <div style="
+          background-color: #fff8e1;
+          border: 2px solid #ffbe0b;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+        ">
+          <h2 style="
+            color: #ff9800; 
+            margin: 0 0 10px 0; 
+            font-size: 16px; 
+            font-weight: 600;
+            display: flex; 
+            align-items: center;
+            gap: 8px;
+          ">
+            📉 PRODUCTOS CON STOCK BAJO (${productosStockBajo.length})
+          </h2>
+          <p style="margin: 0 0 15px 0; font-size: 14px; color: #495057;">
+            Estos productos están por debajo del stock mínimo:
+          </p>
+          
+          <table style="
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px;
+            background-color: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          ">
+            <tr style="background-color: #ffbe0b; color: #343a40;">
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #e0a800;">Producto</th>
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #e0a800;">Marca</th>
+              <th style="padding: 10px; text-align: left; font-weight: 600; border: 1px solid #e0a800;">Categoría</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600; border: 1px solid #e0a800;">Stock Actual</th>
+              <th style="padding: 10px; text-align: center; font-weight: 600; border: 1px solid #e0a800;">Stock Mínimo</th>
+            </tr>
       `;
       
-      productosStockBajo.forEach(producto => {
+      productosStockBajo.forEach((producto, index) => {
         const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[producto.Categoria] || 5;
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#fff8e1';
         contenidoCompleto += `
-          <tr style="background-color: #fff3e0;">
-            <td>${producto.Nombre}</td>
-            <td>${producto.Marca}</td>
-            <td>${producto.Categoria}</td>
-            <td style="text-align: center; color: #f57c00;"><strong>${producto.Stock}</strong></td>
-            <td style="text-align: center;">${stockMinimo}</td>
+          <tr style="background-color: ${bgColor};">
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Nombre}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Marca}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef;">${producto.Categoria}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef; text-align: center; color: #ff9800; font-weight: 600;">${producto.Stock}</td>
+            <td style="padding: 8px; border: 1px solid #e9ecef; text-align: center;">${stockMinimo}</td>
           </tr>
         `;
       });
       
       contenidoCompleto += `
-        </table>
+          </table>
+        </div>
       `;
     }
 
-    if (!hayAlertas) {
-      contenidoCompleto += `
-        <h2 style="color: #4caf50;">✅ TODO EN ORDEN</h2>
-        <p>No hay productos vencidos, por vencer, agotados o con stock crítico.</p>
-      `;
-    }
-
+    // ⚠️ CUENTAS POR PAGAR PENDIENTES - Simulación (puedes conectar con tu modelo real)
+    // Como placeholder, creamos una sección similar
     contenidoCompleto += `
-      <hr style="margin: 20px 0;">
-      <h3>📈 RESUMEN GENERAL</h3>
-      <ul>
-        <li><strong>Total de productos:</strong> ${todosLosProductos.length}</li>
-        <li><strong>Productos vencidos:</strong> ${productosVencidos.length}</li>
-        <li><strong>Productos por vencer (30 días):</strong> ${productosPorVencer.length}</li>
-        <li><strong>Productos agotados:</strong> ${productosAgotados.length}</li>
-        <li><strong>Productos con stock bajo:</strong> ${productosStockBajo.length}</li>
-      </ul>
-      <p style="color: #666; font-size: 12px;">
-        <em>Reporte automático generado por La Despensa - ${today.toLocaleString('es-ES')}</em>
-      </p>
+      <div style="
+        background-color: #fff3e0;
+        border: 2px solid #ff9800;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      ">
+        <h2 style="
+          color: #ff9800; 
+          margin: 0 0 10px 0; 
+          font-size: 16px; 
+          font-weight: 600;
+          display: flex; 
+          align-items: center;
+          gap: 8px;
+        ">
+          ⚠️ CUENTAS POR PAGAR PENDIENTES (0)
+        </h2>
+        <p style="margin: 0 0 15px 0; font-size: 14px; color: #495057;">
+          Resumen de cuentas pendientes de pago:
+        </p>
+        
+        <div style="
+          background-color: white;
+          border-radius: 6px;
+          padding: 15px;
+          text-align: center;
+          color: #28a745;
+          font-weight: 600;
+        ">
+          No hay cuentas pendientes por pagar
+        </div>
+      </div>
+    `;
+
+    // 📊 RESUMEN Y ACCIONES RECOMENDADAS
+    contenidoCompleto += `
+      <div style="
+        background-color: #e3f2fd;
+        border: 2px solid #006EDF;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      ">
+        <h2 style="
+          color: #006EDF; 
+          margin: 0 0 15px 0; 
+          font-size: 16px; 
+          font-weight: 600;
+          display: flex; 
+          align-items: center;
+          gap: 8px;
+        ">
+          📊 RESUMEN Y ACCIONES RECOMENDADAS
+        </h2>
+        
+        <div style="margin-bottom: 15px;">
+          <ul style="margin: 0; padding-left: 20px; color: #495057; line-height: 1.6;">
+            <li><strong>🔄 REPOSICIÓN:</strong> Reabastecer ${productosAgotados.length} producto(s) agotado(s)</li>
+            <li><strong>📋 SEGUIMIENTO:</strong> Monitorear ${productosStockBajo.length} producto(s) con stock bajo</li>
+            <li><strong>💰 PAGOS:</strong> Gestionar 0 cuenta(s) pendiente(s) • Total: $0</li>
+          </ul>
+        </div>
+      </div>
+    `;
+
+    // PIE DEL REPORTE - Información adicional
+    contenidoCompleto += `
+          <!-- PIE DEL REPORTE -->
+          <div style="
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+          ">
+            <p style="margin: 0 0 10px 0; font-size: 12px; color: #6c757d; font-style: italic;">
+              Este es un reporte automático diario de La Despensa
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #6c757d;">
+              Próximo reporte mañana a las 9:00 AM
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; color: #6c757d;">
+              Reporte generado el ${today.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })} ${today.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+          </div>
+          
+        </div> <!-- Fin del contenedor principal -->
+      </div> <!-- Fin del wrapper -->
     `;
 
     const asunto = hayAlertas 

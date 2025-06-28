@@ -16,7 +16,8 @@ import {
     getProductPriceHistory,
     getStockHistory,
     restoreProduct,
-    getDeletedProducts
+    getDeletedProducts,
+    sendManualDailyReport
 } from "../controllers/products.controller.js";
 
 import { 
@@ -49,5 +50,6 @@ router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, aut
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
+router.post('/test-reporte-diario', authorizeRoles([isAdmin, isJefe]), sendManualDailyReport);
 
 export default router;

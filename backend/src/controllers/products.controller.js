@@ -701,3 +701,26 @@ export const getDeletedProducts = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener productos eliminados', err.message);
   }
 };
+
+// Función para pruebas manuales del reporte diario
+export const sendManualDailyReport = async (req, res) => {
+  try {
+    console.log('🧪 Ejecutando reporte diario manual...');
+    
+    // Importar la función del servicio de email
+    const { sendDailyCompleteReport } = await import('../services/email.service.js');
+    
+    // Ejecutar el reporte
+    await sendDailyCompleteReport();
+    
+    handleSuccess(res, 200, 'Reporte diario enviado exitosamente', {
+      mensaje: 'El reporte diario ha sido enviado por email',
+      timestamp: new Date().toLocaleString('es-ES'),
+      tipo: 'prueba_manual'
+    });
+    
+  } catch (error) {
+    console.error('❌ Error al enviar reporte diario manual:', error);
+    handleErrorServer(res, 500, 'Error al enviar el reporte diario', error.message);
+  }
+};
