@@ -26,11 +26,11 @@ const ProveedorSchema = new Schema({
     type: String,
     default: '',
   },
-  contactoPrincipal: {  // Añadir este campo
+  contactoPrincipal: { 
     type: String,
     default: '',
   },
-  sitioWeb: {  // Añadir este campo
+  sitioWeb: {
     type: String,
     required: false,
     default: '',

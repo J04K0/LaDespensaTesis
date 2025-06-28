@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { ACCESS_JWT_SECRET } from "../config/configEnv.js";
 import { handleErrorClient, handleErrorServer } from "../utils/resHandlers.js";
 
+// Middleware para verificar el JWT
 const verifyJWT = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || req.headers.Authorization;

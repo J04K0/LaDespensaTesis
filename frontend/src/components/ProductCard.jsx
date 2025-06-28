@@ -3,25 +3,7 @@ import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-
-// Constantes fuera del componente para evitar recalcular en cada render
-const STOCK_MINIMO_POR_CATEGORIA = {
-  'Congelados': 10,
-  'Carnes': 5,
-  'Despensa': 8,
-  'Panaderia y Pasteleria': 10,
-  'Quesos y Fiambres': 5,
-  'Bebidas y Licores': 5,
-  'Lacteos, Huevos y otros': 10,
-  'Desayuno y Dulces': 10,
-  'Bebes y Niños': 10,
-  'Cigarros y Tabacos': 5,
-  'Cuidado Personal': 8,
-  'Remedios': 3,
-  'Limpieza y Hogar': 5,
-  'Mascotas': 5,
-  'Otros': 5
-};
+import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 
 const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, productId }) => {
   // Memoizar el cálculo de expiración

@@ -4,7 +4,7 @@ import { faPlus, faEdit, faTrash, faEye, faSearch, faSort, faFilter, faCheck, fa
 import Navbar from '../components/Navbar';
 import SmartPagination from '../components/SmartPagination';
 import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
-import { getProveedores, deleteProveedor, updateProveedor, createProveedor, cambiarEstadoProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
+import { getProveedores, updateProveedor, createProveedor, cambiarEstadoProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
 import { getProducts } from '../services/AddProducts.service';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { ExportService } from '../services/export.service';

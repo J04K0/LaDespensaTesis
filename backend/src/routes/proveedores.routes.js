@@ -4,7 +4,6 @@ import {
   getProveedorById, 
   createProveedor, 
   updateProveedor, 
-  deleteProveedor,
   getProductosProveedor,
   vincularProductos,
   cambiarEstadoProveedor
@@ -12,7 +11,6 @@ import {
 
 import { 
   isAdmin, 
-  isEmpleado, 
   authorizeRoles, 
   isJefe 
 } from '../middlewares/authorization.middleware.js';
@@ -23,14 +21,14 @@ const router = Router();
 
 router.use(authenticationMiddleware);
 
-// Restringir todas las rutas de proveedores solo para admin y jefe
 router.post('/agregar', authorizeRoles([isAdmin, isJefe]), createProveedor);
 router.get('/', authorizeRoles([isAdmin, isJefe]), getProveedores);
 router.get('/getbyid/:id', authorizeRoles([isAdmin, isJefe]), getProveedorById);
 router.patch('/actualizar/:id',authorizeRoles([isAdmin, isJefe]), updateProveedor);
-router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProveedor);
-
-// Agregar estos nuevos endpoints
+router.patch('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), (req, res) => {
+  req.body.activo = false;
+  cambiarEstadoProveedor(req, res);
+});
 router.get('/productos/:id', authorizeRoles([isAdmin, isJefe]), getProductosProveedor);
 router.patch('/vincular-productos/:id', authorizeRoles([isAdmin, isJefe]), vincularProductos);
 router.patch('/cambiar-estado/:id', authorizeRoles([isAdmin, isJefe]), cambiarEstadoProveedor);

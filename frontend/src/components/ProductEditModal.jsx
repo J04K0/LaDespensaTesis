@@ -2,6 +2,7 @@ import React, { useState, useEffect, forwardRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTimes, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import { MARGENES_POR_CATEGORIA } from '../constants/products.constants.js';
 import '../styles/ProductEditModal.css';
 
 const ProductEditModal = forwardRef(({ 
@@ -19,25 +20,6 @@ const ProductEditModal = forwardRef(({
   const [stockOriginal, setStockOriginal] = useState(0);
   const [showMotivoStock, setShowMotivoStock] = useState(false);
   const [motivoStock, setMotivoStock] = useState('');
-
-  // Márgenes por categoría (mismos que el backend)
-  const margenesPorCategoria = {
-    'Congelados': 0.25, // 25% (promedio de 20-30%)
-    'Carnes': 0.20, // 20% (promedio de 15-25%)
-    'Despensa': 0.20, // 20% (promedio de 15-25%)
-    'Panaderia y Pasteleria': 0.25, // 25% (promedio de 20-30%)
-    'Quesos y Fiambres': 0.25, // 25% (promedio de 20-30%)
-    'Bebidas y Licores': 0.33, // 33% (promedio de 25-40%)
-    'Lacteos, Huevos y otros': 0.20, // 20% (promedio de 15-25%)
-    'Desayuno y Dulces': 0.30, // 30% (promedio de 25-35%)
-    'Bebes y Niños': 0.28, // 28% (promedio de 20-35%)
-    'Cigarros y Tabacos': 0.40, // 40% (promedio de 30-50%)
-    'Cuidado Personal': 0.28, // 28% (promedio de 20-35%)
-    'Limpieza y Hogar': 0.28, // 28% (promedio de 20-35%)
-    'Mascotas': 0.28, // 28% (promedio de 20-35%)
-    'Remedios': 0.15, // 15% (promedio de 10-20%)
-    'Otros': 0.23  // 23% (promedio de 15-30%)
-  };
 
   // Optimizar control de scroll del body
   useEffect(() => {
@@ -70,7 +52,7 @@ const ProductEditModal = forwardRef(({
   }, [isOpen]);
 
   const usarPrecioRecomendado = () => {
-    const margen = margenesPorCategoria[productToEdit.Categoria] || 0.23;
+    const margen = MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23;
     const precioRecomendado = productToEdit.PrecioCompra * (1 + margen);
     
     onProductChange({
@@ -353,7 +335,7 @@ const ProductEditModal = forwardRef(({
                     <br />
                     <small>$
                       {(productToEdit.PrecioCompra * 
-                        (1 + (margenesPorCategoria[productToEdit.Categoria] || 0.23))
+                        (1 + (MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23))
                       ).toFixed(2)}
                     </small>
                   </button>

@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { ACCESS_JWT_SECRET, REFRESH_JWT_SECRET } from "../config/configEnv.js";
 import { handleErrorClient, handleErrorServer } from "../utils/resHandlers.js";
 
+// Funcion para iniciar sesión de un usuario
 export async function login(user) {
   try {
     const { email, password } = user;
@@ -29,7 +30,7 @@ export async function login(user) {
       { 
         email: userFound.email, 
         roles: userFound.roles,
-        id: userFound._id // Incluir ID del usuario en el token
+        id: userFound._id
       },
       ACCESS_JWT_SECRET,
       {
@@ -40,11 +41,11 @@ export async function login(user) {
     const refreshToken = jwt.sign(
       { 
         email: userFound.email,
-        id: userFound._id // Incluir ID del usuario también en el refresh token
+        id: userFound._id
       },
       REFRESH_JWT_SECRET,
       {
-        expiresIn: "7d", // 7 días
+        expiresIn: "7d",
       },
     );
 
@@ -54,6 +55,7 @@ export async function login(user) {
   }
 }
 
+// Funcion para refrescar el token de acceso
 export async function refresh(cookies) {
   try {
     if (!cookies.jwt) return [null, "No hay autorización"];
@@ -77,7 +79,7 @@ export async function refresh(cookies) {
           { 
             email: userFound.email, 
             roles: userFound.roles,
-            id: userFound._id // Incluir ID del usuario al refrescar el token
+            id: userFound._id
           },
           ACCESS_JWT_SECRET,
           {

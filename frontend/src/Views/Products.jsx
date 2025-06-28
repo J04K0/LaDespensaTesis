@@ -22,6 +22,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ExportService } from '../services/export.service.js';
 import SmartPagination from '../components/SmartPagination';
+import { MARGENES_POR_CATEGORIA, STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -351,25 +352,7 @@ const Products = () => {
 
   // Memoizar función de determinación de color de stock
   const getStockColorClass = useCallback((stock, categoria) => {
-    const stockMinimoPorCategoria = {
-      'Congelados': 10,
-      'Carnes': 5,
-      'Despensa': 8,
-      'Panaderia y Pasteleria': 10,
-      'Quesos y Fiambres': 5,
-      'Bebidas y Licores': 5,
-      'Lacteos, Huevos y otros': 10,
-      'Desayuno y Dulces': 10,
-      'Bebes y Niños': 10,
-      'Cigarros y Tabacos': 5,
-      'Cuidado Personal': 8,
-      'Remedios': 3,
-      'Limpieza y Hogar': 5,
-      'Mascotas': 5,
-      'Otros': 5
-    };
-
-    const stockMinimo = stockMinimoPorCategoria[categoria] || 5;
+    const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[categoria] || 5;
 
     if (stock === 0) return 'modern-stock-value-red';
     if (stock <= stockMinimo) return 'modern-stock-value-yellow';
@@ -651,29 +634,10 @@ const Products = () => {
     ExportService.generarReporteProductos(filteredAndSearchedProducts, category, availabilityFilter, searchQuery);
   };
 
-  // Definir márgenes por categoría (mismos valores que en el backend)
-  const margenesPorCategoria = {
-    'Congelados': 0.25, // 25% (promedio de 20-30%)
-    'Carnes': 0.20, // 20% (promedio de 15-25%)
-    'Despensa': 0.20, // 20% (promedio de 15-25%)
-    'Panaderia y Pasteleria': 0.25, // 25% (promedio de 20-30%)
-    'Quesos y Fiambres': 0.25, // 25% (promedio de 20-30%)
-    'Bebidas y Licores': 0.33, // 33% (promedio de 25-40%)
-    'Lacteos, Huevos y otros': 0.20, // 20% (promedio de 15-25%)
-    'Desayuno y Dulces': 0.30, // 30% (promedio de 25-35%)
-    'Bebes y Niños': 0.28, // 28% (promedio de 20-35%)
-    'Cigarros y Tabacos': 0.40, // 40% (promedio de 30-50%)
-    'Cuidado Personal': 0.28, // 28% (promedio de 20-35%)
-    'Limpieza y Hogar': 0.28, // 28% (promedio de 20-35%)
-    'Mascotas': 0.28, // 28% (promedio de 20-35%)
-    'Remedios': 0.15, // 15% (promedio de 10-20%)
-    'Otros': 0.23  // 23% (promedio de 15-30%)
-  };
-
   // Calcular el precio recomendado cuando cambia el precio de compra o la categoría
   useEffect(() => {
     if (productToEdit.PrecioCompra && productToEdit.Categoria) {
-      const margen = margenesPorCategoria[productToEdit.Categoria] || 0.23;
+      const margen = MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23;
       const precioRecomendado = productToEdit.PrecioCompra * (1 + margen);
       setProductToEdit(prev => ({
         ...prev,

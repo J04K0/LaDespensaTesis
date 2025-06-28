@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import { handleErrorClient, handleErrorServer } from "../utils/resHandlers.js";
 
+// Middleware para verificar si el usuario es administrador
 export async function isAdmin(req, res, next) {
   try {
     const user = await User.findOne({ email: req.email });
@@ -24,7 +25,7 @@ export async function isAdmin(req, res, next) {
   }
 }
 
-
+// Middleware para verificar si el usuario es empleado
 export async function isEmpleado(req, res, next) {
   try {
     const user = await User.findOne({ email:
@@ -47,6 +48,7 @@ export async function isEmpleado(req, res, next) {
   }
 }
 
+// Middleware para verificar si el usuario es jefe
 export async function isJefe(req, res, next) {
   try {
     const user = await User.findOne({ email: req.email });
@@ -67,6 +69,7 @@ export async function isJefe(req, res, next) {
   }
 }
 
+// Función auxiliar para comprobar el rol del usuario
 async function checkRole(req, res, rolesToCheck, next) {
   try {
     const user = await User.findOne({ email: req.email });
@@ -84,6 +87,7 @@ async function checkRole(req, res, rolesToCheck, next) {
   }
 }
 
+// Middleware para autorizar múltiples roles
 export function authorizeRoles(roles) {
   return (req, res, next) => {
     const rolesToCheck = roles.map(roleFn => {

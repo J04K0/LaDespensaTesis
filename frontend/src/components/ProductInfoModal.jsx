@@ -5,6 +5,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { showConfirmationAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
+import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 import '../styles/ProductInfoModal.css';
 
 const ProductInfoModal = React.memo(({ 
@@ -60,25 +61,7 @@ const ProductInfoModal = React.memo(({
   const getStockColorClass = useMemo(() => {
     if (!productInfo) return '';
     
-    const stockMinimoPorCategoria = {
-      'Congelados': 10,
-      'Carnes': 5,
-      'Despensa': 8,
-      'Panaderia y Pasteleria': 10,
-      'Quesos y Fiambres': 5,
-      'Bebidas y Licores': 5,
-      'Lacteos, Huevos y otros': 10,
-      'Desayuno y Dulces': 10,
-      'Bebes y Niños': 10,
-      'Cigarros y Tabacos': 5,
-      'Cuidado Personal': 8,
-      'Remedios': 3,
-      'Limpieza y Hogar': 5,
-      'Mascotas': 5,
-      'Otros': 5
-    };
-
-    const stockMinimo = stockMinimoPorCategoria[productInfo.Categoria] || 5;
+    const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[productInfo.Categoria] || 5;
 
     if (productInfo.Stock === 0) return 'modern-stock-value-red';
     if (productInfo.Stock <= stockMinimo) return 'modern-stock-value-yellow';

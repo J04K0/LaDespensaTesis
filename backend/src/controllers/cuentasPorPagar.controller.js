@@ -12,7 +12,7 @@ export const getCuentasPorPagar = async (req, res) => {
     
     if (categoria) query.Categoria = categoria;
     if (estado) query.Estado = estado;
-    if (year) query.Mes = { $regex: `^${year}-` }; // Agregamos filtro por año
+    if (year) query.Mes = { $regex: `^${year}-` };
 
     const cuentas = await CuentasPorPagar.find(query)
       .limit(limit * 1)

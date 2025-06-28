@@ -4,6 +4,7 @@ import { login as authLogin, refresh as authRefresh } from "../services/auth.ser
 import { authLoginBodySchema } from "../schema/auth.schema.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../utils/resHandlers.js";	
 
+// Funcion para manejar el login de un usuario
 export async function login(req, res) {
   try {
     const { body } = req;
@@ -14,18 +15,17 @@ export async function login(req, res) {
 
     if (errorToken) return handleErrorClient(res, 400, errorToken);
 
-    // * Existen mas opciones de seguirdad para las cookies *//
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
     handleSuccess(res, 200, "Usuario logueado correctamente", { accessToken });
   } catch (error) {
     handleErrorServer(res, 500, "Error al loguear al usuario", error.message);
   }
 }
 
+// Funcion para manejar el logout de un usuario
 export async function logout(req, res) {
   try {
     const cookies = req.cookies;
@@ -38,6 +38,7 @@ export async function logout(req, res) {
   }
 }
 
+// Funcion para refrescar el token de acceso
 export async function refresh(req, res) {
   try {
     const cookies = req.cookies;

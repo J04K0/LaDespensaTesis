@@ -63,9 +63,9 @@ export const proveedorSchema = Joi.object({
     }),
   notas: Joi.string().allow('').optional(),
   productos: Joi.array().items(Joi.string()).optional(),
-  activo: Joi.boolean().optional(), // Campo activo como opcional
-  createdAt: Joi.date().optional(), // Campo createdAt como opcional
-  updatedAt: Joi.date().optional()  // Campo updatedAt como opcional
+  activo: Joi.boolean().optional(),
+  createdAt: Joi.date().optional(),
+  updatedAt: Joi.date().optional()
 });
 
 export const idProveedorSchema = Joi.object({

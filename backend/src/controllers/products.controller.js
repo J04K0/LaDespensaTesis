@@ -3,7 +3,6 @@ import Venta from '../models/venta.model.js';
 import { productSchema, idProductSchema } from '../schema/products.schema.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
 import cron from 'node-cron';
-let ticketCounter = 0; // Variable global para el contador de tickets
 import { HOST, PORT } from '../config/configEnv.js';
 import { sendLowStockAlert, sendExpirationAlert } from '../services/email.service.js';
 import { 
@@ -11,7 +10,10 @@ import {
   emitProductoVencidoAlert, 
   emitProductoPorVencerAlert 
 } from '../services/alert.service.js';
+import { STOCK_MINIMO_POR_CATEGORIA, MARGENES_POR_CATEGORIA } from '../constants/products.constants.js';
 
+// Funcion para traer todos los productos con paginación
+// y ordenados por nombre, y opcionalmente incluir productos eliminados
 export const getProducts = async (req, res) => {
   try {
     const { page = 1, limit = 5, incluirEliminados = false } = req.query;
@@ -20,7 +22,7 @@ export const getProducts = async (req, res) => {
     const filter = incluirEliminados === 'true' ? {} : { eliminado: { $ne: true } };
     
     const products = await Product.find(filter)
-      .collation({ locale: 'es', strength: 2 }) // Ordenación insensible a mayúsculas/minúsculas
+      .collation({ locale: 'es', strength: 2 }) 
       .sort({ Nombre: 1 }) 
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -39,6 +41,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
+// Funcion para traer un producto por ID
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id); // ! validar id con joi
@@ -51,6 +54,7 @@ export const getProductById = async (req, res) => {
   }
 };
 
+// Funcion para crear un nuevo producto
 export const addProduct = async (req, res) => { 
   try {
     const { value, error } = productSchema.validate(req.body);
@@ -63,26 +67,7 @@ export const addProduct = async (req, res) => {
     }
 
     // Obtener los márgenes por categoría (mismos valores que en el modelo)
-    const margenesPorCategoria = {
-      'Congelados': 0.25,
-      'Carnes': 0.20,
-      'Despensa': 0.20,
-      'Panaderia y Pasteleria': 0.25,
-      'Quesos y Fiambres': 0.25,
-      'Bebidas y Licores': 0.33,
-      'Lacteos, Huevos y otros': 0.20,
-      'Desayuno y Dulces': 0.30,
-      'Bebes y Niños': 0.28,
-      'Cigarros y Tabacos': 0.40,
-      'Cuidado Personal': 0.28,
-      'Limpieza y Hogar': 0.28,
-      'Mascotas': 0.28,
-      'Remedios': 0.15,
-      'Otros': 0.23
-    };
-
-    // Calcular el precio recomendado según la categoría
-    const margen = margenesPorCategoria[value.Categoria] || 0.23;
+    const margen = MARGENES_POR_CATEGORIA[value.Categoria] || 0.23;
     const precioRecomendado = value.PrecioCompra * (1 + margen);
 
     // Crear el producto con la imagen incluida y el precio recomendado
@@ -100,6 +85,7 @@ export const addProduct = async (req, res) => {
   }
 };
 
+// Funcion para actualizar un producto
 export const updateProduct = async (req, res) => { 
   try {
     const { value, error } = productSchema.validate(req.body);
@@ -127,7 +113,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // 🆕 NUEVO: Verificar si hay cambios en el stock y registrarlos
+    // Verificar si hay cambios en el stock y registrarlos
     if (value.Stock !== product.Stock) {
       const { motivo, tipoMovimiento = 'ajuste_manual' } = req.body;
       
@@ -141,32 +127,13 @@ export const updateProduct = async (req, res) => {
         stockNuevo: value.Stock,
         tipoMovimiento,
         motivo,
-        usuario: req.userId, // Obtenido del middleware de autenticación
+        usuario: req.userId,
         fecha: new Date()
       });
     }
 
-    // Obtener los márgenes por categoría (mismos valores que en el modelo)
-    const margenesPorCategoria = {
-      'Congelados': 0.25,
-      'Carnes': 0.20,
-      'Despensa': 0.20,
-      'Panaderia y Pasteleria': 0.25,
-      'Quesos y Fiambres': 0.25,
-      'Bebidas y Licores': 0.33,
-      'Lacteos, Huevos y otros': 0.20,
-      'Desayuno y Dulces': 0.30,
-      'Bebes y Niños': 0.28,
-      'Cigarros y Tabacos': 0.40,
-      'Cuidado Personal': 0.28,
-      'Limpieza y Hogar': 0.28,
-      'Mascotas': 0.28,
-      'Remedios': 0.15,
-      'Otros': 0.23
-    };
-
-    // Calcular el precio recomendado según la categoría
-    const margen = margenesPorCategoria[value.Categoria] || 0.23;
+    // Calcular el precio recomendado según la categoría usando constantes centralizadas
+    const margen = MARGENES_POR_CATEGORIA[value.Categoria] || 0.23;
     const precioRecomendado = value.PrecioCompra * (1 + margen);
 
     // Actualizar los datos del producto
@@ -188,6 +155,7 @@ export const updateProduct = async (req, res) => {
   }
 };
 
+// Funcion para eliminar un producto
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -210,7 +178,7 @@ export const deleteProduct = async (req, res) => {
     const product = await Product.findById(value.id);
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-    // 🆕 NUEVO: En lugar de eliminar físicamente, marcar como eliminado con auditoría
+    // En lugar de eliminar físicamente, marcar como eliminado con auditoría
     const updatedProduct = await Product.findByIdAndUpdate(
       value.id,
       {
@@ -232,7 +200,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// 🆕 NUEVO: Endpoint para obtener historial de stock de un producto
+// Función para obtener historial de stock de un producto
 export const getStockHistory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -264,7 +232,7 @@ export const getStockHistory = async (req, res) => {
   }
 };
 
-// 🆕 NUEVO: Endpoint para restaurar un producto eliminado (solo para administradores)
+// Función para restaurar un producto eliminado (solo para administradores)
 export const restoreProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -310,6 +278,7 @@ export const restoreProduct = async (req, res) => {
   }
 };
 
+// Funcion para obtener productos por categoría
 export const getProductsByCategory = async (req, res) => {
   try {
     const { categoria } = req.params; // ! validar categoria con joi
@@ -326,24 +295,7 @@ export const getProductsByCategory = async (req, res) => {
   }
 };
 
-const stockMinimoPorCategoria = {
-  'Congelados': 10,
-  'Carnes': 5,
-  'Despensa': 8,
-  'Panaderia y Pasteleria': 10,
-  'Quesos y Fiambres': 5,
-  'Bebidas y Licores': 5,
-  'Lacteos, Huevos y Refrigerados': 10,
-  'Desayuno y Dulces': 10,
-  'Bebes y Niños': 10,
-  'Cigarros': 5,
-  'Cuidado Personal': 8,
-  'Remedios': 3,
-  'Limpieza y Hogar': 5,
-  'Mascotas': 5,
-  'Otros': 5
-};
-
+// Funcion para verificar stock de productos y enviar alertas si es necesario
 export const verificarStock = async (req, res) => {
   try {
     const productosConPocoStock = await Product.find();
@@ -357,9 +309,9 @@ export const verificarStock = async (req, res) => {
         return false;
       }
 
-      const stockMinimo = stockMinimoPorCategoria[categoria];
+      const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[categoria];
       if (stockMinimo === undefined) {
-        console.warn(`Categoría no definida en stockMinimoPorCategoria: ${categoria}`);
+        console.warn(`Categoría no definida en STOCK_MINIMO_POR_CATEGORIA: ${categoria}`);
         return false;
       }
       return producto.Stock <= stockMinimo;
@@ -367,6 +319,8 @@ export const verificarStock = async (req, res) => {
 
     // ❌ ELIMINAR: Ya no enviar alertas automáticas desde aquí
     // Esta función ahora solo devuelve los datos sin enviar alertas
+
+    // REVISAR ESTO//
     
     if (productosFiltrados.length > 0) {
       return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
@@ -378,6 +332,7 @@ export const verificarStock = async (req, res) => {
   }
 };
 
+// Funcion para obtener productos próximos a caducar (5 días)
 export const getProductsExpiringSoon = async (req, res) => {
   try {
     const today = new Date();
@@ -404,6 +359,7 @@ export const getProductsExpiringSoon = async (req, res) => {
   }
 };
 
+// Funcion para obtener productos vencidos
 export const getExpiredProducts = async (req, res) => {
   try {
     const today = new Date();
@@ -427,6 +383,9 @@ export const getExpiredProducts = async (req, res) => {
   }
 };
 
+// Terminal de ventas - validaciones estrictas para el flujo de ventas
+// Verifica existencia del producto independientemente del stock,
+// Valida stock específicamente.
 export const scanProducts = async (req, res) => {
   try {
     const { codigoBarras } = req.body;
@@ -448,8 +407,8 @@ export const scanProducts = async (req, res) => {
     // Buscar el producto con stock disponible y fecha de vencimiento más próxima
     const product = await Product.findOne({
       codigoBarras,
-      Stock: { $gt: 0 } // Filtra solo productos con stock disponible
-    }).sort({ fechaVencimiento: 1 }); // Ordena para obtener el más próximo a vencer
+      Stock: { $gt: 0 }
+    }).sort({ fechaVencimiento: 1 });
 
     // Verificar si el producto está vencido pero permitir continuar
     const today = new Date();
@@ -466,7 +425,7 @@ export const scanProducts = async (req, res) => {
       precioCompra: product.PrecioCompra,
       precioRecomendado: product.PrecioRecomendado,
       fechaVencimiento: product.fechaVencimiento,
-      isExpired: isExpired // Agregar un flag para indicar si está vencido
+      isExpired: isExpired
     });
 
   } catch (err) {
@@ -474,6 +433,7 @@ export const scanProducts = async (req, res) => {
   }
 };
 
+// Funcion para actualizar el stock de productos vendidos
 export const actualizarStockVenta = async (req, res) => {
   try {
     const { productosVendidos } = req.body;
@@ -529,15 +489,13 @@ export const actualizarStockVenta = async (req, res) => {
           producto.Stock = 0;
         }
 
-        await producto.save(); // Guardar cambios en la base de datos
+        await producto.save();
         
-        // ✅ NUEVO: Solo revisar stock DESPUÉS de la venta
-        const stockMinimo = stockMinimoPorCategoria[producto.Categoria];
+        const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[producto.Categoria];
         if (stockMinimo && stockAnterior > stockMinimo && producto.Stock <= stockMinimo && producto.Stock > 0) {
           productosAfectadosEnVenta.push(producto);
         }
-        
-        // Si el producto se agotó completamente en esta venta
+
         if (stockAnterior > 0 && producto.Stock === 0) {
           productosAgotados.push(producto);
         }
@@ -548,12 +506,7 @@ export const actualizarStockVenta = async (req, res) => {
       }
     }
 
-    // ✅ NUEVO: Solo emitir alertas de stock DESPUÉS de ventas (tiempo real)
     if (productosAfectadosEnVenta.length > 0 || productosAgotados.length > 0) {
-      console.log(`📢 Emitiendo alertas de stock después de venta:`);
-      console.log(`- Productos con stock bajo: ${productosAfectadosEnVenta.length}`);
-      console.log(`- Productos agotados: ${productosAgotados.length}`);
-      
       try {
         // Combinar todos los productos afectados para el email
         const todosLosProductosAfectados = [...productosAfectadosEnVenta, ...productosAgotados];
@@ -594,6 +547,9 @@ export const actualizarStockVenta = async (req, res) => {
   }
 };
 
+// Gestión administrativa y consultas generales
+// Búsqueda directa de productos con stock > 0, ordenados por fecha de vencimiento
+// Verificación de existencia en módulos de gestión
 export const getProductByBarcode = async (req, res) => {
   try {
     const codigoBarras = req.params.codigoBarras || req.query.codigoBarras;
@@ -692,14 +648,14 @@ cron.schedule('0 */5 * * *', async () => {
   await eliminarProductosSinStock();
 });
 
+// Función para obtener el historial de precios de un producto
+// Incluye el precio actual y el historial ordenado por fecha
 export const getProductPriceHistory = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
     
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
-
-    // Ordenar el historial por fecha, del más reciente al más antiguo
     const historialOrdenado = product.historialPrecios.sort((a, b) => b.fecha - a.fecha);
 
     // Crear respuesta con información actual e historial
@@ -720,50 +676,7 @@ export const getProductPriceHistory = async (req, res) => {
   }
 };
 
-// 🔧 NUEVO: Endpoint para revisar manualmente vencimientos (solo para testing)
-export const forceCheckExpirations = async (req, res) => {
-  try {
-    const { forceExpirationCheck } = await import('../services/alert.service.js');
-    
-    // Ejecutar revisión manual
-    await forceExpirationCheck();
-    
-    handleSuccess(res, 200, 'Revisión de vencimientos ejecutada manualmente', null);
-  } catch (err) {
-    handleErrorServer(res, 500, 'Error al ejecutar revisión de vencimientos', err.message);
-  }
-};
-
-// 🧹 NUEVO: Endpoint para limpiar cache de alertas (solo para testing)
-export const clearExpirationCache = async (req, res) => {
-  try {
-    const { clearAlertCache } = await import('../services/alert.service.js');
-    
-    // Limpiar cache
-    clearAlertCache();
-    
-    handleSuccess(res, 200, 'Cache de alertas limpiado correctamente', null);
-  } catch (err) {
-    handleErrorServer(res, 500, 'Error al limpiar cache de alertas', err.message);
-  }
-};
-
-// 🔧 NUEVO: Endpoint para generar reporte diario completo manualmente (solo para testing)
-export const forceDailyCompleteReport = async (req, res) => {
-  try {
-    const { sendDailyCompleteReport } = await import('../services/email.service.js');
-    
-    // Ejecutar el reporte diario completo manualmente
-    const result = await sendDailyCompleteReport();
-    
-    handleSuccess(res, 200, 'Reporte diario completo enviado manualmente', result);
-  } catch (err) {
-    console.error('Error al generar reporte diario:', err);
-    handleErrorServer(res, 500, 'Error al generar reporte diario completo', err.message);
-  }
-};
-
-// 🆕 NUEVO: Endpoint para obtener productos eliminados (solo para administradores)
+// Función para obtener productos eliminados (solo para administradores y admin)
 export const getDeletedProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -771,14 +684,13 @@ export const getDeletedProducts = async (req, res) => {
     const deletedProducts = await Product.find({ eliminado: true })
       .populate('usuarioEliminacion', 'username email')
       .collation({ locale: 'es', strength: 2 })
-      .sort({ fechaEliminacion: -1 }) // Más recientes primero
+      .sort({ fechaEliminacion: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
       
     const count = await Product.countDocuments({ eliminado: true });
 
-    // Cambiar para devolver 200 siempre, incluso si no hay productos eliminados
     handleSuccess(res, 200, deletedProducts.length > 0 ? 'Productos eliminados encontrados' : 'No hay productos eliminados', {
       products: deletedProducts,
       totalPages: Math.ceil(count / limit),
@@ -789,4 +701,3 @@ export const getDeletedProducts = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener productos eliminados', err.message);
   }
 };
-

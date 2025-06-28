@@ -15,6 +15,7 @@ import { Server } from 'socket.io';
 // Variable global para el socket.io
 export let io;
 
+// Función para configurar el servidor Express y Socket.IO
 async function setupServer() {
   try {
     const app = express();

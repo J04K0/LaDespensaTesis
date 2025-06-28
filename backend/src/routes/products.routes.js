@@ -14,9 +14,6 @@ import {
     getProductByBarcode,
     getProductForCreation,
     getProductPriceHistory,
-    forceCheckExpirations,
-    clearExpirationCache,
-    forceDailyCompleteReport,
     getStockHistory,
     restoreProduct,
     getDeletedProducts
@@ -35,7 +32,6 @@ import { handleFileSizeLimit , upload } from "../middlewares/multer.middleware.j
 const router = express.Router();
 router.use(authenticationMiddleware);
 
-// Restringir agregar productos solo para admin y jefe
 router.post('/agregar', upload.single('image'), handleFileSizeLimit,authorizeRoles([isAdmin, isJefe]), addProduct);
 router.get('/', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProducts);
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductById);
@@ -46,21 +42,12 @@ router.get('/expired', authorizeRoles([isEmpleado, isAdmin, isJefe]), getExpired
 router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductByBarcode)
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
-// 🆕 NUEVAS RUTAS para auditoría
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
 router.get('/eliminados', authorizeRoles([isAdmin]), getDeletedProducts);
 router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
-
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
-
-// 🔧 NUEVAS RUTAS para testing manual de vencimientos
-router.post('/force-check-expirations', authorizeRoles([isAdmin, isJefe]), forceCheckExpirations);
-router.post('/clear-expiration-cache', authorizeRoles([isAdmin, isJefe]), clearExpirationCache);
-
-// 📧 NUEVA RUTA para generar reporte diario completo manualmente
-router.post('/force-daily-report', authorizeRoles([isAdmin, isJefe]), forceDailyCompleteReport);
 
 export default router;

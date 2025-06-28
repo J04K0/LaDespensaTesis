@@ -40,10 +40,10 @@ export const productSchema = Joi.object({
       'Panaderia y Pasteleria', 
       'Quesos y Fiambres', 
       'Bebidas y Licores', 
-      'Lacteos, Huevos y otros',  // Corregido para coincidir con el controlador
+      'Lacteos, Huevos y otros',
       'Desayuno y Dulces', 
       'Bebes y Niños', 
-      'Cigarros y Tabacos',  // Corregido el orden
+      'Cigarros y Tabacos',
       'Cuidado Personal',
       'Limpieza y Hogar',
       'Mascotas',
@@ -81,7 +81,6 @@ export const productSchema = Joi.object({
   image: Joi.string().optional().allow(null).messages({
     "string.base": "El archivo debe ser de tipo string.",
   }),
-  // 🆕 NUEVOS CAMPOS OPCIONALES para cambios de stock
   motivo: Joi.string().min(10).max(500).optional().messages({
     'string.min': 'El motivo debe tener al menos 10 caracteres',
     'string.max': 'El motivo no puede exceder los 500 caracteres',
@@ -92,7 +91,6 @@ export const productSchema = Joi.object({
     'string.base': 'El tipo de movimiento debe ser texto'
   })
 }).options({ 
-  // 🆕 IMPORTANTE: Permitir campos adicionales desconocidos
   allowUnknown: true,
   stripUnknown: true
 });

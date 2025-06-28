@@ -29,9 +29,7 @@ const generateUniqueId = () => {
   return `${timestamp}-${alertIdCounter}-${random}`;
 };
 
-/**
- * Limpia alertas de vencimiento antiguas del cache
- */
+// Funciones auxiliares para manejar alertas de vencimiento
 const cleanOldExpirationAlerts = () => {
   const now = Date.now();
   for (const [key, alert] of recentExpirationAlerts.entries()) {
@@ -41,24 +39,18 @@ const cleanOldExpirationAlerts = () => {
   }
 };
 
-/**
- * Crea una clave única para alertas de vencimiento
- */
+// Función para crear una clave única para las alertas de vencimiento
 const createExpirationAlertKey = (data) => {
   return `expiration_${data._id || data.codigoBarras || data.Nombre}`;
 };
 
-/**
- * Verifica si una alerta de vencimiento fue enviada recientemente
- */
+// Verifica si una alerta de vencimiento reciente ya fue enviada
 const isRecentExpirationAlert = (alertKey) => {
   cleanOldExpirationAlerts();
   return recentExpirationAlerts.has(alertKey);
 };
 
-/**
- * Emite una alerta directamente
- */
+// Función para emitir alertas directamente a través de Socket.io
 const emitAlertDirect = (type, data, message) => {
   if (!io) {
     console.error('Socket.io no está inicializado');
@@ -75,7 +67,6 @@ const emitAlertDirect = (type, data, message) => {
     isGrouped: Array.isArray(data) && data.length > 1
   };
 
-  console.log(`📢 Emitiendo alerta ${type}:`, message);
   io.emit('nueva_alerta', alert);
   return alert;
 };
@@ -85,7 +76,6 @@ const emitAlertDirect = (type, data, message) => {
  * @param {object|array} producto - Producto o array de productos con stock bajo
  */
 export const emitStockBajoAlert = (producto) => {
-  // Si es un array de productos, procesar cada uno individualmente
   if (Array.isArray(producto)) {
     return producto.map(prod => {
       if (!prod || !prod.Nombre) {
@@ -100,7 +90,6 @@ export const emitStockBajoAlert = (producto) => {
     }).filter(alert => alert !== null);
   }
   
-  // Caso de un solo producto
   if (!producto || !producto.Nombre) {
     console.error('Error: Producto inválido o sin nombre', producto);
     return null;
@@ -118,7 +107,6 @@ export const emitStockBajoAlert = (producto) => {
  * @param {object|array} producto - Producto o array de productos vencidos
  */
 export const emitProductoVencidoAlert = (producto) => {
-  // Si es un array de productos, procesar cada uno individualmente
   if (Array.isArray(producto)) {
     const validAlerts = [];
     
@@ -140,19 +128,15 @@ export const emitProductoVencidoAlert = (producto) => {
         );
         
         if (alert) {
-          // Marcar como enviado
           recentExpirationAlerts.set(alertKey, { timestamp: Date.now(), type: ALERT_TYPES.PRODUCTO_VENCIDO, data: prod });
           validAlerts.push(alert);
         }
-      } else {
-        console.log(`⏭️ Alerta de vencimiento ignorada (enviada recientemente): ${prod.Nombre}`);
       }
     });
     
     return validAlerts;
   }
   
-  // Caso de un solo producto
   if (!producto || !producto.Nombre) {
     console.error('Error: Producto inválido o sin nombre', producto);
     return null;
@@ -160,7 +144,6 @@ export const emitProductoVencidoAlert = (producto) => {
   
   const alertKey = createExpirationAlertKey(producto);
   
-  // Solo emitir si no se ha enviado en las últimas 24 horas
   if (!isRecentExpirationAlert(alertKey)) {
     const fechaVencimiento = new Date(producto.fechaVencimiento).toLocaleDateString();
     const alert = emitAlertDirect(
@@ -170,14 +153,10 @@ export const emitProductoVencidoAlert = (producto) => {
     );
     
     if (alert) {
-      // Marcar como enviado
       recentExpirationAlerts.set(alertKey, { timestamp: Date.now(), type: ALERT_TYPES.PRODUCTO_VENCIDO, data: producto });
     }
     
     return alert;
-  } else {
-    console.log(`⏭️ Alerta de vencimiento ignorada (enviada recientemente): ${producto.Nombre}`);
-    return null;
   }
 };
 
@@ -186,7 +165,6 @@ export const emitProductoVencidoAlert = (producto) => {
  * @param {object|array} producto - Producto o array de productos próximos a vencer
  */
 export const emitProductoPorVencerAlert = (producto) => {
-  // Si es un array de productos, procesar cada uno individualmente
   if (Array.isArray(producto)) {
     const validAlerts = [];
     
@@ -198,7 +176,6 @@ export const emitProductoPorVencerAlert = (producto) => {
       
       const alertKey = createExpirationAlertKey(prod);
       
-      // Solo emitir si no se ha enviado en las últimas 24 horas
       if (!isRecentExpirationAlert(alertKey)) {
         const fechaVencimiento = new Date(prod.fechaVencimiento).toLocaleDateString();
         const alert = emitAlertDirect(
@@ -208,19 +185,15 @@ export const emitProductoPorVencerAlert = (producto) => {
         );
         
         if (alert) {
-          // Marcar como enviado
           recentExpirationAlerts.set(alertKey, { timestamp: Date.now(), type: ALERT_TYPES.PRODUCTO_POR_VENCER, data: prod });
           validAlerts.push(alert);
         }
-      } else {
-        console.log(`⏭️ Alerta de vencimiento ignorada (enviada recientemente): ${prod.Nombre}`);
       }
     });
     
     return validAlerts;
   }
   
-  // Caso de un solo producto
   if (!producto || !producto.Nombre) {
     console.error('Error: Producto inválido o sin nombre', producto);
     return null;
@@ -228,7 +201,6 @@ export const emitProductoPorVencerAlert = (producto) => {
   
   const alertKey = createExpirationAlertKey(producto);
   
-  // Solo emitir si no se ha enviado en las últimas 24 horas
   if (!isRecentExpirationAlert(alertKey)) {
     const fechaVencimiento = new Date(producto.fechaVencimiento).toLocaleDateString();
     const alert = emitAlertDirect(
@@ -243,9 +215,6 @@ export const emitProductoPorVencerAlert = (producto) => {
     }
     
     return alert;
-  } else {
-    console.log(`⏭️ Alerta de vencimiento ignorada (enviada recientemente): ${producto.Nombre}`);
-    return null;
   }
 };
 
@@ -284,46 +253,23 @@ export const emitCuentaPorPagarAlert = (cuenta) => {
   );
 };
 
-// 🕒 TAREAS PROGRAMADAS PARA REVISIÓN DIARIA DE VENCIMIENTOS
-
-/**
- * Revisa productos vencidos y próximos a vencer (DIARIO)
- * ACTUALIZADO: Ahora usa el reporte completo en lugar de envíos separados
- */
+// Revisión diaria de expiraciones
 const checkDailyExpirations = async () => {
   try {
-    console.log('🔍 Iniciando revisión diaria completa...');
     
-    // Importar dinámicamente para evitar dependencias circulares
     const { sendDailyCompleteReport } = await import('./email.service.js');
     
-    // Enviar el reporte diario completo que incluye todo
     await sendDailyCompleteReport();
     
-    console.log('✅ Reporte diario completo enviado exitosamente');
     
   } catch (error) {
     console.error('❌ Error en revisión diaria completa:', error);
   }
 };
 
-// 📅 PROGRAMAR REVISIÓN DIARIA A LAS 9:00 AM
+// Esta tarea se ejecutará todos los días a las 9 am
 cron.schedule('0 9 * * *', () => {
-  console.log('⏰ Ejecutando reporte diario completo programado...');
   checkDailyExpirations();
 }, {
-  timezone: "America/Santiago" // Ajusta según tu zona horaria
+  timezone: "America/Santiago" // Se ajusta segun zona horaria de Chile
 });
-
-export const forceExpirationCheck = () => {
-  console.log('🔧 Forzando revisión manual de vencimientos...');
-  checkDailyExpirations();
-};
-
-/**
- * Limpia todo el cache de alertas para testing
- */
-export const clearAlertCache = () => {
-  recentExpirationAlerts.clear();
-  console.log('🧹 Cache de alertas de vencimiento limpiado');
-};

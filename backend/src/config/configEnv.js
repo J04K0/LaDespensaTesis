@@ -15,3 +15,5 @@ export const PORT = process.env.PORT;
 export const DB_URL = process.env.DB_URL;
 export const ACCESS_JWT_SECRET = process.env.ACCESS_JWT_SECRET;
 export const REFRESH_JWT_SECRET = process.env.REFRESH_JWT_SECRET;
+export const GMAIL_USER = process.env.EMAIL_USER;
+export const GMAIL_PASS = process.env.EMAIL_APP_PASSWORD;

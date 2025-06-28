@@ -4,6 +4,7 @@ import { handleSuccess, handleErrorClient, handleErrorServer } from "../utils/re
 import UserService from "../services/user.service.js";
 import { userBodySchema, userIdSchema } from "../schema/user.schema.js";
 
+// Función para obtener todos los usuarios
 export async function getUsers(req, res) {
   try {
     const [usuarios, errorUsuarios] = await UserService.getUsers();
@@ -17,6 +18,7 @@ export async function getUsers(req, res) {
   }
 }
 
+// Función para crear un nuevo usuario
 export async function createUser(req, res) {
   try {
     const { body } = req;
@@ -39,6 +41,7 @@ export async function createUser(req, res) {
   }
 }
 
+// Función para obtener un usuario por ID
 export async function getUserById(req, res) {
   try {
     const { params } = req;
@@ -55,6 +58,7 @@ export async function getUserById(req, res) {
   }
 }
 
+// Función para actualizar un usuario
 export async function updateUser(req, res) {
   try {
     const { params, body } = req;

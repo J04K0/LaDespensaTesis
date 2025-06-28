@@ -4,11 +4,14 @@ import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/re
 import { emitDeudorPagoProximoAlert } from '../services/alert.service.js';
 import cron from 'node-cron';
 
+
 const formatNumberWithDots = (number) => {
   if (typeof number !== 'number' || isNaN(number)) return '0';
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
+// Traer todos los deudores con paginación
+// y formatear la deuda total con puntos como separadores de miles
 export const getDeudores = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -38,7 +41,7 @@ export const getDeudores = async (req, res) => {
   }
 };
 
-
+// Traer un deudor por ID
 export const getDeudorById = async (req, res) => {
   try {
     const deudor = await Deudores.findById(req.params.id);
@@ -51,6 +54,7 @@ export const getDeudorById = async (req, res) => {
   }
 };
 
+// Crear un nuevo deudor
 export const addDeudor = async (req, res) => {
   try {
     const { body } = req; 
@@ -66,6 +70,8 @@ export const addDeudor = async (req, res) => {
   }
 };
 
+// Actualizar un deudor
+// Incluye la actualización del historial de pagos si se proporciona
 export const updateDeudor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,9 +82,6 @@ export const updateDeudor = async (req, res) => {
     if (!deudor) return handleErrorClient(res, 404, 'Deudor no encontrado');
 
     const { body } = req;
-    console.log("Datos recibidos:", body); // Log para depuración
-
-    // Si los datos contienen historialPagos, actualizar también
     const updatedDeudor = await Deudores.findByIdAndUpdate(
       validatedId.id,
       {
@@ -86,7 +89,7 @@ export const updateDeudor = async (req, res) => {
         fechaPaga: body.fechaPaga,
         numeroTelefono: body.numeroTelefono,
         deudaTotal: body.deudaTotal,
-        historialPagos: body.historialPagos // Incluir historialPagos en la actualización
+        historialPagos: body.historialPagos
       },
       { new: true }
     );
@@ -97,6 +100,7 @@ export const updateDeudor = async (req, res) => {
   }
 };
 
+// Eliminar un deudor
 export const deleteDeudor = async (req, res) => {
   try {
     const { id } = req.params;

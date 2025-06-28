@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import { handleErrorServer } from "../utils/resHandlers.js";
 
+// Funcion para obtener todos los usuarios
 async function getUsers() {
   try {
     const users = await User.find()
@@ -17,6 +18,7 @@ async function getUsers() {
   }
 }
 
+// Funcion para crear un nuevo usuario
 async function createUser(user) {
   try {
     const { username, rut, email, password, roles } = user;
@@ -58,6 +60,7 @@ async function getUserById(id) {
   }
 }
 
+// Funcion para actualizar un usuario
 async function updateUser(id, user) {
   try {
     const userFound = await User.findById(id);
@@ -97,6 +100,7 @@ async function updateUser(id, user) {
   }
 }
 
+// Funcion para eliminar un usuario
 async function deleteUser(id) {
   try {
     return await User.findByIdAndDelete(id);

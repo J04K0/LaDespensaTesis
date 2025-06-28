@@ -23,7 +23,6 @@ const router = Router();
 
 router.use(authenticationMiddleware);
 
-// Restringir todas las rutas de cuentas por pagar solo para admin y jefe
 router.get('/', authorizeRoles([isAdmin, isJefe]), getCuentasPorPagar);
 router.get('/getbyid/:id', authorizeRoles([isAdmin, isJefe]), getCuentaPorPagarById);
 router.get('/categoria/:categoria', authorizeRoles([isAdmin, isJefe]), getCuentasPorCategoria);

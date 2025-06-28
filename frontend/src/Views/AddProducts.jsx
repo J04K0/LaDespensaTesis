@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import '../styles/AddProductStyles.css';
-import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service.js';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
+import { addProducts, getProductByBarcodeForCreation } from '../services/AddProducts.service';
+import { showSuccessAlert, showErrorAlert, showEmpleadoAccessDeniedAlert, showConfirmationAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
+import { MARGENES_POR_CATEGORIA, CATEGORIAS } from '../constants/products.constants.js';
+import '../styles/AddProductStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFile, faSave, faTimes, faImage, faClipboardList } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faImage, faDollarSign, faBarcode, faTag, faCalendar, faBoxes, faCalculator, faClipboardList, faFile, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const AddProducts = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     'addproducts-nombre': '',
     'addproducts-codigo-barras': '',
@@ -25,32 +27,6 @@ const AddProducts = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const categorias = [
-    'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros', 'Cuidado Personal',
-    'Limpieza y Hogar', 'Mascotas', 'Remedios', 'Otros'
-  ];
-
-  // Definir márgenes por categoría (mismos valores que en el backend)
-  const margenesPorCategoria = {
-    'Congelados': 0.25, // 25% (promedio de 20-30%)
-    'Carnes': 0.20, // 20% (promedio de 15-25%)
-    'Despensa': 0.20, // 20% (promedio de 15-25%)
-    'Panaderia y Pasteleria': 0.25, // 25% (promedio de 20-30%)
-    'Quesos y Fiambres': 0.25, // 25% (promedio de 20-30%)
-    'Bebidas y Licores': 0.33, // 33% (promedio de 25-40%)
-    'Lacteos, Huevos y Refrigerados': 0.20, // 20% (promedio de 15-25%)
-    'Desayuno y Dulces': 0.30, // 30% (promedio de 25-35%)
-    'Bebes y Niños': 0.28, // 28% (promedio de 20-35%)
-    'Cigarros': 0.40, // 40% (promedio de 30-50%)
-    'Cuidado Personal': 0.28, // 28% (promedio de 20-35%)
-    'Limpieza y Hogar': 0.28, // 28% (promedio de 20-35%)
-    'Mascotas': 0.28, // 28% (promedio de 20-35%)
-    'Remedios': 0.15, // 15% (promedio de 10-20%)
-    'Otros': 0.23  // 23% (promedio de 15-30%)
-  };
 
   // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
@@ -79,7 +55,7 @@ const AddProducts = () => {
   useEffect(() => {
     const precioCompra = parseFloat(formData['addproducts-precio-compra']) || 0;
     const categoria = formData['addproducts-categoria'] || 'Otros';
-    const margen = margenesPorCategoria[categoria] || 0.23;
+    const margen = MARGENES_POR_CATEGORIA[categoria] || 0.23;
     const nuevoPrecioRecomendado = precioCompra * (1 + margen);
     setPrecioRecomendado(nuevoPrecioRecomendado);
   }, [formData['addproducts-precio-compra'], formData['addproducts-categoria']]);
@@ -252,7 +228,7 @@ const AddProducts = () => {
                         required
                       >
                         <option value="">Seleccione una categoría</option>
-                        {categorias.map((categoria, index) => (
+                        {CATEGORIAS.map((categoria, index) => (
                           <option key={index} value={categoria}>{categoria}</option>
                         ))}
                       </select>

@@ -7,15 +7,13 @@ import { proveedorSchema } from '../schema/proveedores.schema.js';
 export const getProveedores = async (req, res) => {
   try {
     const { page = 1, limit = 8, incluirInactivos = false } = req.query;
-    
-    // Crear filtro dependiendo de si queremos incluir inactivos o no
+
     let filtro = {};
     if (incluirInactivos === 'true') {
       filtro = { activo: false };
     } else if (incluirInactivos === 'false' || incluirInactivos === false) {
       filtro = { activo: true };
     }
-    // Si no se especifica, mostrar todos
     
     const proveedores = await Proveedor.find(filtro)
       .limit(limit * 1)
@@ -24,8 +22,6 @@ export const getProveedores = async (req, res) => {
     
     const count = await Proveedor.countDocuments(filtro);
     
-    // Eliminar la condición que devuelve error si no hay proveedores
-    // y en su lugar devolver un array vacío con mensaje informativo
     if (proveedores.length === 0) {
       return handleSuccess(res, 200, 'No hay proveedores registrados con los criterios seleccionados', {
         proveedores: [],
@@ -64,15 +60,13 @@ export const getProveedorById = async (req, res) => {
 // Crear un nuevo proveedor
 export const createProveedor = async (req, res) => {
   try {
-    // Verificar si ya existe un proveedor con el mismo email
     const proveedorExistente = await Proveedor.findOne({ email: req.body.email });
     if (proveedorExistente) {
       return handleErrorClient(res, 400, 'Ya existe un proveedor con este email');
     }
     const { value, error } = proveedorSchema.validate(req.body);
         if (error) return handleErrorClient(res, 400, error.message);
-    
-    // Extraer los productos del body (si existen)
+
     const { productos, ...datosProveedor } = req.body;
     
     const nuevoProveedor = new Proveedor({
@@ -84,7 +78,7 @@ export const createProveedor = async (req, res) => {
       notas: datosProveedor.notas || '',
       contactoPrincipal: datosProveedor.contactoPrincipal || '',
       sitioWeb: datosProveedor.sitioWeb || '',
-      productos: productos || [] // Añadir los productos si se proporcionaron
+      productos: productos || []
     });
     
     const proveedor = await nuevoProveedor.save();
@@ -100,13 +94,11 @@ export const updateProveedor = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Verificar si el proveedor existe
     const proveedor = await Proveedor.findById(id);
     if (!proveedor) {
       return handleErrorClient(res, 404, 'Proveedor no encontrado');
     }
-    
-    // Verificar si otro proveedor ya tiene el mismo email (excepto el actual)
+
     if (req.body.email !== proveedor.email) {
       const emailExistente = await Proveedor.findOne({ 
         email: req.body.email, 
@@ -130,8 +122,8 @@ export const updateProveedor = async (req, res) => {
         direccion: req.body.direccion || '',
         categorias: req.body.categorias,
         notas: req.body.notas || '',
-        contactoPrincipal: req.body.contactoPrincipal || '', // Agregar este campo
-        sitioWeb: req.body.sitioWeb || ''                   // Agregar este campo
+        contactoPrincipal: req.body.contactoPrincipal || '',
+        sitioWeb: req.body.sitioWeb || ''
       },
       { new: true }
     );
@@ -139,28 +131,6 @@ export const updateProveedor = async (req, res) => {
     handleSuccess(res, 200, 'Proveedor actualizado', proveedorActualizado);
   } catch (err) {
     handleErrorServer(res, 500, 'Error al actualizar el proveedor', err.message);
-  }
-};
-
-// Eliminar un proveedor (ahora marca como inactivo)
-export const deleteProveedor = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // En lugar de eliminar, actualizamos el estado a inactivo
-    const proveedor = await Proveedor.findByIdAndUpdate(
-      id,
-      { activo: false },
-      { new: true }
-    );
-    
-    if (!proveedor) {
-      return handleErrorClient(res, 404, 'Proveedor no encontrado');
-    }
-    
-    handleSuccess(res, 200, 'Proveedor marcado como inactivo', proveedor);
-  } catch (err) {
-    handleErrorServer(res, 500, 'Error al marcar el proveedor como inactivo', err.message);
   }
 };
 
@@ -205,18 +175,12 @@ export const getProductosProveedor = async (req, res) => {
     if (!proveedor.productos || proveedor.productos.length === 0) {
       return handleSuccess(res, 200, 'El proveedor no tiene productos vinculados', []);
     }
-    
-    // Añadir un log para depuración
-    console.log('IDs de productos a buscar:', proveedor.productos);
-    
+   
     const productos = await Product.find({ _id: { $in: proveedor.productos } });
-    
-    // Añadir un log para ver qué productos se encontraron
-    console.log('Productos encontrados:', productos.length);
-    
+     
     handleSuccess(res, 200, 'Productos del proveedor obtenidos con éxito', productos);
   } catch (err) {
-    console.error('Error específico al obtener productos:', err); // Log detallado
+    console.error('Error específico al obtener productos:', err);
     handleErrorServer(res, 500, 'Error al obtener los productos del proveedor', err.message);
   }
 };
@@ -231,19 +195,16 @@ export const vincularProductos = async (req, res) => {
       return handleErrorClient(res, 400, 'Se requiere un array de IDs de productos');
     }
     
-    // Verificar si el proveedor existe
     const proveedor = await Proveedor.findById(id);
     if (!proveedor) {
       return handleErrorClient(res, 404, 'Proveedor no encontrado');
     }
-    
-    // Verificar que todos los productos existen
+
     const productosExistentes = await Product.find({ _id: { $in: productos } });
     if (productosExistentes.length !== productos.length) {
       return handleErrorClient(res, 400, 'Algunos productos no existen');
     }
-    
-    // Actualizar el proveedor con los nuevos productos
+ 
     const proveedorActualizado = await Proveedor.findByIdAndUpdate(
       id,
       { productos: productos },
