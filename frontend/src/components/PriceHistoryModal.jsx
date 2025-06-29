@@ -10,7 +10,6 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Manejar la clase modal-open en el body solo si no está embedido
     if (isOpen && !embedded) {
       document.body.classList.add('modal-open');
     } else if (!embedded) {
@@ -39,7 +38,6 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
 
     fetchHistorial();
 
-    // Limpiar la clase cuando el componente se desmonte
     return () => {
       if (!embedded) {
         document.body.classList.remove('modal-open');
@@ -61,7 +59,6 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
     );
   };
 
-  // Si está embedido, solo renderizar el contenido sin el overlay
   if (embedded) {
     return (
       <div className="price-history-content embedded">
@@ -158,7 +155,6 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
     );
   }
 
-  // Renderizado normal como modal independiente
   return (
     <div className="price-history-modal-overlay">
       <div className="price-history-modal">

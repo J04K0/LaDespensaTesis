@@ -9,12 +9,11 @@ const EditDeudorModal = ({
   deudorToEdit, 
   onInputChange, 
   onSubmit,
-  originalDeudor // Necesitamos los datos originales para comparar
+  originalDeudor
 }) => {
   if (!show) return null;
 
   const handleCancel = async () => {
-    // Verificar si hay cambios sin guardar comparando con los datos originales
     const hasChanges = originalDeudor && (
       deudorToEdit.Nombre !== originalDeudor.Nombre ||
       deudorToEdit.fechaPaga !== originalDeudor.fechaPaga ||

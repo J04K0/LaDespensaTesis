@@ -33,7 +33,6 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Cerrar cualquier dropdown activo si se hace clic fuera de él
       if (activeDropdown && 
           dropdownRefs[activeDropdown]?.current && 
           !dropdownRefs[activeDropdown].current.contains(event.target)) {
@@ -43,23 +42,19 @@ const Navbar = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     
-    // Inicializar la conexión WebSocket al montar el componente
     initializeSocket();
     
-    // Guardar la hora de inicio de sesión solo si no existe ya
     if (!localStorage.getItem('sessionStartTime')) {
       localStorage.setItem('sessionStartTime', new Date().toISOString());
     }
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      // Cerrar la conexión WebSocket al desmontar
       closeSocket();
     };
   }, [activeDropdown]);
 
   const handleNavigation = (path) => {
-    // Verificar permisos antes de navegar
     if (!canAccessRoute(path)) {
       showErrorAlert(
         'Acceso Denegado', 
@@ -69,29 +64,25 @@ const Navbar = () => {
     }
     
     navigate(path);
-    setIsNavVisible(false); // Cerrar menú en móvil después de navegar
-    setActiveDropdown(null); // Cerrar dropdowns activos
+    setIsNavVisible(false);
+    setActiveDropdown(null);
   };
 
   const toggleDropdown = (dropdown, e) => {
-    e.stopPropagation(); // Evitar que el clic se propague
+    e.stopPropagation();
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
   const handleLogout = async () => {
     try {
-      // Generar reporte diario antes de cerrar sesión
       await generarReporteDiario();
       
-      // Código de cierre de sesión existente
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      // También eliminamos el tiempo de inicio de sesión al cerrar sesión
       localStorage.removeItem('sessionStartTime');
       navigate('/auth');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      // Continuar con el cierre de sesión incluso si hay error en el reporte
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('sessionStartTime');
@@ -101,10 +92,8 @@ const Navbar = () => {
 
   const generarReporteDiario = async () => {
     try {
-      // Obtener la información del usuario actual
       const usuarioActual = JSON.parse(localStorage.getItem('user')) || { email: 'Usuario desconocido' };
       
-      // Obtener la hora de inicio de sesión (si existe) o usar el inicio del día actual
       const sessionStartTime = localStorage.getItem('sessionStartTime') 
         ? new Date(localStorage.getItem('sessionStartTime'))
         : new Date(new Date().setHours(0, 0, 0, 0));
@@ -122,7 +111,6 @@ const Navbar = () => {
       let ventasADeudores = 0;
       let cantidadVentasADeudores = 0;
 
-      // 🔧 SIMPLIFICADO: Obtener TODAS las ventas sin restricciones de permisos
       try {
         console.log('🔍 DEBUG: Obteniendo todas las ventas para el reporte de sesión...');
         console.log('📅 Sesión iniciada:', sessionStartTime.toISOString());
@@ -133,7 +121,6 @@ const Navbar = () => {
         
         console.log('📦 Total de ventas en el sistema:', todasLasVentas.length);
         
-        // Filtrar solo las ventas realizadas durante esta sesión
         ventasSesion = todasLasVentas.filter(venta => {
           const fechaVenta = new Date(venta.fecha);
           const esDeSesion = fechaVenta >= sessionStartTime && fechaVenta <= ahora;
@@ -145,7 +132,6 @@ const Navbar = () => {
         
         console.log('🎪 Ventas de esta sesión:', ventasSesion.length);
         
-        // Calcular totales por método de pago
         ventasSesion.forEach((venta, index) => {
           console.log(`🛍️ Procesando venta ${index + 1}:`, venta._id);
           
@@ -161,7 +147,6 @@ const Navbar = () => {
           
           totalVentas += importeVenta;
 
-          // Clasificar por método de pago
           if (venta.deudorId) {
             console.log('👤 Venta a deudor detectada');
             ventasADeudores += importeVenta;
@@ -187,10 +172,8 @@ const Navbar = () => {
         
       } catch (ventasError) {
         console.warn("⚠️ No se pudo obtener el historial de ventas:", ventasError);
-        // Continuar con el reporte sin datos de ventas
       }
 
-      // 2. Obtener información de deudores (disponible para todos los roles)
       let deudoresData = [];
       let totalPagosDeudoresEfectivo = 0;
       let totalPagosDeudoresTarjeta = 0;
@@ -203,7 +186,6 @@ const Navbar = () => {
         const respuestaDeudores = await getDeudores(1, 1000);
         const deudores = respuestaDeudores.deudores || [];
         
-        // Filtrar deudores con pagos o deudas realizados durante esta sesión
         const deudoresSesion = deudores.filter(deudor => {
           if (!deudor.historialPagos || !Array.isArray(deudor.historialPagos)) return false;
           
@@ -221,7 +203,6 @@ const Navbar = () => {
 
           pagosSesion.forEach(pago => {
             if (pago.tipo === 'pago') {
-              // Diferenciar entre pagos en efectivo y con tarjeta
               if (pago.metodoPago === 'tarjeta') {
                 totalPagosDeudoresTarjeta += pago.monto;
                 cantidadPagosTarjeta++;
@@ -234,7 +215,6 @@ const Navbar = () => {
               cantidadNuevasDeudas++;
             }
             
-            // Agregar al array de datos para el reporte
             deudoresData.push([
               deudor.Nombre,
               pago.tipo === 'pago' ? 
@@ -247,13 +227,10 @@ const Navbar = () => {
         });
       } catch (deudoresError) {
         console.warn("⚠️ No se pudo obtener información de deudores:", deudoresError);
-        // Continuar con el reporte sin datos de deudores
       }
 
-      // Balance final de efectivo (solo operaciones en efectivo)
       const balanceEfectivo = totalEfectivo + totalPagosDeudoresEfectivo;
       
-      // Crear el objeto con los datos para el reporte
       const resumenCajaData = [
         ["Concepto", "Cantidad", "Monto"],
         ["Ventas en Efectivo", cantidadVentasEfectivo, `$${totalEfectivo.toLocaleString('es-ES')}`],
@@ -265,10 +242,8 @@ const Navbar = () => {
         ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString('es-ES')}`]
       ];
       
-      // Mostrar mensaje apropiado según el rol
       const mensajeExito = "Reporte de actividad de sesión generado exitosamente";
       
-      // Usar el servicio de exportación centralizado
       const result = ExportService.generarReporteCierreCaja({
         usuarioActual,
         sessionStartTime,
@@ -278,7 +253,7 @@ const Navbar = () => {
         deudoresData,
         resumenCajaData,
         balanceEfectivo,
-        tienePermisoHistorial: true // Forzar como verdadero para incluir todos los datos
+        tienePermisoHistorial: true
       });
       
       if (result) {
@@ -288,14 +263,12 @@ const Navbar = () => {
         );
       }
       
-      // Actualizar el tiempo de inicio de sesión para la próxima sesión
       localStorage.setItem('sessionStartTime', new Date().toISOString());
       
       return result;
     } catch (error) {
       console.error("Error al generar reporte de sesión:", error);
       
-      // Mostrar mensaje de advertencia pero no fallar el logout
       await showWarningAlert(
         "Advertencia",
         "No se pudo generar el reporte de cierre de sesión, pero el cierre continuará normalmente.",
@@ -314,7 +287,6 @@ const Navbar = () => {
     try {
       setIsDownloadingMassive(true);
       
-      // Mostrar alerta de inicio
       await showWarningAlert(
         "Generando Reporte Completo",
         "Se está recopilando información de todo el sistema. Este proceso puede tomar unos segundos...",
@@ -323,10 +295,8 @@ const Navbar = () => {
 
       console.log('🚀 Iniciando descarga masiva del reporte completo...');
       
-      // Recopilar todos los datos del sistema
       const datosSistema = await DataCollectionService.recopilarDatosSistema();
       
-      // Generar el reporte completo
       const resultado = await ExportService.generarReporteCompletoMasivo(datosSistema);
       
       if (resultado) {
@@ -361,7 +331,6 @@ const Navbar = () => {
               <FontAwesomeIcon icon={faHome} /> <span>Inicio</span>
             </li>
             
-            {/* VENTAS */}
             <div className="productos-container" ref={dropdownRefs.ventas}>
               <li className="dropdown" onClick={(e) => toggleDropdown('ventas', e)}>
                 <div className="dropdown-trigger">
@@ -379,7 +348,6 @@ const Navbar = () => {
                     }}>
                       <FontAwesomeIcon icon={faBarcode} /> Terminal de venta
                     </li>
-                    {/* Solo mostrar historial de ventas para admin y jefe */}
                     {permissions.canAccessHistorySale && (
                       <li onClick={(e) => {
                         e.stopPropagation();
@@ -399,7 +367,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* INVENTARIO */}
             <div className="productos-container" ref={dropdownRefs.inventario}>
               <li className="dropdown" onClick={(e) => toggleDropdown('inventario', e)}>
                 <div className="dropdown-trigger">
@@ -417,7 +384,6 @@ const Navbar = () => {
                     }}>
                       <FontAwesomeIcon icon={faBoxOpen} /> Ver productos
                     </li>
-                    {/* Solo mostrar agregar productos para admin y jefe */}
                     {permissions.canAddProduct && (
                       <li onClick={(e) => {
                         e.stopPropagation();
@@ -426,7 +392,6 @@ const Navbar = () => {
                         <FontAwesomeIcon icon={faAdd} /> Agregar productos
                       </li>
                     )}
-                    {/* Solo mostrar gestión de proveedores para admin y jefe */}
                     {permissions.canManageProveedores && (
                       <li onClick={(e) => {
                         e.stopPropagation();
@@ -440,7 +405,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* FINANZAS - Solo mostrar para admin y jefe */}
             {permissions.canAccessFinanzas && (
               <div className="productos-container" ref={dropdownRefs.finanzas}>
                 <li className="dropdown" onClick={(e) => toggleDropdown('finanzas', e)}>
@@ -473,13 +437,11 @@ const Navbar = () => {
               </div>
             )}
             
-            {/* Contenedor de acciones especiales a la derecha */}
             <div className="navbar-special-actions">
               <div className="navbar-notifications">
                 <NotificationCenter />
               </div>
               
-              {/* Botón de reporte masivo compacto - Solo para admin y jefe */}
               {(permissions.canAccessAll) && (
                 <li onClick={handleMassiveReport} className="massive-report-item">
                   <FontAwesomeIcon icon={faFileExport} />

@@ -1,4 +1,3 @@
-/* Variables de colores para mantener consistencia con el resto de la aplicación */
 :root {
   --skeleton-base: #e0e0e0;
   --skeleton-highlight: #f0f0f0;
@@ -9,7 +8,6 @@
   --primary: #006EDF;
 }
 
-/* Animación base optimizada con will-change para mejor rendimiento */
 @keyframes skeletonPulse {
   0% {
     background-position: -200% 0;
@@ -29,7 +27,6 @@
   will-change: background-position;
 }
 
-/* Tarjeta básica para skeleton loaders */
 .skeleton-card {
   background-color: var(--skeleton-bg);
   border-radius: 12px;
@@ -43,7 +40,6 @@
   overflow: hidden;
 }
 
-/* Elementos comunes */
 .skeleton-image {
   width: 100%;
   height: 180px;
@@ -97,7 +93,6 @@
   margin-bottom: 0;
 }
 
-/* Contenedores de acciones */
 .skeleton-actions {
   display: flex;
   justify-content: space-between;
@@ -106,7 +101,6 @@
   gap: 12px;
 }
 
-/* Botones y controles */
 .skeleton-button {
   width: 45%;
   height: 36px;
@@ -124,7 +118,6 @@
   height: 30px;
 }
 
-/* Contenedor principal para deudores */
 .skeleton-deudores-list,
 .skeleton-proveedores,
 .skeleton-cuentas-pagar,
@@ -139,7 +132,6 @@
   margin: 0 auto;
 }
 
-/* Encabezado para secciones */
 .skeleton-header {
   display: flex;
   justify-content: space-between;
@@ -160,7 +152,6 @@
   margin-bottom: 0;
 }
 
-/* Controles comunes */
 .skeleton-controls {
   display: flex;
   flex-wrap: wrap;
@@ -184,7 +175,6 @@
   border-radius: 8px;
 }
 
-/* Filtros para finanzas */
 .skeleton-filter-container {
   width: 100%;
   background-color: var(--skeleton-bg);
@@ -214,7 +204,6 @@
   height: 14px;
 }
 
-/* Métricas para finanzas */
 .skeleton-metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -247,7 +236,6 @@
   gap: 8px;
 }
 
-/* Tabla y celdas */
 .skeleton-table {
   width: 100%;
   overflow: hidden;
@@ -288,7 +276,6 @@
   align-items: center;
 }
 
-/* Paginación */
 .skeleton-pagination {
   display: flex;
   justify-content: center;
@@ -302,7 +289,6 @@
   border-radius: 8px;
 }
 
-/* Gráficos */
 .skeleton-chart-container {
   background-color: var(--skeleton-bg);
   border-radius: 16px;
@@ -334,7 +320,6 @@
   border-radius: 8px;
 }
 
-/* Tarjetas de resumen para finanzas */
 .skeleton-summary-cards {
   display: flex;
   flex-wrap: wrap;
@@ -360,7 +345,6 @@
   border-radius: 4px;
 }
 
-/* Formularios */
 .skeleton-form-group {
   margin-bottom: 20px;
   width: 100%;
@@ -379,7 +363,6 @@
   border-radius: 8px;
 }
 
-/* Scanner */
 .skeleton-scanner {
   width: 100%;
   display: flex;
@@ -464,7 +447,6 @@
   margin-top: 10px;
 }
 
-/* Miniaturas para proveedores */
 .skeleton-mini-thumb-placeholder {
   width: 32px;
   height: 32px;
@@ -475,7 +457,6 @@
   display: inline-block;
 }
 
-/* Estilos responsive */
 @media (max-width: 1200px) {
   .skeleton-metrics-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -527,7 +508,6 @@
   }
 }
 
-/* Aplicar la animación a todos los elementos skeleton */
 .skeleton-title, 
 .skeleton-text, 
 .skeleton-button, 

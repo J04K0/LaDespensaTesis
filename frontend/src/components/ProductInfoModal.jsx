@@ -16,18 +16,16 @@ const ProductInfoModal = React.memo(({
   onEdit, 
   onDelete, 
   onShowPriceHistory,
-  onShowStockHistory  // 🆕 NUEVA prop para mostrar historial de stock
+  onShowStockHistory
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const { permissions } = useRole();
 
-  // Función para formatear números con punto como separador de miles
   const formatNumber = (number) => {
     if (!number && number !== 0) return '0';
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
-  // Optimizar control de scroll del body
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.pageYOffset;
@@ -57,7 +55,6 @@ const ProductInfoModal = React.memo(({
     };
   }, [isOpen]);
 
-  // Memoizar cálculo de color de stock
   const getStockColorClass = useMemo(() => {
     if (!productInfo) return '';
     
@@ -68,7 +65,6 @@ const ProductInfoModal = React.memo(({
     return 'modern-stock-value-green';
   }, [productInfo]);
 
-  // Memoizar fechas
   const formattedDates = useMemo(() => {
     if (!productInfo) return {};
     
@@ -82,7 +78,6 @@ const ProductInfoModal = React.memo(({
     };
   }, [productInfo]);
 
-  // Memoizar cálculos comerciales
   const commercialInfo = useMemo(() => {
     if (!productInfo) return {};
     
@@ -112,12 +107,10 @@ const ProductInfoModal = React.memo(({
   };
 
   const handleDelete = async () => {
-    // 🆕 NUEVO: Ya no usar confirmación aquí, dejar que el componente padre maneje el modal
     onDelete(productInfo);
     handleClose();
   };
 
-  // 🆕 NUEVA función para mostrar historial de stock
   const handleStockHistory = () => {
     onShowStockHistory(productInfo);
     handleClose();
@@ -140,16 +133,13 @@ const ProductInfoModal = React.memo(({
       onClick={handleOverlayClick}
     >
       <div className="modern-product-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header del Modal */}
         <div className="modern-modal-header">
           <div className="modern-modal-close" onClick={handleClose}>
             <FontAwesomeIcon icon={faTimes} />
           </div>
         </div>
 
-        {/* Contenido Principal */}
         <div className="modern-modal-content">
-          {/* Sección Superior - Imagen y Info Principal */}
           <div className="modern-product-hero">
             <div className="modern-product-image-container">
               <div className="modern-product-image-frame">
@@ -161,7 +151,6 @@ const ProductInfoModal = React.memo(({
                   className="modern-product-image" 
                 />
               </div>
-              {/* Badges de Estado */}
               <div className="modern-product-badges">
                 {productInfo.Stock > 0 ? (
                   <span className="modern-badge modern-badge-success">
@@ -204,7 +193,6 @@ const ProductInfoModal = React.memo(({
             </div>
           </div>
 
-          {/* Especificaciones Técnicas */}
           <div className="modern-specifications-section">
             <h3 className="modern-section-title">
               <FontAwesomeIcon icon={faInfo} />
@@ -212,7 +200,6 @@ const ProductInfoModal = React.memo(({
             </h3>
             
             <div className="modern-specs-grid-two-columns">
-              {/* Columna Izquierda */}
               <div className="modern-specs-column">
                 <div className="modern-spec-item">
                   <div className="modern-spec-icon modern-spec-icon-blue">
@@ -245,7 +232,6 @@ const ProductInfoModal = React.memo(({
                 </div>
               </div>
 
-              {/* Columna Derecha */}
               <div className="modern-specs-column">
                 <div className="modern-spec-item">
                   <div className="modern-spec-icon modern-spec-icon-blue">
@@ -280,7 +266,6 @@ const ProductInfoModal = React.memo(({
             </div>
           </div>
 
-          {/* Información Adicional */}
           <div className="modern-additional-info">
             <div className="modern-info-cards">
               <div className="modern-info-card">
@@ -335,7 +320,6 @@ const ProductInfoModal = React.memo(({
             </div>
           </div>
 
-          {/* Botones de Acción */}
           <div className="modern-action-buttons">
             {permissions.canEditProduct && (
               <button 
@@ -351,7 +335,6 @@ const ProductInfoModal = React.memo(({
             >
               <FontAwesomeIcon icon={faHistory} /> Historial de Precios
             </button>
-            {/* 🆕 NUEVO botón para historial de stock */}
             <button 
               onClick={handleStockHistory} 
               className="modern-btn modern-btn-info"

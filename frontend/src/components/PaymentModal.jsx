@@ -21,7 +21,6 @@ const PaymentModal = ({
   if (!show || !selectedDeudor) return null;
 
   const handleCancel = async () => {
-    // Verificar si hay datos ingresados
     const hasData = amount || comment;
     
     if (hasData) {

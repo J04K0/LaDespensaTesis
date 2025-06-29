@@ -1,6 +1,5 @@
 import Swal from "sweetalert2";
 
-// Configuración común para todas las alertas para mejorar rendimiento y accesibilidad
 const swalBaseConfig = {
   customClass: {
     container: 'swal-optimized-container',
@@ -8,17 +7,13 @@ const swalBaseConfig = {
   },
   backdrop: 'rgba(0,0,0,0.4)',
   allowOutsideClick: false,
-  // Evitar problemas de aria-hidden
   target: document.body,
   returnFocus: false,
-  // Configurar correctamente el manejo del foco
   didOpen: (popup) => {
-    // Asegurarse de que el popup tenga el foco correcto
     const confirmButton = popup.querySelector('.swal2-confirm');
     const cancelButton = popup.querySelector('.swal2-cancel');
     const input = popup.querySelector('.swal2-input, .swal2-textarea');
     
-    // Dar foco al primer elemento interactivo disponible
     if (input) {
       input.focus();
     } else if (confirmButton) {
@@ -26,15 +21,14 @@ const swalBaseConfig = {
     }
   },
   showClass: {
-    popup: '',  // Desactivar animación de entrada
+    popup: '',
   },
   hideClass: {
-    popup: '', // Desactivar animación de salida
+    popup: '',
   }
 };
 
 export const showSuccessAlert = (title, text) => {
-  // Guarda el elemento que tiene el foco actual
   const previouslyFocused = document.activeElement;
   
   return Swal.fire({
@@ -105,7 +99,6 @@ export const showInfoAlert = (title, text) => {
 export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", cancelButtonText = "No") => {
   const previouslyFocused = document.activeElement;
   
-  // Detectar si es una acción de eliminación basándose en el texto del botón o el título
   const isDeleteAction = confirmButtonText.toLowerCase().includes('eliminar') || 
                          confirmButtonText.toLowerCase().includes('desactivar') ||
                          confirmButtonText.toLowerCase().includes('anular') ||
@@ -120,9 +113,8 @@ export const showConfirmationAlert = (title, text, confirmButtonText = "Sí", ca
     showCancelButton: true,
     confirmButtonText,
     cancelButtonText,
-    // Aplicar colores según el tipo de acción
-    confirmButtonColor: isDeleteAction ? "#dc3545" : "#28a745", // Rojo para eliminar, verde para otras acciones
-    cancelButtonColor: "#007bff", // Azul para cancelar
+    confirmButtonColor: isDeleteAction ? "#dc3545" : "#28a745",
+    cancelButtonColor: "#007bff", 
     didClose: () => {
       if (previouslyFocused) {
         previouslyFocused.focus();
@@ -173,7 +165,6 @@ export const showOutOfStockAlert = (barcode, productName) => {
   });
 };
 
-// 🆕 NUEVO: Helper específico para mostrar alertas de restricción para empleados
 export const showEmpleadoAccessDeniedAlert = (funcionalidad, descripcion = null) => {
   const previouslyFocused = document.activeElement;
   

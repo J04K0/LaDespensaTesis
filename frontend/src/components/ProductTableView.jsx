@@ -9,7 +9,7 @@ const ProductTableView = ({
   onDelete, 
   onInfo,
   getStockColorClass,
-  userRole = 'empleado' // Añadir userRole como prop
+  userRole = 'empleado'
 }) => {
   
   const formatPrice = (price) => {
@@ -41,7 +41,6 @@ const ProductTableView = ({
     return diffDays <= 30 && diffDays > 0;
   };
 
-  // Verificar si el usuario es empleado
   const isEmpleado = userRole === 'empleado';
 
   return (
@@ -135,7 +134,6 @@ const ProductTableView = ({
                       <FontAwesomeIcon icon={faInfo} />
                     </button>
                     
-                    {/* Solo mostrar botones de editar y eliminar si NO es empleado */}
                     {!isEmpleado && (
                       <>
                         <button

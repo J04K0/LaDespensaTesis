@@ -13,6 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { getDeletedProducts, restoreProduct } from '../services/AddProducts.service';
 import { showConfirmationAlert, showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
+import { CATEGORIAS } from '../constants/products.constants';
 import SmartPagination from './SmartPagination';
 import '../styles/DeletedProductsModalStyles.css';
 
@@ -24,27 +25,17 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   
-  // Estados para restauración
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [productToRestore, setProductToRestore] = useState(null);
   const [restoreComment, setRestoreComment] = useState('');
   
-  // 🆕 NUEVO: Flag para evitar fetch automático después de restaurar
   const [skipNextFetch, setSkipNextFetch] = useState(false);
-
-  const categories = [
-    'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
-    'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
-  ];
 
   useEffect(() => {
     if (isOpen && !skipNextFetch) {
       fetchDeletedProducts();
     }
     
-    // Resetear el flag después de cada efecto
     if (skipNextFetch) {
       setSkipNextFetch(false);
     }
@@ -82,17 +73,14 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         comentarioRestauracion: restoreComment.trim()
       });
       
-      // Actualizar estado local inmediatamente
       const productIdToRemove = productToRestore._id;
       setDeletedProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
         
-        // Calcular nueva página si es necesario
         const itemsPerPage = 10;
         const remainingItems = updatedProducts.length;
         const newTotalPages = Math.ceil(remainingItems / itemsPerPage) || 1;
         
-        // Si la página actual queda vacía y no es la primera página
         if (remainingItems === 0 && currentPage > 1) {
           setSkipNextFetch(true);
           setTimeout(() => {
@@ -109,7 +97,6 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         return updatedProducts;
       });
       
-      // Mostrar mensaje de éxito
       showSuccessAlert(
         'Producto restaurado exitosamente', 
         'El producto ha sido restaurado y está disponible en el inventario principal.',
@@ -123,12 +110,10 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
       ).then((result) => {
         if (result.isConfirmed) {
           onClose();
-          // Usar window.location para asegurar que se recarga la vista principal
           window.location.href = '/products?fromDeleted=true';
         }
       });
       
-      // Cerrar modal
       setShowRestoreModal(false);
       setProductToRestore(null);
       setRestoreComment('');
@@ -179,7 +164,6 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="deleted-products-modal-body">
-          {/* Filtros */}
           <div className="deleted-products-filters">
             <div className="deleted-products-search">
               <FontAwesomeIcon icon={faSearch} />
@@ -198,7 +182,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
                 <option value="">Todas las categorías</option>
-                {categories.map(category => (
+                {CATEGORIAS.map(category => (
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
@@ -290,7 +274,6 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {/* Modal de confirmación de restauración */}
       {showRestoreModal && (
         <div className="restore-modal-overlay">
           <div className="restore-modal">

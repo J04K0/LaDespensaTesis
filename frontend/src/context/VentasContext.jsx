@@ -2,10 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { obtenerVentasPorTicket } from '../services/venta.service';
 import cookies from 'js-cookie';
 
-// Crear el contexto
 const VentasContext = createContext();
 
-// Hook personalizado para usar el contexto
 export const useVentas = () => {
   const context = useContext(VentasContext);
   if (!context) {
@@ -14,7 +12,6 @@ export const useVentas = () => {
   return context;
 };
 
-// Proveedor del contexto
 export const VentasProvider = ({ children }) => {
   const [ventasGlobales, setVentasGlobales] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,11 +19,9 @@ export const VentasProvider = ({ children }) => {
   const [lastFetch, setLastFetch] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // 🚀 OPTIMIZACIÓN: Cargar ventas una sola vez al inicializar la aplicación
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        // Verificar que el usuario esté autenticado antes de cargar datos
         const user = localStorage.getItem('user');
         const token = cookies.get('jwt-auth');
         
@@ -69,11 +64,9 @@ export const VentasProvider = ({ children }) => {
       }
     };
 
-    // 🔧 FIX: Cargar datos inmediatamente si hay usuario autenticado
     fetchVentas();
-  }, [retryCount]); // Simplificar dependencias
+  }, [retryCount]);
 
-  // Escuchar cambios en la autenticación
   useEffect(() => {
     const handleStorageChange = () => {
       const user = localStorage.getItem('user');
@@ -85,7 +78,6 @@ export const VentasProvider = ({ children }) => {
       }
     };
 
-    // Escuchar eventos personalizados de autenticación
     const handleAuthStateChanged = (e) => {
       const { authenticated } = e.detail;
       
@@ -109,9 +101,6 @@ export const VentasProvider = ({ children }) => {
     };
   }, [ventasGlobales, loading]);
 
-  // 🧠 FUNCIONES OPTIMIZADAS CON USEMEMO PARA FILTRAR VENTAS
-  
-  // Función para obtener ventas de un producto específico
   const getVentasProducto = useMemo(() => {
     return (codigoBarras, nombre = null) => {
       if (!ventasGlobales) return [];
@@ -124,11 +113,9 @@ export const VentasProvider = ({ children }) => {
             (nombre && producto.nombre === nombre)
           );
         }
-        // Formato de venta individual (compatibilidad)
         return venta.codigoBarras === codigoBarras || 
                (nombre && venta.nombre === nombre);
       }).flatMap(venta => {
-        // Extraer solo los productos que coinciden
         if (venta.ventas && Array.isArray(venta.ventas)) {
           return venta.ventas
             .filter(producto => 
@@ -141,7 +128,6 @@ export const VentasProvider = ({ children }) => {
               ticketId: venta._id
             }));
         }
-        // Formato individual
         if (venta.codigoBarras === codigoBarras || (nombre && venta.nombre === nombre)) {
           return [{
             ...venta,
@@ -153,15 +139,14 @@ export const VentasProvider = ({ children }) => {
     };
   }, [ventasGlobales]);
 
-  // Función para obtener ventas por rango de fechas
   const getVentasByDateRange = useMemo(() => {
     return (fechaInicio, fechaFin) => {
       if (!ventasGlobales) return [];
       
       const inicio = new Date(fechaInicio);
       const fin = new Date(fechaFin);
-      fin.setHours(23, 59, 59, 999); // Incluir todo el día final
-      
+      fin.setHours(23, 59, 59, 999);
+
       return ventasGlobales.filter(venta => {
         const fechaVenta = new Date(venta.fecha);
         return fechaVenta >= inicio && fechaVenta <= fin;
@@ -169,7 +154,6 @@ export const VentasProvider = ({ children }) => {
     };
   }, [ventasGlobales]);
 
-  // Función para obtener ventas por categoría
   const getVentasByCategoria = useMemo(() => {
     return (categoria) => {
       if (!ventasGlobales) return [];
@@ -183,7 +167,6 @@ export const VentasProvider = ({ children }) => {
     };
   }, [ventasGlobales]);
 
-  // Función para obtener estadísticas rápidas
   const getEstadisticasRapidas = useMemo(() => {
     if (!ventasGlobales) {
       return {
@@ -206,16 +189,13 @@ export const VentasProvider = ({ children }) => {
           const ingreso = producto.precioVenta * producto.cantidad;
           ingresosTotales += ingreso;
           
-          // Contar productos
           const nombreProducto = producto.nombre;
           productos[nombreProducto] = (productos[nombreProducto] || 0) + producto.cantidad;
           
-          // Contar categorías
           const categoria = producto.categoria || 'Sin categoría';
           categorias[categoria] = (categorias[categoria] || 0) + producto.cantidad;
         });
       } else {
-        // Formato individual
         const ingreso = venta.precioVenta * venta.cantidad;
         ingresosTotales += ingreso;
         
@@ -224,13 +204,11 @@ export const VentasProvider = ({ children }) => {
       }
     });
 
-    // Top 5 productos más vendidos
     const productosMasVendidos = Object.entries(productos)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([nombre, cantidad]) => ({ nombre, cantidad }));
 
-    // Top 5 categorías principales
     const categoriasPrincipales = Object.entries(categorias)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
@@ -245,7 +223,6 @@ export const VentasProvider = ({ children }) => {
     };
   }, [ventasGlobales]);
 
-  // Función para refrescar datos manualmente
   const refreshVentas = async () => {
     setLoading(true);
     try {
@@ -266,19 +243,16 @@ export const VentasProvider = ({ children }) => {
   };
 
   const value = {
-    // Estados
     ventasGlobales,
     loading,
     error,
     lastFetch,
     
-    // Funciones optimizadas con useMemo
     getVentasProducto,
     getVentasByDateRange,
     getVentasByCategoria,
     getEstadisticasRapidas,
     
-    // Función para refrescar
     refreshVentas
   };
 

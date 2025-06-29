@@ -6,12 +6,10 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 
 const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, productId }) => {
-  // Memoizar el cálculo de expiración
   const isExpired = React.useMemo(() => {
     return fechaVencimiento ? new Date(fechaVencimiento) < new Date() : false;
   }, [fechaVencimiento]);
   
-  // Optimizar cálculo de indicador de stock
   const stockIndicatorClass = React.useMemo(() => {
     const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[categoria] || 5;
 
@@ -20,18 +18,15 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
     return 'productcard-stock-high';
   }, [stock, categoria]);
 
-  // Función helper para formatear números con punto como separador de miles
   const formatNumberWithDots = (number) => {
     if (typeof number !== 'number' || isNaN(number)) return '0';
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
-  // Optimizar formato de precio
   const formattedPrice = React.useMemo(() => {
     return typeof venta === 'number' ? formatNumberWithDots(venta) : venta;
   }, [venta]);
 
-  // Optimizar las clases CSS del contenedor principal
   const cardClasses = React.useMemo(() => {
     let classes = 'productcard';
     if (stock === 0) classes += ' productcard-out-of-stock';
@@ -39,7 +34,6 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
     return classes;
   }, [stock, isExpired]);
 
-  // Optimizar el cálculo de badges
   const shouldShowBadges = React.useMemo(() => {
     return isExpired || stock === 0;
   }, [isExpired, stock]);
@@ -95,7 +89,6 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
   );
 });
 
-// Optimizar PropTypes - solo verificar en desarrollo
 ProductCard.propTypes = process.env.NODE_ENV === 'development' ? {
   image: PropTypes.string,
   name: PropTypes.string.isRequired,

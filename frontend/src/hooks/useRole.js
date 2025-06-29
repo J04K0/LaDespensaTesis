@@ -18,11 +18,9 @@ export const useRole = () => {
     if (!user?.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
       return 'empleado'; // Rol por defecto
     }
-    // Retornar el primer rol del usuario
     return user.roles[0].name || 'empleado';
   }, [user]);
 
-  // Definir permisos por rol
   const permissions = useMemo(() => {
     const rolePermissions = {
       admin: {
@@ -44,7 +42,7 @@ export const useRole = () => {
         canAccessAll: true
       },
       empleado: {
-        canAccessHistorySale: true, // 🔧 PERMITIR acceso para visualización solamente
+        canAccessHistorySale: true,
         canAddProduct: false,
         canEditProduct: false,
         canManageProveedores: false,
@@ -57,15 +55,12 @@ export const useRole = () => {
     return rolePermissions[userRole] || rolePermissions.empleado;
   }, [userRole]);
 
-  // Función para verificar si el usuario puede acceder a una ruta específica
   const canAccessRoute = useMemo(() => {
     return (routePath) => {
-      // Si es admin o jefe, puede acceder a todo
       if (userRole === 'admin' || userRole === 'jefe') {
         return true;
       }
 
-      // 🔧 Rutas restringidas para empleados (quitamos /HistorySale)
       const restrictedRoutes = [
         '/add-product', 
         '/proveedores',

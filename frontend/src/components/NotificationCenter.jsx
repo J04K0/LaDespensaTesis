@@ -4,7 +4,6 @@ import { faBell, faTimes, faCheck, faTrash } from '@fortawesome/free-solid-svg-i
 import io from 'socket.io-client';
 import '../styles/NotificationsStyles.css';
 
-// Usar la URL correcta del backend (puerto 4000)
 const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:4000');
 
 const NotificationCenter = () => {
@@ -13,11 +12,9 @@ const NotificationCenter = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef(null);
 
-  // Función mejorada para remover duplicados
   const removeDuplicateNotifications = (notificationArray) => {
     const seen = new Set();
     return notificationArray.filter(notification => {
-      // Crear una clave única basada en tipo, mensaje y datos
       const key = `${notification.type}_${notification.message}_${JSON.stringify(notification.data)}`;
       if (seen.has(key)) {
         return false;
@@ -27,7 +24,6 @@ const NotificationCenter = () => {
     });
   };
 
-  // Función para agrupar notificaciones similares
   const groupSimilarNotifications = (notificationArray) => {
     const groups = new Map();
     
@@ -44,10 +40,8 @@ const NotificationCenter = () => {
     
     groups.forEach((groupNotifications, groupKey) => {
       if (groupNotifications.length === 1) {
-        // Si solo hay una notificación, no agrupar
         groupedNotifications.push(groupNotifications[0]);
       } else {
-        // Agrupar notificaciones similares
         const firstNotification = groupNotifications[0];
         const productNames = groupNotifications
           .map(n => {
@@ -56,8 +50,8 @@ const NotificationCenter = () => {
             }
             return n.data?.Nombre || n.data?.nombre || 'Producto';
           })
-          .filter((name, index, arr) => arr.indexOf(name) === index) // Remover duplicados
-          .slice(0, 3); // Limitar a 3 nombres
+          .filter((name, index, arr) => arr.indexOf(name) === index)
+          .slice(0, 3);
 
         const totalProducts = groupNotifications.reduce((sum, n) => {
           if (Array.isArray(n.data)) return sum + n.data.length;
@@ -82,7 +76,6 @@ const NotificationCenter = () => {
     );
   };
 
-  // Crear mensaje agrupado
   const createGroupedMessage = (type, productNames, totalCount) => {
     const displayNames = productNames.slice(0, 2).join(', ');
     const remaining = totalCount - 2;
@@ -122,11 +115,8 @@ const NotificationCenter = () => {
       console.log('Nueva alerta recibida:', alerta);
       
       setNotifications(prev => {
-        // 🔧 CONFIGURACIÓN: Tiempo para ignorar alertas similares
-        // Cambiado a 24 horas para alertas de stock (1 día)
-        const COOLDOWN_ALERTAS_STOCK = 24 * 60 * 60 * 1000; // 24 horas (1 día)
+        const COOLDOWN_ALERTAS_STOCK = 24 * 60 * 60 * 1000;
         
-        // Verificar si ya existe una notificación similar reciente
         const cooldownTime = Date.now() - COOLDOWN_ALERTAS_STOCK;
         const recentSimilar = prev.find(n => 
           n.type === alerta.type && 
@@ -146,26 +136,21 @@ const NotificationCenter = () => {
           return prev;
         }
 
-        // Agregar nueva notificación
         const updatedNotifications = [alerta, ...prev];
         const cleanNotifications = removeDuplicateNotifications(updatedNotifications);
         const groupedNotifications = groupSimilarNotifications(cleanNotifications);
         
-        // Limitar a 50 notificaciones máximo
         return groupedNotifications.slice(0, 50);
       });
       
       setUnreadCount(prev => prev + 1);
     });
     
-    // Cargar notificaciones guardadas en localStorage
     const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
     
-    // Limpiar duplicados y agrupar notificaciones guardadas
     const cleanNotifications = removeDuplicateNotifications(savedNotifications);
     const groupedNotifications = groupSimilarNotifications(cleanNotifications);
     
-    // Si se encontraron duplicados, actualizar localStorage
     if (cleanNotifications.length !== savedNotifications.length) {
       console.log(`🧹 Limpiadas ${savedNotifications.length - cleanNotifications.length} notificaciones duplicadas`);
       localStorage.setItem('notifications', JSON.stringify(groupedNotifications));
@@ -176,18 +161,15 @@ const NotificationCenter = () => {
     setNotifications(groupedNotifications);
     setUnreadCount(unreadNotifications.length);
     
-    // Limpiar al desmontar
     return () => {
       socket.off('nueva_alerta');
     };
   }, []);
   
-  // Guardar notificaciones en localStorage cuando cambian
   useEffect(() => {
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  // Auto-limpiar notificaciones muy antiguas (más de 7 días)
   useEffect(() => {
     const cleanOldNotifications = () => {
       const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
@@ -196,14 +178,12 @@ const NotificationCenter = () => {
       );
     };
 
-    // Limpiar al cargar y cada hora
     cleanOldNotifications();
     const interval = setInterval(cleanOldNotifications, 60 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);
   
-  // Manejar clic fuera del menú de notificaciones para cerrarlo
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {

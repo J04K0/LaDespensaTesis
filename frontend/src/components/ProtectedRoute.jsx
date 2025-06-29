@@ -7,9 +7,7 @@ const ProtectedRoute = ({ children, requiredRoute }) => {
   const { canAccessRoute, userRole } = useRole();
   const [showAlert, setShowAlert] = React.useState(false);
 
-  // Verificar si el usuario puede acceder a la ruta
   if (!canAccessRoute(requiredRoute)) {
-    // Mostrar mensaje de error una sola vez
     React.useEffect(() => {
       if (!showAlert) {
         showErrorAlert(
@@ -20,7 +18,6 @@ const ProtectedRoute = ({ children, requiredRoute }) => {
       }
     }, [userRole, showAlert]);
 
-    // Redirigir al home
     return <Navigate to="/home" replace />;
   }
 

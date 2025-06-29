@@ -7,7 +7,7 @@
   margin-top: 40px;
   box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
   position: relative;
-  z-index: 1; /* Menor z-index para que no se superponga a otros elementos */
+  z-index: 1;
   clear: both;
 }
 
@@ -27,8 +27,7 @@
   }
 }
 
-/* Estilo específico para Home para evitar superposiciones */
 .home-container .footer {
   margin-top: 80px;
-  position: static; /* En la página de inicio, usar posición estática */
+  position: static;
 }

@@ -1,4 +1,3 @@
-// filepath: /Users/joaco/Desktop/LaDespensaTesis/frontend/src/components/FooterLayout/FooterLayout.jsx
 import React from 'react';
 import Footer from '../Footer/Footer';
 import './FooterLayout.css';

@@ -16,12 +16,10 @@ const ProductEditModal = forwardRef(({
   loading, 
   categories 
 }, ref) => {
-  // 🆕 NUEVOS ESTADOS para manejo de stock y motivo
   const [stockOriginal, setStockOriginal] = useState(0);
   const [showMotivoStock, setShowMotivoStock] = useState(false);
   const [motivoStock, setMotivoStock] = useState('');
 
-  // Optimizar control de scroll del body
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.pageYOffset;
@@ -63,27 +61,21 @@ const ProductEditModal = forwardRef(({
     });
   };
 
-  // 🆕 NUEVO: Manejar cambio en el motivo del stock
   const handleMotivoStockChange = (e) => {
     setMotivoStock(e.target.value);
   };
 
-  // 🆕 NUEVO: Validar antes de enviar
   const handleSubmit = async () => {
-    // DEBUG: Agregar logs para depuración
     console.log('🔍 DEBUG - Stock original:', stockOriginal);
     console.log('🔍 DEBUG - Stock actual:', productToEdit.Stock);
     console.log('🔍 DEBUG - Tipos:', typeof stockOriginal, typeof productToEdit.Stock);
     
-    // Primero, verificar si hay cambio de stock directamente
     const hayCambioStock = Number(productToEdit.Stock) !== Number(stockOriginal);
     
     console.log('🔍 DEBUG - ¿Hay cambio de stock?', hayCambioStock);
     console.log('🔍 DEBUG - Motivo actual:', motivoStock);
     
-    // Si hay cambio de stock y no se ha proporcionado motivo, mostrar popup
     if (hayCambioStock && !motivoStock.trim()) {
-      console.log('🚨 Mostrando popup de motivo');
       
       const { value: motivo } = await Swal.fire({
         title: 'Cambio de Stock Detectado',
@@ -111,22 +103,15 @@ const ProductEditModal = forwardRef(({
       });
 
       if (!motivo) {
-        console.log('❌ Usuario canceló o no proporcionó motivo');
-        return; // Usuario canceló
+        return;
       }
 
-      // Guardar el motivo y proceder
       setMotivoStock(motivo.trim());
-      console.log('✅ Motivo capturado:', motivo.trim());
       
-      // Proceder con el envío
       console.log('📤 Enviando datos con motivo:', { motivo: motivo.trim() });
       onSubmit({ motivo: motivo.trim() });
       return;
     }
-
-    // Si no hay cambio de stock O ya se proporcionó motivo, proceder normalmente
-    console.log('📝 Procediendo con la confirmación final');
     
     const result = await Swal.fire({
       title: "¿Estás seguro?",
@@ -142,14 +127,12 @@ const ProductEditModal = forwardRef(({
     });
 
     if (result.isConfirmed) {
-      // Incluir motivo si hay cambio de stock
       const submitData = hayCambioStock ? { motivo: motivoStock.trim() } : {};
       console.log('📤 Enviando datos:', submitData);
       onSubmit(submitData);
     }
   };
 
-  // 🆕 NUEVO: Controlar cuando el stock cambia para mostrar campo de motivo
   useEffect(() => {
     if (isOpen && productToEdit) {
       console.log('🔄 Modal abierto, capturando stock original:', productToEdit.Stock);
@@ -157,16 +140,15 @@ const ProductEditModal = forwardRef(({
       setMotivoStock('');
       setShowMotivoStock(false);
     }
-  }, [isOpen, productToEdit._id]); // Usar _id como dependencia para detectar cuando cambia el producto
+  }, [isOpen, productToEdit._id]);
 
-  // 🆕 NUEVO: Detectar cambios en el stock
   useEffect(() => {
     if (productToEdit && stockOriginal !== undefined) {
       const hayCambio = Number(productToEdit.Stock) !== Number(stockOriginal);
       console.log('📊 Detectando cambio de stock:', hayCambio, 'Original:', stockOriginal, 'Actual:', productToEdit.Stock);
       setShowMotivoStock(hayCambio);
       if (!hayCambio) {
-        setMotivoStock(''); // Limpiar motivo si no hay cambio
+        setMotivoStock('');
       }
     }
   }, [productToEdit.Stock, stockOriginal]);
@@ -182,7 +164,6 @@ const ProductEditModal = forwardRef(({
   return (
     <div className="product-edit-modal-overlay" onClick={handleClose}>
       <div className="product-edit-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header del Modal */}
         <div className="product-edit-modal-header">
           <h2 className="product-edit-modal-title">
             <FontAwesomeIcon icon={faPen} /> Editar Producto
@@ -196,7 +177,6 @@ const ProductEditModal = forwardRef(({
           </button>
         </div>
         
-        {/* Body del Modal */}
         <div className="product-edit-modal-body">
           <div className="product-edit-form-grid">
             <div className="product-edit-form-group">
@@ -344,7 +324,6 @@ const ProductEditModal = forwardRef(({
             </div>
           </div>
 
-          {/* 🆕 NUEVO: Campo de motivo cuando hay cambio de stock */}
           {showMotivoStock && (
             <div className="product-edit-form-group product-edit-form-group-full motivo-stock">
               <label className="product-edit-form-label" htmlFor="motivoStock">
@@ -392,7 +371,6 @@ const ProductEditModal = forwardRef(({
           </div>
         </div>
         
-        {/* Footer del Modal */}
         <div className="product-edit-modal-footer">
           <button 
             onClick={handleSubmit} 

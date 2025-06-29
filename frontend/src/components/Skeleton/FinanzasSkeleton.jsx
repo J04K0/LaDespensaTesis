@@ -16,7 +16,6 @@ const FinanzasSkeleton = () => {
         </div>
       </div>
 
-      {/* Dashboard de métricas */}
       <div className="skeleton-metrics-grid">
         {[...Array(6)].map((_, index) => (
           <div key={index} className="skeleton-metric-card">
@@ -29,7 +28,6 @@ const FinanzasSkeleton = () => {
         ))}
       </div>
 
-      {/* Gráficos */}
       {[...Array(2)].map((_, index) => (
         <div key={index} className="skeleton-chart-container">
           <div className="skeleton-chart-header">

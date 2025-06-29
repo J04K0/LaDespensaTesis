@@ -14,7 +14,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verificar autenticación al cargar
   useEffect(() => {
     const checkAuth = () => {
       try {
@@ -42,14 +41,12 @@ export function AuthProvider({ children }) {
 
     checkAuth();
 
-    // Escuchar cambios en localStorage
     const handleStorageChange = (e) => {
       if (e.key === 'user') {
         checkAuth();
       }
     };
 
-    // Escuchar eventos personalizados de autenticación
     const handleAuthStateChanged = (e) => {
       console.log('🔄 Estado de autenticación cambió:', e.detail);
       const { authenticated, user: userData } = e.detail;
@@ -73,7 +70,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Redirigir al login si no está autenticado
   useEffect(() => {
     if (!isLoading && !isAuthenticated && window.location.pathname !== '/auth') {
       console.log('🔄 Redirigiendo a login...');
@@ -81,7 +77,6 @@ export function AuthProvider({ children }) {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Función para actualizar el estado de autenticación manualmente
   const updateAuthState = (userData = null) => {
     if (userData) {
       setUser(userData);

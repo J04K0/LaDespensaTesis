@@ -1,4 +1,3 @@
-// Constantes compartidas para productos - Frontend
 export const STOCK_MINIMO_POR_CATEGORIA = {
   'Congelados': 10,
   'Carnes': 5,
@@ -18,24 +17,23 @@ export const STOCK_MINIMO_POR_CATEGORIA = {
 };
 
 export const MARGENES_POR_CATEGORIA = {
-  'Congelados': 0.25, // 25%
-  'Carnes': 0.20, // 20%
-  'Despensa': 0.20, // 20%
-  'Panaderia y Pasteleria': 0.25, // 25%
-  'Quesos y Fiambres': 0.25, // 25%
-  'Bebidas y Licores': 0.33, // 33%
-  'Lacteos, Huevos y Refrigerados': 0.20, // 20%
-  'Desayuno y Dulces': 0.30, // 30%
-  'Bebes y Niños': 0.28, // 28%
-  'Cigarros': 0.40, // 40%
-  'Cuidado Personal': 0.28, // 28%
-  'Limpieza y Hogar': 0.28, // 28%
-  'Mascotas': 0.28, // 28%
-  'Remedios': 0.15, // 15%
-  'Otros': 0.23  // 23%
+  'Congelados': 0.25,
+  'Carnes': 0.20,
+  'Despensa': 0.20,
+  'Panaderia y Pasteleria': 0.25,
+  'Quesos y Fiambres': 0.25,
+  'Bebidas y Licores': 0.33,
+  'Lacteos, Huevos y Refrigerados': 0.20,
+  'Desayuno y Dulces': 0.30,
+  'Bebes y Niños': 0.28,
+  'Cigarros': 0.40,
+  'Cuidado Personal': 0.28,
+  'Limpieza y Hogar': 0.28,
+  'Mascotas': 0.28,
+  'Remedios': 0.15,
+  'Otros': 0.23
 };
 
-// Lista de categorías disponibles
 export const CATEGORIAS = [
   'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
   'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados',
@@ -43,5 +41,4 @@ export const CATEGORIAS = [
   'Limpieza y Hogar', 'Mascotas', 'Remedios', 'Otros'
 ];
 
-// Alias para compatibilidad
 export const CATEGORIAS_PRODUCTOS = CATEGORIAS;

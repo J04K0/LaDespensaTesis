@@ -18,7 +18,6 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
     { value: 'otro', label: 'Otro motivo' }
   ];
 
-  // Optimizar control de scroll del body
   useEffect(() => {
     if (isOpen) {
       const scrollY = window.pageYOffset;
@@ -108,7 +107,6 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
   return (
     <div className="delete-modal-overlay" onClick={handleOverlayClick}>
       <div className="delete-modal-container" onClick={(e) => e.stopPropagation()}>
-        {/* Header del Modal */}
         <div className="delete-modal-header">
           <div className="delete-modal-icon">
             <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -123,9 +121,7 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           </button>
         </div>
 
-        {/* Contenido Principal */}
         <div className="delete-modal-content">
-          {/* Advertencia */}
           <div className="delete-warning-card">
             <div className="delete-warning-icon">
               <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -140,7 +136,6 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
             </div>
           </div>
 
-          {/* Formulario */}
           <form onSubmit={handleSubmit} className="delete-form">
             <div className="delete-form-grid">
               <div className="delete-form-group">
@@ -187,7 +182,6 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           </form>
         </div>
 
-        {/* Footer del Modal */}
         <div className="delete-modal-footer">
           <button
             type="button"

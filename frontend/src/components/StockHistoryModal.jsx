@@ -70,12 +70,10 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
     }
   };
 
-  // 🆕 NUEVA función para detectar si es una restauración
   const isRestoreMovement = (motivo) => {
     return motivo && motivo.toLowerCase().includes('producto restaurado');
   };
 
-  // 🆕 NUEVA función para extraer el comentario de restauración
   const extractRestoreComment = (motivo) => {
     if (isRestoreMovement(motivo)) {
       const match = motivo.match(/Producto restaurado: (.+)/);

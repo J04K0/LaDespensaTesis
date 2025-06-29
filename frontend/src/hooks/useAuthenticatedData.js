@@ -17,7 +17,6 @@ export const useAuthenticatedData = (fetchFunction, dependencies = [], options =
   } = options;
 
   const loadData = async (isRetry = false) => {
-    // No cargar datos si no está autenticado
     if (!isAuthenticated) {
       setLoading(false);
       return;
@@ -44,7 +43,6 @@ export const useAuthenticatedData = (fetchFunction, dependencies = [], options =
     } catch (err) {
       console.error('❌ Error al cargar datos:', err);
       
-      // Manejar errores de autenticación con reintentos
       if ((err.response?.status === 401 || err.response?.status === 403) && retryCount < maxRetries) {
         console.log(`🔄 Reintentando carga de datos (intento ${retryCount + 1}/${maxRetries})...`);
         setRetryCount(prev => prev + 1);
@@ -67,14 +65,12 @@ export const useAuthenticatedData = (fetchFunction, dependencies = [], options =
     }
   };
 
-  // Cargar datos cuando cambie la autenticación o las dependencias
   useEffect(() => {
     if (!authLoading && immediate) {
       loadData();
     }
   }, [isAuthenticated, authLoading, retryCount, ...dependencies]);
 
-  // Función para recargar manualmente
   const refetch = () => {
     setRetryCount(0);
     loadData();
