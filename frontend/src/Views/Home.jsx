@@ -55,7 +55,6 @@ const Home = () => {
   
   // Remover estados innecesarios que se manejan con useMemo
   const [currentChart, setCurrentChart] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [timeRange, setTimeRange] = useState("todo");
@@ -67,8 +66,8 @@ const Home = () => {
   const { ventasGlobales, loading: ventasLoading, error: ventasError } = useVentas();
   const { userRole: role } = useRole();
 
-  // 🔧 FIX: Mejorar la condición de loading
-  const isDataLoading = ventasLoading;
+  // 🔧 FIX: Calcular loading basado en si tenemos datos y el estado del contexto
+  const isDataLoading = ventasLoading || (!ventasGlobales && !ventasError);
 
   // 🔧 FIX: Usar useCallback para evitar recreaciones innecesarias
   const filtrarVentasPorPeriodo = useCallback((ventas) => {
@@ -370,7 +369,7 @@ const Home = () => {
   };
 
   const renderCurrentChart = () => {
-    if (loading) return <p>Cargando datos...</p>;
+    if (isDataLoading) return <p>Cargando datos...</p>;
     if (error) return <p className="error">{error}</p>;
 
     switch (currentChart) {
@@ -657,14 +656,6 @@ const Home = () => {
   // 🔧 FIX: Extraer datos del useMemo optimizado
   const { ventasPorCategoria, topProductos, productosPocoVendidos } = datosEstadisticasOptimized;
 
-  // Actualizar estado de loading basado en los datos disponibles
-  useEffect(() => {
-    // 🔧 FIX: Simplificar la lógica de loading
-    if (!ventasLoading) {
-      setLoading(false);
-    }
-  }, [ventasLoading]);
-
   // Función helper para formatear números con punto como separador de miles
   const formatNumberWithDots = (number) => {
     if (typeof number !== 'number' || isNaN(number)) return '0';
@@ -676,7 +667,7 @@ const Home = () => {
       <Navbar />
       <div className={role === 'empleado' ? 'home-content-employee' : 'home-content'}>
         <div className={role === 'empleado' ? 'home-deudores-container-centered' : 'home-deudores-container'}>
-          {loading || isDataLoading ? (
+          {isDataLoading ? (
             <DeudoresTableSkeleton />
           ) : (
             <div className={role === 'empleado' ? 'home-deudores-card-centered' : 'home-deudores-card'}>
@@ -713,7 +704,7 @@ const Home = () => {
         
         {role !== 'empleado' && (
           <div className="home-stats-container">
-            {loading || isDataLoading ? (
+            {isDataLoading ? (
               <ChartSkeleton />
             ) : (
               <div className="home-stats-card">
