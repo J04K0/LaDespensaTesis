@@ -771,247 +771,615 @@
   opacity: 0.8;
 }
 
-/* Responsividad */
-@media (max-width: 1024px) {
-  .historysaletablecontainer {
-    max-height: 50vh;
+/* ================== MEJORAS ADICIONALES PARA MÓVILES ================== */
+
+/* Mejora del contenedor principal en móviles */
+@media (max-width: 768px) {
+  .historysalecontainer {
+    padding: 8px;
+    background: #f5f8fa;
   }
   
-  .historysaledropdowns {
-    flex-direction: column;
+  .historysalemaincontent {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
-  .historysalefiltergroup {
+  /* Mejora del header para móviles */
+  .historysaleheader {
+    text-align: center;
+    padding: 15px 0;
+  }
+  
+  .title-container {
+    margin-bottom: 15px;
+  }
+  
+  .historysaletitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 5px;
+  }
+  
+  .historysale-subtitle {
+    font-size: 13px;
+    color: var(--gray);
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  /* Mejora de botones de exportación */
+  .historysaleexportbuttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
     width: 100%;
   }
-}
-
-/* ===== NUEVOS ESTILOS PARA VENTAS ANULADAS ===== */
-
-/* Advertencia para ventas anuladas */
-.anuladas-warning {
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
-  color: #856404;
-  padding: 10px 15px;
-  border-radius: 6px;
-  margin-top: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Botón para ver ventas anuladas */
-.historysaleexportbtn.anuladas {
-  background-color: var(--primary-dark);
-  border: 1px solid var(--primary-dark);
-}
-
-.historysaleexportbtn.anuladas:hover {
-  background-color: #001f40;
-}
-
-/* Estilos para filas de ventas anuladas */
-.venta-anulada {
-  background-color: #fff5f5 !important;
-  opacity: 0.8;
-}
-
-.venta-anulada:hover {
-  background-color: #fed7d7 !important;
-}
-
-/* Badge de estado anulada */
-.estado-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  font-size: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-radius: 12px;
-  margin-left: 8px;
-}
-
-.estado-badge.anulada {
-  background-color: #fed7d7;
-  color: #c53030;
-  border: 1px solid #feb2b2;
-}
-
-/* Columnas específicas para ventas anuladas */
-.anulacion-column,
-.anulado-por-column,
-.motivo-column {
-  width: 12%;
-  min-width: 120px;
-}
-
-.anulacion-cell,
-.anulado-por-cell {
-  font-size: 13px;
-  color: #4a5568;
-}
-
-.motivo-cell {
-  max-width: 200px;
-}
-
-.motivo-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tipo-anulacion {
-  background-color: #e6fffa;
-  color: #285e61;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: bold;
-  align-self: flex-start;
-}
-
-/* Cantidad original para productos devueltos */
-.cantidad-original {
-  font-size: 11px;
-  color: #718096;
-  font-style: italic;
-  margin-left: 8px;
-}
-
-/* Ajustes responsivos para ventas anuladas */
-@media (max-width: 1200px) {
-  .anulacion-column,
-  .anulado-por-column,
-  .motivo-column {
-    width: 10%;
-    min-width: 100px;
+  
+  .historysaleexportbtn {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    justify-content: center;
   }
   
-  .motivo-content {
+  .anuladas-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid #ffc107;
+    color: #856404;
+    border-radius: 6px;
     font-size: 12px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    text-align: center;
   }
 }
 
+/* Mejoras específicas para filtros en móvil */
 @media (max-width: 768px) {
-  .anuladas-warning {
-    font-size: 13px;
-    padding: 8px 12px;
+  .historysalefilters {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .historysalesearchcontainer {
+    margin-bottom: 15px;
+  }
+  
+  .historysalesearchbar {
+    border-radius: 25px;
+    padding: 12px 15px 12px 40px;
+    font-size: 14px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+  
+  .historysalesearchbar:focus {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 110, 223, 0.15);
+  }
+  
+  .historysalesearchicon {
+    color: var(--primary);
+    font-size: 16px;
+  }
+  
+  /* Selects más elegantes */
+  .historysaleselect {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-dark);
+    transition: all 0.3s ease;
+  }
+  
+  .historysaleselect:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 110, 223, 0.15);
+  }
+  
+  /* Inputs de fecha y monto mejorados */
+  .historysaledateinput,
+  .historysaleamountinput {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .historysaledateinput:focus,
+  .historysaleamountinput:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 110, 223, 0.15);
+  }
+  
+  /* Botón limpiar filtros mejorado */
+  .historysaleclearfiltersbtn {
+    background-color: var(--primary-dark);
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0, 38, 81, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .historysaleclearfiltersbtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 38, 81, 0.4);
+  }
+}
+
+/* Mejoras para la tabla en móviles */
+@media (max-width: 768px) {
+  .historysaletablecontainer {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 20px;
+  }
+  
+  .historysaletable {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  .historysaletable th {
+    background-color: var(--primary-dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 12px 8px;
+    text-transform: uppercase;
+  }
+  
+  .historysaletable td {
+    padding: 10px 8px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Código de ticket más elegante */
+  .codigo-cell {
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  
+  .ticket-code {
+    background: rgba(0, 110, 223, 0.1);
+    color: var(--primary-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
   }
   
   .estado-badge {
-    font-size: 9px;
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
     padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 8px;
+    font-weight: 700;
+    margin-left: 5px;
+    text-transform: uppercase;
   }
   
-  .anulacion-cell,
-  .anulado-por-cell,
-  .motivo-cell {
+  /* Métodos de pago más compactos */
+  .historysalemetodopago {
     font-size: 11px;
-    padding: 8px 6px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  
+  /* Productos mejorados en móvil */
+  .productos-cell {
+    padding: 8px 6px !important;
+  }
+  
+  .producto-item {
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin: 2px 0;
+    border-left: 3px solid var(--primary-light);
+  }
+  
+  .producto-nombre {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    line-height: 1.3;
+  }
+  
+  .cantidad-badge {
+    background-color: var(--primary);
+    color: white;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  
+  .precio-producto {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--success);
+  }
+  
+  /* Importe total destacado */
+  .importe-cell {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    background: rgba(0, 110, 223, 0.05);
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  /* Botones de acción mejorados */
+  .historysaleactionbuttons {
+    gap: 4px;
+  }
+  
+  .devolver-btn {
+    background-color: #4299e1;
+    box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+  }
+  
+  .anular-btn {
+    background-color: #e53e3e;
+    box-shadow: 0 2px 6px rgba(229, 62, 62, 0.3);
+  }
+  
+  .view-only-btn {
+    background-color: #6c757d;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+  }
+  
+  .employee-info-text {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 10px;
+    padding: 6px 8px;
+    color: var(--gray);
+    font-style: italic;
   }
 }
 
-@media (max-width: 576px) {
-  .historysaletable td, 
+/* Mejoras para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .historysalecontainer {
+    padding: 5px;
+  }
+  
+  .historysalemaincontent {
+    padding: 10px;
+    border-radius: 6px;
+  }
+  
+  .historysaletitle {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  
+  .historysale-subtitle {
+    font-size: 12px;
+    margin-top: 3px;
+  }
+  
+  /* Filtros super compactos */
+  .historysalefilters {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .historysalesearchbar {
+    padding: 10px 12px 10px 35px;
+    font-size: 14px;
+    border-radius: 20px;
+  }
+  
+  .historysaleselect,
+  .historysaledateinput,
+  .historysaleamountinput {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+  
+  /* Tabla ultra compacta */
+  .historysaletable {
+    min-width: 600px;
+    font-size: 10px;
+  }
+  
   .historysaletable th {
-    padding: 10px 8px;
+    padding: 8px 6px;
+    font-size: 9px;
+  }
+  
+  .historysaletable td {
+    padding: 6px 4px;
+  }
+  
+  .codigo-column { min-width: 90px; }
+  .fecha-column { min-width: 70px; }
+  .usuario-column { min-width: 70px; }
+  .metodo-column { min-width: 80px; }
+  .productos-column { min-width: 140px; }
+  .total-column { min-width: 70px; }
+  .acciones-column { min-width: 90px; }
+  
+  .ticket-code {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+  
+  .producto-item {
+    padding: 4px 6px;
+    margin: 1px 0;
+  }
+  
+  .producto-nombre {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  
+  .cantidad-badge {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  
+  .precio-producto {
+    font-size: 9px;
+  }
+  
+  .devolver-btn, .anular-btn, .view-only-btn {
+    padding: 3px 6px;
+    font-size: 9px;
+    border-radius: 4px;
+  }
+  
+  .employee-info-text {
+    padding: 4px 6px;
+    font-size: 9px;
+    min-height: 20px;
+  }
+}
+
+/* Mejoras para el modal en móviles */
+@media (max-width: 768px) {
+  .historysalemodaloverlay {
+    padding: 10px;
+  }
+  
+  .historysalemodalcontent {
+    width: 100%;
+    max-width: none;
+    border-radius: 10px;
+    max-height: 90vh;
+  }
+  
+  .historysalemodalheader {
+    background-color: var(--primary-dark);
+    padding: 15px 20px;
+  }
+  
+  .historysalemodalheader h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .historysalemodalbody {
+    padding: 15px;
+  }
+  
+  .historysalemodalinstructions {
+    background-color: #fff9e6;
+    border: 1px solid #ffc107;
+    color: #856404;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .historysalemodaltable {
+    border-radius: 8px;
+    overflow: hidden;
     font-size: 12px;
   }
   
-  .devolver-btn, .anular-btn {
+  .historysalemodaltable th {
+    background-color: var(--primary-dark);
+    padding: 10px 8px;
     font-size: 11px;
-    padding: 6px 8px;
+  }
+  
+  .quantity-controls {
+    border-radius: 6px;
+    overflow: hidden;
+    width: 85px;
+  }
+  
+  .quantity-controls button {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .quantity-controls span {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .comentario-devolucion-container {
+    background: rgba(248, 249, 250, 0.7);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 15px;
+  }
+  
+  .comentario-devolucion-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin-bottom: 6px;
+  }
+  
+  .comentario-devolucion-textarea {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    font-size: 12px;
+    min-height: 60px;
+    padding: 8px 10px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  .comentario-devolucion-textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  }
+  
+  .historysalemodalfooter {
+    background-color: #f8f9fa;
+    padding: 12px 15px;
+    gap: 8px;
+  }
+  
+  .historysaleconfirmbutton,
+  .historysalecancelbutton {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+  
+  .historysaleconfirmbutton {
+    background-color: var(--success);
+    box-shadow: 0 3px 8px rgba(40, 167, 69, 0.3);
+  }
+  
+  .historysaleconfirmbutton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(40, 167, 69, 0.4);
+  }
+  
+  .historysalecancelbutton {
+    background-color: #f0f0f0;
+    color: var(--gray-dark);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   }
 }
 
-/* Estilos para el campo de comentario de devolución */
-.comentario-column {
-  width: 15%;
-  min-width: 150px;
-  text-align: left;
-}
-
-.comentario-cell {
-  padding: 8px;
-  max-width: 200px;
-  word-wrap: break-word;
-  font-size: 13px;
-}
-
-.comentario-devolucion-container {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: #f7fafc;
-}
-
-.comentario-devolucion-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #2d3748;
-  font-size: 14px;
-}
-
-.comentario-devolucion-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 10px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  background-color: white;
-}
-
-.comentario-devolucion-textarea:focus {
-  outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-}
-
-.comentario-devolucion-textarea::placeholder {
-  color: #a0aec0;
-  font-style: italic;
-}
-
-/* Animación fade-in para elementos */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Mejoras para paginación en móviles */
+@media (max-width: 768px) {
+  .historysalepagination {
+    margin-top: 20px;
+    gap: 3px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .historysalepaginationbutton {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    min-width: 40px;
+    transition: all 0.3s ease;
+  }
+  
+  .historysalepaginationbutton.active {
+    background-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
+  }
+  
+  .historysalepaginationbutton:hover:not(.active) {
+    background-color: #e0e0e0;
+    transform: translateY(-1px);
   }
 }
 
-/* Estilos para ventas anuladas */
-.motivo-column {
-  width: 20%;
-  min-width: 180px;
-  text-align: left;
+/* Mejoras adicionales para accesibilidad */
+@media (max-width: 768px) {
+  /* Mejorar contraste y legibilidad */
+  .historysaletable th {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Touch targets más grandes */
+  .historysaleexportbtn,
+  .historysaleclearfiltersbtn,
+  .devolver-btn,
+  .anular-btn,
+  .view-only-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Separación visual mejorada */
+  .historysaletable tr:nth-child(even) {
+    background-color: rgba(248, 250, 252, 0.8);
+  }
+  
+  .historysaletable tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* Estados de hover más evidentes en touch */
+  .historysaletable tbody tr:hover,
+  .historysaletable tbody tr:active {
+    background-color: rgba(227, 242, 253, 0.8);
+    transform: translateY(-1px);
+  }
 }
 
-.motivo-cell {
-  padding: 8px;
-  max-width: 250px;
-  word-wrap: break-word;
-  font-size: 13px;
-}
-
-.motivo-content {
-  line-height: 1.4;
-}
-
-.motivo-content strong {
-  color: #2d3748;
-  font-size: 12px;
+/* Animaciones suaves para transiciones */
+@media (max-width: 768px) {
+  .historysalemaincontent,
+  .historysalefilters,
+  .historysaletablecontainer {
+    animation: slideInUp 0.5s ease-out;
+  }
+  
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .historysaletable tbody tr {
+    animation: fadeInRow 0.3s ease-out;
+  }
+  
+  @keyframes fadeInRow {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }

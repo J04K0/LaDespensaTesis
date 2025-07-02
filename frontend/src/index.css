@@ -94,8 +94,3 @@ body:not(.login-page) {
   outline: 2px solid #007bff !important;
   outline-offset: 2px !important;
 }
-
-/* Evitar que el root tenga aria-hidden cuando hay modales */
-#root[aria-hidden="true"] {
-  aria-hidden: false !important;
-}

@@ -1107,3 +1107,316 @@ textarea.deudores-form-control {
     font-size: 28px;
   }
 }
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE ADAPTATIONS
+   ======================================== */
+
+/* Breakpoints para diferentes tamaños de pantalla */
+@media (max-width: 1024px) {
+  .deudores-content {
+    padding: 15px;
+    width: calc(100% - 30px);
+  }
+  
+  .deudores-page-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .deudores-actions {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Contenedor principal mobile */
+  .deudores-content {
+    padding: 10px;
+    width: calc(100% - 20px);
+  }
+  
+  /* Header responsive */
+  .deudores-page-header {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+  
+  .deudores-page-title {
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  .deudores-page-subtitle {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  /* Filtros mobile */
+  .deudores-filters-container {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .deudores-search-container {
+    min-width: unset;
+  }
+  
+  .deudores-search-input {
+    font-size: 16px; /* Evita zoom en iOS */
+    padding: 12px 12px 12px 40px;
+  }
+  
+  .deudores-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .deudores-form-select {
+    min-width: unset;
+    width: 100%;
+    padding: 12px 30px 12px 12px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+  
+  .deudores-btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+  
+  /* TABLA MOBILE - Diseño de cards */
+  .deudores-table-container {
+    max-height: none;
+    border-radius: 8px;
+    overflow: visible;
+  }
+  
+  .deudores-table {
+    display: none; /* Ocultar tabla en mobile */
+  }
+  
+  /* Cards de deudores para mobile */
+  .deudores-mobile-cards {
+    display: block;
+  }
+  
+  .deudores-mobile-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary);
+    position: relative;
+  }
+  
+  .deudores-mobile-card.zero-debt {
+    border-left-color: var(--success);
+    opacity: 0.8;
+  }
+  
+  .deudores-mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  
+  .deudores-mobile-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 0;
+    flex: 1;
+    margin-right: 10px;
+  }
+  
+  .deudores-mobile-status {
+    flex-shrink: 0;
+  }
+  
+  .deudores-mobile-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .deudores-mobile-info-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .deudores-mobile-info-label {
+    font-size: 12px;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  
+  .deudores-mobile-info-value {
+    font-size: 14px;
+    color: var(--gray-dark);
+    font-weight: 500;
+  }
+  
+  .deudores-mobile-debt {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .deudores-mobile-debt.positive {
+    color: var(--danger);
+  }
+  
+  .deudores-mobile-debt.zero {
+    color: var(--success);
+  }
+  
+  .deudores-mobile-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .deudores-mobile-actions .deudores-btn-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  /* Adaptación de los status badges para mobile */
+  .deudores-status-badge {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  /* Mensaje de no datos */
+  .deudores-no-data {
+    padding: 40px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Asegurar que las cards mobile no se muestren en desktop */
+  .deudores-mobile-cards {
+    display: none;
+  }
+}
+
+/* Mobile muy pequeño (menos de 480px) */
+@media (max-width: 480px) {
+  .deudores-content {
+    padding: 8px;
+    width: calc(100% - 16px);
+  }
+  
+  .deudores-page-title {
+    font-size: 20px;
+  }
+  
+  .deudores-mobile-info {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .deudores-mobile-card {
+    padding: 12px;
+  }
+  
+  .deudores-mobile-name {
+    font-size: 16px;
+  }
+  
+  .deudores-mobile-actions {
+    gap: 6px;
+  }
+  
+  .deudores-mobile-actions .deudores-btn-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  /* Stats cards más compactas en mobile muy pequeño */
+  .deudores-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .deudores-stat-card {
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .deudores-stat-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .deudores-stat-value {
+    font-size: 20px;
+  }
+  
+  .deudores-highlight-card {
+    padding: 20px;
+    gap: 15px;
+  }
+  
+  .deudores-highlight-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .deudores-highlight-amount {
+    font-size: 24px;
+  }
+}
+
+/* Landscape orientation en móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+  .deudores-mobile-info {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .deudores-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .deudores-table-container {
+    max-height: 70vh;
+  }
+  
+  .deudores-table th,
+  .deudores-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+  
+  .deudores-btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+  
+  .deudores-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

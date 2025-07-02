@@ -379,16 +379,24 @@ const DeudoresList = () => {
 
   const handleEdit = (deudor) => {
     const fechaFormateada = new Date(deudor.fechaPaga).toISOString().split('T')[0];
+    // Extraer el valor numérico de la deuda (sin símbolos)
+    const deudaNumericaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
 
     setDeudorToEdit({
       _id: deudor._id,
       Nombre: deudor.Nombre,
       fechaPaga: fechaFormateada,
       numeroTelefono: deudor.numeroTelefono,
-      deudaTotal: parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.')),
+      deudaTotal: deudaNumericaValue, // Usar valor numérico limpio
       historialPagos: deudor.historialPagos || []
     });
-    setOriginalDeudor(deudor); // Guardar deudor original para comparación
+    
+    // Guardar deudor original con formato consistente para comparación
+    setOriginalDeudor({
+      ...deudor,
+      fechaPaga: fechaFormateada,
+      deudaTotal: deudaNumericaValue // También convertir el original para comparación consistente
+    });
     setShowEditModal(true);
   };
 
@@ -677,8 +685,7 @@ const DeudoresList = () => {
       showEmpleadoAlert();
       return;
     }
-    setDeudorToEdit(deudor);
-    setShowEditModal(true);
+    handleEdit(deudor); // Usar la función handleEdit correcta
   };
 
   // 🆕 Función para manejar eliminación con verificación de permisos
@@ -750,6 +757,7 @@ const DeudoresList = () => {
             </div>
             
             <div className="deudores-table-container">
+              {/* Tabla para desktop */}
               <table className="deudores-table">
                 <thead>
                   <tr>
@@ -773,7 +781,7 @@ const DeudoresList = () => {
                         <td>{new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}</td>
                         <td>{deudor.numeroTelefono || 'Teléfono desconocido'}</td>
                         <td className={isZeroDebt ? 'deudores-text-success' : 'deudores-text-danger'}>
-                          ${deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}
+                          {deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}
                         </td>
                         <td>
                           <span className={`deudores-status-badge ${paymentStatus.className}`}>
@@ -804,6 +812,95 @@ const DeudoresList = () => {
                   })}
                 </tbody>
               </table>
+
+              {/* Cards para mobile */}
+              <div className="deudores-mobile-cards">
+                {displayedDeudores.length > 0 ? (
+                  displayedDeudores.map((deudor, index) => {
+                    const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+                    const isZeroDebt = deudaValue === 0;
+                    const paymentStatus = getPaymentStatus(deudor.fechaPaga, deudor.deudaTotal);
+
+                    return (
+                      <div key={index} className={`deudores-mobile-card ${isZeroDebt ? 'zero-debt' : ''}`}>
+                        <div className="deudores-mobile-card-header">
+                          <h3 className="deudores-mobile-name">
+                            {deudor.Nombre || 'Nombre desconocido'}
+                          </h3>
+                          <div className="deudores-mobile-status">
+                            <span className={`deudores-status-badge ${paymentStatus.className}`}>
+                              {paymentStatus.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="deudores-mobile-info">
+                          <div className="deudores-mobile-info-item">
+                            <span className="deudores-mobile-info-label">Fecha a pagar</span>
+                            <span className="deudores-mobile-info-value">
+                              {new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida'}
+                            </span>
+                          </div>
+                          
+                          <div className="deudores-mobile-info-item">
+                            <span className="deudores-mobile-info-label">Teléfono</span>
+                            <span className="deudores-mobile-info-value">
+                              {deudor.numeroTelefono || 'N/A'}
+                            </span>
+                          </div>
+                          
+                          <div className="deudores-mobile-info-item" style={{ gridColumn: '1 / -1' }}>
+                            <span className="deudores-mobile-info-label">Deuda total</span>
+                            <span className={`deudores-mobile-info-value deudores-mobile-debt ${isZeroDebt ? 'zero' : 'positive'}`}>
+                              {deudor.deudaTotal !== undefined ? deudor.deudaTotal.toLocaleString('es-ES') : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="deudores-mobile-actions">
+                          <button 
+                            onClick={() => handleUpdateDebt(deudor)} 
+                            className="deudores-btn-icon deudores-btn-success" 
+                            title="Actualizar deuda"
+                          >
+                            <FontAwesomeIcon icon={faMoneyBillWave} />
+                          </button>
+                          <button 
+                            onClick={() => handleViewHistory(deudor)} 
+                            className="deudores-btn-icon deudores-btn-secondary" 
+                            title="Ver historial"
+                          >
+                            <FontAwesomeIcon icon={faHistory} />
+                          </button>
+                          {/* Solo mostrar botones de editar y eliminar si NO es empleado */}
+                          {!isEmpleado && (
+                            <>
+                              <button 
+                                onClick={() => handleEditClick(deudor)} 
+                                className="deudores-btn-icon deudores-btn-primary" 
+                                title="Editar deudor"
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(deudor._id)} 
+                                className="deudores-btn-icon deudores-btn-danger" 
+                                title="Eliminar deudor"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="deudores-no-data">
+                    No se encontraron deudores que coincidan con tu búsqueda.
+                  </div>
+                )}
+              </div>
             </div>
             
             <SmartPagination

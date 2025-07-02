@@ -89,13 +89,15 @@ const EditDeudorModal = ({
           <div className="deudores-form-group">
             <label className="deudores-form-label" htmlFor="deudaTotal">Deuda Total:</label>
             <input
-              type="text"
+              type="number"
               id="deudaTotal"
               name="deudaTotal"
               value={deudorToEdit.deudaTotal}
               onChange={onInputChange}
               placeholder="Ingrese la deuda total"
               className="deudores-form-control"
+              min="0"
+              step="0.01"
             />
           </div>
         </div>

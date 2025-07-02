@@ -475,7 +475,6 @@
   flex: 1;
   min-width: 0;
   max-width: 550px;
-  min-width: 350px; /* Tamaño mínimo para el contenedor de gráfico */
   min-height: 550px; /* Altura mínima asegurada */
   height: 550px;
   display: flex;
@@ -758,15 +757,419 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Responsividad */
+@media (max-width: 1024px) {
+  .home-content {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .home-deudores-container, .home-stats-container {
+    width: 100%;
+    margin-bottom: 25px;
+  }
+  
+  .home-stats-content canvas {
+    max-height: 300px !important;
+    min-height: 250px !important;
+  }
+  
+  .home-top-buttons-container {
+    width: 100%;
+    margin-right: 0;
+    padding: 12px 20px;
+  }
+  
   .chart-area {
-    max-width: 300px;
+    max-width: 100%;
+    min-width: 300px;
+    min-height: 300px;
     height: 300px;
   }
   
-  .chart-data-table {
+  .home-deudores-card {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding-top: calc(var(--navbar-height) + 10px) !important;
+  }
+  
+  .home-top-buttons-container {
+    padding: 10px 15px;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .home-top-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .home-top-buttons button {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .home-content {
+    padding: 15px;
+    gap: 15px;
+    margin-bottom: 80px;
+  }
+  
+  .home-section-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+  
+  /* Mejoras para la tarjeta de deudores en móvil */
+  .home-deudores-card {
+    min-height: 400px;
+    border-radius: 10px;
+  }
+  
+  .home-deudores-header {
+    padding: 15px 18px;
+  }
+  
+  .home-deudores-header h3 {
+    font-size: 16px;
+  }
+  
+  .home-deudores-header button {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  
+  .home-deudores-table-container {
+    padding: 3px;
+  }
+  
+  .home-deudores-table th {
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  
+  .home-deudores-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  
+  .home-deudores-table td:first-child {
+    gap: 8px;
+  }
+  
+  .home-deudores-table td:first-child svg {
+    font-size: 16px;
+  }
+  
+  .home-deudores-table td:last-child {
+    font-size: 14px;
+  }
+  
+  /* Mejoras para la tarjeta de estadísticas en móvil */
+  .home-stats-card {
+    border-radius: 10px;
+  }
+  
+  .home-stats-controls {
+    padding: 15px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .home-stats-nav-title {
+    font-size: 16px;
+    order: -1;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .time-filter-container {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .time-filter-container select {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  
+  .home-stats-nav-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .home-stats-download-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .home-stats-content {
+    padding: 15px;
+  }
+  
+  .home-stats-content h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .chart-area {
     max-width: 100%;
+    min-width: 280px;
+    min-height: 280px;
+    height: 280px;
+    margin: 10px auto;
+  }
+  
+  .home-stats-content canvas {
+    max-height: 280px !important;
+    min-height: 250px !important;
+    padding: 5px;
+  }
+  
+  /* Tabla de datos del gráfico en móvil */
+  .chart-data-table {
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+  
+  .chart-data-header {
+    padding: 12px 15px;
+  }
+  
+  .chart-data-header span {
+    font-size: 13px;
+  }
+  
+  .chart-data-row {
+    padding: 12px 15px;
+  }
+  
+  .product-name {
+    font-size: 13px;
+    max-width: 65%;
+  }
+  
+  .product-value {
+    font-size: 14px;
+  }
+  
+  .color-indicator {
+    width: 10px;
+    height: 10px;
+  }
+  
+  /* Leyenda en móvil */
+  .chart-legend {
+    gap: 10px;
+    margin: 10px 0;
+    padding: 5px;
+  }
+  
+  .legend-item {
+    font-size: 12px;
+    gap: 6px;
+  }
+  
+  .legend-label {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-container {
+    padding-top: calc(var(--navbar-height) + 5px) !important;
+  }
+  
+  .home-top-buttons-container {
+    padding: 8px 12px;
+  }
+  
+  .home-top-buttons button {
+    padding: 10px 14px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  
+  .home-content {
+    padding: 12px;
+    gap: 12px;
+    margin-bottom: 60px;
+  }
+  
+  .home-section-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+  
+  /* Tarjeta de deudores optimizada para pantallas muy pequeñas */
+  .home-deudores-card {
+    min-height: 350px;
+  }
+  
+  .home-deudores-header {
+    padding: 12px 15px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .home-deudores-header h3 {
+    font-size: 15px;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .home-deudores-header button {
+    padding: 5px 10px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .home-deudores-table-container {
+    overflow-x: auto;
+    padding: 2px;
+  }
+  
+  .home-deudores-table {
+    min-width: 350px;
+    font-size: 12px;
+  }
+  
+  .home-deudores-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+  
+  .home-deudores-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  
+  .home-deudores-table td:first-child {
+    gap: 6px;
+  }
+  
+  .home-deudores-table td:first-child svg {
+    font-size: 14px;
+  }
+  
+  .home-deudores-table td:last-child {
+    font-size: 13px;
+  }
+  
+  /* Tarjeta de estadísticas optimizada para pantallas muy pequeñas */
+  .home-stats-controls {
+    padding: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .home-stats-nav-title {
+    font-size: 15px;
+    text-align: center;
+  }
+  
+  .time-filter-container {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .time-filter-container label {
+    font-size: 13px;
+  }
+  
+  .time-filter-container select {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: 120px;
+  }
+  
+  .home-stats-nav-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .home-stats-download-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    width: 100%;
+    margin-top: 5px;
+  }
+  
+  .home-stats-content {
+    padding: 12px;
+  }
+  
+  .home-stats-content h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .chart-area {
+    min-width: 250px;
+    min-height: 250px;
+    height: 250px;
+    margin: 8px auto;
+  }
+  
+  .home-stats-content canvas {
+    max-height: 250px !important;
+    min-height: 220px !important;
+    padding: 3px;
+  }
+  
+  /* Tabla de datos del gráfico para pantallas muy pequeñas */
+  .chart-data-table {
+    margin-top: 8px;
+    border-radius: 6px;
+  }
+  
+  .chart-data-header {
+    padding: 10px 12px;
+  }
+  
+  .chart-data-header span {
+    font-size: 12px;
+  }
+  
+  .chart-data-row {
+    padding: 10px 12px;
+  }
+  
+  .product-name {
+    font-size: 12px;
+    max-width: 60%;
+  }
+  
+  .product-value {
+    font-size: 13px;
+  }
+  
+  .color-indicator {
+    width: 8px;
+    height: 8px;
+  }
+  
+  /* Leyenda para pantallas muy pequeñas */
+  .chart-legend {
+    gap: 8px;
+    margin: 8px 0;
+    padding: 3px;
+  }
+  
+  .legend-item {
+    font-size: 11px;
+    gap: 5px;
   }
   
   .legend-label {
@@ -774,409 +1177,116 @@
   }
 }
 
-@media (max-width: 768px) {
-  .chart-container {
-    flex-direction: column;
-  }
-
-  .chart-area, .chart-data-table {
-    max-width: 100%;
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-stats-controls {
-    flex-wrap: wrap;
+@media (max-width: 360px) {
+  .home-content {
+    padding: 10px;
     gap: 10px;
   }
   
-  .time-filter-container {
-    width: 100%;
-    order: -1;
+  .home-section-title {
+    font-size: 18px;
     margin-bottom: 10px;
   }
-}
-
-/* Responsividad */
-@media (max-width: 1024px) {
-  .home-content {
-    flex-direction: column;
-  }
   
-  .home-deudores-container, .home-stats-container {
-    width: 100%;
-    margin-bottom: 30px;
-  }
-  
-  .home-stats-content canvas {
-    max-height: 250px !important;
-  }
-  
-  .home-top-buttons-container {
-    width: 100%;
-    margin-right: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-top-buttons {
-    flex-direction: column;
-  }
-  
-  .home-top-buttons button {
-    width: 100%;
-  }
-  
-  .home-content {
-    padding: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-deudores-table-container {
-    overflow-x: auto;
+  .home-deudores-card {
+    min-height: 320px;
   }
   
   .home-deudores-table {
-    min-width: 500px;
+    min-width: 320px;
+    font-size: 11px;
   }
-}
-
-/* Nuevos estilos para la visualización de gráficos con tablas */
-.chart-content-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  gap: 20px;
-  margin-top: 15px;
-}
-
-.chart-visual-container {
-  flex: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.chart-table-container {
-  flex: 1;
-  max-width: 40%;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--white);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.chart-area {
-  width: 100%;
-  max-width: 550px;
-  min-width: 350px; /* Tamaño mínimo para el contenedor de gráfico */
-  min-height: 550px; /* Altura mínima asegurada */
-  height: 550px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 15px auto;
-}
-
-.home-stats-content canvas {
-  max-height: 550px !important;
-  min-height: 450px !important; /* Altura mínima para el canvas del gráfico */
-  animation: fadeIn 0.6s ease-out;
-  width: 100% !important;
-  margin: 0 auto;
-  padding: 10px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1280px) {
+  
+  .home-deudores-table th,
+  .home-deudores-table td {
+    padding: 8px 10px;
+  }
+  
   .chart-area {
-    max-width: 450px;
-    min-width: 350px; /* Mantener un tamaño mínimo incluso en pantallas más pequeñas */
-    min-height: 450px;
-    height: 450px;
+    min-width: 220px;
+    min-height: 220px;
+    height: 220px;
   }
   
   .home-stats-content canvas {
-    max-height: 450px !important;
-    min-height: 400px !important;
+    max-height: 220px !important;
+    min-height: 200px !important;
   }
 }
 
+/* Mejoras específicas para la vista de empleados en móvil */
 @media (max-width: 1024px) {
-  .chart-content-wrapper {
-    flex-direction: column;
+  .home-content-employee {
+    padding: 20px;
   }
   
-  .chart-visual-container,
-  .chart-table-container {
-    max-width: 100%;
-    width: 100%;
-  }
-  
-  .chart-table-container {
-    margin-top: 20px;
-  }
-  
-  .chart-area {
-    max-width: 400px;
-    min-width: 300px;
-    min-height: 400px;
-    height: 400px;
-  }
-  
-  .home-stats-content canvas {
-    max-height: 400px !important;
-    min-height: 350px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .chart-area {
-    min-width: 250px;
-    min-height: 300px;
-    height: 300px;
-  }
-  
-  .home-stats-content canvas {
-    min-height: 250px !important;
-  }
-}
-
-/* Estilos específicos para empleados (solo tabla de deudores centrada) */
-.home-content-employee {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  padding: 25px;
-  box-sizing: border-box;
-  margin-bottom: 100px;
-  flex: 1;
-  min-height: calc(100vh - 200px); /* Asegurar altura mínima */
-}
-
-.home-deudores-container-centered {
-  width: 70%;
-  max-width: 900px;
-  min-width: 600px;
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-}
-
-/* Ajustes específicos para la tarjeta centrada */
-.home-deudores-card-centered {
-  width: 100%;
-  background-color: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  min-height: 600px;
-}
-
-.home-deudores-card-centered:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-}
-
-/* Encabezado mejorado para la vista centrada */
-.home-deudores-header-centered {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--primary);
-  color: var(--white);
-  padding: 20px 25px;
-  position: relative;
-  overflow: hidden;
-}
-
-.home-deudores-header-centered::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--primary);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.home-deudores-header-centered h3 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 2;
-  position: relative;
-}
-
-.home-deudores-header-centered button {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--white);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  padding: 10px 18px;
-  font-size: 14px;
-  border-radius: 25px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  z-index: 2;
-  position: relative;
-}
-
-.home-deudores-header-centered button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Tabla mejorada para la vista centrada */
-.home-deudores-table-container-centered {
-  width: 100%;
-  overflow-y: auto;
-  flex: 1;
-  padding: 10px;
-  max-height: 500px;
-}
-
-.home-deudores-table-centered {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 15px;
-}
-
-.home-deudores-table-centered th {
-  background: var(--primary);
-  color: var(--white) !important;
-  font-weight: 700;
-  text-align: left;
-  padding: 18px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  letter-spacing: 0.8px;
-  font-size: 14px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-  text-transform: uppercase;
-}
-
-.home-deudores-table-centered th:first-child {
-  border-radius: 10px 0 0 10px;
-}
-
-.home-deudores-table-centered th:last-child {
-  border-radius: 0 10px 10px 0;
-  text-align: center;
-}
-
-.home-deudores-table-centered td {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  vertical-align: middle;
-  transition: all 0.3s ease;
-}
-
-.home-deudores-table-centered tr:nth-child(even) {
-  background-color: #f8f9fa;
-}
-
-.home-deudores-table-centered tr:nth-child(odd) {
-  background-color: var(--white);
-}
-
-.home-deudores-table-centered tr:hover {
-  background-color: var(--primary-light);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-}
-
-.home-deudores-table-centered td:first-child {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.home-deudores-table-centered td:first-child svg {
-  color: var(--primary);
-  font-size: 20px;
-}
-
-.home-deudores-table-centered td:last-child {
-  font-weight: bold;
-  color: var(--gray-dark);
-  text-align: right;
-  font-size: 17px;
-}
-
-/* Estilos específicos para filas de deuda cero en vista centrada */
-.home-deudores-table-centered .zero-debt-row td {
-  color: var(--gray) !important;
-  background-color: #f5f5f5;
-  font-weight: 500 !important;
-}
-
-.home-deudores-table-centered .zero-debt-row:hover {
-  background-color: #eeeeee !important;
-}
-
-.home-deudores-table-centered .zero-debt-row td:first-child svg {
-  color: var(--gray);
-  opacity: 0.6;
-}
-
-/* Responsividad para la vista centrada */
-@media (max-width: 1024px) {
   .home-deudores-container-centered {
-    width: 85%;
-    min-width: 500px;
+    width: 90%;
+    min-width: 400px;
   }
 }
 
 @media (max-width: 768px) {
   .home-content-employee {
     padding: 15px;
+    min-height: calc(100vh - 150px);
   }
   
   .home-deudores-container-centered {
     width: 95%;
-    min-width: 350px;
+    min-width: 300px;
+  }
+  
+  .home-deudores-card-centered {
+    min-height: 500px;
+    border-radius: 10px;
+  }
+  
+  .home-deudores-header-centered {
+    padding: 18px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   .home-deudores-header-centered h3 {
     font-size: 18px;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .home-deudores-header-centered button {
+    padding: 8px 15px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+    border-radius: 20px;
+  }
+  
+  .home-deudores-table-container-centered {
+    padding: 8px;
+    max-height: 400px;
   }
   
   .home-deudores-table-centered {
     font-size: 14px;
   }
   
+  .home-deudores-table-centered th {
+    padding: 15px 18px;
+    font-size: 13px;
+  }
+  
+  .home-deudores-table-centered td {
+    padding: 14px 18px;
+  }
+  
   .home-deudores-table-centered td:first-child {
     font-size: 14px;
+    gap: 10px;
+  }
+  
+  .home-deudores-table-centered td:first-child svg {
+    font-size: 18px;
   }
   
   .home-deudores-table-centered td:last-child {
@@ -1185,15 +1295,61 @@
 }
 
 @media (max-width: 480px) {
+  .home-content-employee {
+    padding: 12px;
+  }
+  
   .home-deudores-container-centered {
-    min-width: 300px;
+    width: 98%;
+    min-width: 280px;
+  }
+  
+  .home-deudores-card-centered {
+    min-height: 400px;
+  }
+  
+  .home-deudores-header-centered {
+    padding: 15px 18px;
+  }
+  
+  .home-deudores-header-centered h3 {
+    font-size: 16px;
+  }
+  
+  .home-deudores-header-centered button {
+    padding: 6px 12px;
+    font-size: 12px;
   }
   
   .home-deudores-table-container-centered {
     overflow-x: auto;
+    padding: 5px;
   }
   
   .home-deudores-table-centered {
-    min-width: 400px;
+    min-width: 350px;
+    font-size: 13px;
+  }
+  
+  .home-deudores-table-centered th {
+    padding: 12px 15px;
+    font-size: 12px;
+  }
+  
+  .home-deudores-table-centered td {
+    padding: 12px 15px;
+  }
+  
+  .home-deudores-table-centered td:first-child {
+    font-size: 13px;
+    gap: 8px;
+  }
+  
+  .home-deudores-table-centered td:first-child svg {
+    font-size: 16px;
+  }
+  
+  .home-deudores-table-centered td:last-child {
+    font-size: 14px;
   }
 }

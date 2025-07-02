@@ -232,6 +232,8 @@ form:hover {
 @media (max-width: 992px) {
   .containerLogin {
     flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
   }
   
   .containerImagen, .containerLog {
@@ -240,44 +242,232 @@ form:hover {
   }
   
   .containerImagen {
-    padding: 30px 0;
+    padding: 30px 0 20px 0;
+    height: 35vh;
+    min-height: 200px;
+  }
+  
+  .containerLog {
+    height: 65vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0;
   }
   
   .imagen {
-    max-width: 300px;
-    width: 50%;
+    max-width: 220px;
+    width: 60%;
+    max-height: 180px;
+    object-fit: contain;
   }
   
   form {
-    width: 90%;
-    padding: 30px;
-  }
-  
-  .titulo {
-    font-size: 32px;
-  }
-}
-
-@media (max-width: 480px) {
-  .imagen {
-    width: 70%;
-  }
-  
-  form {
-    width: 95%;
+    width: 85%;
+    max-width: 400px;
     padding: 25px;
+    margin-top: 0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
   
   .titulo {
     font-size: 28px;
+    margin-bottom: 25px;
+  }
+  
+  .containerInput {
+    margin-bottom: 18px;
   }
   
   .tituloInput {
     font-size: 15px;
+    margin-bottom: 6px;
   }
   
-  .input, .boton {
+  .input {
+    padding: 12px 14px;
     font-size: 16px;
-    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .boton {
+    padding: 12px 0;
+    font-size: 16px;
+    margin: 18px 0 12px 0;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .containerLogin {
+    padding: 15px;
+  }
+  
+  .containerImagen {
+    height: 30vh;
+    min-height: 160px;
+    padding: 20px 0 15px 0;
+  }
+  
+  .containerLog {
+    height: 70vh;
+  }
+  
+  .imagen {
+    max-width: 180px;
+    width: 55%;
+    max-height: 140px;
+  }
+  
+  form {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .titulo {
+    font-size: 26px;
+    margin-bottom: 20px;
+  }
+  
+  .titulo::after {
+    width: 50px;
+    height: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .containerLogin {
+    padding: 10px;
+    min-height: 100vh;
+  }
+  
+  .containerImagen {
+    height: 25vh;
+    min-height: 120px;
+    padding: 15px 0 10px 0;
+  }
+  
+  .containerLog {
+    height: 75vh;
+    align-items: flex-start;
+    padding-top: 10px;
+  }
+  
+  .imagen {
+    width: 50%;
+    max-width: 150px;
+    max-height: 110px;
+  }
+  
+  form {
+    width: 95%;
+    padding: 18px;
+    border-radius: 15px;
+    margin-top: 0;
+  }
+  
+  .titulo {
+    font-size: 24px;
+    margin-bottom: 18px;
+  }
+  
+  .titulo::after {
+    width: 40px;
+    height: 2px;
+  }
+  
+  .containerInput {
+    margin-bottom: 15px;
+  }
+  
+  .tituloInput {
+    font-size: 14px;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  
+  .input {
+    padding: 11px 12px;
+    font-size: 16px; /* Mantener 16px para evitar zoom en iOS */
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+  }
+  
+  .input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.1);
+  }
+  
+  .boton {
+    padding: 11px 0;
+    font-size: 16px;
+    margin: 15px 0 10px 0;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .containerOlvidaste {
+    margin-top: 10px;
+  }
+  
+  .olvidaste {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .error-message {
+    font-size: 13px;
+    padding: 6px 10px;
+    margin: 3px 0 8px 0;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .containerLogin {
+    padding: 8px;
+  }
+  
+  .containerImagen {
+    height: 22vh;
+    min-height: 100px;
+    padding: 12px 0 8px 0;
+  }
+  
+  .containerLog {
+    height: 78vh;
+    padding-top: 8px;
+  }
+  
+  .imagen {
+    width: 45%;
+    max-width: 130px;
+    max-height: 95px;
+  }
+  
+  form {
+    width: 98%;
+    padding: 15px;
+    border-radius: 12px;
+  }
+  
+  .titulo {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+  
+  .containerInput {
+    margin-bottom: 12px;
+  }
+  
+  .input {
+    padding: 10px 11px;
+    font-size: 16px;
+  }
+  
+  .boton {
+    padding: 10px 0;
+    font-size: 15px;
+    margin: 12px 0 8px 0;
   }
 }

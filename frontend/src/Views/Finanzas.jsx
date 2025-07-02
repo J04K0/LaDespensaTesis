@@ -1741,22 +1741,7 @@ const Finanzas = () => {
                       {verTabla === 'margenPorCategoria' ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'margenPorCategoria' ? (
-                      <div className="margin-by-category">
-                        {datosFinancieros.margenPorCategoria.map((cat, index) => (
-                          <div key={index} className="margin-category">
-                            <div className="margin-category-name">{cat.categoria}</div>
-                            <div className="margin-meter-container">
-                              <div 
-                                className={`margin-meter ${cat.rendimiento}`}
-                                style={{ width: `${cat.margen * 2}px` }}
-                              ></div>
-                              <span className="margin-value">{cat.margen}%</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
+                    {verTabla.margenPorCategoria ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1786,6 +1771,21 @@ const Finanzas = () => {
                           )}
                         </tbody>
                       </table>
+                    ) : (
+                      <div className="margin-by-category">
+                        {datosFinancieros.margenPorCategoria.map((cat, index) => (
+                          <div key={index} className="margin-category">
+                            <div className="margin-category-name">{cat.categoria}</div>
+                            <div className="margin-meter-container">
+                              <div 
+                                className={`margin-meter ${cat.rendimiento}`}
+                                style={{ width: `${cat.margen * 2}px` }}
+                              ></div>
+                              <span className="margin-value">{cat.margen}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                   
@@ -1806,7 +1806,44 @@ const Finanzas = () => {
                       {verTabla === 'comparativaFinanciera' ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'comparativaFinanciera' ? (
+                    {verTabla.comparativaFinanciera ? (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Porcentaje sobre ingresos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Ingresos totales</td>
+                            <td>{formatMoney(datosFinancieros.ingresosTotales)}</td>
+                            <td>100.0%</td>
+                          </tr>
+                          <tr>
+                            <td>Costos totales</td>
+                            <td>{formatMoney(datosFinancieros.costosTotales)}</td>
+                            <td>
+                              {datosFinancieros.ingresosTotales > 0 
+                                ? ((datosFinancieros.costosTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
+                                : '0.0'
+                              }%
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Ganancias netas</td>
+                            <td>{formatMoney(datosFinancieros.gananciasTotales)}</td>
+                            <td>
+                              {datosFinancieros.ingresosTotales > 0 
+                                ? ((datosFinancieros.gananciasTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
+                                : '0.0'
+                              }%
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    ) : (
                       <div className="comparison-stats">
                         <div className="comparison-stat">
                           <div className="comparison-header">
@@ -1847,43 +1884,6 @@ const Finanzas = () => {
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Concepto</th>
-                            <th>Monto</th>
-                            <th>Porcentaje sobre ingresos</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>Ingresos totales</td>
-                            <td>{formatMoney(datosFinancieros.ingresosTotales)}</td>
-                            <td>100.0%</td>
-                          </tr>
-                          <tr>
-                            <td>Costos totales</td>
-                            <td>{formatMoney(datosFinancieros.costosTotales)}</td>
-                            <td>
-                              {datosFinancieros.ingresosTotales > 0 
-                                ? ((datosFinancieros.costosTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
-                                : '0.0'
-                              }%
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Ganancias netas</td>
-                            <td>{formatMoney(datosFinancieros.gananciasTotales)}</td>
-                            <td>
-                              {datosFinancieros.ingresosTotales > 0 
-                                ? ((datosFinancieros.gananciasTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
-                                : '0.0'
-                              }%
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
                     )}
                   </div>
                 </div>
