@@ -1,12 +1,12 @@
 import React from "react";
-import Finanzas from "../Views/Finanzas.jsx";
+import FinanzasView from "../Views/Finanzas.jsx";
 
-const Finanzas = () => {
+const FinanzasRoute = () => {
     return (
         <div>
-        <Finanzas />
+            <FinanzasView />
         </div>
     );
-    }
+};
 
-    export default Finanzas;
+export default FinanzasRoute;

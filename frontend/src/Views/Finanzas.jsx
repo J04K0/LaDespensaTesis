@@ -57,7 +57,7 @@ const Finanzas = () => {
   // Nuevos estados para los tooltips de información
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [verTabla, setVerTabla] = useState(false);
+  const [verTabla, setVerTabla] = useState({}); // Cambiar a objeto para múltiples tarjetas
   
   // Referencia al contenedor principal para calcular posiciones de tooltips
   const containerRef = useRef(null);
@@ -311,6 +311,93 @@ const Finanzas = () => {
     // Valor promedio por transacción
     const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
     
+    // 🔄 NUEVA FUNCIONALIDAD: Cálculo de rotación de inventario
+    const calcularRotacionInventario = () => {
+      // Obtener período en días basado en el rango de fechas
+      const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
+      const diasPeriodo = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+      
+      // Rotación global de inventario
+      const rotacionGlobal = {
+        costoVendido: costosTotales,
+        valorInventarioPromedio: datosFinancieros?.inversionMercaderia || 0,
+        rotacionAnual: 0,
+        diasInventario: 0,
+        periodoAnalizado: diasPeriodo
+      };
+      
+      if (rotacionGlobal.valorInventarioPromedio > 0 && diasPeriodo > 0) {
+        // Calcular rotación anualizada
+        const factorAnualizacion = 365 / diasPeriodo;
+        rotacionGlobal.rotacionAnual = (costosTotales * factorAnualizacion) / rotacionGlobal.valorInventarioPromedio;
+        rotacionGlobal.diasInventario = rotacionGlobal.valorInventarioPromedio / (costosTotales / diasPeriodo);
+      }
+      
+      // Rotación por categoría
+      const rotacionPorCategoria = Object.keys(costosPorCategoria)
+        .map(categoria => {
+          const costoCategoria = costosPorCategoria[categoria];
+          const inversionCategoria = datosFinancieros?.inversionPorCategoria?.[categoria] || 0;
+          let rotacionAnual = 0;
+          let diasInventario = 0;
+          let velocidad = 'lenta';
+          
+          if (inversionCategoria > 0 && diasPeriodo > 0) {
+            const factorAnualizacion = 365 / diasPeriodo;
+            rotacionAnual = (costoCategoria * factorAnualizacion) / inversionCategoria;
+            diasInventario = inversionCategoria / (costoCategoria / diasPeriodo);
+            
+            // Clasificar velocidad de rotación
+            if (rotacionAnual >= 12) {
+              velocidad = 'muy_rapida'; // Más de 1 vez por mes
+            } else if (rotacionAnual >= 6) {
+              velocidad = 'rapida'; // Cada 2 meses
+            } else if (rotacionAnual >= 3) {
+              velocidad = 'media'; // Cada 4 meses
+            } else if (rotacionAnual >= 1) {
+              velocidad = 'lenta'; // Menos de 1 vez por año
+            } else {
+              velocidad = 'muy_lenta'; // Casi no rota
+            }
+          }
+          
+          return {
+            categoria,
+            rotacionAnual: parseFloat(rotacionAnual.toFixed(2)),
+            diasInventario: parseFloat(diasInventario.toFixed(0)),
+            velocidad,
+            costoVendido: costoCategoria,
+            inversionInventario: inversionCategoria
+          };
+        })
+        .sort((a, b) => b.rotacionAnual - a.rotacionAnual);
+      
+      // Productos de lenta rotación (basado en las ventas del período)
+      const productosRotacion = Object.entries(productoVendido)
+        .map(([nombre, data]) => {
+          const costosProducto = data.ventas * (data.ingreso / data.ventas * 0.7); // Estimación de costos
+          return {
+            nombre,
+            ventasUnidades: data.ventas,
+            ingresos: data.ingreso,
+            costosEstimados: costosProducto,
+            frecuenciaVenta: data.ventas / diasPeriodo, // Ventas por día
+            clasificacion: data.ventas / diasPeriodo >= 1 ? 'alta' : 
+                          data.ventas / diasPeriodo >= 0.3 ? 'media' : 'baja'
+          };
+        })
+        .sort((a, b) => a.frecuenciaVenta - b.frecuenciaVenta); // Los de menor rotación primero
+      
+      return {
+        global: rotacionGlobal,
+        porCategoria: rotacionPorCategoria,
+        productosLentaRotacion: productosRotacion.slice(0, 5), // Top 5 de lenta rotación
+        productosAltaRotacion: productosRotacion.slice(-5).reverse() // Top 5 de alta rotación
+      };
+    };
+    
+    const rotacionInventario = calcularRotacionInventario();
+    
     // Calcular márgenes por categoría reales
     const margenPorCategoria = Object.keys(ingresosPorCategoria)
       .filter(categoria => ingresosPorCategoria[categoria] > 0 && costosPorCategoria[categoria] > 0)
@@ -371,14 +458,21 @@ const Finanzas = () => {
       categoriasPorVolumen,
       margenPorCategoria,
       ventasPorDiaSemana,
-      rentabilidadTemporal
+      rentabilidadTemporal,
+      rotacionInventario // Incluir rotación de inventario en los datos optimizados
     };
   }, [ventasGlobales, calcularRangoFechas, getVentasByDateRange]);
 
   // 🔧 FIX: Simplificar useEffect para evitar bucles infinitos
   useEffect(() => {
     if (ventasGlobales && datosFinancierosOptimized.datosDisponibles) {
-      setDatosFinancieros(datosFinancierosOptimized);
+      // 🚀 CORRECIÓN: Preservar los datos de inventario al actualizar datos financieros
+      setDatosFinancieros(prevState => ({
+        ...datosFinancierosOptimized,
+        // Mantener los datos de inventario que son independientes del filtro temporal
+        inversionMercaderia: prevState.inversionMercaderia,
+        inversionPorCategoria: prevState.inversionPorCategoria
+      }));
       setLoading(false);
     } else if (ventasLoading) {
       setLoading(true);
@@ -412,6 +506,7 @@ const Finanzas = () => {
   };
 
   const procesarDatosInventario = (productos) => {
+    console.log("🔍 Procesando inventario - Total productos:", productos.length);
     let inversionTotal = 0;
     const inversionPorCategoria = {};
     
@@ -426,12 +521,18 @@ const Finanzas = () => {
       const precioCompra = producto.PrecioCompra || producto.precioCompra || 0;
       const stock = producto.Stock || producto.stock || 0;
       
+      console.log(`📦 Producto: ${producto.Nombre} - PrecioCompra: ${precioCompra}, Stock: ${stock}`);
+      
       if (precioCompra > 0 && stock > 0) {
         const valorInventario = precioCompra * stock;
         inversionTotal += valorInventario;
         inversionPorCategoria[categoria] += valorInventario;
+        console.log(`💰 Valor inventario: ${valorInventario} - Total acumulado: ${inversionTotal}`);
       }
     });
+    
+    console.log("✅ Inversión total calculada:", inversionTotal);
+    console.log("📊 Inversión por categoría:", inversionPorCategoria);
     
     // Actualizar el estado con la información de inventario
     setDatosFinancieros(prevState => ({
@@ -469,8 +570,24 @@ const Finanzas = () => {
     // Verificar si el valor es undefined, null o NaN
     const numericValue = typeof value === 'number' && !isNaN(value) ? value : 0;
     
-    // Usar formato con punto como separador de miles
-    return '$' + numericValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    // Redondear a 2 decimales para evitar problemas de precisión
+    const roundedValue = Math.round(numericValue * 100) / 100;
+    
+    // Separar parte entera y decimal
+    const parts = roundedValue.toFixed(2).split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+    
+    // Aplicar separador de miles (punto) a la parte entera
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+    // Si no hay decimales o son .00, no mostrar decimales
+    if (decimalPart === '00') {
+      return '$' + formattedInteger;
+    }
+    
+    // Usar coma como separador decimal
+    return '$' + formattedInteger + ',' + decimalPart;
   };
 
   // Formatear valores porcentuales
@@ -639,7 +756,10 @@ const Finanzas = () => {
 
   // Alternar entre vista de gráfico y tabla
   const toggleTableView = (cardId) => {
-    setVerTabla(prevState => prevState === cardId ? null : cardId);
+    setVerTabla(prevState => ({
+      ...prevState,
+      [cardId]: !prevState[cardId] // Toggle individual para cada tarjeta
+    }));
   };
   
   // Información para tooltips
@@ -657,7 +777,7 @@ const Finanzas = () => {
     productosMasVendidos: "Productos con mayor cantidad de unidades vendidas.",
     categoriasPorVolumen: "Categorías ordenadas por cantidad de unidades vendidas.",
     inversionPorCategoria: "Valor del inventario actual distribuido por categorías.",
-    rotacionInventario: "Indica cuántas veces se renueva el inventario en un año.",
+    rotacionInventario: "Métrica que indica cuántas veces se renueva tu inventario en un año. Una rotación alta (6x o más) significa que vendes tu inventario rápidamente, lo que mejora tu flujo de caja. Una rotación baja (menos de 3x) indica que tienes capital inmovilizado. También muestra los días de cobertura: cuántos días puedes operar con tu stock actual al ritmo de ventas actual.",
     margenPorCategoria: "Porcentaje de ganancia por categoría de productos. Los valores superiores al 30% se consideran de alto rendimiento (verde), entre 20-30% de rendimiento medio (amarillo) y menores al 20% de rendimiento bajo (rojo). Permite identificar qué categorías generan mayor rentabilidad para priorizar la inversión o ajustar precios en aquellas con margen bajo.",
     comparativaFinanciera: "Visualización de la relación entre ingresos, costos y ganancias para el período seleccionado. La barra completa representa el 100% de los ingresos, mientras que las barras de costos y ganancias muestran su proporción respecto a los ingresos. Permite evaluar rápidamente la estructura financiera del negocio e identificar oportunidades para mejorar márgenes."
   };
@@ -992,7 +1112,39 @@ const Finanzas = () => {
                       {verTabla === 'ventasDiaSemana' ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'ventasDiaSemana' ? (
+                    {verTabla.ventasDiaSemana ? (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Día de la semana</th>
+                            <th>Ingresos</th>
+                            <th>Porcentaje</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            if (!datosFinancieros.ventasPorDiaSemana) return null;
+                            
+                            const totalVentasSemana = Object.values(datosFinancieros.ventasPorDiaSemana).reduce((sum, valor) => sum + valor, 0);
+                            const diasOrdenados = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+                            const diasCompletos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                            
+                            return diasOrdenados.map((dia, index) => {
+                              const valor = datosFinancieros.ventasPorDiaSemana[dia] || 0;
+                              const porcentaje = totalVentasSemana > 0 ? (valor / totalVentasSemana) * 100 : 0;
+                              
+                              return (
+                                <tr key={index}>
+                                  <td>{diasCompletos[index]}</td>
+                                  <td>{formatMoney(valor)}</td>
+                                  <td>{porcentaje.toFixed(1)}%</td>
+                                </tr>
+                              );
+                            });
+                          })()}
+                        </tbody>
+                      </table>
+                    ) : (
                       <div className="category-volume">
                         {datosFinancieros.ventasPorDiaSemana ? (
                           // Verificar si hay datos de ventas
@@ -1038,38 +1190,6 @@ const Finanzas = () => {
                           <div className="no-data">Cargando datos...</div>
                         )}
                       </div>
-                    ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Día de la semana</th>
-                            <th>Ingresos</th>
-                            <th>Porcentaje</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            if (!datosFinancieros.ventasPorDiaSemana) return null;
-                            
-                            const totalVentasSemana = Object.values(datosFinancieros.ventasPorDiaSemana).reduce((sum, valor) => sum + valor, 0);
-                            const diasOrdenados = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-                            const diasCompletos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-                            
-                            return diasOrdenados.map((dia, index) => {
-                              const valor = datosFinancieros.ventasPorDiaSemana[dia] || 0;
-                              const porcentaje = totalVentasSemana > 0 ? (valor / totalVentasSemana) * 100 : 0;
-                              
-                              return (
-                                <tr key={index}>
-                                  <td>{diasCompletos[index]}</td>
-                                  <td>{formatMoney(valor)}</td>
-                                  <td>{porcentaje.toFixed(1)}%</td>
-                                </tr>
-                              );
-                            });
-                          })()}
-                        </tbody>
-                      </table>
                     )}
                   </div>
 
@@ -1086,32 +1206,11 @@ const Finanzas = () => {
                       className="toggle-view-btn"
                       onClick={() => toggleTableView('ventasMensuales')}
                     >
-                      <FontAwesomeIcon icon={verTabla === 'ventasMensuales' ? faChartBar : faTable} />
-                      {verTabla === 'ventasMensuales' ? ' Ver gráfico' : ' Ver tabla'}
+                      <FontAwesomeIcon icon={verTabla.ventasMensuales ? faChartBar : faTable} />
+                      {verTabla.ventasMensuales ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'ventasMensuales' ? (
-                      <div className="category-volume">
-                        {Object.entries(ingresosPorMesAnual).map(([mes, valor], index) => {
-                          const porcentaje = Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0) > 0 
-                            ? (valor / Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0)) * 100 
-                            : 0;
-                            
-                          return (
-                            <div key={index} className="category-volume-item">
-                              <div className="category-volume-info">
-                                <div className="category-volume-name">{mes.substring(0, 3)}</div>
-                                <div className="category-volume-count">{formatMoney(valor)}</div>
-                              </div>
-                              <div className="category-volume-bar-container">
-                                <div className="category-volume-bar" style={{ width: `${Math.max(2, porcentaje)}%` }}></div>
-                                <span className="category-volume-percent">{porcentaje.toFixed(1)}%</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
+                    {verTabla.ventasMensuales ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1135,6 +1234,27 @@ const Finanzas = () => {
                           })}
                         </tbody>
                       </table>
+                    ) : (
+                      <div className="category-volume">
+                        {Object.entries(ingresosPorMesAnual).map(([mes, valor], index) => {
+                          const porcentaje = Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0) > 0 
+                            ? (valor / Object.values(ingresosPorMesAnual).reduce((a, b) => a + b, 0)) * 100 
+                            : 0;
+                            
+                          return (
+                            <div key={index} className="category-volume-item">
+                              <div className="category-volume-info">
+                                <div className="category-volume-name">{mes.substring(0, 3)}</div>
+                                <div className="category-volume-count">{formatMoney(valor)}</div>
+                              </div>
+                              <div className="category-volume-bar-container">
+                                <div className="category-volume-bar" style={{ width: `${Math.max(2, porcentaje)}%` }}></div>
+                                <span className="category-volume-percent">{porcentaje.toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1160,28 +1280,11 @@ const Finanzas = () => {
                       className="toggle-view-btn"
                       onClick={() => toggleTableView('productosMasVendidos')}
                     >
-                      <FontAwesomeIcon icon={verTabla === 'productosMasVendidos' ? faChartBar : faTable} />
-                      {verTabla === 'productosMasVendidos' ? ' Ver lista' : ' Ver tabla'}
+                      <FontAwesomeIcon icon={verTabla.productosMasVendidos ? faChartBar : faTable} />
+                      {verTabla.productosMasVendidos ? ' Ver lista' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'productosMasVendidos' ? (
-                      <div className="product-list">
-                        {datosFinancieros.productosMasVendidos.length > 0 ? (
-                          datosFinancieros.productosMasVendidos.map((producto, index) => (
-                            <div key={index} className="product-item">
-                              <div className="product-rank">{index + 1}</div>
-                              <div className="product-info">
-                                <div className="product-name">{producto.nombre}</div>
-                                <div className="product-meta">{producto.ventas} unidades vendidas</div>
-                              </div>
-                              <div className="product-revenue">{formatMoney(producto.ingreso)}</div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
-                        )}
-                      </div>
-                    ) : (
+                    {verTabla.productosMasVendidos ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1208,6 +1311,23 @@ const Finanzas = () => {
                           )}
                         </tbody>
                       </table>
+                    ) : (
+                      <div className="product-list">
+                        {datosFinancieros.productosMasVendidos.length > 0 ? (
+                          datosFinancieros.productosMasVendidos.map((producto, index) => (
+                            <div key={index} className="product-item">
+                              <div className="product-rank">{index + 1}</div>
+                              <div className="product-info">
+                                <div className="product-name">{producto.nombre}</div>
+                                <div className="product-meta">{producto.ventas} unidades vendidas</div>
+                              </div>
+                              <div className="product-revenue">{formatMoney(producto.ingreso)}</div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
                     )}
                   </div>
                   
@@ -1224,30 +1344,11 @@ const Finanzas = () => {
                       className="toggle-view-btn"
                       onClick={() => toggleTableView('categoriasPorVolumen')}
                     >
-                      <FontAwesomeIcon icon={verTabla === 'categoriasPorVolumen' ? faChartBar : faTable} />
-                      {verTabla === 'categoriasPorVolumen' ? ' Ver gráfico' : ' Ver tabla'}
+                      <FontAwesomeIcon icon={verTabla.categoriasPorVolumen ? faChartBar : faTable} />
+                      {verTabla.categoriasPorVolumen ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'categoriasPorVolumen' ? (
-                      <div className="category-volume">
-                        {datosFinancieros.categoriasPorVolumen.length > 0 ? (
-                          datosFinancieros.categoriasPorVolumen.map((categoria, index) => (
-                            <div key={index} className="category-volume-item">
-                              <div className="category-volume-info">
-                                <div className="category-volume-name">{categoria.nombre}</div>
-                                <div className="category-volume-count">{categoria.ventas} unidades</div>
-                              </div>
-                              <div className="category-volume-bar-container">
-                                <div className="category-volume-bar" style={{ width: `${categoria.porcentaje}%` }}></div>
-                                <span className="category-volume-percent">{categoria.porcentaje.toFixed(1)}%</span>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
-                        )}
-                      </div>
-                    ) : (
+                    {verTabla.categoriasPorVolumen ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1272,6 +1373,25 @@ const Finanzas = () => {
                           )}
                         </tbody>
                       </table>
+                    ) : (
+                      <div className="category-volume">
+                        {datosFinancieros.categoriasPorVolumen.length > 0 ? (
+                          datosFinancieros.categoriasPorVolumen.map((categoria, index) => (
+                            <div key={index} className="category-volume-item">
+                              <div className="category-volume-info">
+                                <div className="category-volume-name">{categoria.nombre}</div>
+                                <div className="category-volume-count">{categoria.ventas} unidades</div>
+                              </div>
+                              <div className="category-volume-bar-container">
+                                <div className="category-volume-bar" style={{ width: `${categoria.porcentaje}%` }}></div>
+                                <span className="category-volume-percent">{categoria.porcentaje.toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1290,35 +1410,11 @@ const Finanzas = () => {
                       className="toggle-view-btn"
                       onClick={() => toggleTableView('inversionPorCategoria')}
                     >
-                      <FontAwesomeIcon icon={verTabla === 'inversionPorCategoria' ? faChartBar : faTable} />
-                      {verTabla === 'inversionPorCategoria' ? ' Ver gráfico' : ' Ver tabla'}
+                      <FontAwesomeIcon icon={verTabla.inversionPorCategoria ? faChartBar : faTable} />
+                      {verTabla.inversionPorCategoria ? ' Ver gráfico' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'inversionPorCategoria' ? (
-                      <div className="inventory-distribution">
-                        {Object.entries(datosFinancieros.inversionPorCategoria || {})
-                          .sort(([, a], [, b]) => b - a)
-                          .slice(0, 5)
-                          .map(([categoria, valor], index) => {
-                            const porcentaje = datosFinancieros.inversionMercaderia > 0 
-                              ? (valor / datosFinancieros.inversionMercaderia) * 100 
-                              : 0;
-                              
-                            return (
-                              <div key={index} className="inventory-category">
-                                <div className="inventory-category-header">
-                                  <span className="inventory-category-name">{categoria}</span>
-                                  <span className="inventory-category-value">{formatMoney(valor)}</span>
-                                </div>
-                                <div className="inventory-progress-container">
-                                  <div className="inventory-progress" style={{ width: `${porcentaje}%` }}></div>
-                                  <span className="inventory-percent">{porcentaje.toFixed(1)}%</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    ) : (
+                    {verTabla.inversionPorCategoria ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1345,6 +1441,277 @@ const Finanzas = () => {
                             })}
                         </tbody>
                       </table>
+                    ) : (
+                      <div className="inventory-distribution">
+                        {Object.entries(datosFinancieros.inversionPorCategoria || {})
+                          .sort(([, a], [, b]) => b - a)
+                          .slice(0, 5)
+                          .map(([categoria, valor], index) => {
+                            const porcentaje = datosFinancieros.inversionMercaderia > 0 
+                              ? (valor / datosFinancieros.inversionMercaderia) * 100 
+                              : 0;
+                              
+                            return (
+                              <div key={index} className="inventory-category">
+                                <div className="inventory-category-header">
+                                  <span className="inventory-category-name">{categoria}</span>
+                                  <span className="inventory-category-value">{formatMoney(valor)}</span>
+                                </div>
+                                <div className="inventory-progress-container">
+                                  <div className="inventory-progress" style={{ width: `${porcentaje}%` }}></div>
+                                  <span className="inventory-percent">{porcentaje.toFixed(1)}%</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 🔄 NUEVA FUNCIONALIDAD: Rotación de Inventario */}
+                  <div className="analysis-card">
+                    <h3 className="card-title">Rotación de inventario</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.rotacionInventario)}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('rotacionInventario')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'rotacionInventario' ? faChartBar : faTable} />
+                      {verTabla === 'rotacionInventario' ? ' Ver resumen' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'rotacionInventario' ? (
+                      <div className="inventory-turnover">
+                        {/* Métrica global de rotación */}
+                        <div className="turnover-global">
+                          <div className="turnover-metric">
+                            <div className="turnover-label">Rotación anual global</div>
+                            <div className="turnover-value">
+                              {datosFinancieros.rotacionInventario?.global?.rotacionAnual?.toFixed(1) || '0.0'}x
+                            </div>
+                            <div className="turnover-caption">
+                              {datosFinancieros.rotacionInventario?.global?.diasInventario 
+                                ? `${Math.round(datosFinancieros.rotacionInventario.global.diasInventario)} días de cobertura`
+                                : 'Sin datos suficientes'
+                              }
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Top categorías por rotación */}
+                        <div className="turnover-categories">
+                          {datosFinancieros.rotacionInventario?.porCategoria?.slice(0, 5).map((cat, index) => (
+                            <div key={index} className="turnover-category-item">
+                              <div className="turnover-category-info">
+                                <span className="turnover-category-name">{cat.categoria}</span>
+                                <span className={`turnover-velocity ${cat.velocidad}`}>
+                                  {cat.velocidad === 'muy_rapida' ? 'Muy Rápida' :
+                                   cat.velocidad === 'rapida' ? 'Rápida' :
+                                   cat.velocidad === 'media' ? 'Media' :
+                                   cat.velocidad === 'lenta' ? 'Lenta' : 'Muy Lenta'}
+                                </span>
+                              </div>
+                              <div className="turnover-metrics">
+                                <span className="turnover-rate">{cat.rotacionAnual}x/año</span>
+                                <span className="turnover-days">{cat.diasInventario} días</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Categoría</th>
+                            <th>Rotación anual</th>
+                            <th>Días inventario</th>
+                            <th>Velocidad</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.rotacionInventario?.porCategoria?.map((cat, index) => (
+                            <tr key={index}>
+                              <td>{cat.categoria}</td>
+                              <td>{cat.rotacionAnual}x</td>
+                              <td>{cat.diasInventario} días</td>
+                              <td>
+                                <span className={`velocity-badge ${cat.velocidad}`}>
+                                  {cat.velocidad === 'muy_rapida' ? 'Muy Rápida' :
+                                   cat.velocidad === 'rapida' ? 'Rápida' :
+                                   cat.velocidad === 'media' ? 'Media' :
+                                   cat.velocidad === 'lenta' ? 'Lenta' : 'Muy Lenta'}
+                                </span>
+                              </td>
+                            </tr>
+                          )) || (
+                            <tr>
+                              <td colSpan="4" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+
+                {/* 🔄 NUEVA SECCIÓN: Productos de lenta y alta rotación */}
+                <div className="section-cards">
+                  <div className="analysis-card">
+                    <h3 className="card-title">Productos de lenta rotación</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, "Productos que se venden con menor frecuencia. Considera promocionar, reducir stock o discontinuar estos productos para optimizar tu capital de trabajo y reducir costos de almacenamiento.")}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('productosLentaRotacion')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'productosLentaRotacion' ? faChartBar : faTable} />
+                      {verTabla === 'productosLentaRotacion' ? ' Ver lista' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'productosLentaRotacion' ? (
+                      <div className="product-list">
+                        {datosFinancieros.rotacionInventario?.productosLentaRotacion?.length > 0 ? (
+                          datosFinancieros.rotacionInventario.productosLentaRotacion.map((producto, index) => (
+                            <div key={index} className="product-item slow-rotation">
+                              <div className="product-rank">{index + 1}</div>
+                              <div className="product-info">
+                                <div className="product-name">{producto.nombre}</div>
+                                <div className="product-meta">
+                                  {producto.ventasUnidades} unidades | {producto.frecuenciaVenta.toFixed(2)} ventas/día
+                                </div>
+                              </div>
+                              <div className={`product-classification ${producto.clasificacion}`}>
+                                {producto.clasificacion === 'alta' ? 'Alta' :
+                                 producto.clasificacion === 'media' ? 'Media' : 'Baja'}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Ranking</th>
+                            <th>Producto</th>
+                            <th>Unidades vendidas</th>
+                            <th>Ventas por día</th>
+                            <th>Clasificación</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.rotacionInventario?.productosLentaRotacion?.length > 0 ? (
+                            datosFinancieros.rotacionInventario.productosLentaRotacion.map((producto, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{producto.nombre}</td>
+                                <td>{producto.ventasUnidades}</td>
+                                <td>{producto.frecuenciaVenta.toFixed(2)}</td>
+                                <td>
+                                  <span className={`product-classification ${producto.clasificacion}`}>
+                                    {producto.clasificacion === 'alta' ? 'Alta' :
+                                     producto.clasificacion === 'media' ? 'Media' : 'Baja'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="5" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  <div className="analysis-card">
+                    <h3 className="card-title">Productos de alta rotación</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, "Productos que se venden con mayor frecuencia y generan más flujo de caja. Asegúrate de mantener stock suficiente y considera incrementar el inventario de estos productos estrella para maximizar ventas.")}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('productosAltaRotacion')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'productosAltaRotacion' ? faChartBar : faTable} />
+                      {verTabla === 'productosAltaRotacion' ? ' Ver lista' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'productosAltaRotacion' ? (
+                      <div className="product-list">
+                        {datosFinancieros.rotacionInventario?.productosAltaRotacion?.length > 0 ? (
+                          datosFinancieros.rotacionInventario.productosAltaRotacion.map((producto, index) => (
+                            <div key={index} className="product-item high-rotation">
+                              <div className="product-rank">{index + 1}</div>
+                              <div className="product-info">
+                                <div className="product-name">{producto.nombre}</div>
+                                <div className="product-meta">
+                                  {producto.ventasUnidades} unidades | {producto.frecuenciaVenta.toFixed(2)} ventas/día
+                                </div>
+                              </div>
+                              <div className={`product-classification ${producto.clasificacion}`}>
+                                {producto.clasificacion === 'alta' ? 'Alta' :
+                                 producto.clasificacion === 'media' ? 'Media' : 'Baja'}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="no-data">No hay datos disponibles para el período seleccionado</div>
+                        )}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Ranking</th>
+                            <th>Producto</th>
+                            <th>Unidades vendidas</th>
+                            <th>Ventas por día</th>
+                            <th>Clasificación</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.rotacionInventario?.productosAltaRotacion?.length > 0 ? (
+                            datosFinancieros.rotacionInventario.productosAltaRotacion.map((producto, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{producto.nombre}</td>
+                                <td>{producto.ventasUnidades}</td>
+                                <td>{producto.frecuenciaVenta.toFixed(2)}</td>
+                                <td>
+                                  <span className={`product-classification ${producto.clasificacion}`}>
+                                    {producto.clasificacion === 'alta' ? 'Alta' :
+                                     producto.clasificacion === 'media' ? 'Media' : 'Baja'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="5" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
@@ -1358,7 +1725,7 @@ const Finanzas = () => {
                 
                 <div className="section-cards">
                   <div className="analysis-card">
-                    <h3 className="card-title">Margen de ganancia por categoría</h3>
+                                       <h3 className="card-title">Margen de ganancia por categoría</h3>
                     <button 
                       className="info-button"
                       onMouseEnter={(e) => showTooltip(e, tooltipInfo.margenPorCategoria)}
@@ -1366,20 +1733,60 @@ const Finanzas = () => {
                     >
                       <FontAwesomeIcon icon={faQuestionCircle} />
                     </button>
-                    <div className="margin-by-category">
-                      {datosFinancieros.margenPorCategoria.map((cat, index) => (
-                        <div key={index} className="margin-category">
-                          <div className="margin-category-name">{cat.categoria}</div>
-                          <div className="margin-meter-container">
-                            <div 
-                              className={`margin-meter ${cat.rendimiento}`}
-                              style={{ width: `${cat.margen * 2}px` }}
-                            ></div>
-                            <span className="margin-value">{cat.margen}%</span>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('margenPorCategoria')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'margenPorCategoria' ? faChartBar : faTable} />
+                      {verTabla === 'margenPorCategoria' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'margenPorCategoria' ? (
+                      <div className="margin-by-category">
+                        {datosFinancieros.margenPorCategoria.map((cat, index) => (
+                          <div key={index} className="margin-category">
+                            <div className="margin-category-name">{cat.categoria}</div>
+                            <div className="margin-meter-container">
+                              <div 
+                                className={`margin-meter ${cat.rendimiento}`}
+                                style={{ width: `${cat.margen * 2}px` }}
+                              ></div>
+                              <span className="margin-value">{cat.margen}%</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Categoría</th>
+                            <th>Margen de ganancia</th>
+                            <th>Rendimiento</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.margenPorCategoria.length > 0 ? (
+                            datosFinancieros.margenPorCategoria.map((cat, index) => (
+                              <tr key={index}>
+                                <td>{cat.categoria}</td>
+                                <td>{cat.margen.toFixed(2)}%</td>
+                                <td>
+                                  <span className={`velocity-badge ${cat.rendimiento}`}>
+                                    {cat.rendimiento === 'alto' ? 'Alto' :
+                                     cat.rendimiento === 'medio' ? 'Medio' : 'Bajo'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                   
                   <div className="analysis-card">
@@ -1391,46 +1798,93 @@ const Finanzas = () => {
                     >
                       <FontAwesomeIcon icon={faQuestionCircle} />
                     </button>
-                    <div className="comparison-stats">
-                      <div className="comparison-stat">
-                        <div className="comparison-header">
-                          <div className="comparison-label">Ingresos</div>
-                          <div className="comparison-value">{formatMoney(datosFinancieros.ingresosTotales)}</div>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('comparativaFinanciera')}
+                    >
+                      <FontAwesomeIcon icon={verTabla === 'comparativaFinanciera' ? faChartBar : faTable} />
+                      {verTabla === 'comparativaFinanciera' ? ' Ver gráfico' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla !== 'comparativaFinanciera' ? (
+                      <div className="comparison-stats">
+                        <div className="comparison-stat">
+                          <div className="comparison-header">
+                            <div className="comparison-label">Ingresos</div>
+                            <div className="comparison-value">{formatMoney(datosFinancieros.ingresosTotales)}</div>
+                          </div>
+                          <div className="comparison-bar-container">
+                            <div className="comparison-bar income" style={{ width: '100%' }}></div>
+                          </div>
                         </div>
-                        <div className="comparison-bar-container">
-                          <div className="comparison-bar income" style={{ width: '100%' }}></div>
+                        
+                        <div className="comparison-stat">
+                          <div className="comparison-header">
+                            <div className="comparison-label">Costos</div>
+                            <div className="comparison-value">{formatMoney(datosFinancieros.costosTotales)}</div>
+                          </div>
+                          <div className="comparison-bar-container">
+                            <div 
+                              className="comparison-bar expenses" 
+                              style={{ width: `${(datosFinancieros.costosTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div className="comparison-stat">
+                          <div className="comparison-header">
+                            <div className="comparison-label">Ganancias</div>
+                            <div className="comparison-value">{formatMoney(datosFinancieros.gananciasTotales)}</div>
+                          </div>
+                          <div className="comparison-bar-container">
+                            <div 
+                              className="comparison-bar profits" 
+                              style={{ width: `${(datosFinancieros.gananciasTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}
+                            ></div>
+                          </div>
+                          <div className="comparison-percentage">
+                            Margen de ganancia: <span className="profit-percentage">{formatPercent(datosFinancieros.rentabilidadPromedio)}</span>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="comparison-stat">
-                        <div className="comparison-header">
-                          <div className="comparison-label">Costos</div>
-                          <div className="comparison-value">{formatMoney(datosFinancieros.costosTotales)}</div>
-                        </div>
-                        <div className="comparison-bar-container">
-                          <div 
-                            className="comparison-bar expenses" 
-                            style={{ width: `${(datosFinancieros.costosTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      <div className="comparison-stat">
-                        <div className="comparison-header">
-                          <div className="comparison-label">Ganancias</div>
-                          <div className="comparison-value">{formatMoney(datosFinancieros.gananciasTotales)}</div>
-                        </div>
-                        <div className="comparison-bar-container">
-                          <div 
-                            className="comparison-bar profits" 
-                            style={{ width: `${(datosFinancieros.gananciasTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}
-                          ></div>
-                        </div>
-                        <div className="comparison-percentage">
-                          Margen de ganancia: <span className="profit-percentage">{formatPercent(datosFinancieros.rentabilidadPromedio)}</span>
-                        </div>
-                      </div>
-                    </div>
+                    ) : (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Porcentaje sobre ingresos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Ingresos totales</td>
+                            <td>{formatMoney(datosFinancieros.ingresosTotales)}</td>
+                            <td>100.0%</td>
+                          </tr>
+                          <tr>
+                            <td>Costos totales</td>
+                            <td>{formatMoney(datosFinancieros.costosTotales)}</td>
+                            <td>
+                              {datosFinancieros.ingresosTotales > 0 
+                                ? ((datosFinancieros.costosTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
+                                : '0.0'
+                              }%
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>Ganancias netas</td>
+                            <td>{formatMoney(datosFinancieros.gananciasTotales)}</td>
+                            <td>
+                              {datosFinancieros.ingresosTotales > 0 
+                                ? ((datosFinancieros.gananciasTotales / datosFinancieros.ingresosTotales) * 100).toFixed(1)
+                                : '0.0'
+                              }%
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               </div>
