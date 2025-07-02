@@ -26,8 +26,7 @@ body:not(.login-page) {
 .add-prod-page,
 .add-deudor-container,
 .deudores-list-container,
-.home-container { /* Añadir la clase home-container aquí */
-  padding-top: calc(var(--navbar-height) + 20px) !important;
+.home-container {
   margin-top: 0;
 }
 

@@ -49,7 +49,6 @@ body {
 
 .productscanner-content-container {
   flex: 1;
-  padding-top: 80px; /* Para dejar espacio para la navbar fija */
 }
 
 /* Nuevo layout para la terminal punto de venta */

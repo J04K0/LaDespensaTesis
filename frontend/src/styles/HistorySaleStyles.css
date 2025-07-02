@@ -22,7 +22,6 @@
   padding: 20px;
   min-height: 100vh;
   background-color: #f5f8fa;
-  padding-top: calc(var(--navbar-height) + 20px) !important;
 }
 
 /* Contenido principal */

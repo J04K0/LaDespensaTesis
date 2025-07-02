@@ -17,7 +17,6 @@
   width: 100vw; 
   padding: 0;
   margin: 0;
-  padding-top: calc(var(--navbar-height) + 20px) !important; /* Ajuste para navbar */
   background-color: #f5f8fa; /* Fondo más suave */
 }
 

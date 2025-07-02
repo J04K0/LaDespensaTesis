@@ -22,7 +22,6 @@
   min-height: calc(100vh - var(--navbar-height));
   background-color: #f5f8fa;
   padding: 0 20px 40px;
-  padding-top: calc(var(--navbar-height) + 20px);
   width: 100%;
 }
 
