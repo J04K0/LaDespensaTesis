@@ -9,6 +9,7 @@ import PriceHistoryModal from '../components/PriceHistoryModal';
 import ProductDeleteModal from '../components/ProductDeleteModal';
 import StockHistoryModal from '../components/StockHistoryModal';
 import DeletedProductsModal from '../components/DeletedProductsModal';
+import ProductLotesModal from '../components/ProductLotesModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
@@ -76,6 +77,11 @@ const Products = () => {
   
   // 🆕 NUEVO ESTADO para el modal de productos eliminados
   const [showDeletedProductsModal, setShowDeletedProductsModal] = useState(false);
+
+  // 🆕 NUEVO ESTADO para el modal de lotes
+  const [showLotesModal, setShowLotesModal] = useState(false);
+  const [lotesProductId, setLotesProductId] = useState(null);
+  const [lotesProductName, setLotesProductName] = useState('');
 
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
   const [statsExpanded, setStatsExpanded] = useState(true);
@@ -451,6 +457,13 @@ const Products = () => {
     setStockHistoryProductId(product._id);
     setStockHistoryProductName(product.Nombre);
     setShowStockHistoryModal(true);
+  };
+
+  // 🆕 NUEVA función para mostrar lotes del producto
+  const handleShowLotes = (product) => {
+    setLotesProductId(product._id);
+    setLotesProductName(product.Nombre);
+    setShowLotesModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -910,6 +923,7 @@ const Products = () => {
                         onDelete={handleDeleteClick}
                         onEdit={handleEdit}
                         onInfo={handleProductInfo}
+                        onShowLotes={handleShowLotes}
                         getStockColorClass={getStockColorClass}
                         userRole={userRole}
                       />
@@ -997,6 +1011,18 @@ const Products = () => {
         isOpen={showDeletedProductsModal}
         onClose={() => setShowDeletedProductsModal(false)}
         // Aquí puedes agregar más props si es necesario
+      />
+      
+      {/* 🆕 NUEVO MODAL PARA LOTES DE PRODUCTOS */}
+      <ProductLotesModal
+        isOpen={showLotesModal}
+        onClose={() => {
+          setShowLotesModal(false);
+          setLotesProductId(null);
+          setLotesProductName('');
+        }}
+        productId={lotesProductId}
+        productName={lotesProductName}
       />
     </div>
   );

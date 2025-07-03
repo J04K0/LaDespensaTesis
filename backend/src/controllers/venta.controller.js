@@ -1,12 +1,18 @@
 import Venta from '../models/venta.model.js';
 import mongoose from 'mongoose';
 import Deudores from '../models/deudores.model.js';
+import Product from '../models/products.model.js';
 import { handleErrorClient, handleErrorServer, handleSuccess } from '../utils/resHandlers.js';
+import { sendLowStockAlert } from '../services/email.service.js';
+import { emitStockBajoAlert } from '../services/alert.service.js';
+import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
+
 let ticketCounter = 0; // Variable global para el contador de tickets
 
-// Función para registrar una venta con un ID de ticket secuencial
 export const registrarVenta = async (req, res) => {
     try {
+      console.log('📦 Datos recibidos:', { productosVendidos: req.body.productosVendidos, metodoPago: req.body.metodoPago, deudorId: req.body.deudorId });
+      
       const { productosVendidos, metodoPago, deudorId } = req.body;
   
       if (!productosVendidos || !Array.isArray(productosVendidos) || productosVendidos.length === 0) {
@@ -15,13 +21,145 @@ export const registrarVenta = async (req, res) => {
 
       ticketCounter++;
       const ticketId = `TK-${ticketCounter.toString().padStart(6, '0')}`;
+      console.log('🎫 Ticket generado:', ticketId);
       
       const userId = req.userId;
+      
+      const productosAfectadosEnVenta = [];
+      const productosAgotados = [];
+      const productosVencidosVendidos = [];
+      const today = new Date();
       
       const ventasRegistradas = [];
       let totalVenta = 0;
 
+      console.log('🔄 INICIANDO ACTUALIZACIÓN DE STOCK...');
+      
+      // 🆕 NUEVO: Actualizar stock antes de registrar la venta
+      for (const { codigoBarras, cantidad } of productosVendidos) {
+        console.log(`\n📋 Procesando producto: ${codigoBarras}, cantidad: ${cantidad}`);
+        let cantidadRestante = cantidad;
+
+        // Obtener todos los productos con el mismo código de barras, ordenados por fecha de vencimiento
+        const productos = await Product.find({ 
+          codigoBarras, 
+          Stock: { $gt: 0 }
+        }).sort({ fechaVencimiento: 1 });
+
+        console.log(`🔍 Productos encontrados con stock: ${productos.length}`);
+        productos.forEach((p, index) => {
+          console.log(`   Producto ${index + 1}: ${p.Nombre}, Stock: ${p.Stock}, ID: ${p._id}, Lotes: ${p.lotes?.length || 0}`);
+        });
+
+        if (!productos.length) {
+          console.log(`❌ NO HAY STOCK DISPONIBLE para ${codigoBarras}`);
+          return handleErrorClient(res, 400, `No hay stock disponible para el producto ${codigoBarras}`);
+        }
+
+        // Verificar si hay productos vencidos y guardarlos para notificar
+        const productoVencido = productos.find(p => new Date(p.fechaVencimiento) < today);
+        if (productoVencido) {
+          console.log(`⚠️ Producto vencido detectado: ${productoVencido.Nombre}`);
+          productosVencidosVendidos.push({
+            ...productoVencido.toObject(),
+            cantidadVendida: cantidad
+          });
+        }
+
+        // Resta la cantidad vendida de cada lote hasta que se complete la venta
+        for (const producto of productos) {
+          if (cantidadRestante <= 0) break;
+
+          console.log(`\n🔧 Procesando lote: ${producto.Nombre}`);
+          console.log(`   Stock antes: ${producto.Stock}`);
+          console.log(`   Cantidad a descontar: ${Math.min(cantidadRestante, producto.Stock)}`);
+
+          // Guardar el stock anterior para comparar después
+          const stockAnterior = producto.Stock;
+          const cantidadADescontar = Math.min(cantidadRestante, producto.Stock);
+
+          // 🆕 ACTUALIZACIÓN DE LOTES: Si el producto tiene lotes, actualizar también los lotes
+          if (producto.lotes && producto.lotes.length > 0) {
+            console.log(`   📦 Producto con ${producto.lotes.length} lotes, actualizando lotes...`);
+            
+            let cantidadRestanteLotes = cantidadADescontar;
+            // Ordenar lotes por fecha de vencimiento (FIFO)
+            const lotesActivos = producto.lotes
+              .filter(lote => lote.activo && lote.cantidad > 0)
+              .sort((a, b) => new Date(a.fechaVencimiento) - new Date(b.fechaVencimiento));
+            
+            for (const lote of lotesActivos) {
+              if (cantidadRestanteLotes <= 0) break;
+              
+              const cantidadLote = Math.min(cantidadRestanteLotes, lote.cantidad);
+              console.log(`     Lote ${lote.numeroLote}: ${lote.cantidad} -> ${lote.cantidad - cantidadLote}`);
+              
+              lote.cantidad -= cantidadLote;
+              cantidadRestanteLotes -= cantidadLote;
+              
+              if (lote.cantidad === 0) {
+                lote.activo = false;
+                console.log(`     Lote ${lote.numeroLote} agotado y desactivado`);
+              }
+            }
+          }
+
+          // Actualizar stock principal
+          if (producto.Stock >= cantidadRestante) {
+            producto.Stock -= cantidadRestante;
+            cantidadRestante = 0;
+          } else {
+            cantidadRestante -= producto.Stock;
+            producto.Stock = 0;
+          }
+
+          console.log(`   Stock después: ${producto.Stock}`);
+          
+          // 🆕 MARCAR PARA EVITAR RECALCULO AUTOMÁTICO
+          producto._skipStockRecalculation = true;
+          
+          // 🆕 DEBUGGING: Verificar antes y después de guardar
+          console.log(`💾 Guardando producto: ${producto._id}`);
+          console.log(`   Stock antes de save(): ${producto.Stock}`);
+          
+          const savedProduct = await producto.save();
+          
+          console.log(`✅ Producto guardado exitosamente`);
+          console.log(`   Stock después de save(): ${savedProduct.Stock}`);
+          
+          // 🆕 VERIFICACIÓN ADICIONAL: Revisar en la BD
+          const verificacion = await Product.findById(producto._id);
+          console.log(`🔍 Verificación en BD - Stock actual: ${verificacion.Stock}`);
+          
+          const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[producto.Categoria];
+          
+          // Verificar si el producto llegó al stock mínimo en esta venta
+          if (stockMinimo && stockAnterior > stockMinimo && producto.Stock <= stockMinimo && producto.Stock > 0) {
+            productosAfectadosEnVenta.push(producto);
+            console.log(`📉 Producto agregado a stock bajo: ${producto.Nombre}`);
+          }
+
+          // Verificar si el producto se agotó en esta venta
+          if (stockAnterior > 0 && producto.Stock === 0) {
+            productosAgotados.push(producto);
+            console.log(`🚫 Producto agotado: ${producto.Nombre}`);
+          }
+        }
+
+        if (cantidadRestante > 0) {
+          console.log(`❌ STOCK INSUFICIENTE - Cantidad restante: ${cantidadRestante}`);
+          return handleErrorClient(res, 400, `No hay suficiente stock para el producto ${codigoBarras}`);
+        }
+        
+        console.log(`✅ Stock actualizado correctamente para ${codigoBarras}`);
+      }
+
+      console.log('\n📝 REGISTRANDO VENTAS...');
+      
+      // Registrar las ventas después de actualizar el stock
       for (const producto of productosVendidos) {
+        console.log(`💰 Registrando venta: ${producto.nombre} x ${producto.cantidad}`);
+        
         const nuevaVenta = new Venta({
           ticketId,
           nombre: producto.nombre,
@@ -39,8 +177,43 @@ export const registrarVenta = async (req, res) => {
         await nuevaVenta.save();
         ventasRegistradas.push(nuevaVenta);
         totalVenta += producto.precioVenta * producto.cantidad;
+        
+        console.log(`✅ Venta registrada: ${nuevaVenta._id}`);
+      }
+
+      console.log(`💵 Total venta: $${totalVenta}`);
+
+      // 🆕 NUEVO: Enviar alertas de stock si es necesario
+      if (productosAfectadosEnVenta.length > 0 || productosAgotados.length > 0) {
+        try {
+          // Combinar todos los productos afectados para el email
+          const todosLosProductosAfectados = [...productosAfectadosEnVenta, ...productosAgotados];
+          
+          // Enviar email solo una vez con toda la información
+          await sendLowStockAlert(
+            todosLosProductosAfectados.map(producto => ({
+              ...producto.toObject(),
+              esRecienAfectado: productosAfectadosEnVenta.some(p => p._id.toString() === producto._id.toString()),
+              esAgotado: productosAgotados.some(p => p._id.toString() === producto._id.toString())
+            })),
+            productosAfectadosEnVenta.length > 0,
+            productosAgotados.length > 0
+          );
+
+          // Emitir alertas WebSocket individuales
+          if (productosAfectadosEnVenta.length > 0) {
+            emitStockBajoAlert(productosAfectadosEnVenta);
+          }
+          if (productosAgotados.length > 0) {
+            emitStockBajoAlert(productosAgotados);
+          }
+        } catch (alertError) {
+          console.error("❌ Error al enviar alertas de stock:", alertError);
+          // No fallar la venta por errores de alertas
+        }
       }
       
+      // Manejar deudor si aplica
       if (deudorId) {
         const deudor = await Deudores.findById(deudorId);
         if (deudor) {
@@ -55,30 +228,46 @@ export const registrarVenta = async (req, res) => {
           deudor.deudaTotal += totalVenta;
           
           await deudor.save();
+
+          // Preparar mensaje con información de productos vencidos si aplica
+          let mensaje = "Venta registrada correctamente y deuda asignada";
+          if (productosVencidosVendidos.length > 0) {
+            mensaje += ". ADVERTENCIA: Se han vendido productos vencidos";
+          }
           
-          handleSuccess(res, 201, "Venta registrada correctamente y deuda asignada", { 
+          handleSuccess(res, 201, mensaje, { 
             ticketId, 
             productos: ventasRegistradas,
             deudor: {
               id: deudor._id,
               nombre: deudor.Nombre,
               deudaTotal: deudor.deudaTotal
-            }
+            },
+            productosVencidosVendidos: productosVencidosVendidos.length > 0 ? productosVencidosVendidos : null
           });
         } else {
           handleSuccess(res, 201, "Venta registrada correctamente pero el deudor no fue encontrado", { 
             ticketId, 
-            productos: ventasRegistradas 
+            productos: ventasRegistradas,
+            productosVencidosVendidos: productosVencidosVendidos.length > 0 ? productosVencidosVendidos : null
           });
         }
       } else {
-        handleSuccess(res, 201, "Venta registrada correctamente", { 
+        // Preparar mensaje con información de productos vencidos si aplica
+        let mensaje = "Venta registrada correctamente";
+        if (productosVencidosVendidos.length > 0) {
+          mensaje += ". ADVERTENCIA: Se han vendido productos vencidos";
+        }
+
+        handleSuccess(res, 201, mensaje, { 
           ticketId, 
-          productos: ventasRegistradas 
+          productos: ventasRegistradas,
+          productosVencidosVendidos: productosVencidosVendidos.length > 0 ? productosVencidosVendidos : null
         });
       }
     } catch (error) {
-      console.error("Error al registrar venta:", error);
+      console.error("❌ ERROR COMPLETO AL REGISTRAR VENTA:", error);
+      console.error("📋 Stack trace:", error.stack);
       handleErrorServer(res, 500, "Error al registrar la venta", error.message);
     }
   };

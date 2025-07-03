@@ -54,33 +54,96 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// Funcion para crear un nuevo producto
-export const addProduct = async (req, res) => { 
+// Función para agregar un producto
+export const addProduct = async (req, res) => {
   try {
-    const { value, error } = productSchema.validate(req.body);
-    if (error) return handleErrorClient(res, 400, error.message);
+    console.log('🔍 DEBUGGING - Datos recibidos en addProduct:');
+    console.log('📋 req.body:', JSON.stringify(req.body, null, 2));
+    console.log('📁 req.file:', req.file ? { 
+      fieldname: req.file.fieldname, 
+      originalname: req.file.originalname, 
+      size: req.file.size 
+    } : 'No file');
+
+    const productData = req.body;
+
+    // Validar los datos usando el esquema
+    console.log('🔍 DEBUGGING - Datos a validar:', JSON.stringify(productData, null, 2));
+    
+    const { error, value } = productSchema.validate(productData);
+    
+    if (error) {
+      console.error('❌ ERROR DE VALIDACIÓN:', error.details);
+      console.error('❌ Mensaje de error:', error.details[0].message);
+      console.error('❌ Campo que falló:', error.details[0].path);
+      console.error('❌ Valor recibido:', error.details[0].context?.value);
+      return handleErrorClient(res, 400, `Error de validación: ${error.details[0].message}`);
+    }
+    
+    console.log('✅ Datos validados correctamente:', value);
     
     let imageUrl = null;
 
+    // 🔧 ARREGLO: Manejar diferentes casos de imagen
     if (req.file) {
-        imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
+      // Caso 1: Se subió un archivo nuevo
+      imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
+      console.log('🖼️ Nueva imagen subida:', imageUrl);
+    } else if (req.body.imageUrl) {
+      // Caso 2: Se envió una URL de imagen existente (para mantener imagen de producto original)
+      imageUrl = req.body.imageUrl;
+      console.log('🖼️ Manteniendo imagen existente:', imageUrl);
     }
+    // Caso 3: No hay imagen (imageUrl queda como null)
 
     // Obtener los márgenes por categoría (mismos valores que en el modelo)
     const margen = MARGENES_POR_CATEGORIA[value.Categoria] || 0.23;
     const precioRecomendado = value.PrecioCompra * (1 + margen);
 
-    // Crear el producto con la imagen incluida y el precio recomendado
+    // 🆕 CREAR LOTE INICIAL: Crear el lote inicial con el stock del producto
+    const loteInicial = {
+      numeroLote: '#001', // Primer lote siempre será #001
+      cantidad: parseInt(value.Stock),
+      precioCompra: parseFloat(value.PrecioCompra),
+      precioVenta: parseFloat(value.PrecioVenta),
+      fechaVencimiento: new Date(value.fechaVencimiento),
+      usuarioCreacion: req.userId,
+      fechaCreacion: new Date(),
+      activo: true
+    };
+
+    // Crear el producto con la imagen incluida, el precio recomendado y el lote inicial
     const newProduct = new Product({ 
       ...value, 
       image: imageUrl,
-      PrecioRecomendado: precioRecomendado 
+      PrecioRecomendado: precioRecomendado,
+      lotes: [loteInicial] // 🆕 AGREGAR: Incluir el lote inicial
     });
 
     const product = await newProduct.save();
 
+    // 🆕 AGREGAR: Registrar en el historial de stock la creación inicial
+    product.historialStock.push({
+      stockAnterior: 0,
+      stockNuevo: product.Stock,
+      tipoMovimiento: 'entrada_inicial',
+      motivo: `Producto creado con lote inicial: #001 (${value.Stock} unidades)`,
+      usuario: req.userId,
+      fecha: new Date()
+    });
+
+    await product.save();
+
+    console.log('✅ Producto creado exitosamente con lote inicial:', {
+      producto: product.Nombre,
+      stock: product.Stock,
+      lotes: product.lotes.length,
+      primerLote: product.lotes[0].numeroLote
+    });
+    
     handleSuccess(res, 201, 'Producto creado', product);
   } catch (err) {
+    console.error('❌ ERROR EN SERVIDOR:', err);
     handleErrorServer(res, 500, 'Error al crear un producto', err.message);
   }
 };
@@ -95,6 +158,26 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findById(id);
     
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // 🆕 NUEVO: Limpiar historial de stock corrupto antes de proceder
+    if (product.historialStock && product.historialStock.length > 0) {
+      const tiposValidos = ['ajuste_manual', 'venta', 'devolucion', 'perdida', 'entrada_inicial', 'correccion'];
+      let hasCorruptedData = false;
+
+      product.historialStock.forEach((entry, index) => {
+        if (!tiposValidos.includes(entry.tipoMovimiento)) {
+          console.log(`🔧 Corrigiendo tipoMovimiento inválido: "${entry.tipoMovimiento}" -> "entrada_inicial"`);
+          entry.tipoMovimiento = 'entrada_inicial';
+          hasCorruptedData = true;
+        }
+      });
+
+      // Si encontramos datos corruptos, guardar las correcciones
+      if (hasCorruptedData) {
+        await product.save();
+        console.log(`✅ Historial de stock corregido para producto: ${product.Nombre}`);
+      }
+    }
 
     let imageUrl = product.image; // Mantiene la imagen anterior por defecto
 
@@ -115,18 +198,37 @@ export const updateProduct = async (req, res) => {
 
     // Verificar si hay cambios en el stock y registrarlos
     if (value.Stock !== product.Stock) {
-      const { motivo, tipoMovimiento = 'ajuste_manual' } = req.body;
+      const { motivo, tipoMovimiento } = req.body;
       
-      if (!motivo) {
+      // Validar y establecer un tipoMovimiento válido
+      const tiposValidos = ['ajuste_manual', 'venta', 'devolucion', 'perdida', 'entrada_inicial', 'correccion'];
+      let tipoMovimientoFinal = 'ajuste_manual'; // Valor por defecto
+      
+      if (tipoMovimiento && tiposValidos.includes(tipoMovimiento)) {
+        tipoMovimientoFinal = tipoMovimiento;
+      } else {
+        // Si no se proporciona un tipo válido, determinar automáticamente
+        if (value.Stock > product.Stock) {
+          tipoMovimientoFinal = 'entrada_inicial'; // Aumento de stock
+        } else {
+          tipoMovimientoFinal = 'ajuste_manual'; // Disminución o ajuste
+        }
+      }
+      
+      // Solo requerir motivo para ajustes manuales, no para entrada inicial
+      if (!motivo && tipoMovimientoFinal === 'ajuste_manual') {
         return handleErrorClient(res, 400, 'Se requiere un motivo para cambiar el stock manualmente');
       }
+
+      // Definir un motivo automático para entrada inicial si no se proporciona
+      const motivoFinal = motivo || (tipoMovimientoFinal === 'entrada_inicial' ? 'Agregado de stock desde sistema de inventario' : 'Ajuste manual');
 
       // Registrar el cambio en el historial de stock
       product.historialStock.push({
         stockAnterior: product.Stock,
         stockNuevo: value.Stock,
-        tipoMovimiento,
-        motivo,
+        tipoMovimiento: tipoMovimientoFinal,
+        motivo: motivoFinal,
         usuario: req.userId,
         fecha: new Date()
       });
@@ -722,5 +824,119 @@ export const sendManualDailyReport = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al enviar reporte diario manual:', error);
     handleErrorServer(res, 500, 'Error al enviar el reporte diario', error.message);
+  }
+};
+
+// 🆕 NUEVO: Función para agregar un nuevo lote a un producto existente
+export const agregarLoteProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { cantidad, precioCompra, precioVenta, fechaVencimiento } = req.body;
+
+    if (!cantidad || !precioCompra || !precioVenta || !fechaVencimiento) {
+      return handleErrorClient(res, 400, 'Todos los campos del lote son requeridos');
+    }
+
+    if (cantidad <= 0) {
+      return handleErrorClient(res, 400, 'La cantidad debe ser mayor a 0');
+    }
+
+    const product = await Product.findById(id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Generar número de lote automático
+    const numeroLote = product.generarNumeroLote();
+
+    // Crear el nuevo lote
+    const nuevoLote = {
+      numeroLote,
+      cantidad: parseInt(cantidad),
+      precioCompra: parseFloat(precioCompra),
+      precioVenta: parseFloat(precioVenta),
+      fechaVencimiento: new Date(fechaVencimiento),
+      usuarioCreacion: req.userId,
+      fechaCreacion: new Date(),
+      activo: true
+    };
+
+    // Agregar el lote al producto
+    product.lotes.push(nuevoLote);
+
+    // El pre-save hook se encargará de recalcular el stock total y la fecha de vencimiento
+    await product.save();
+
+    // Registrar en el historial de stock
+    product.historialStock.push({
+      stockAnterior: product.Stock - parseInt(cantidad),
+      stockNuevo: product.Stock,
+      tipoMovimiento: 'entrada_inicial',
+      motivo: `Nuevo lote agregado: ${numeroLote} (${cantidad} unidades)`,
+      usuario: req.userId,
+      fecha: new Date()
+    });
+
+    await product.save();
+
+    handleSuccess(res, 200, 'Nuevo lote agregado exitosamente', {
+      producto: product,
+      nuevoLote: nuevoLote,
+      stockTotal: product.Stock,
+      totalLotes: product.lotes.length
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al agregar el nuevo lote', err.message);
+  }
+};
+
+// 🆕 NUEVO: Función para obtener los lotes de un producto
+export const getLotesProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id)
+      .populate('lotes.usuarioCreacion', 'username email');
+
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Ordenar lotes por fecha de vencimiento (FIFO)
+    const lotesOrdenados = product.lotes
+      .filter(lote => lote.activo)
+      .sort((a, b) => new Date(a.fechaVencimiento) - new Date(b.fechaVencimiento));
+
+    const today = new Date();
+
+    // Agregar información adicional a cada lote
+    const lotesConInfo = lotesOrdenados.map(lote => {
+      const diasParaVencer = Math.ceil((new Date(lote.fechaVencimiento) - today) / (1000 * 60 * 60 * 24));
+      const margen = lote.precioVenta && lote.precioCompra 
+        ? ((lote.precioVenta - lote.precioCompra) / lote.precioCompra * 100).toFixed(1)
+        : 0;
+
+      return {
+        ...lote.toObject(),
+        diasParaVencer,
+        estaVencido: diasParaVencer < 0,
+        estaPorVencer: diasParaVencer >= 0 && diasParaVencer <= 30,
+        margen: parseFloat(margen)
+      };
+    });
+
+    handleSuccess(res, 200, 'Lotes del producto obtenidos', {
+      producto: {
+        _id: product._id,
+        Nombre: product.Nombre,
+        Marca: product.Marca,
+        stockTotal: product.Stock
+      },
+      lotes: lotesConInfo,
+      resumen: {
+        totalLotes: lotesConInfo.length,
+        stockTotal: product.Stock,
+        lotesVencidos: lotesConInfo.filter(l => l.estaVencido).length,
+        lotesPorVencer: lotesConInfo.filter(l => l.estaPorVencer).length
+      }
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al obtener los lotes del producto', err.message);
   }
 };

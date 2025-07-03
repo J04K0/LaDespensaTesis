@@ -1,0 +1,365 @@
+/* ============================================
+   ESTILOS PARA EL MODAL DE LOTES DE PRODUCTOS
+   ============================================ */
+
+.lotes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.lotes-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lotes-modal-header {
+  background: linear-gradient(135deg, #006EDF, #4a90e2);
+  color: white;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lotes-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lotes-modal-title svg {
+  font-size: 1.5rem;
+}
+
+.lotes-modal-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.lotes-modal-title p {
+  margin: 4px 0 0 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.lotes-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.lotes-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lotes-modal-content {
+  padding: 0;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+.lotes-loading,
+.lotes-error {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.lotes-error {
+  color: #dc3545;
+}
+
+/* Resumen superior */
+.lotes-summary {
+  background: #f8f9fa;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  gap: 20px;
+}
+
+.summary-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.summary-card svg {
+  color: #006EDF;
+  font-size: 1.2rem;
+}
+
+.summary-card div {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+/* Próximo a vencer */
+.proximo-vencer {
+  background: linear-gradient(135deg, #fff3e0, #fffbf0);
+  border: 2px solid #ffbe0b;
+  margin: 20px 24px;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.proximo-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e65100;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.proximo-header svg {
+  color: #ff9800;
+}
+
+.proximo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.proximo-dias {
+  background: #ff9800;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.proximo-text {
+  color: #bf360c;
+  font-size: 0.9rem;
+}
+
+/* Sección de lotes */
+.lotes-section {
+  padding: 24px;
+}
+
+.lotes-section h3 {
+  color: #212529;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.lotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lote-card {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: white;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.lote-card.siguiente {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f8fff9, #ffffff);
+}
+
+.lote-card:hover {
+  border-color: #006EDF;
+  box-shadow: 0 4px 12px rgba(0, 110, 223, 0.1);
+}
+
+.lote-header {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.lote-card.siguiente .lote-header {
+  background: #e8f5e8;
+}
+
+.lote-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lote-label {
+  font-weight: 600;
+  color: #212529;
+}
+
+.siguiente-badge {
+  background: #28a745;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lote-agregado {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.lote-body {
+  padding: 16px;
+}
+
+.lote-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.lote-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  color: #6c757d;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.field-value {
+  color: #212529;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.field-unit {
+  color: #ff9800;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.lote-status-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lote-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lote-status.vencido {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.lote-status.por-vencer {
+  background: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffcc02;
+}
+
+.lote-status.bueno {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.no-lotes {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.no-lotes svg {
+  color: #dee2e6;
+  margin-bottom: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lotes-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .lotes-summary {
+    flex-direction: column;
+  }
+  
+  .lote-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  
+  .proximo-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

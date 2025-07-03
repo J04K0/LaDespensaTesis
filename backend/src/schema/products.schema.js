@@ -10,7 +10,11 @@ const objectIdValidator = (value, helpers) => {
 
 const dateValidator = (value, helpers) => {
   const dateValue = new Date(value);
-  if (dateValue < new Date()) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Resetear horas para comparar solo fechas
+  
+  // Permitir fechas de hoy en adelante
+  if (dateValue < today) {
     return helpers.message('La fecha de vencimiento debe ser igual o posterior a la fecha actual.');
   }
   return value;
@@ -73,10 +77,10 @@ export const productSchema = Joi.object({
     'number.base': 'El precio antiguo debe ser un número',
     'number.min': 'El precio antiguo no puede ser negativo',
   }),
-  codigoBarras: Joi.string().min(13).max(13).required().messages({
+  codigoBarras: Joi.string().min(8).max(20).required().messages({
     'string.empty': 'El código de barras del producto es obligatorio',
-    'string.min': 'El código de barras debe tener 13 caracteres',
-    'string.max': 'El código de barras debe tener 13 caracteres'
+    'string.min': 'El código de barras debe tener al menos 8 caracteres',
+    'string.max': 'El código de barras no puede exceder los 20 caracteres'
   }),
   image: Joi.string().optional().allow(null).messages({
     "string.base": "El archivo debe ser de tipo string.",

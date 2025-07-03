@@ -268,3 +268,25 @@ export const getProductPriceHistory = async (id) => {
     throw error.response?.data || error;
   }
 };
+
+// 🆕 NUEVO: Función para agregar un nuevo lote a un producto
+export const agregarLoteProducto = async (productId, loteData) => {
+  try {
+    const response = await axios.post(`/products/lotes/${productId}`, loteData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding product batch:', error);
+    throw error;
+  }
+};
+
+// 🆕 NUEVO: Función para obtener los lotes de un producto
+export const getLotesProducto = async (productId) => {
+  try {
+    const response = await axios.get(`/products/lotes/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching product batches:', error);
+    throw error;
+  }
+};

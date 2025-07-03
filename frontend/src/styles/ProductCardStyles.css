@@ -270,7 +270,282 @@ body > .productcard-sin-stock,
   display: none !important;
 }
 
-/* Estilos responsivos optimizados */
+/* ============================================
+   ESTILOS PARA LOTES EN PRODUCTCARD
+   ============================================ */
+
+/* Sección de lotes desplegable */
+.productcard-lotes-section {
+  margin-top: 12px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 12px;
+}
+
+.productcard-lotes-toggle {
+  width: 100%;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.productcard-lotes-toggle:hover {
+  background: #e9ecef;
+  border-color: #006EDF;
+  color: #006EDF;
+}
+
+.productcard-lotes-toggle svg:first-child {
+  margin-right: 8px;
+  color: #006EDF;
+}
+
+.productcard-toggle-icon {
+  transition: transform 0.2s ease;
+  color: #6c757d;
+}
+
+.productcard-expanded .productcard-toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Contenido de lotes */
+.productcard-lotes-content {
+  margin-top: 12px;
+  animation: expandContent 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes expandContent {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+/* Estados de carga y error */
+.productcard-lotes-loading,
+.productcard-lotes-error,
+.productcard-no-lotes {
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.productcard-lotes-error {
+  background: #fff5f5;
+  border-color: #fed7d7;
+  color: #c53030;
+}
+
+.productcard-no-lotes {
+  color: #6c757d;
+}
+
+.productcard-no-lotes svg {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  color: #dee2e6;
+}
+
+/* Lista de lotes */
+.productcard-lotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Item de lote individual */
+.productcard-lote-item {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: white;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.productcard-lote-item.siguiente {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f8fff9, #ffffff);
+}
+
+.productcard-lote-item:hover {
+  border-color: #006EDF;
+  box-shadow: 0 2px 8px rgba(0, 110, 223, 0.1);
+}
+
+/* Header del lote */
+.productcard-lote-header {
+  background: #f8f9fa;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.85rem;
+}
+
+.productcard-lote-item.siguiente .productcard-lote-header {
+  background: #e8f5e8;
+}
+
+.productcard-lote-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.productcard-lote-label {
+  font-weight: 600;
+  color: #212529;
+}
+
+.productcard-siguiente-badge {
+  background: #28a745;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.productcard-lote-fecha-agregado {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Body del lote */
+.productcard-lote-body {
+  padding: 12px;
+}
+
+.productcard-lote-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.productcard-lote-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productcard-field-label {
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.productcard-field-value {
+  color: #212529;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Status del lote */
+.productcard-lote-status-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.productcard-lote-status {
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.productcard-lote-status.vencido {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.productcard-lote-status.por-vencer {
+  background: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffcc02;
+}
+
+.productcard-lote-status.bueno {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.productcard-lote-status svg {
+  font-size: 0.7rem;
+}
+
+/* Contador de lotes en el stock */
+.productcard-lotes-count {
+  color: #006EDF;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-left: 8px;
+}
+
+/* Animación para tarjeta expandida */
+.productcard-expanded {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive para lotes */
+@media (max-width: 768px) {
+  .productcard-lotes-toggle {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .productcard-lote-header {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .productcard-lote-info-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .productcard-field-label {
+    font-size: 0.7rem;
+  }
+  
+  .productcard-field-value {
+    font-size: 0.8rem;
+  }
+  
+  .productcard-lote-status {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+}
+
 @media (max-width: 768px) {
   .productcard-inner {
     flex-direction: column;

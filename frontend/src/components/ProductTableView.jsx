@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faInfo, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faTrash, faInfo, faExclamationTriangle, faBoxes } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProductTableView.css';
 
 const ProductTableView = ({ 
@@ -8,6 +8,7 @@ const ProductTableView = ({
   onEdit, 
   onDelete, 
   onInfo,
+  onShowLotes,
   getStockColorClass,
   userRole = 'empleado'
 }) => {
@@ -132,6 +133,14 @@ const ProductTableView = ({
                       title="Ver información"
                     >
                       <FontAwesomeIcon icon={faInfo} />
+                    </button>
+                    
+                    <button
+                      onClick={() => onShowLotes(product)}
+                      className="action-btn lotes-btn"
+                      title="Ver lotes"
+                    >
+                      <FontAwesomeIcon icon={faBoxes} />
                     </button>
                     
                     {!isEmpleado && (

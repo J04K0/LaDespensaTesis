@@ -17,7 +17,9 @@ import {
     getStockHistory,
     restoreProduct,
     getDeletedProducts,
-    sendManualDailyReport
+    sendManualDailyReport,
+    agregarLoteProducto,
+    getLotesProducto
 } from "../controllers/products.controller.js";
 
 import { 
@@ -44,6 +46,9 @@ router.get('/getbybarcode/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, i
 router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductForCreation);
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
+// 🆕 NUEVAS RUTAS PARA LOTES
+router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotesProducto);
+router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
 router.get('/eliminados', authorizeRoles([isAdmin]), getDeletedProducts);
 router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);

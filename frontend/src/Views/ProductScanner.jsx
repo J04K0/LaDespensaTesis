@@ -337,18 +337,18 @@ const ProductScanner = () => {
       return Promise.reject("Deudor no seleccionado");
     }
   
-    // Ya no verificamos el monto entregado como condición para finalizar la venta
-    // El campo ahora solo sirve como calculadora de vuelto
-  
     setLoading(true);
     setError(null);
     try {
-      // Realizar la actualización de stock
-      const responseStock = await actualizarStockVenta(carrito);
+      // Determinar si se debe enviar un ID de deudor
+      const deudorIdToSend = isDeudor && selectedDeudorId ? selectedDeudorId : null;
       
-      // Verificar si hay productos vencidos vendidos
-      if (responseStock.data && responseStock.data.data && responseStock.data.data.productosVencidosVendidos) {
-        const productosVencidos = responseStock.data.data.productosVencidosVendidos;
+      // 🆕 SIMPLIFICADO: Solo registrar la venta (que ahora incluye automáticamente la actualización del stock)
+      const response = await registrarVenta(carrito, metodoPago, deudorIdToSend);
+      
+      // Verificar si hay productos vencidos vendidos en la respuesta
+      if (response.data && response.data.productosVencidosVendidos) {
+        const productosVencidos = response.data.productosVencidosVendidos;
         const nombresProductos = productosVencidos.map(p => p.Nombre).join(", ");
         
         // Mostrar una advertencia pero permitir continuar
@@ -360,12 +360,6 @@ const ProductScanner = () => {
           true  // Necesita confirmación
         );
       }
-      
-      // Determinar si se debe enviar un ID de deudor
-      const deudorIdToSend = isDeudor && selectedDeudorId ? selectedDeudorId : null;
-      
-      // Registrar la venta con el deudor seleccionado si corresponde
-      const response = await registrarVenta(carrito, metodoPago, deudorIdToSend);
       
       let mensaje = "Los productos han sido vendidos con éxito y el stock ha sido actualizado.";
       
@@ -380,7 +374,7 @@ const ProductScanner = () => {
       return Promise.resolve();
     } catch (error) {
       console.error("❌ Error al registrar la venta:", error);
-      setError("Hubo un problema al actualizar el stock y registrar la venta en la base de datos.");
+      setError("Hubo un problema al registrar la venta en la base de datos.");
       showErrorAlert("Error", "Hubo un problema al registrar la venta en la base de datos.");
       return Promise.reject(error);
     } finally {

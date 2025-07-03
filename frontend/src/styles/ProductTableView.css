@@ -284,6 +284,18 @@
   color: white;
 }
 
+/* Botón de lotes */
+.lotes-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+}
+
+.lotes-btn:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
 /* Responsividad */
 @media (max-width: 1200px) {
   .product-table {
