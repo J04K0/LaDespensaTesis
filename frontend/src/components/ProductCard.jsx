@@ -163,7 +163,7 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
                 onClick={toggleLotes}
                 type="button"
               >
-                <span>Ver lotes ({lotesCount})</span> {/* 🔧 ARREGLO: Usar lotesCount en lugar de lotes.length */}
+                <span>Ver lotes ({lotesCount})</span>
                 <FontAwesomeIcon 
                   icon={lotesExpanded ? faChevronUp : faChevronDown} 
                   className="productcard-toggle-icon"
