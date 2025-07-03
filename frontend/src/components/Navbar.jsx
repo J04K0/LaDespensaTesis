@@ -42,6 +42,13 @@ const Navbar = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeDropdown]);
+
+  // Separate useEffect for socket initialization (only run once)
+  useEffect(() => {
     initializeSocket();
     
     if (!localStorage.getItem('sessionStartTime')) {
@@ -49,10 +56,10 @@ const Navbar = () => {
     }
     
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      closeSocket();
+      // Only close socket when component unmounts completely
+      // Not on every navigation
     };
-  }, [activeDropdown]);
+  }, []);
 
   const handleNavigation = (path) => {
     if (!canAccessRoute(path)) {

@@ -26,19 +26,15 @@ export const VentasProvider = ({ children }) => {
         const token = cookies.get('jwt-auth');
         
         if (!user || !token) {
-          console.log('⏳ Usuario no autenticado, esperando...');
           setLoading(false);
           return;
         }
-
-        console.log('🔄 Cargando ventas globales...');
         setLoading(true);
         setError(null);
         
         const response = await obtenerVentasPorTicket();
         const ventas = response.data || [];
         
-        console.log(`✅ Ventas cargadas exitosamente: ${ventas.length} registros`);
         setVentasGlobales(ventas);
         setLastFetch(new Date());
         setRetryCount(0);
@@ -73,7 +69,6 @@ export const VentasProvider = ({ children }) => {
       const token = cookies.get('jwt-auth');
       
       if (user && token && !ventasGlobales && !loading) {
-        console.log('🔄 Usuario autenticado detectado, cargando datos...');
         setRetryCount(0);
       }
     };
@@ -82,10 +77,8 @@ export const VentasProvider = ({ children }) => {
       const { authenticated } = e.detail;
       
       if (authenticated && !ventasGlobales && !loading) {
-        console.log('🔄 Autenticación exitosa detectada, iniciando carga de datos...');
         setRetryCount(0);
       } else if (!authenticated) {
-        console.log('🔄 Usuario desautenticado, limpiando datos...');
         setVentasGlobales(null);
         setError(null);
         setLoading(false);
@@ -226,7 +219,6 @@ export const VentasProvider = ({ children }) => {
   const refreshVentas = async () => {
     setLoading(true);
     try {
-      console.log('🔄 Refrescando ventas globales...');
       const response = await obtenerVentasPorTicket();
       const ventas = response.data || [];
       

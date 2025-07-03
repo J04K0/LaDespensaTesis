@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faTimes, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons';
-import io from 'socket.io-client';
+import { getSocket } from '../services/socket.service';
 import '../styles/NotificationsStyles.css';
-
-const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:4000');
 
 const NotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
@@ -111,33 +109,22 @@ const NotificationCenter = () => {
   };
 
   useEffect(() => {
+    const socket = getSocket();
+    
     socket.on('nueva_alerta', (alerta) => {
       console.log('Nueva alerta recibida:', alerta);
       
       setNotifications(prev => {
-        const COOLDOWN_ALERTAS_STOCK = 24 * 60 * 60 * 1000;
+        const newNotification = {
+          id: Date.now(),
+          type: alerta.tipo,
+          message: alerta.mensaje,
+          data: alerta.datos,
+          timestamp: new Date().toISOString(),
+          read: false
+        };
         
-        const cooldownTime = Date.now() - COOLDOWN_ALERTAS_STOCK;
-        const recentSimilar = prev.find(n => 
-          n.type === alerta.type && 
-          new Date(n.timestamp).getTime() > cooldownTime &&
-          (
-            (n.data?.Nombre === alerta.data?.Nombre) ||
-            (n.data?.codigoBarras === alerta.data?.codigoBarras) ||
-            (Array.isArray(n.data) && Array.isArray(alerta.data) && 
-             n.data.some(item => alerta.data.some(alertItem => 
-               item.Nombre === alertItem.Nombre || item.codigoBarras === alertItem.codigoBarras
-             )))
-          )
-        );
-
-        if (recentSimilar) {
-          console.log('⏭️ Notificación similar reciente ignorada (enviada en las últimas 24h):', alerta.type);
-          return prev;
-        }
-
-        const updatedNotifications = [alerta, ...prev];
-        const cleanNotifications = removeDuplicateNotifications(updatedNotifications);
+        const cleanNotifications = removeDuplicateNotifications([...prev, newNotification]);
         const groupedNotifications = groupSimilarNotifications(cleanNotifications);
         
         return groupedNotifications.slice(0, 50);

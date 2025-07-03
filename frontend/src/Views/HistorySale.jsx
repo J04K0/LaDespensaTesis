@@ -11,7 +11,7 @@ import HistorySaleSkeleton from '../components/Skeleton/HistorySaleSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye, faUser } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
-import { useRole } from '../hooks/useRole'; // 🔧 Importar hook de roles
+import { useRole } from '../hooks/useRole';
 
 const HistorySale = () => {
   const [ventas, setVentas] = useState([]);
@@ -30,7 +30,7 @@ const HistorySale = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editedProducts, setEditedProducts] = useState([]);
-  const [comentarioDevolucion, setComentarioDevolucion] = useState(''); // 🆕 Nuevo estado para el comentario
+  const [comentarioDevolucion, setComentarioDevolucion] = useState('');
 
   // Estado para mostrar u ocultar ventas anuladas
   const [showVentasAnuladas, setShowVentasAnuladas] = useState(false);
@@ -56,19 +56,11 @@ const HistorySale = () => {
       setLoading(true);
       setError(null); // Limpiar errores previos
       let response;
-      
-      console.log('🔍 Fetching ventas, showVentasAnuladas:', showVentasAnuladas); // DEBUG
-      
+            
       if (showVentasAnuladas) {
-        // Obtener ventas anuladas
-        console.log('📞 Llamando a obtenerVentasAnuladas()'); // DEBUG
         response = await obtenerVentasAnuladas();
-        console.log('📊 Respuesta de ventas anuladas:', response); // DEBUG
       } else {
-        // Obtener ventas activas (comportamiento normal)
-        console.log('📞 Llamando a obtenerVentasPorTicket()'); // DEBUG
         response = await obtenerVentasPorTicket();
-        console.log('📊 Respuesta de ventas activas:', response); // DEBUG
       }
       
       // 🔧 FIX: Acceder correctamente a los datos según el tipo de respuesta
@@ -81,7 +73,6 @@ const HistorySale = () => {
         ventasData = Array.isArray(response?.data) ? response.data : [];
       }
       
-      console.log('📋 Datos finales de ventas:', ventasData); // DEBUG
       
       setVentas(ventasData);
       setFilteredVentas(ventasData);
@@ -205,9 +196,7 @@ const HistorySale = () => {
     // Si llegamos aquí, el motivo ya fue validado y no está vacío
     try {
       setLoading(true);
-      
-      console.log('🔍 Motivo validado a enviar:', motivo); // DEBUG
-      
+            
       await eliminarTicket(ticketId, motivo);
       showSuccessAlert("Éxito", "Venta anulada correctamente. El registro se ha conservado para auditoría.");
       // Refrescar la lista de ventas

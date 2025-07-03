@@ -506,7 +506,6 @@ const Finanzas = () => {
   };
 
   const procesarDatosInventario = (productos) => {
-    console.log("🔍 Procesando inventario - Total productos:", productos.length);
     let inversionTotal = 0;
     const inversionPorCategoria = {};
     
@@ -520,19 +519,13 @@ const Finanzas = () => {
       
       const precioCompra = producto.PrecioCompra || producto.precioCompra || 0;
       const stock = producto.Stock || producto.stock || 0;
-      
-      console.log(`📦 Producto: ${producto.Nombre} - PrecioCompra: ${precioCompra}, Stock: ${stock}`);
-      
+            
       if (precioCompra > 0 && stock > 0) {
         const valorInventario = precioCompra * stock;
         inversionTotal += valorInventario;
         inversionPorCategoria[categoria] += valorInventario;
-        console.log(`💰 Valor inventario: ${valorInventario} - Total acumulado: ${inversionTotal}`);
       }
     });
-    
-    console.log("✅ Inversión total calculada:", inversionTotal);
-    console.log("📊 Inversión por categoría:", inversionPorCategoria);
     
     // Actualizar el estado con la información de inventario
     setDatosFinancieros(prevState => ({
@@ -551,7 +544,6 @@ const Finanzas = () => {
     const newTimeRange = e.target.value;
     setTimeRange(newTimeRange);
     setPeriodoPersonalizado(false); // Reset periodo personalizado al cambiar tipo
-    console.log(`Cambiando período a: ${newTimeRange}`);
   };
 
   const handleCambioSeccion = (seccion) => {

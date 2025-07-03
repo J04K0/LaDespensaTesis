@@ -59,16 +59,15 @@ async function setupServer() {
       });
     });
 
-    server.listen(PORT, () => {
-      console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
-      console.log(`🔌 Socket.IO habilitado en puerto ${PORT}`);
+    server.listen(PORT, HOST, () => {
     });
+    
+    return server;
   } catch (err) {
     console.error('Error al iniciar el servidor:', err);
-    process.exit(1);
+    throw err;
   }
 }
-
 
 async function setupAPI() {
   try {
@@ -77,10 +76,14 @@ async function setupAPI() {
     await createRoles();
     await createUsers();
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al iniciar la API');
+    console.error('Error al iniciar la API:', err);
+    process.exit(1);
   }
 }
 
 setupAPI()
   .then(() => console.log("=> API Iniciada exitosamente"))
-  .catch((err) => handleErrorServer(res, 500, 'Error al iniciar la API'));
+  .catch((err) => {
+    console.error('Error fatal al iniciar la API:', err);
+    process.exit(1);
+  });

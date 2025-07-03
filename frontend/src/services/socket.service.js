@@ -1,23 +1,54 @@
 import { io } from 'socket.io-client';
 import { showSuccessAlert } from '../helpers/swaHelper';
 
-let socket;
+let socket = null;
+let isConnecting = false;
 
 export const initializeSocket = () => {
-  // Usar la URL base desde donde se sirve el frontend para conectar al mismo servidor
-  const baseUrl = window.location.origin.includes('localhost') 
-    ? 'http://localhost:4000' 
-    : window.location.origin;
+  // Si ya existe una conexión activa, devolverla
+  if (socket && socket.connected) {
+    return socket;
+  }
+
+  // Si ya se está conectando, esperar a que termine
+  if (isConnecting) {
+    return socket;
+  }
+
+  // Evitar múltiples intentos de conexión simultáneos
+  isConnecting = true;
+
+  // Determinar la URL base del servidor
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
     
-  // Crear la conexión WebSocket
-  socket = io(baseUrl);
-  
-  socket.on('connect', () => {
-    // console.log('Conectado al servidor de alertas');
+  // Crear la conexión WebSocket con configuración mejorada
+  socket = io(baseUrl, {
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 20000,
+    transports: ['websocket', 'polling'],
+    upgrade: true,
+    forceNew: false
   });
   
-  socket.on('disconnect', () => {
-    // console.log('Desconectado del servidor de alertas');
+  socket.on('connect', () => {
+    isConnecting = false;
+    console.log('Conectado al servidor de alertas');
+  });
+  
+  socket.on('disconnect', (reason) => {
+    console.log('Desconectado del servidor de alertas:', reason);
+    // Solo marcar como no conectando si es una desconexión permanente
+    if (reason === 'io client disconnect') {
+      isConnecting = false;
+    }
+  });
+  
+  socket.on('connect_error', (error) => {
+    isConnecting = false;
+    console.error('Error de conexión WebSocket:', error.message);
   });
   
   socket.on('error', (error) => {
@@ -28,7 +59,7 @@ export const initializeSocket = () => {
 };
 
 export const getSocket = () => {
-  if (!socket) {
+  if (!socket || !socket.connected) {
     return initializeSocket();
   }
   return socket;
@@ -36,7 +67,13 @@ export const getSocket = () => {
 
 export const closeSocket = () => {
   if (socket) {
+    isConnecting = false;
     socket.disconnect();
     socket = null;
   }
+};
+
+// Función para verificar si el socket está conectado
+export const isSocketConnected = () => {
+  return socket && socket.connected;
 };
