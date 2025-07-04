@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import SmartPagination from '../components/SmartPagination';
+import Navbar from '../components/Navbar.jsx';
+import SmartPagination from '../components/SmartPagination.jsx';
 import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar } from '../services/cuentasPorPagar.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
-import { useRole } from '../hooks/useRole';
-import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper.js';
+import { useRole } from '../hooks/useRole.js';
+import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton.jsx';
 import '../styles/CuentasPorPagarStyles.css';
 import '../styles/SmartPagination.css';
 import axios from "../services/root.service.js";
@@ -457,6 +457,13 @@ const handleCancel = async () => {
   }
 };
 
+// 🆕 Función para manejar clic en el overlay del modal
+const handleModalOverlayClick = async (e) => {
+  if (e.target === e.currentTarget) {
+    await handleCancel();
+  }
+};
+
   // Calcular totales mensuales para el resumen anual
   const calcularTotalesMensuales = (cuentasData) => {
     const resumen = {};
@@ -808,7 +815,7 @@ const handleTogglePaidClick = async (id, estadoActual) => {
             
             {/* Modal para agregar/editar cuenta */}
             {showModal && (
-              <div className="modal-overlay">
+              <div className="modal-overlay" onClick={handleModalOverlayClick}>
                 <div className="modal-content">
                   <div className="modal-header">
                     <h2 className="modal-title">{isEditing ? 'Editar Cuenta' : 'Agregar Nueva Cuenta'}</h2>

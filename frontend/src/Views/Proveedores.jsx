@@ -376,134 +376,62 @@ const Proveedores = () => {
     ExportService.generarReporteProveedores(filteredProveedores);
   };
 
+  const resetForm = () => {
+    setCurrentProveedor({
+      nombre: '',
+      telefono: '',
+      email: '',
+      direccion: '',
+      categorias: [],
+      notas: '',
+      contactoPrincipal: '',
+      sitioWeb: ''
+    });
+    setSelectedProducts([]);
+    setProveedorProductos([]);
+    setIsEditing(false);
+    setShowModal(false);
+  };
+
   const handleCancel = async () => {
-    // Mostrar confirmación antes de cancelar
-    const result = await showConfirmationAlert(
-      "¿Estás seguro?",
-      "¿Deseas cancelar esta acción? Los cambios no se guardarán.",
-      "Sí, cancelar",
-      "No, volver"
-    );
-  
-    if (result.isConfirmed) {
-      // Limpiar estados relacionados con productos
-      setSelectedProducts([]);
-      setProveedorProductos([]);
-      setShowModal(false);
-    }
-  };
-
-  const handleLinkProducts = (e) => {
-    e.preventDefault();
+    // Verificar si hay cambios sin guardar
+    const hasChanges = currentProveedor.nombre || currentProveedor.telefono || 
+                      currentProveedor.email || currentProveedor.direccion || 
+                      currentProveedor.categorias.length > 0 || currentProveedor.notas ||
+                      selectedProducts.length > 0;
     
-    // Ya no verificamos si es un nuevo proveedor - permitimos siempre seleccionar productos
-    setShowProductsModal(true);
-  };
+    if (hasChanges) {
+      const result = await showConfirmationAlert(
+        "¿Estás seguro?",
+        "¿Deseas cancelar? Los cambios no guardados se perderán.",
+        "Sí, cancelar",
+        "No, volver"
+      );
 
-  const handleProductSelection = (productId) => {
-    setSelectedProducts(prevSelected => {
-      if (prevSelected.includes(productId)) {
-        return prevSelected.filter(id => id !== productId);
-      } else {
-        return [...prevSelected, productId];
-      }
-    });
-  };
-
-  const handleProductsSubmit = async () => {
-    if (selectedProducts.length === 0) {
-      return showWarningAlert('Advertencia', 'Debes seleccionar al menos un producto');
+      if (!result.isConfirmed) return;
     }
 
-    // Si estamos creando un nuevo proveedor (no hay ID), solo cerramos el modal
-    // Los productos se guardarán después de crear el proveedor
-    if (!isEditing || !currentProveedor._id) {
+    resetForm();
+  };
+
+  // 🆕 Función para manejar clic en el overlay del modal principal
+  const handleMainModalOverlayClick = async (e) => {
+    if (e.target === e.currentTarget) {
+      await handleCancel();
+    }
+  };
+
+  // 🆕 Función para manejar clic en el overlay del modal de productos
+  const handleProductsModalOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
       setShowProductsModal(false);
-      showSuccessAlert('Productos seleccionados', 'Los productos se vincularán al guardar el proveedor');
-      return;
-    }
-
-    // Solo vinculamos inmediatamente si estamos editando un proveedor existente
-    console.log('🔍 Datos para vincular productos:', {
-      proveedorId: currentProveedor._id,
-      productosSeleccionados: selectedProducts,
-      isEditing: isEditing
-    });
-
-    try {
-      setLoading(true);
-      
-      console.log('🚀 Enviando solicitud de vinculación...');
-      const resultado = await vincularProductosAProveedor(currentProveedor._id, selectedProducts);
-      console.log('✅ Respuesta del servidor:', resultado);
-
-      showSuccessAlert('Productos vinculados', 'Los productos se han vinculado correctamente al proveedor');
-      setShowProductsModal(false);
-      
-      try {
-        console.log('🔄 Recargando productos del proveedor en el modal...');
-        const productosActualizados = await getProductosProveedor(currentProveedor._id);
-        setProveedorProductos(productosActualizados);
-        console.log('✅ Productos actualizados en el modal:', productosActualizados);
-        
-        // También actualizar el currentProveedor con los nuevos IDs de productos
-        setCurrentProveedor(prev => ({
-          ...prev,
-          productos: selectedProducts
-        }));
-        
-      } catch (error) {
-        console.warn('⚠️ Error al recargar productos del proveedor:', error);
-      }
-      
-      // Limpiar selección para la próxima vez
-      setSelectedProducts([]);
-      
-      // Recargar proveedores para mostrar los productos actualizados en la tabla principal
-      console.log('🔄 Recargando lista de proveedores...');
-      await fetchProveedores(); 
-      
-    } catch (error) {
-      console.error('❌ Error detallado al vincular productos:', error);
-      console.error('📊 Detalles del error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      
-      showErrorAlert('Error', 'Ocurrió un error al vincular los productos. Revisa la consola para más detalles.');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleViewProveedorProductos = async (id) => {
-    try {
-      setLoading(true);
-      
-      // Obtener el proveedor completo
-      const proveedor = proveedores.find(prov => prov._id === id);
-      if (!proveedor) {
-        showErrorAlert('Error', 'Proveedor no encontrado');
-        return;
-      }
-      
-      // Obtener los productos detallados del proveedor
-      const productosDetalle = await getProductosProveedor(id);
-      
-      // Actualizar el proveedor con los productos detallados
-      const proveedorConProductos = {
-        ...proveedor,
-        productosDetalle: productosDetalle
-      };
-      
-      setViewingProveedor(proveedorConProductos);
-      setShowViewProductsModal(true);
-    } catch (error) {
-      console.error('Error al cargar productos del proveedor:', error);
-      showErrorAlert('Error', 'No se pudieron cargar los productos del proveedor');
-    } finally {
-      setLoading(false);
+  // 🆕 Función para manejar clic en el overlay del modal de visualización
+  const handleViewModalOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowViewProductsModal(false);
     }
   };
 
@@ -552,6 +480,72 @@ const Proveedores = () => {
     await handleCambiarEstadoProveedor(id, activo);
   };
 
+  const handleLinkProducts = (e) => {
+    e.preventDefault();
+    
+    // Ya no verificamos si es un nuevo proveedor - permitimos siempre seleccionar productos
+    setShowProductsModal(true);
+  };
+
+  const handleProductSelection = (productId) => {
+    setSelectedProducts(prevSelected => {
+      if (prevSelected.includes(productId)) {
+        return prevSelected.filter(id => id !== productId);
+      } else {
+        return [...prevSelected, productId];
+      }
+    });
+  };
+
+  const handleProductsSubmit = async () => {
+    if (selectedProducts.length === 0) {
+      return showWarningAlert('Advertencia', 'Debes seleccionar al menos un producto');
+    }
+
+    // Si estamos creando un nuevo proveedor (no hay ID), solo cerramos el modal
+    // Los productos se guardarán después de crear el proveedor
+    if (!isEditing || !currentProveedor._id) {
+      setShowProductsModal(false);
+      return;
+    }
+
+    // Si estamos editando un proveedor existente, vincular productos inmediatamente
+    try {
+      setLoading(true);
+      await vincularProductosAProveedor(currentProveedor._id, selectedProducts);
+      
+      // Actualizar la lista de productos del proveedor
+      const productosActuales = await getProductosProveedor(currentProveedor._id);
+      setProveedorProductos(productosActuales);
+      
+      setShowProductsModal(false);
+      showSuccessAlert('Éxito', 'Productos vinculados correctamente');
+    } catch (error) {
+      console.error('Error al vincular productos:', error);
+      showErrorAlert('Error', 'No se pudieron vincular los productos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewProveedorProductos = async (proveedorId) => {
+    try {
+      setLoading(true);
+      const proveedor = await getProveedorById(proveedorId);
+      const productos = await getProductosProveedor(proveedorId);
+      
+      setViewingProveedor({
+        ...proveedor,
+        productosDetalle: productos
+      });
+      setShowViewProductsModal(true);
+    } catch (error) {
+      console.error('Error al cargar productos del proveedor:', error);
+      showErrorAlert('Error', 'No se pudieron cargar los productos del proveedor');
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="app-container">
       <Navbar />
@@ -763,10 +757,10 @@ const Proveedores = () => {
         )}
       </div>
 
-      {/* Modal de creación/edición de proveedores - EXACTAMENTE IGUAL A CUENTAS POR PAGAR */}
+      {/* Modal de creación/edición de proveedores */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={handleMainModalOverlayClick}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">
                 {isEditing ? 'Editar Proveedor' : 'Agregar Nuevo Proveedor'}
@@ -990,7 +984,7 @@ const Proveedores = () => {
 
       {/* Modal de selección de productos */}
       {showProductsModal && (
-        <div className="proveedores-modal-overlay" onClick={() => setShowProductsModal(false)}>
+        <div className="proveedores-modal-overlay" onClick={handleProductsModalOverlayClick}>
           <div 
             className="proveedores-modal-content proveedores-products-modal"
             onClick={(e) => e.stopPropagation()}
@@ -1054,7 +1048,7 @@ const Proveedores = () => {
 
       {/* Modal de visualización de productos */}
       {showViewProductsModal && viewingProveedor && (
-        <div className="proveedores-modal-overlay" onClick={() => setShowViewProductsModal(false)}>
+        <div className="proveedores-modal-overlay" onClick={handleViewModalOverlayClick}>
           <div 
             className="proveedores-modal-content proveedores-view-products-modal"
             onClick={(e) => e.stopPropagation()}

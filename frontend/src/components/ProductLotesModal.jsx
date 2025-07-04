@@ -69,8 +69,15 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
 
   if (!isOpen) return null;
 
+  // 🆕 Función para manejar clic en el overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="lotes-modal-overlay" onClick={onClose}>
+    <div className="lotes-modal-overlay" onClick={handleOverlayClick}>
       <div className="lotes-modal" onClick={(e) => e.stopPropagation()}>
         <div className="lotes-modal-header">
           <div className="lotes-modal-title">

@@ -83,9 +83,9 @@
 }
 
 .modern-modal-close {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
@@ -94,12 +94,13 @@
   cursor: pointer;
   color: #666;
   font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
 }
 
 .modern-modal-close:hover {
   background: rgba(220, 53, 69, 0.1);
   color: #dc3545;
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 /* Contenido principal */

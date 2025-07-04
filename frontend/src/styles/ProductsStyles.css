@@ -551,9 +551,9 @@
 .modal-close {
   background: rgba(255, 255, 255, 0.9);
   border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -566,13 +566,13 @@
   right: 20px;
   top: 20px;
   z-index: 5;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
 }
 
 .modal-close:hover {
   background-color: #f8f9fa;
   color: #dc3545;
-  /* Eliminamos transform costoso */
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 .modal-body {

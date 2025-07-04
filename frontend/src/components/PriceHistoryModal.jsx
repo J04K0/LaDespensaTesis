@@ -59,6 +59,13 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
     );
   };
 
+  // 🆕 Función para manejar clic en el overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (embedded) {
     return (
       <div className="price-history-content embedded">
@@ -156,8 +163,8 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
   }
 
   return (
-    <div className="price-history-modal-overlay">
-      <div className="price-history-modal">
+    <div className="price-history-modal-overlay" onClick={handleOverlayClick}>
+      <div className="price-history-modal" onClick={(e) => e.stopPropagation()}>
         <div className="price-history-header">
           <h2>Historial de Precios</h2>
           <button

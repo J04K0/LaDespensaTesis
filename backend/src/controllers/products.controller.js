@@ -34,7 +34,9 @@ export const getProducts = async (req, res) => {
     handleSuccess(res, 200, 'Productos encontrados', {
       products,
       totalPages: Math.ceil(count / limit),
-      currentPage: page
+      currentPage: parseInt(page),
+      total: count, // 🆕 AGREGADO: Total exacto de productos
+      limit: parseInt(limit)
     });
   } catch (err) {
     handleErrorServer(res, 500, 'Error al traer los productos', err.message);

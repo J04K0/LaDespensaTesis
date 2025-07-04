@@ -70,23 +70,27 @@ body.modal-open {
 }
 
 .close-button {
-  background: transparent;
+  background: transparent !important;
   border: none;
-  color: var(--white);
+  color: var(--white) !important;
   cursor: pointer;
   padding: 8px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
 }
 
 .close-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 .close-icon {
+  color: white;
   width: 24px;
   height: 24px;
 }

@@ -62,21 +62,21 @@
 .deleted-products-modal-close {
   background: #f8f9fa;
   border: none;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #6c757d;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
 }
 
 .deleted-products-modal-close:hover {
   background: #e9ecef;
   color: #495057;
-  transform: scale(1.05);
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 /* Body */

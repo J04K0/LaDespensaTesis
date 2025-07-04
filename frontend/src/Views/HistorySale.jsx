@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import SmartPagination from '../components/SmartPagination';
+import Navbar from "../components/Navbar.jsx";
+import SmartPagination from '../components/SmartPagination.jsx';
 import { obtenerVentasPorTicket, eliminarTicket, editarTicket, obtenerVentasAnuladas } from "../services/venta.service.js";
 import { ExportService } from '../services/export.service.js';
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import HistorySaleSkeleton from '../components/Skeleton/HistorySaleSkeleton';
+import HistorySaleSkeleton from '../components/Skeleton/HistorySaleSkeleton.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTimes, faSearch, faFilter, faFilePdf, faFileExcel, faPlus, faMinus, faMoneyBillAlt, faCreditCard, faEye, faUser } from '@fortawesome/free-solid-svg-icons';
-import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
-import { useRole } from '../hooks/useRole';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper.js";
+import { useRole } from '../hooks/useRole.js';
 
 const HistorySale = () => {
   const [ventas, setVentas] = useState([]);
@@ -288,6 +288,13 @@ const HistorySale = () => {
     setSelectedTicket(null);
     setEditedProducts([]);
     setComentarioDevolucion(''); // Reiniciar comentario al cerrar
+  };
+
+  // 🆕 Función para manejar clic en el overlay del modal de edición
+  const handleEditModalOverlayClick = async (e) => {
+    if (e.target === e.currentTarget) {
+      await handleCancelEdit();
+    }
   };
 
   // Función para modificar la cantidad de un producto
@@ -762,7 +769,7 @@ const HistorySale = () => {
             
             {/* Modal para editar ticket / devolver productos */}
             {showEditModal && selectedTicket && (
-              <div className="historysalemodaloverlay">
+              <div className="historysalemodaloverlay" onClick={handleEditModalOverlayClick}>
                 <div className="historysalemodalcontent">
                   <div className="historysalemodalheader">
                     <h2 className="modal-title">Devolución de Productos - Ticket {selectedTicket._id}</h2>

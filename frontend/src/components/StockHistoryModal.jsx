@@ -84,9 +84,16 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
 
   if (!isOpen) return null;
 
+  // 🆕 Función para manejar clic en el overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="stock-history-modal-overlay">
-      <div className="stock-history-modal">
+    <div className="stock-history-modal-overlay" onClick={handleOverlayClick}>
+      <div className="stock-history-modal" onClick={(e) => e.stopPropagation()}>
         <div className="stock-history-modal-header">
           <div className="modal-title">
             <FontAwesomeIcon icon={faHistory} className="title-icon" />

@@ -958,6 +958,7 @@
 }
 
 .summary-icon svg {
+  color: white !important;
   width: 20px !important;
   height: 20px !important;
   max-width: 20px;

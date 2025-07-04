@@ -73,18 +73,19 @@
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
 }
 
 .lotes-modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 .lotes-modal-content {
@@ -125,7 +126,7 @@
 }
 
 .summary-card svg {
-  color: #006EDF;
+  color: #006EDF !important;
   font-size: 1.2rem;
 }
 

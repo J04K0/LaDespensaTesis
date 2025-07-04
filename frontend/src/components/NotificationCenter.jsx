@@ -238,6 +238,10 @@ const NotificationCenter = () => {
         return '💸';
       case 'cuenta_por_pagar':
         return '💳';
+      case 'reporte_diario':
+        return '📊';
+      case 'sistema':
+        return '⚙️';
       default:
         return '🔔';
     }

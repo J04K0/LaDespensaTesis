@@ -101,20 +101,21 @@ body.modal-open {
 .product-edit-modal-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--white);
   font-size: 16px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
 }
 
 .product-edit-modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 /* Contenido del modal */

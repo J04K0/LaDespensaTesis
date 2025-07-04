@@ -59,13 +59,19 @@
   color: #6c757d;
   cursor: pointer;
   padding: 5px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
+  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
+  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-button:hover {
   background-color: #e9ecef;
   color: #495057;
+  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
 .stock-history-modal-body {

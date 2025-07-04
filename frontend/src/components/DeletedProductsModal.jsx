@@ -147,9 +147,16 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  // 🆕 Función para manejar clic en el overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="deleted-products-modal-overlay">
-      <div className="deleted-products-modal">
+    <div className="deleted-products-modal-overlay" onClick={handleOverlayClick}>
+      <div className="deleted-products-modal" onClick={(e) => e.stopPropagation()}>
         <div className="deleted-products-modal-header">
           <h2>
             <FontAwesomeIcon icon={faTrashRestore} />

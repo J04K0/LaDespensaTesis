@@ -7,7 +7,7 @@ import { useRole } from '../hooks/useRole';
 import { MARGENES_POR_CATEGORIA, CATEGORIAS } from '../constants/products.constants.js';
 import '../styles/AddProductStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faImage, faDollarSign, faBarcode, faTag, faCalendar, faBoxes, faCalculator, faClipboardList, faFile, faSave, faTimes, faSearch, faBox, faCheck, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faImage, faDollarSign, faBarcode, faTag, faCalendar, faBoxes, faCalculator, faClipboardList, faFile, faSave, faTimes, faSearch, faBox, faCheck, faEdit, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 
 const AddProducts = () => {
@@ -25,6 +25,12 @@ const AddProducts = () => {
   const [productsList, setProductsList] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  
+  // 🆕 NUEVO: Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const productsPerPage = 12; // Productos por página en el grid
   
   const [formData, setFormData] = useState({
     'addproducts-nombre': '',
@@ -159,20 +165,63 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 NUEVO: Cargar lista de productos cuando se selecciona modo stock
-  const loadProductsList = async () => {
+  // 🆕 MODIFICADO: Cargar lista de productos con paginación
+  const loadProductsList = async (page = 1) => {
     try {
       setSearchLoading(true);
-      const response = await getProducts(1, 1000); // Cargar muchos productos
+      const response = await getProducts(page, productsPerPage);
+      
+      console.log('🔍 DEBUGGING - Respuesta completa del backend:', response);
+      
       const products = response.data?.products || response.products || [];
+      const totalPagesFromBackend = response.data?.totalPages || response.totalPages || 1;
+      const currentPageFromBackend = response.data?.currentPage || response.currentPage || 1;
+      const totalProductsFromBackend = response.data?.total || response.total || 0; // 🆕 USAR: Campo total del backend
+      
+      console.log('📊 DEBUGGING - Datos de paginación:', {
+        products: products.length,
+        totalPages: totalPagesFromBackend,
+        currentPage: currentPageFromBackend,
+        productsPerPage,
+        totalFromBackend: totalProductsFromBackend
+      });
+      
       setProductsList(products);
       setFilteredProducts(products);
+      setTotalProducts(totalProductsFromBackend); // 🔄 CAMBIO: Usar el total exacto del backend
+      setTotalPages(totalPagesFromBackend);
+      setCurrentPage(parseInt(currentPageFromBackend));
     } catch (error) {
       console.error('Error al cargar productos:', error);
       setError('No se pudieron cargar los productos');
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  // 🆕 NUEVO: Función para cambiar de página
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      loadProductsList(newPage);
+    }
+  };
+
+  // 🆕 NUEVO: Función para generar números de páginas a mostrar
+  const getPaginationNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   };
 
   // 🆕 NUEVO: Función para filtrar productos por búsqueda
@@ -617,14 +666,20 @@ const AddProducts = () => {
                         <p>Cargando productos...</p>
                       ) : (
                         <p>
-                          {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} 
-                          {searchQuery ? ` encontrado${filteredProducts.length !== 1 ? 's' : ''}` : ' disponible'}
+                          {searchQuery ? (
+                            <>
+                              {filteredProducts.length} Producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''} de {totalProducts}
+                            </>
+                          ) : (
+                            <>
+                              {totalProducts} Productos creados en el sistema
+                            </>
+                          )}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  {/* Lista de productos */}
                   <div className="addproducts-products-grid">
                     {searchLoading ? (
                       <div className="addproducts-loading-state">
@@ -688,6 +743,41 @@ const AddProducts = () => {
                       ))
                     )}
                   </div>
+
+                  {/* Paginación */}
+                  {totalPages > 1 && (
+                    <div className="addproducts-pagination">
+                      <button 
+                        className="addproducts-pagination-btn"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1 || searchLoading}
+                      >
+                        <FontAwesomeIcon icon={faChevronLeft} />
+                        Anterior
+                      </button>
+                      
+                      <div className="addproducts-pagination-numbers">
+                        {getPaginationNumbers().map(page => (
+                          <button
+                            key={page}
+                            className={`addproducts-pagination-number ${currentPage === page ? 'active' : ''}`}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      <button 
+                        className="addproducts-pagination-btn"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages || searchLoading}
+                      >
+                        Siguiente
+                        <FontAwesomeIcon icon={faChevronRight} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : operationMode === 'stock' && existingProduct ? (
                 // 🆕 NUEVO: Vista mejorada para agregar stock con formulario completo
