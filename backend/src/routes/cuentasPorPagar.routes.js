@@ -7,7 +7,8 @@ import {
   deleteCuentaPorPagar,
   marcarComoPagada,
   getCuentasPorCategoria,
-  desmarcarComoPagada
+  desmarcarComoPagada,
+  cambiarEstadoCuenta
 } from '../controllers/cuentasPorPagar.controller.js';
 
 import { 
@@ -31,5 +32,6 @@ router.patch('/actualizar/:id', authorizeRoles([isAdmin, isJefe]), updateCuentaP
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteCuentaPorPagar);
 router.patch('/pagar/:id', authorizeRoles([isAdmin, isJefe]), marcarComoPagada);
 router.patch('/desmarcar/:id', authorizeRoles([isAdmin, isJefe]), desmarcarComoPagada);
+router.patch('/cambiar-estado/:id', authorizeRoles([isAdmin, isJefe]), cambiarEstadoCuenta);
 
 export default router;

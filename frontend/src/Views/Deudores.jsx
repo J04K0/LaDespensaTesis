@@ -6,9 +6,9 @@ import PaymentHistoryModal from '../components/PaymentHistoryModal';
 import EditDeudorModal from '../components/EditDeudorModal';
 import '../styles/DeudoresStyles.css';
 import '../styles/SmartPagination.css';
-import { getDeudores, deleteDeudor, updateDeudor, getDeudorById } from '../services/deudores.service.js';
+import { getDeudores, deleteDeudor, updateDeudor, getDeudorById, cambiarEstadoDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf, faCheck, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
 import DeudoresListSkeleton from '../components/Skeleton/DeudoresListSkeleton';
@@ -57,6 +57,7 @@ const DeudoresList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
+  const [estadoFilter, setEstadoFilter] = useState('activos');
   const [loading, setLoading] = useState(true);
   const deudoresPerPage = 10;
   const navigate = useNavigate();
@@ -248,41 +249,95 @@ const DeudoresList = () => {
   const handleClearFilters = () => {
     setSearchQuery('');
     setSortOption('');
+    setEstadoFilter('activos');
     setFilteredDeudores(allDeudores);
     setTotalPages(Math.ceil(allDeudores.length / deudoresPerPage));
     setCurrentPage(1);
   };
 
-  useEffect(() => {
-    const fetchAllDeudores = async () => {
+  const handleEstadoFilterChange = async (e) => {
+    const nuevoEstado = e.target.value;
+    setEstadoFilter(nuevoEstado);
+    
+    // Recargar deudores según el nuevo filtro de estado
+    const incluirInactivos = nuevoEstado === 'inactivos';
+    await fetchAllDeudores(incluirInactivos);
+  };
+
+  const fetchAllDeudores = async (incluirInactivos = null) => {
+    try {
+      setLoading(true);
+      // Determinar qué deudores cargar basado en el filtro de estado
+      let parametroIncluirInactivos = incluirInactivos;
+      if (parametroIncluirInactivos === null) {
+        parametroIncluirInactivos = estadoFilter === 'inactivos' ? true : false;
+      }
+      
+      const data = await getDeudores(1, Number.MAX_SAFE_INTEGER, parametroIncluirInactivos);
+
+      // Siempre ordenamos para asegurar que los deudores con deuda aparezcan primero
+      const sortedDeudores = [...data.deudores].sort((a, b) => {
+        const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+        // Si ambos tienen deuda cero o ambos tienen deuda, mantener orden alfabético
+        if ((deudaA === 0 && deudaB === 0) || (deudaA > 0 && deudaB > 0)) {
+          return a.Nombre.localeCompare(b.Nombre);
+        }
+        // Los que tienen deuda cero van al final
+        if (deudaA === 0) return 1;
+        if (deudaB === 0) return -1;
+        return 0;
+      });
+
+      setAllDeudores(sortedDeudores);
+      setFilteredDeudores(sortedDeudores);
+      setTotalPages(Math.ceil(sortedDeudores.length / deudoresPerPage));
+    } catch (error) {
+      console.error('Error fetching deudores:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para cambiar estado del deudor (activo/inactivo)
+  const handleCambiarEstadoDeudor = async (id, activo) => {
+    const mensaje = activo 
+      ? '¿Deseas activar este deudor?' 
+      : '¿Deseas desactivar este deudor?';
+    
+    const confirmText = activo ? 'Sí, activar' : 'Sí, desactivar';
+    
+    const result = await showConfirmationAlert(
+      '¿Estás seguro?',
+      mensaje,
+      confirmText,
+      'Cancelar'
+    );
+
+    if (result.isConfirmed) {
       try {
         setLoading(true);
-        const data = await getDeudores(1, Number.MAX_SAFE_INTEGER);
-
-        // Siempre ordenamos para asegurar que los deudores con deuda aparezcan primero
-        const sortedDeudores = [...data.deudores].sort((a, b) => {
-          const deudaA = parseFloat(a.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-          const deudaB = parseFloat(b.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
-          // Si ambos tienen deuda cero o ambos tienen deuda, mantener orden alfabético
-          if ((deudaA === 0 && deudaB === 0) || (deudaA > 0 && deudaB > 0)) {
-            return a.Nombre.localeCompare(b.Nombre);
-          }
-          // Los que tienen deuda cero van al final
-          if (deudaA === 0) return 1;
-          if (deudaB === 0) return -1;
-          return 0;
-        });
-
-        setAllDeudores(sortedDeudores);
-        setFilteredDeudores(sortedDeudores);
-        setTotalPages(Math.ceil(sortedDeudores.length / deudoresPerPage));
+        await cambiarEstadoDeudor(id, activo);
+        await fetchAllDeudores();
+        
+        const successMessage = activo 
+          ? 'El deudor ha sido activado.' 
+          : 'El deudor ha sido desactivado.';
+        
+        showSuccessAlert(
+          activo ? 'Activado' : 'Desactivado', 
+          successMessage
+        );
       } catch (error) {
-        console.error('Error fetching deudores:', error);
+        console.error('Error al cambiar estado del deudor:', error);
+        showErrorAlert('Error', 'No se pudo cambiar el estado del deudor');
       } finally {
         setLoading(false);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchAllDeudores();
   }, []);
 
@@ -751,6 +806,17 @@ const DeudoresList = () => {
                 </select>
               </div>
               
+              <div className="deudores-filter-group">
+                <select 
+                  onChange={handleEstadoFilterChange} 
+                  value={estadoFilter} 
+                  className="deudores-form-select"
+                >
+                  <option value="activos">Activos</option>
+                  <option value="inactivos">Inactivos</option>
+                </select>
+              </div>
+              
               <button onClick={handleClearFilters} className="deudores-btn deudores-btn-secondary">
                 Limpiar Filtros
               </button>
@@ -801,7 +867,30 @@ const DeudoresList = () => {
                               <button onClick={() => handleEditClick(deudor)} className="deudores-btn-icon deudores-btn-primary" title="Editar deudor">
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
-                              <button onClick={() => handleDeleteClick(deudor._id)} className="deudores-btn-icon deudores-btn-danger" title="Eliminar deudor">
+                              
+                              {deudor.activo ? (
+                                <button 
+                                  onClick={() => handleCambiarEstadoDeudor(deudor._id, false)}
+                                  className="deudores-btn-icon deudores-btn-warning"
+                                  title="Desactivar deudor"
+                                >
+                                  <FontAwesomeIcon icon={faEyeSlash} />
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={() => handleCambiarEstadoDeudor(deudor._id, true)}
+                                  className="deudores-btn-icon deudores-btn-info"
+                                  title="Activar deudor"
+                                >
+                                  <FontAwesomeIcon icon={faEye} />
+                                </button>
+                              )}
+                              
+                              <button 
+                                onClick={() => handleDeleteClick(deudor._id)} 
+                                className="deudores-btn-icon deudores-btn-danger" 
+                                title="Eliminar deudor"
+                              >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
                             </>
@@ -882,6 +971,24 @@ const DeudoresList = () => {
                               >
                                 <FontAwesomeIcon icon={faEdit} />
                               </button>
+                                                            
+                              {deudor.activo ? (
+                                <button 
+                                  onClick={() => handleCambiarEstadoDeudor(deudor._id, false)}
+                                  className="deudores-btn-icon deudores-btn-warning"
+                                  title="Desactivar deudor"
+                                >
+                                  <FontAwesomeIcon icon={faEyeSlash} />
+                                </button>
+                              ) : (
+                                <button 
+                                  onClick={() => handleCambiarEstadoDeudor(deudor._id, true)}
+                                  className="deudores-btn-icon deudores-btn-info"
+                                  title="Activar deudor"
+                                >
+                                  <FontAwesomeIcon icon={faEye} />
+                                </button>
+                              )}
                               <button 
                                 onClick={() => handleDeleteClick(deudor._id)} 
                                 className="deudores-btn-icon deudores-btn-danger" 

@@ -1006,6 +1006,34 @@
   box-shadow: 0 4px 8px rgba(0, 38, 81, 0.3); /* Sombra con el color de la navbar */
 }
 
+/* Botón de Productos Desactivados */
+.products-btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+  border: 1px solid #ffc107;
+}
+
+.products-btn-warning:hover {
+  background-color: #e0a800;
+  color: #212529;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* Botón de Descargar PDF */
+.products-btn-export-pdf {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.products-btn-export-pdf:hover {
+  background-color: #c82333;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
 .products-clear-filters-button {
   background-color: #e9ecef;
   color: #495057;
@@ -1071,514 +1099,43 @@
   gap: 15px;
 }
 
-/* Botones de exportación */
-.products-btn-export-pdf {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.products-btn-export-pdf:hover {
-  background-color: #c82333;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Estilos del modal moderno de productos */
-.modern-product-modal {
-  background: white;
-  border-radius: 20px;
-  width: 95%;
-  max-width: 900px;
-  max-height: 95vh;
-  overflow-y: auto;
-  /* Sombra simplificada */
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-  position: relative;
-  /* Animación simplificada */
-  animation: modernModalSlideInSimple 0.3s ease-out;
-  will-change: transform;
-}
-
-@keyframes modernModalSlideInSimple {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Header del modal moderno */
-.modern-modal-header {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 10;
-}
-
-.modern-modal-close {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  /* Eliminamos backdrop-filter costoso */
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #666;
-  font-size: 16px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.modern-modal-close:hover {
-  background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  /* Eliminamos transform costoso */
-}
-
-/* Contenido principal */
-.modern-modal-content {
-  padding: 30px;
-  padding-top: 20px;
-}
-
-/* Sección hero del producto */
-.modern-product-hero {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 40px;
-  align-items: flex-start;
-}
-
-.modern-product-image-container {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.modern-product-image-frame {
-  width: 200px;
-  height: 200px;
-  border-radius: 16px;
-  /* Gradiente simplificado */
-  background-color: #f8f9fa;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #dee2e6;
-  /* Sombra simplificada */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.modern-product-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.modern-product-badges {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.modern-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  /* Eliminamos backdrop-filter costoso */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.modern-badge-success {
-  background: rgba(40, 167, 69, 0.9);
-  color: white;
-}
-
-.modern-badge-danger {
-  background: rgba(220, 53, 69, 0.9);
-  color: white;
-}
-
-.modern-badge-warning {
-  background: rgba(255, 193, 7, 0.9);
-  color: #333;
-}
-
-/* Información principal del producto */
-.modern-product-main-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.modern-product-header-text {
-  flex: 1;
-}
-
-.modern-product-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #212529;
-  margin: 0 0 8px 0;
-  line-height: 1.2;
-}
-
-.modern-product-subtitle {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 12px;
-}
-
-.modern-product-brand {
-  background-color: var(--primary);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.modern-product-category {
-  background: rgba(108, 117, 125, 0.1);
-  color: #6c757d;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.modern-product-id {
-  color: #6c757d;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Sección de precios */
-.modern-product-price-section {
-  display: flex;
-  gap: 20px;
-}
-
-.modern-price-display, .modern-stock-display {
-  /* Gradiente simplificado */
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 12px;
-  padding: 16px;
-  flex: 1;
-  text-align: center;
-}
-
-.modern-price-label, .modern-stock-label {
-  display: block;
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-}
-
-.modern-price-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #006EDF;
-}
-
-.modern-stock-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #28a745;
-}
-
-/* Colores dinámicos para el stock según disponibilidad */
-.modern-stock-value-green {
-  color: #28a745 !important; /* Verde para stock normal */
-}
-
-.modern-stock-value-yellow {
-  color: #ffc107 !important; /* Amarillo para poco stock */
-}
-
-.modern-stock-value-red {
-  color: #dc3545 !important; /* Rojo para sin stock */
-}
-
-/* Especificaciones técnicas */
-.modern-specifications-section {
-  margin-bottom: 30px;
-}
-
-.modern-section-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.modern-section-title svg {
-  color: #006EDF;
-}
-
-/* Especificaciones técnicas - Layout de dos columnas */
-.modern-specs-grid-two-columns {
-  display: flex;
-  gap: 30px;
-}
-
-.modern-specs-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.modern-spec-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: white;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.modern-spec-item:hover {
-  border-color: #006EDF;
-  /* Sombra simplificada */
-  box-shadow: 0 2px 6px rgba(0, 110, 223, 0.08);
-  /* Eliminamos transform costoso */
-}
-
-.modern-spec-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  /* Gradiente simplificado */
-  background-color: #e9ecef;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.modern-spec-icon-blue {
-  /* Gradiente simplificado */
-  background-color: #006EDF;
-  color: white;
-}
-
-.modern-spec-content {
-  flex: 1;
-}
-
-.modern-spec-label {
-  display: block;
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.modern-spec-value {
-  font-weight: 600;
-  color: #212529;
-  font-size: 14px;
-}
-
-/* Responsividad para dos columnas */
-@media (max-width: 768px) {
-  .modern-specs-grid-two-columns {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .modern-specs-column {
-    gap: 12px;
-  }
-}
-
-.modern-info-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.modern-info-card {
-  /* Gradiente simplificado */
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 16px;
-  padding: 20px;
-  transition: box-shadow 0.2s ease;
-}
-
-.modern-info-card:hover {
-  /* Sombra simplificada */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  /* Eliminamos transform costoso */
-}
-
-.modern-info-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #212529;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #006EDF;
-}
-
-.modern-info-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.modern-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modern-info-label {
-  font-weight: 500;
-  color: #6c757d;
-  font-size: 14px;
-}
-
-.modern-info-value {
-  font-weight: 600;
-  color: #212529;
-  font-size: 14px;
-  text-align: right;
-}
-
-/* Botones de acción */
-.modern-action-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #eee;
-}
-
-.modern-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  min-width: 140px;
-  justify-content: center;
-}
-
-.modern-btn-primary {
-  background: #006EDF;
-  color: white;
-}
-
-.modern-btn-primary:hover {
-  background: #0056b3;
-  /* Eliminamos transform costoso */
-}
-
-.modern-btn-secondary {
-  background: #6c757d;
-  color: white;
-}
-
-.modern-btn-secondary:hover {
-  background: #545b62;
-  /* Eliminamos transform costoso */
-}
-
-.modern-btn-danger {
-  background: #dc3545;
-  color: white;
-}
-
-.modern-btn-danger:hover {
-  background: #c82333;
-  /* Eliminamos transform costoso */
-}
-
-/* Botones de cambio de vista */
+/* Botones de cambio de vista (tarjetas vs tabla) */
 .products-view-toggle {
   display: flex;
-  gap: 2px;
-  background-color: #f8f9fa;
+  gap: 5px;
+  background: #f8f9fa;
   border-radius: 8px;
-  padding: 2px;
+  padding: 4px;
   border: 1px solid #dee2e6;
 }
 
 .view-toggle-btn {
-  padding: 10px 12px;
-  border: none;
   background: transparent;
+  border: none;
   border-radius: 6px;
+  padding: 8px 12px;
   cursor: pointer;
   color: #6c757d;
   font-size: 16px;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
   min-width: 40px;
-  height: 40px;
+  height: 36px;
 }
 
 .view-toggle-btn:hover {
-  background-color: #e9ecef;
+  background: #e9ecef;
   color: #495057;
 }
 
 .view-toggle-btn.active {
-  background-color: #006EDF;
+  background: #006EDF;
   color: white;
-  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
 }
 
 .view-toggle-btn.active:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }

@@ -344,9 +344,9 @@ const ProductInfoModal = React.memo(({
             {permissions.canEditProduct && (
               <button 
                 onClick={handleDelete} 
-                className="modern-btn modern-btn-danger"
+                className="modern-btn modern-btn-warning"
               >
-                <FontAwesomeIcon icon={faTrash} /> Eliminar
+                <FontAwesomeIcon icon={faEyeSlash} /> Desactivar
               </button>
             )}
           </div>

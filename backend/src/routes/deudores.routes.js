@@ -6,7 +6,8 @@ import {
     deleteDeudor,
     addDeudor,
     updateDeudorPagos,
-    getDeudoresSimple
+    getDeudoresSimple,
+    cambiarEstadoDeudor
 } from '../controllers/deudores.controller.js';
 
 import { 
@@ -28,6 +29,11 @@ router.get('/simple', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudores
 router.get('/getbyid/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getDeudorById);
 router.patch('/actualizar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudor);
 router.delete('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), deleteDeudor);
+router.patch('/eliminar/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), (req, res) => {
+  req.body.activo = false;
+  cambiarEstadoDeudor(req, res);
+});
+router.patch('/cambiar-estado/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), cambiarEstadoDeudor);
 router.put('/:id/pagos', authorizeRoles([isEmpleado, isAdmin, isJefe]), updateDeudorPagos);
 
 export default router;

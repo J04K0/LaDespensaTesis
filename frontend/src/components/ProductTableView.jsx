@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTrash, faInfo, faExclamationTriangle, faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faEyeSlash, faInfo, faExclamationTriangle, faBoxes } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProductTableView.css';
 
 const ProductTableView = ({ 
@@ -153,11 +153,11 @@ const ProductTableView = ({
                           <FontAwesomeIcon icon={faPen} />
                         </button>
                         <button
-                          onClick={() => onDelete(product._id)}
+                          onClick={() => onDelete(product)}
                           className="action-btn delete-btn"
-                          title="Eliminar producto"
+                          title="Desactivar producto"
                         >
-                          <FontAwesomeIcon icon={faTrash} />
+                          <FontAwesomeIcon icon={faEyeSlash} />
                         </button>
                       </>
                     )}

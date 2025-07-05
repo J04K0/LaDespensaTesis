@@ -2,14 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faTimes, 
-  faTrashRestore, 
+  faEye, 
   faCalendarAlt, 
   faUser, 
   faComment,
   faExclamationTriangle,
   faSearch,
   faFilter,
-  faSpinner
+  faSpinner,
+  faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 import { getDeletedProducts, restoreProduct } from '../services/AddProducts.service';
 import { showConfirmationAlert, showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
@@ -25,9 +26,9 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   
-  const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [productToRestore, setProductToRestore] = useState(null);
-  const [restoreComment, setRestoreComment] = useState('');
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [productToActivate, setProductToActivate] = useState(null);
+  const [activateComment, setActivateComment] = useState('');
   
   const [skipNextFetch, setSkipNextFetch] = useState(false);
 
@@ -49,31 +50,31 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching deleted products:', error);
-      showErrorAlert('Error', 'No se pudieron cargar los productos eliminados');
+      showErrorAlert('Error', 'No se pudieron cargar los productos desactivados');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRestore = (product) => {
-    setProductToRestore(product);
-    setShowRestoreModal(true);
+  const handleActivate = (product) => {
+    setProductToActivate(product);
+    setShowActivateModal(true);
   };
 
-  const confirmRestore = async () => {
-    if (!restoreComment.trim()) {
-      showErrorAlert('Campo requerido', 'Debe proporcionar un comentario para la restauración');
+  const confirmActivate = async () => {
+    if (!activateComment.trim()) {
+      showErrorAlert('Campo requerido', 'Debe proporcionar un comentario para la habilitación');
       return;
     }
 
     try {
       setLoading(true);
       
-      const response = await restoreProduct(productToRestore._id, {
-        comentarioRestauracion: restoreComment.trim()
+      const response = await restoreProduct(productToActivate._id, {
+        comentarioRestauracion: activateComment.trim()
       });
       
-      const productIdToRemove = productToRestore._id;
+      const productIdToRemove = productToActivate._id;
       setDeletedProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
         
@@ -98,14 +99,14 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
       });
       
       showSuccessAlert(
-        'Producto restaurado exitosamente', 
-        'El producto ha sido restaurado y está disponible en el inventario principal.',
+        'Producto habilitado exitosamente', 
+        'El producto ha sido habilitado y está disponible en el inventario principal.',
         {
           showConfirmButton: true,
           confirmButtonText: 'Ver en inventario',
           showCancelButton: true,
           cancelButtonText: 'Continuar aquí',
-          confirmButtonColor: '#28a745'
+          confirmButtonColor: '#17a2b8'
         }
       ).then((result) => {
         if (result.isConfirmed) {
@@ -114,13 +115,13 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         }
       });
       
-      setShowRestoreModal(false);
-      setProductToRestore(null);
-      setRestoreComment('');
+      setShowActivateModal(false);
+      setProductToActivate(null);
+      setActivateComment('');
       
     } catch (error) {
-      console.error('Error en restauración:', error);
-      showErrorAlert('Error', 'No se pudo restaurar el producto');
+      console.error('Error en habilitación:', error);
+      showErrorAlert('Error', 'No se pudo habilitar el producto');
     } finally {
       setLoading(false);
     }
@@ -133,7 +134,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
     return matchesSearch && matchesCategory;
   });
 
-  const getDeleteReasonText = (reason) => {
+  const getDeactivateReasonText = (reason) => {
     const reasons = {
       'sin_stock_permanente': 'Sin stock permanente',
       'producto_dañado': 'Producto dañado',
@@ -147,7 +148,6 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // 🆕 Función para manejar clic en el overlay
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -159,8 +159,8 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
       <div className="deleted-products-modal" onClick={(e) => e.stopPropagation()}>
         <div className="deleted-products-modal-header">
           <h2>
-            <FontAwesomeIcon icon={faTrashRestore} />
-            Productos Eliminados
+            <FontAwesomeIcon icon={faEyeSlash} />
+            Productos Desactivados
           </h2>
           <button 
             className="deleted-products-modal-close"
@@ -199,12 +199,12 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
           {loading ? (
             <div className="deleted-products-loading">
               <FontAwesomeIcon icon={faSpinner} spin size="2x" />
-              <p>Cargando productos eliminados...</p>
+              <p>Cargando productos desactivados...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="deleted-products-empty">
               <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
-              <p>No hay productos eliminados</p>
+              <p>No hay productos desactivados</p>
             </div>
           ) : (
             <div className="deleted-products-list">
@@ -221,7 +221,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
                     <div className="deletion-info">
                       <div className="deletion-date">
                         <FontAwesomeIcon icon={faCalendarAlt} />
-                        <span>Eliminado: {new Date(product.fechaEliminacion).toLocaleDateString()}</span>
+                        <span>Desactivado: {new Date(product.fechaEliminacion).toLocaleDateString()}</span>
                       </div>
                       
                       <div className="deletion-user">
@@ -231,7 +231,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
                       
                       <div className="deletion-reason">
                         <FontAwesomeIcon icon={faExclamationTriangle} />
-                        <span>Motivo: {getDeleteReasonText(product.motivoEliminacion)}</span>
+                        <span>Motivo: {getDeactivateReasonText(product.motivoEliminacion)}</span>
                       </div>
                       
                       {product.comentarioEliminacion && (
@@ -243,16 +243,16 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
                     </div>
                     
                     <button 
-                      className="restore-button"
-                      onClick={() => handleRestore(product)}
+                      className="activate-button"
+                      onClick={() => handleActivate(product)}
                       disabled={loading}
                     >
                       {loading ? (
                         <FontAwesomeIcon icon={faSpinner} spin />
                       ) : (
-                        <FontAwesomeIcon icon={faTrashRestore} />
+                        <FontAwesomeIcon icon={faEye} />
                       )}
-                      Restaurar
+                      Habilitar
                     </button>
                   </div>
                 </div>
@@ -281,46 +281,46 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      {showRestoreModal && (
-        <div className="restore-modal-overlay">
-          <div className="restore-modal">
-            <div className="restore-modal-header">
-              <h3>Restaurar Producto</h3>
-              <button onClick={() => setShowRestoreModal(false)}>
+      {showActivateModal && (
+        <div className="activate-modal-overlay">
+          <div className="activate-modal">
+            <div className="activate-modal-header">
+              <h3>Habilitar Producto</h3>
+              <button onClick={() => setShowActivateModal(false)}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="restore-modal-body">
-              <p>¿Está seguro que desea restaurar el producto <strong>{productToRestore?.Nombre}</strong>?</p>
+            <div className="activate-modal-body">
+              <p>¿Está seguro que desea habilitar el producto <strong>{productToActivate?.Nombre}</strong>?</p>
               <p>Este producto volverá a estar disponible en el inventario.</p>
               
-              <div className="restore-comment-field">
-                <label>Comentario de restauración *</label>
+              <div className="activate-comment-field">
+                <label>Comentario de habilitación *</label>
                 <textarea
-                  value={restoreComment}
-                  onChange={(e) => setRestoreComment(e.target.value)}
-                  placeholder="Explique el motivo de la restauración..."
+                  value={activateComment}
+                  onChange={(e) => setActivateComment(e.target.value)}
+                  placeholder="Explique el motivo de la habilitación..."
                   rows="3"
                   required
                 />
               </div>
             </div>
             
-            <div className="restore-modal-footer">
+            <div className="activate-modal-footer">
               <button 
                 className="cancel-button"
-                onClick={() => setShowRestoreModal(false)}
+                onClick={() => setShowActivateModal(false)}
               >
                 Cancelar
               </button>
               <button 
                 className="confirm-button"
-                onClick={confirmRestore}
-                disabled={!restoreComment.trim() || loading}
+                onClick={confirmActivate}
+                disabled={!activateComment.trim() || loading}
               >
-                <FontAwesomeIcon icon={faTrashRestore} />
-                Restaurar
+                <FontAwesomeIcon icon={faEye} />
+                Habilitar
               </button>
             </div>
           </div>

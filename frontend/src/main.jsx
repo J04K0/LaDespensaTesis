@@ -6,15 +6,14 @@ import Root from './routes/Root.jsx';
 import ErrorPage from './routes/ErrorPage.jsx';
 import Login from './routes/Login.jsx';
 import Products from './Views/Products.jsx';
-import AddProducts from './Views/AddProducts.jsx';
-import DeudoresList from './Views/Deudores.jsx';
-import AddDeudor from './Views/AddDeudor.jsx';
-import ProductScanner from './Views/ProductScanner.jsx';
-import HistorySale from './Views/HistorySale.jsx';
-import Finanzas from './Views/Finanzas.jsx';
-import Proveedores from './Views/Proveedores.jsx';
-import CuentasPorPagar from './Views/CuentasPorPagar.jsx';
-import DeletedProducts from './Views/DeletedProducts.jsx';
+import AddProducts from './views/AddProducts.jsx';
+import DeudoresList from './views/Deudores.jsx';
+import AddDeudor from './views/AddDeudor.jsx';
+import ProductScanner from './views/ProductScanner.jsx';
+import HistorySale from './views/HistorySale.jsx';
+import Finanzas from './views/Finanzas.jsx';
+import Proveedores from './views/Proveedores.jsx';
+import CuentasPorPagar from './views/CuentasPorPagar.jsx';
 import FooterLayout from './components/FooterLayout';
 import { VentasProvider } from './context/VentasContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -86,14 +85,6 @@ const router = createBrowserRouter([
 		element: <FooterLayout>
 			<ProtectedRoute requiredRoute="/cuentas-por-pagar">
 				<CuentasPorPagar />
-			</ProtectedRoute>
-		</FooterLayout>,
-	},
-	{
-		path: '/deleted-products',
-		element: <FooterLayout>
-			<ProtectedRoute requiredRoute="/deleted-products">
-				<DeletedProducts />
 			</ProtectedRoute>
 		</FooterLayout>,
 	},

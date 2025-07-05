@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faEyeSlash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProductDeleteModal.css';
 
 const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }) => {
-  const [motivoEliminacion, setMotivoEliminacion] = useState('');
-  const [comentarioEliminacion, setComentarioEliminacion] = useState('');
+  const [motivoDesactivacion, setMotivoDesactivacion] = useState('');
+  const [comentarioDesactivacion, setComentarioDesactivacion] = useState('');
   const [errors, setErrors] = useState({});
 
   const motivosDisponibles = [
@@ -49,8 +49,8 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
 
   useEffect(() => {
     if (isOpen) {
-      setMotivoEliminacion('');
-      setComentarioEliminacion('');
+      setMotivoDesactivacion('');
+      setComentarioDesactivacion('');
       setErrors({});
     }
   }, [isOpen]);
@@ -58,13 +58,13 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
   const validateForm = () => {
     const newErrors = {};
     
-    if (!motivoEliminacion) {
+    if (!motivoDesactivacion) {
       newErrors.motivo = 'Debe seleccionar un motivo';
     }
     
-    if (!comentarioEliminacion.trim()) {
+    if (!comentarioDesactivacion.trim()) {
       newErrors.comentario = 'Debe proporcionar un comentario';
-    } else if (comentarioEliminacion.trim().length < 10) {
+    } else if (comentarioDesactivacion.trim().length < 10) {
       newErrors.comentario = 'El comentario debe tener al menos 10 caracteres';
     }
     
@@ -79,18 +79,18 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
       return;
     }
     
-    const deleteData = {
-      motivoEliminacion,
-      comentarioEliminacion: comentarioEliminacion.trim()
+    const deactivateData = {
+      motivoEliminacion: motivoDesactivacion,
+      comentarioEliminacion: comentarioDesactivacion.trim()
     };
     
-    onConfirm(deleteData);
+    onConfirm(deactivateData);
   };
 
   const handleClose = () => {
     if (!loading) {
-      setMotivoEliminacion('');
-      setComentarioEliminacion('');
+      setMotivoDesactivacion('');
+      setComentarioDesactivacion('');
       setErrors({});
       onClose();
     }
@@ -109,9 +109,9 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
       <div className="delete-modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="delete-modal-header">
           <div className="delete-modal-icon">
-            <FontAwesomeIcon icon={faExclamationTriangle} />
+            <FontAwesomeIcon icon={faEyeSlash} />
           </div>
-          <h2 className="delete-modal-title">Eliminar Producto</h2>
+          <h2 className="delete-modal-title">Desactivar Producto</h2>
           <button 
             className="delete-modal-close"
             onClick={handleClose}
@@ -127,25 +127,21 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
               <FontAwesomeIcon icon={faExclamationTriangle} />
             </div>
             <div className="delete-warning-content">
-              <h4>¿Está seguro de que desea eliminar el producto?</h4>
+              <h4>¿Está seguro de que desea desactivar el producto?</h4>
               <p className="delete-product-name">"{productName}"</p>
-              <p className="delete-warning-description">
-                Esta acción marcará el producto como eliminado. El producto no se eliminará 
-                físicamente y podrá ser restaurado posteriormente desde la sección de productos eliminados.
-              </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="delete-form">
             <div className="delete-form-grid">
               <div className="delete-form-group">
-                <label htmlFor="motivoEliminacion" className="delete-form-label">
-                  Motivo de la eliminación <span className="required">*</span>
+                <label htmlFor="motivoDesactivacion" className="delete-form-label">
+                  Motivo de la desactivación <span className="required">*</span>
                 </label>
                 <select
-                  id="motivoEliminacion"
-                  value={motivoEliminacion}
-                  onChange={(e) => setMotivoEliminacion(e.target.value)}
+                  id="motivoDesactivacion"
+                  value={motivoDesactivacion}
+                  onChange={(e) => setMotivoDesactivacion(e.target.value)}
                   className={`delete-form-control ${errors.motivo ? 'error' : ''}`}
                   disabled={loading}
                   required
@@ -160,14 +156,14 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
               </div>
 
               <div className="delete-form-group delete-form-group-full">
-                <label htmlFor="comentarioEliminacion" className="delete-form-label">
+                <label htmlFor="comentarioDesactivacion" className="delete-form-label">
                   Comentario adicional <span className="required">*</span>
                 </label>
                 <textarea
-                  id="comentarioEliminacion"
-                  value={comentarioEliminacion}
-                  onChange={(e) => setComentarioEliminacion(e.target.value)}
-                  placeholder="Proporcione detalles adicionales sobre la eliminación del producto..."
+                  id="comentarioDesactivacion"
+                  value={comentarioDesactivacion}
+                  onChange={(e) => setComentarioDesactivacion(e.target.value)}
+                  placeholder="Proporcione detalles adicionales sobre la desactivación del producto..."
                   className={`delete-form-control delete-textarea ${errors.comentario ? 'error' : ''}`}
                   rows={4}
                   disabled={loading}
@@ -196,10 +192,10 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
             type="submit"
             onClick={handleSubmit}
             className="delete-btn delete-btn-danger"
-            disabled={loading || !motivoEliminacion || !comentarioEliminacion.trim()}
+            disabled={loading || !motivoDesactivacion || !comentarioDesactivacion.trim()}
           >
-            <FontAwesomeIcon icon={faTrash} />
-            {loading ? 'Eliminando...' : 'Eliminar Producto'}
+            <FontAwesomeIcon icon={faEyeSlash} />
+            {loading ? 'Desactivando...' : 'Desactivar Producto'}
           </button>
         </div>
       </div>

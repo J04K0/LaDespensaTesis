@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 import SmartPagination from '../components/SmartPagination.jsx';
-import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar } from '../services/cuentasPorPagar.service.js';
+import { getCuentasPorPagar, deleteCuentaPorPagar, updateCuentaPorPagar, cambiarEstadoCuenta } from '../services/cuentasPorPagar.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faSearch, faTimes, faSave, faMoneyBillWave, faCalendarAlt, faExclamationTriangle, faCheck, faFilePdf, faCheckCircle, faChartLine, faFilter, faEraser, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper.js';
 import { useRole } from '../hooks/useRole.js';
 import CuentasPorPagarSkeleton from '../components/Skeleton/CuentasPorPagarSkeleton.jsx';
@@ -28,6 +28,7 @@ const CuentasPorPagar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
+  const [estadoCuentasFilter, setEstadoCuentasFilter] = useState('activas'); // Nuevo filtro para activas/inactivas
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -121,30 +122,55 @@ const CuentasPorPagar = () => {
   const fetchCuentas = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/cuentasPorPagar', {
-        params: {
-          page: 1,
-          limit: 1000,
-          categoria: categoriaFilter,
-          estado: estadoFilter,
-          year: yearSelected // Agregar el año como parámetro de filtro
-        }
-      });
       
-      if (response.data.status === "success") {
-        const { cuentas } = response.data.data;
-        setCuentas(cuentas);
-        setFilteredCuentas(cuentas);
+      // Filtrar cuentas según el estado activo/inactivo
+      let cuentasFiltradas = [];
+      
+      if (estadoCuentasFilter === 'inactivas') {
+        // Obtener todas las cuentas y filtrar las inactivas
+        const responseAll = await axios.get('/cuentasPorPagar', {
+          params: {
+            page: 1,
+            limit: 10000,
+            categoria: categoriaFilter,
+            estado: estadoFilter,
+            year: yearSelected
+          }
+        });
         
-        // Agrupar cuentas por nombre y categoría
-        const { agrupadas, orden } = agruparCuentas(cuentas);
-        setCuentasAgrupadas(agrupadas);
-        setOrdenProveedores(orden);
-        
-        setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
+        if (responseAll.data.status === "success") {
+          const todasLasCuentas = responseAll.data.data.cuentas;
+          // Filtrar solo las cuentas que están marcadas como inactivas
+          cuentasFiltradas = todasLasCuentas.filter(cuenta => cuenta.Activo === false);
+        }
       } else {
-        throw new Error(response.data.message || 'Error al obtener las cuentas');
+        // Obtener solo las cuentas activas (comportamiento normal)
+        const response = await axios.get('/cuentasPorPagar', {
+          params: {
+            page: 1,
+            limit: 1000,
+            categoria: categoriaFilter,
+            estado: estadoFilter,
+            year: yearSelected
+          }
+        });
+        
+        if (response.data.status === "success") {
+          const { cuentas } = response.data.data;
+          // Filtrar solo las cuentas activas (Activo !== false)
+          cuentasFiltradas = cuentas.filter(cuenta => cuenta.Activo !== false);
+        }
       }
+      
+      setCuentas(cuentasFiltradas);
+      setFilteredCuentas(cuentasFiltradas);
+      
+      // Agrupar cuentas por nombre y categoría
+      const { agrupadas, orden } = agruparCuentas(cuentasFiltradas);
+      setCuentasAgrupadas(agrupadas);
+      setOrdenProveedores(orden);
+      
+      setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
     } catch (error) {
       console.error('Error fetching cuentas:', error);
       
@@ -168,7 +194,7 @@ const CuentasPorPagar = () => {
 
   useEffect(() => {
     fetchCuentas();
-  }, [categoriaFilter, estadoFilter, yearSelected]);
+  }, [categoriaFilter, estadoFilter, yearSelected, estadoCuentasFilter]);
 
   // Filtrar cuentas por búsqueda
   useEffect(() => {
@@ -222,11 +248,16 @@ const CuentasPorPagar = () => {
     setYearSelected(e.target.value);
   };
 
+  const handleEstadoCuentasFilterChange = (e) => {
+    setEstadoCuentasFilter(e.target.value);
+  };
+
   const handleClearFilters = () => {
     setSearchQuery('');
     setCategoriaFilter('');
     setEstadoFilter('');
     setYearSelected(new Date().getFullYear().toString());
+    setEstadoCuentasFilter('activas');
     setFilteredCuentas(cuentas);
     const { agrupadas } = agruparCuentas(cuentas);
     setCuentasAgrupadas(agrupadas);
@@ -564,6 +595,94 @@ const handleTogglePaidClick = async (id, estadoActual) => {
   await handleTogglePaid(id, estadoActual);
 };
 
+// 🆕 Función para manejar cambio de estado de cuenta (activo/inactivo)
+const handleCambiarEstadoCuenta = async (proveedor, activo) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+
+  const mensaje = activo 
+    ? '¿Deseas activar todas las cuentas de este proveedor?' 
+    : '¿Deseas desactivar todas las cuentas de este proveedor?';
+  
+  const confirmText = activo ? 'Sí, activar' : 'Sí, desactivar';
+  
+  const result = await showConfirmationAlert(
+    '¿Estás seguro?',
+    mensaje,
+    confirmText,
+    'Cancelar'
+  );
+
+  if (result.isConfirmed) {
+    try {
+      // Obtener todas las cuentas de este proveedor
+      const cuentasProveedor = cuentas.filter(cuenta => 
+        cuenta.Nombre === proveedor.nombre && cuenta.Categoria === proveedor.categoria
+      );
+
+      // Cambiar estado de todas las cuentas del proveedor
+      for (const cuenta of cuentasProveedor) {
+        await cambiarEstadoCuenta(cuenta._id, activo);
+      }
+
+      await fetchCuentas();
+      
+      const successMessage = activo 
+        ? 'Las cuentas del proveedor han sido activadas.' 
+        : 'Las cuentas del proveedor han sido desactivadas.';
+      
+      showSuccessAlert(
+        activo ? 'Activado' : 'Desactivado', 
+        successMessage
+      );
+    } catch (error) {
+      console.error('Error al cambiar estado de las cuentas:', error);
+      showErrorAlert('Error', 'No se pudo cambiar el estado de las cuentas del proveedor');
+    }
+  }
+};
+
+// 🆕 Función para manejar eliminación permanente de cuenta
+const handleDeleteCuentaPermanente = async (proveedor) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+
+  const result = await showConfirmationAlert(
+    '¿Estás seguro?',
+    `¿Deseas eliminar permanentemente todas las cuentas de "${proveedor.nombre}"? Esta acción no se puede deshacer.`,
+    'Sí, eliminar permanentemente',
+    'Cancelar'
+  );
+
+  if (result.isConfirmed) {
+    try {
+      // Obtener todas las cuentas de este proveedor
+      const cuentasProveedor = cuentas.filter(cuenta => 
+        cuenta.Nombre === proveedor.nombre && cuenta.Categoria === proveedor.categoria
+      );
+
+      // Eliminar todas las cuentas del proveedor
+      for (const cuenta of cuentasProveedor) {
+        await axios.delete(`/cuentasPorPagar/eliminar/${cuenta._id}`);
+      }
+
+      await fetchCuentas();
+      
+      showSuccessAlert(
+        'Eliminado', 
+        'Todas las cuentas del proveedor han sido eliminadas permanentemente.'
+      );
+    } catch (error) {
+      console.error('Error al eliminar las cuentas:', error);
+      showErrorAlert('Error', 'No se pudieron eliminar las cuentas del proveedor');
+    }
+  }
+};
+
   return (
     <div className="app-container">
       <Navbar />
@@ -713,6 +832,17 @@ const handleTogglePaidClick = async (id, estadoActual) => {
                 </div>
                 
                 <div className="filter-item">
+                  <select 
+                    className="form-select"
+                    value={estadoCuentasFilter}
+                    onChange={handleEstadoCuentasFilterChange}
+                  >
+                    <option value="activas">Cuentas Activas</option>
+                    <option value="inactivas">Cuentas Inactivas</option>
+                  </select>
+                </div>
+                
+                <div className="filter-item">
                   <button 
                     className="btn btn-secondary"
                     onClick={handleClearFilters}
@@ -742,6 +872,57 @@ const handleTogglePaidClick = async (id, estadoActual) => {
                           <div className="proveedor-info">
                             <div className="proveedor-nombre">{proveedor.nombre}</div>
                             <div className="proveedor-id text-secondary">{proveedor.numeroVerificador}</div>
+                            {/* Botones de control */}
+                            <div className="proveedor-estado-controls">
+                              {/* Determinar si el proveedor está activo basado en sus cuentas */}
+                              {(() => {
+                                const cuentasProveedor = cuentas.filter(cuenta => 
+                                  cuenta.Nombre === proveedor.nombre && cuenta.Categoria === proveedor.categoria
+                                );
+                                const todasActivas = cuentasProveedor.length > 0 && cuentasProveedor.every(cuenta => cuenta.Activo !== false);
+                                
+                                return (
+                                  <>
+                                    {/* Botón de estado (activar/desactivar) */}
+                                    {todasActivas ? (
+                                      <button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleCambiarEstadoCuenta(proveedor, false);
+                                        }}
+                                        className="btn-icon btn-warning btn-estado-cuenta"
+                                        title="Desactivar proveedor"
+                                      >
+                                        <FontAwesomeIcon icon={faEyeSlash} />
+                                      </button>
+                                    ) : (
+                                      <button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleCambiarEstadoCuenta(proveedor, true);
+                                        }}
+                                        className="btn-icon btn-info btn-estado-cuenta"
+                                        title="Activar proveedor"
+                                      >
+                                        <FontAwesomeIcon icon={faEye} />
+                                      </button>
+                                    )}
+                                    
+                                    {/* Botón de eliminar permanentemente */}
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteCuentaPermanente(proveedor);
+                                      }}
+                                      className="btn-icon btn-danger btn-estado-cuenta"
+                                      title="Eliminar proveedor permanentemente"
+                                    >
+                                      <FontAwesomeIcon icon={faTrash} />
+                                    </button>
+                                  </>
+                                );
+                              })()}
+                            </div>
                           </div>
                         </td>
                         <td className="categoria-column">

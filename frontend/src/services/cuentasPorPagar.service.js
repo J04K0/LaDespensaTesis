@@ -92,3 +92,14 @@ export const getCuentasPorCategoria = async (categoria) => {
     throw error;
   }
 };
+
+// Cambiar el estado de una cuenta por pagar (activo/inactivo)
+export const cambiarEstadoCuenta = async (id, activo) => {
+  try {
+    const response = await axios.patch(`/cuentasPorPagar/cambiar-estado/${id}`, { activo });
+    return response.data;
+  } catch (error) {
+    console.error('Error al cambiar estado de la cuenta:', error);
+    throw error;
+  }
+};

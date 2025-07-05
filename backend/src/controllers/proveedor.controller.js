@@ -161,6 +161,24 @@ export const cambiarEstadoProveedor = async (req, res) => {
   }
 };
 
+// Eliminar un proveedor permanentemente
+export const deleteProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const proveedor = await Proveedor.findById(id);
+    if (!proveedor) {
+      return handleErrorClient(res, 404, 'Proveedor no encontrado');
+    }
+    
+    await Proveedor.findByIdAndDelete(id);
+    
+    handleSuccess(res, 200, 'Proveedor eliminado permanentemente', { id });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al eliminar el proveedor', err.message);
+  }
+};
+
 // Obtener productos de un proveedor
 export const getProductosProveedor = async (req, res) => {
   try {

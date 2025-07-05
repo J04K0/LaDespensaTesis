@@ -14,17 +14,28 @@ const formatNumberWithDots = (number) => {
 // y formatear la deuda total con puntos como separadores de miles
 export const getDeudores = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, incluirInactivos = false } = req.query;
     
-    const deudores = await Deudores.find()
+    let filtro = {};
+    if (incluirInactivos === 'true') {
+      filtro = { activo: false };
+    } else if (incluirInactivos === 'false' || incluirInactivos === false) {
+      filtro = { activo: true };
+    }
+    
+    const deudores = await Deudores.find(filtro)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
 
-    const count = await Deudores.countDocuments();
+    const count = await Deudores.countDocuments(filtro);
 
     if (deudores.length === 0) {
-      return handleErrorClient(res, 404, 'No hay deudores registrados');
+      return handleSuccess(res, 200, 'No hay deudores registrados con los criterios seleccionados', {
+        deudores: [],
+        totalPages: 0,
+        currentPage: page
+      });
     }
     const deudoresFormateados = deudores.map(deudor => ({
       ...deudor.toObject(),
@@ -142,7 +153,7 @@ export const updateDeudorPagos = async (req, res) => {
 // Obtener lista simple de deudores para selector de ventas
 export const getDeudoresSimple = async (req, res) => {
   try {
-    const deudores = await Deudores.find({}, 'Nombre numeroTelefono deudaTotal');
+    const deudores = await Deudores.find({ activo: true }, 'Nombre numeroTelefono deudaTotal');
 
     if (deudores.length === 0) {
       return handleErrorClient(res, 404, 'No hay deudores registrados');
@@ -151,5 +162,32 @@ export const getDeudoresSimple = async (req, res) => {
     handleSuccess(res, 200, 'Lista de deudores obtenida', deudores);
   } catch (err) {
     handleErrorServer(res, 500, 'Error al obtener la lista de deudores', err.message);
+  }
+};
+
+// Cambiar el estado de un deudor (activo/inactivo)
+export const cambiarEstadoDeudor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { activo } = req.body;
+    
+    if (typeof activo !== 'boolean') {
+      return handleErrorClient(res, 400, 'El estado "activo" debe ser un valor booleano');
+    }
+    
+    const deudor = await Deudores.findByIdAndUpdate(
+      id,
+      { activo },
+      { new: true }
+    );
+    
+    if (!deudor) {
+      return handleErrorClient(res, 404, 'Deudor no encontrado');
+    }
+    
+    const mensaje = activo ? 'Deudor activado' : 'Deudor desactivado';
+    handleSuccess(res, 200, mensaje, deudor);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al cambiar el estado del deudor', err.message);
   }
 };

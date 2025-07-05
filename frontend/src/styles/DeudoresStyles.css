@@ -74,13 +74,37 @@
 }
 
 .deudores-btn-secondary {
-  background-color: var(--gray-dark);
+  background-color: #6c757d;
   color: var(--white);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .deudores-btn-secondary:hover {
-  background-color: #212529;
+  background-color: #5a6268;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deudores-btn-warning {
+  background-color: #ffc107;
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-warning:hover {
+  background-color: #e0a800;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.deudores-btn-info {
+  background-color: #17a2b8;
+  color: var(--white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.deudores-btn-info:hover {
+  background-color: #138496;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
 }
@@ -181,14 +205,14 @@
   align-items: center;
   cursor: pointer;
   color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .deudores-btn-icon:hover {
   opacity: 0.9;
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Contenedor de tabla con altura fija y scroll */
@@ -227,7 +251,7 @@
   text-align: left;
   padding: 16px;
   font-size: 13px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
 }
 
@@ -249,7 +273,7 @@
 /* Celdas de datos */
 .deudores-table td {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   vertical-align: middle;
 }
 
@@ -303,7 +327,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .deudores-btn-pagar {
@@ -324,7 +348,7 @@
 
 .deudores-btn-action:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .deudores-btn-pagar:hover {

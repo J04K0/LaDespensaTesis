@@ -25,6 +25,10 @@ const CuentasPorPagarSchema = new Schema({
         type: String,
         required: true,
     },
+    Activo: {
+        type: Boolean,
+        default: true,
+    },
 },
 {
     versionKey: false,

@@ -274,14 +274,16 @@
 }
 
 .delete-btn {
-  background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  border: 1px solid rgba(220, 53, 69, 0.3) !important;
+  background: rgba(255, 193, 7, 0.1);
+  color: #e0a800;
+  border: 1px solid rgba(255, 193, 7, 0.3) !important;
 }
 
 .delete-btn:hover {
-  background: #dc3545;
-  color: white;
+  background: #ffc107;
+  color: #212529;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
 }
 
 /* Botón de lotes */

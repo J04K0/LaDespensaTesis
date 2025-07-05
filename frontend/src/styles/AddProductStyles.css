@@ -110,21 +110,17 @@
 }
 
 .addproducts-section-icon {
-  color: white;
-  font-size: 0.85rem;
-  background-color: var(--primary);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  color: var(--secondary);
+  font-size: 1.2rem; /* Reducido de 1.4rem para mejor proporción con el icono */
+  width: 28px; /* Forzado con !important */
+  height: 28px; /* Forzado con !important */
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 10px;
-  box-sizing: border-box;
-  position: relative;
-  overflow: visible;
-  /* Sombra simplificada */
-  box-shadow: 0 1px 3px rgba(0, 110, 223, 0.15);
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 10px; /* Forzado con !important */
 }
 
 .addproducts-section-title {

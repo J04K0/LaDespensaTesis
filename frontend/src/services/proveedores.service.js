@@ -42,6 +42,16 @@ export const updateProveedor = async (id, proveedorData) => {
   }
 };
 
+export const deleteProveedor = async (id) => {
+  try {
+    const response = await axios.delete(`/proveedores/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al eliminar proveedor:', error);
+    throw error;
+  }
+};
+
 export const cambiarEstadoProveedor = async (id, activo) => {
   try {
     const response = await axios.patch(`/proveedores/cambiar-estado/${id}`, { activo });

@@ -189,3 +189,30 @@ export const getCuentasPorCategoria = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener las cuentas por categoría', err.message);
   }
 };
+
+// Cambiar el estado de una cuenta por pagar (activo/inactivo)
+export const cambiarEstadoCuenta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { activo } = req.body;
+    
+    if (typeof activo !== 'boolean') {
+      return handleErrorClient(res, 400, 'El estado "activo" debe ser un valor booleano');
+    }
+    
+    const cuenta = await CuentasPorPagar.findByIdAndUpdate(
+      id,
+      { Activo: activo },
+      { new: true }
+    );
+    
+    if (!cuenta) {
+      return handleErrorClient(res, 404, 'Cuenta por pagar no encontrada');
+    }
+    
+    const mensaje = activo ? 'Cuenta activada' : 'Cuenta desactivada';
+    handleSuccess(res, 200, mensaje, cuenta);
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al cambiar el estado de la cuenta', err.message);
+  }
+};

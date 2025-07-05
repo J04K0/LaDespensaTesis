@@ -1,9 +1,9 @@
 import axios from './root.service.js';
 
-export const getDeudores = async (page = 1, limit = 6) => {
+export const getDeudores = async (page = 1, limit = 6, incluirInactivos = false) => {
   try {
     const response = await axios.get('/deudores', {
-      params: { page, limit }
+      params: { page, limit, incluirInactivos }
     });
     return response.data.data;
   } catch (error) {
@@ -59,6 +59,16 @@ export const addDeudor = async (deudorData) => {
     return response.data.data;
   } catch (error) {
     console.error('Error adding deudor:', error);
+    throw error;
+  }
+};
+
+export const cambiarEstadoDeudor = async (id, activo) => {
+  try {
+    const response = await axios.patch(`/deudores/cambiar-estado/${id}`, { activo });
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al cambiar estado del deudor:', error);
     throw error;
   }
 };

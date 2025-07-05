@@ -410,6 +410,14 @@
   background-color: #6c757d;
 }
 
+.proveedores-btn-warning {
+  background-color: #ffc107;
+}
+
+.proveedores-btn-info {
+  background-color: #17a2b8;
+}
+
 /* Clases de utilidad */
 .proveedores-d-flex { 
   display: flex; 

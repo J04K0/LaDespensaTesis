@@ -807,8 +807,8 @@ const Products = () => {
                 <button className="products-btn products-btn-primary" onClick={handleAddProductClick}>
                   <FontAwesomeIcon icon={faPlus} /> Nuevo Producto
                 </button>
-                <button className="products-btn products-btn-secondary" onClick={handleDeletedProductsClick}>
-                  <FontAwesomeIcon icon={faTrashRestore} /> Productos eliminados
+                <button className="products-btn products-btn-warning" onClick={handleDeletedProductsClick}>
+                  <FontAwesomeIcon icon={faEyeSlash} /> Productos Desactivados
                 </button>
                 <button className="products-btn products-btn-export-pdf" onClick={handleExportToPDF}>
                   <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF

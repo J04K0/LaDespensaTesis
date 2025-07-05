@@ -1,4 +1,4 @@
-/* MODAL DE ELIMINACIÓN CON PREFIJO ÚNICO - No interfiere con otros modales */
+/* MODAL DE DESACTIVACIÓN CON PREFIJO ÚNICO - No interfiere con otros modales */
 /* Variables de colores para mantener consistencia */
 :root {
   --primary-dark: #002651;
@@ -8,6 +8,7 @@
   --danger: #dc3545;
   --danger-dark: #c82333;
   --warning: #ffc107;
+  --warning-dark: #e0a800;
   --gray-dark: #343a40;
   --gray: #6c757d;
   --gray-light: #f8f9fa;
@@ -73,8 +74,8 @@
 
 /* Header del modal moderno - CENTRADO */
 .delete-modal-header {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
-  color: var(--white);
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  color: #212529; /* Texto oscuro para mejor contraste con amarillo */
   padding: 1.5rem 2rem;
   position: relative;
   display: flex;
@@ -87,7 +88,7 @@
 }
 
 .delete-modal-icon {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(33, 37, 41, 0.1); /* Fondo oscuro suave para el ícono */
   padding: 0.75rem;
   border-radius: 50%;
   display: flex;
@@ -101,7 +102,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  color: var(--white);
+  color: #212529; /* Texto oscuro para contraste */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -109,7 +110,7 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(33, 37, 41, 0.1); /* Fondo oscuro suave */
   border: none;
   border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
   width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
@@ -118,14 +119,14 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--white);
+  color: #212529; /* Texto oscuro */
   font-size: 16px;
   transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
   backdrop-filter: blur(10px);
 }
 
 .delete-modal-close:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(33, 37, 41, 0.2);
   transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
@@ -162,8 +163,8 @@
 }
 
 .delete-warning-icon {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--danger);
+  background: rgba(255, 193, 7, 0.2); /* Fondo amarillo suave */
+  color: var(--warning-dark);
   padding: 1rem;
   border-radius: 50%;
   display: flex;
@@ -171,7 +172,7 @@
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
-  border: 2px solid rgba(220, 53, 69, 0.2);
+  border: 2px solid rgba(255, 193, 7, 0.3);
 }
 
 .delete-warning-content {
@@ -366,15 +367,16 @@
 }
 
 .delete-btn-danger {
-  background: var(--danger);
-  color: var(--white);
+  background: var(--warning);
+  color: #212529; /* Texto oscuro para contraste */
   border: 2px solid transparent;
 }
 
 .delete-btn-danger:hover:not(:disabled) {
-  background: var(--danger-dark);
+  background: var(--warning-dark);
+  color: #212529;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
 
 /* Responsividad - MEJORADA */

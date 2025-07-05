@@ -77,8 +77,12 @@ const DeudorSchema = new Schema({
     required: [true, "La deuda total es obligatoria"],
     min: [0, "La deuda total no puede ser negativa"]
   },
+  activo: {
+    type: Boolean,
+    default: true
+  },
   historialPagos: [PagoSchema]
-}, 
+},
 {
   versionKey: false,
   timestamps: true,

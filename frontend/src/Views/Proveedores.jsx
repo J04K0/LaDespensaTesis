@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash, faEye, faSearch, faSort, faFilter, faCheck, faTimes, faExclamationTriangle, faShoppingCart, faBox, faLink, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEdit, faTrash, faEye, faEyeSlash, faSearch, faSort, faFilter, faCheck, faTimes, faExclamationTriangle, faShoppingCart, faBox, faLink, faSave, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../components/Navbar';
 import SmartPagination from '../components/SmartPagination';
 import ProveedoresSkeleton from '../components/Skeleton/ProveedoresSkeleton';
-import { getProveedores, updateProveedor, createProveedor, cambiarEstadoProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
+import { getProveedores, updateProveedor, createProveedor, cambiarEstadoProveedor, deleteProveedor, getProductosProveedor, vincularProductosAProveedor, getProveedorById } from '../services/proveedores.service';
 import { getProducts } from '../services/AddProducts.service';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { ExportService } from '../services/export.service';
@@ -222,8 +222,8 @@ const Proveedores = () => {
   const handleDeleteProveedor = async (id) => {
     const result = await showConfirmationAlert(
       '¿Estás seguro?',
-      'El proveedor será marcado como inactivo y no aparecerá en la lista principal',
-      'Sí, desactivar',
+      'Esta acción no se puede deshacer. ¿Deseas eliminar este proveedor permanentemente?',
+      'Sí, eliminar',
       'Cancelar'
     );
 
@@ -232,10 +232,10 @@ const Proveedores = () => {
         setLoading(true);
         await deleteProveedor(id);
         fetchProveedores();
-        showSuccessAlert('Desactivado', 'El proveedor ha sido marcado como inactivo.');
+        showSuccessAlert('Eliminado', 'El proveedor ha sido eliminado permanentemente.');
       } catch (error) {
-        console.error('Error al desactivar proveedor:', error);
-        showErrorAlert('Error', 'No se pudo desactivar el proveedor');
+        console.error('Error al eliminar proveedor:', error);
+        showErrorAlert('Error', 'No se pudo eliminar el proveedor');
       } finally {
         setLoading(false);
       }
@@ -719,20 +719,28 @@ const Proveedores = () => {
                               {proveedor.activo ? (
                                 <button 
                                   onClick={() => handleCambiarEstadoProveedorClick(proveedor._id, false)}
-                                  className="proveedores-btn-icon proveedores-btn-danger"
+                                  className="proveedores-btn-icon proveedores-btn-warning"
                                   title="Desactivar proveedor"
                                 >
-                                  <FontAwesomeIcon icon={faTrash} />
+                                  <FontAwesomeIcon icon={faEyeSlash} />
                                 </button>
                               ) : (
                                 <button 
                                   onClick={() => handleCambiarEstadoProveedorClick(proveedor._id, true)}
-                                  className="proveedores-btn-icon proveedores-btn-success"
+                                  className="proveedores-btn-icon proveedores-btn-info"
                                   title="Activar proveedor"
                                 >
-                                  <FontAwesomeIcon icon={faCheck} />
+                                  <FontAwesomeIcon icon={faEye} />
                                 </button>
                               )}
+                              
+                              <button 
+                                onClick={() => handleDeleteProveedorClick(proveedor._id)}
+                                className="proveedores-btn-icon proveedores-btn-danger"
+                                title="Eliminar proveedor"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
                             </td>
                           </tr>
                         ))

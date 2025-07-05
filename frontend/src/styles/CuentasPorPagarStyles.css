@@ -1083,3 +1083,102 @@
     margin-right: 10px;
   }
 }
+
+/* Estilos para el botón de estado de cuenta */
+.proveedor-estado-controls {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px; /* Agregado espacio entre botones */
+}
+
+.btn-estado-cuenta {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: white;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-estado-cuenta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-estado-cuenta.btn-success {
+  background-color: #28a745;
+}
+
+.btn-estado-cuenta.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-estado-cuenta.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-estado-cuenta.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Botones de estado del proveedor - Colores iguales a Proveedores */
+.btn-estado-cuenta.btn-warning {
+  background-color: #ffc107; /* Amarillo para desactivar */
+  border-color: #ffc107;
+  color: #212529;
+}
+
+.btn-estado-cuenta.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  color: #212529;
+}
+
+.btn-estado-cuenta.btn-info {
+  background-color: #17a2b8; /* Azul para activar */
+  border-color: #17a2b8;
+  color: white;
+}
+
+.btn-estado-cuenta.btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+  color: white;
+}
+
+.btn-estado-cuenta.btn-danger {
+  background-color: #dc3545; /* Rojo para eliminar */
+  border-color: #dc3545;
+  color: white;
+}
+
+.btn-estado-cuenta.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: white;
+}
+
+/* Ajustar el contenedor de información del proveedor */
+.proveedor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.proveedor-nombre {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.proveedor-id {
+  font-size: 12px;
+  color: #666;
+}

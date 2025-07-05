@@ -476,6 +476,18 @@
   transform: translateY(-1px); /* Efecto hover consistente, sin sombra excesiva */
 }
 
+.modern-btn-warning {
+  background: #ffc107;
+  color: #212529;
+  border: 2px solid transparent;
+}
+
+.modern-btn-warning:hover {
+  background: #e0a800;
+  border-color: #d39e00;
+  transform: translateY(-1px);
+}
+
 /* Mensajes y notificaciones */
 .required {
   color: #dc3545;

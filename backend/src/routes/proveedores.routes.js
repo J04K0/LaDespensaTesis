@@ -4,6 +4,7 @@ import {
   getProveedorById, 
   createProveedor, 
   updateProveedor, 
+  deleteProveedor,
   getProductosProveedor,
   vincularProductos,
   cambiarEstadoProveedor
@@ -25,6 +26,7 @@ router.post('/agregar', authorizeRoles([isAdmin, isJefe]), createProveedor);
 router.get('/', authorizeRoles([isAdmin, isJefe]), getProveedores);
 router.get('/getbyid/:id', authorizeRoles([isAdmin, isJefe]), getProveedorById);
 router.patch('/actualizar/:id',authorizeRoles([isAdmin, isJefe]), updateProveedor);
+router.delete('/:id', authorizeRoles([isAdmin, isJefe]), deleteProveedor);
 router.patch('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), (req, res) => {
   req.body.activo = false;
   cambiarEstadoProveedor(req, res);
