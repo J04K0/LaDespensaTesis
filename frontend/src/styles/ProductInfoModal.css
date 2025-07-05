@@ -216,6 +216,13 @@
 }
 
 .modern-product-brand {
+  background: #006EDF; /* 🔧 CORREGIDO: Agregar background azul */
+  color: white;
+  border: none;
+}
+
+.modern-product-category {
+  background: #28a745; /* 🔧 AGREGADO: Background verde para la categoría */
   color: white;
   border: none;
 }
@@ -278,6 +285,10 @@
   gap: 12px;
   padding-bottom: 12px;
   border-bottom: 2px solid #006EDF;
+}
+
+.modern-section-title svg {
+  color: #006EDF; /* 🔧 CORREGIDO: Asegurar que el ícono tenga color azul */
 }
 
 .modern-specs-grid-two-columns {

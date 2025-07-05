@@ -43,7 +43,8 @@ const StockHistorialSchema = new Schema({
   usuario: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false, // Permitir null para procesos automáticos del sistema
+    default: null
   }
 });
 

@@ -226,7 +226,7 @@ const DisabledProductsModal = ({ isOpen, onClose }) => {
                       
                       <div className="deletion-user">
                         <FontAwesomeIcon icon={faUser} />
-                        <span>Por: {product.usuarioEliminacion?.username || 'Usuario desconocido'}</span>
+                        <span>Por: {product.usuarioEliminacion?.username || 'Sistema'}</span>
                       </div>
                       
                       <div className="deletion-reason">

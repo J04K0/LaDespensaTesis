@@ -749,6 +749,49 @@
   font-size: 16px;
 }
 
+/* Estilos para el comentario de devolución */
+.comentario-devolucion-container {
+  background: rgba(248, 249, 250, 0.7);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.comentario-devolucion-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-dark);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.comentario-devolucion-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  font-size: 14px;
+  min-height: 80px;
+  padding: 12px 15px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.comentario-devolucion-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+  outline: none;
+}
+
+.comentario-devolucion-textarea::placeholder {
+  color: #adb5bd;
+  font-style: italic;
+}
+
 /* 🎨 Texto informativo para empleados */
 .employee-info-text {
   display: flex;
@@ -1226,30 +1269,43 @@
   .comentario-devolucion-container {
     background: rgba(248, 249, 250, 0.7);
     border-radius: 8px;
-    padding: 12px;
-    margin-top: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid #e9ecef;
   }
   
   .comentario-devolucion-label {
-    font-size: 12px;
+    display: block;
+    font-size: 14px;
     font-weight: 600;
     color: var(--gray-dark);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
   }
   
   .comentario-devolucion-textarea {
+    width: 100%;
     border-radius: 8px;
     border: 2px solid #e9ecef;
-    font-size: 12px;
-    min-height: 60px;
-    padding: 8px 10px;
+    font-size: 14px;
+    min-height: 80px;
+    padding: 12px 15px;
     resize: vertical;
     font-family: inherit;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
   }
   
   .comentario-devolucion-textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+    outline: none;
+  }
+  
+  .comentario-devolucion-textarea::placeholder {
+    color: #adb5bd;
+    font-style: italic;
   }
   
   .historysalemodalfooter {

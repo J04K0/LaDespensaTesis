@@ -68,9 +68,6 @@ export const addProduct = async (req, res) => {
     } : 'No file');
 
     const productData = req.body;
-
-    // Validar los datos usando el esquema
-    console.log('🔍 DEBUGGING - Datos a validar:', JSON.stringify(productData, null, 2));
     
     const { error, value } = productSchema.validate(productData);
     
@@ -81,28 +78,17 @@ export const addProduct = async (req, res) => {
       console.error('❌ Valor recibido:', error.details[0].context?.value);
       return handleErrorClient(res, 400, `Error de validación: ${error.details[0].message}`);
     }
-    
-    console.log('✅ Datos validados correctamente:', value);
-    
+        
     let imageUrl = null;
 
-    // 🔧 ARREGLO: Manejar diferentes casos de imagen
     if (req.file) {
-      // Caso 1: Se subió un archivo nuevo
       imageUrl = `http://${process.env.HOST}:${process.env.PORT}/api/src/upload/${req.file.filename}`;
-      console.log('🖼️ Nueva imagen subida:', imageUrl);
     } else if (req.body.imageUrl) {
-      // Caso 2: Se envió una URL de imagen existente (para mantener imagen de producto original)
       imageUrl = req.body.imageUrl;
-      console.log('🖼️ Manteniendo imagen existente:', imageUrl);
     }
-    // Caso 3: No hay imagen (imageUrl queda como null)
-
-    // Obtener los márgenes por categoría (mismos valores que en el modelo)
     const margen = MARGENES_POR_CATEGORIA[value.Categoria] || 0.23;
     const precioRecomendado = value.PrecioCompra * (1 + margen);
 
-    // 🆕 CREAR LOTE INICIAL: Crear el lote inicial con el stock del producto
     const loteInicial = {
       numeroLote: '#001', // Primer lote siempre será #001
       cantidad: parseInt(value.Stock),
@@ -114,17 +100,15 @@ export const addProduct = async (req, res) => {
       activo: true
     };
 
-    // Crear el producto con la imagen incluida, el precio recomendado y el lote inicial
     const newProduct = new Product({ 
       ...value, 
       image: imageUrl,
       PrecioRecomendado: precioRecomendado,
-      lotes: [loteInicial] // 🆕 AGREGAR: Incluir el lote inicial
+      lotes: [loteInicial]
     });
 
     const product = await newProduct.save();
 
-    // 🆕 AGREGAR: Registrar en el historial de stock la creación inicial
     product.historialStock.push({
       stockAnterior: 0,
       stockNuevo: product.Stock,
@@ -353,6 +337,10 @@ export const restoreProduct = async (req, res) => {
       return handleErrorClient(res, 400, 'El producto no está eliminado');
     }
 
+    // 🔧 CRÍTICO: Marcar para evitar recálculo automático de stock
+    // Esto previene que el pre-save hook sobrescriba el stock actual
+    product._skipStockRecalculation = true;
+
     // Registrar la restauración en el historial de stock
     product.historialStock.push({
       stockAnterior: product.Stock,
@@ -363,18 +351,15 @@ export const restoreProduct = async (req, res) => {
       fecha: new Date()
     });
 
-    const restoredProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        eliminado: false,
-        fechaEliminacion: null,
-        motivoEliminacion: null,
-        comentarioEliminacion: null,
-        usuarioEliminacion: null,
-        historialStock: product.historialStock
-      },
-      { new: true, runValidators: true }
-    );
+    // Restaurar el producto manteniendo el stock actual
+    product.eliminado = false;
+    product.fechaEliminacion = null;
+    product.motivoEliminacion = null;
+    product.comentarioEliminacion = null;
+    product.usuarioEliminacion = null;
+
+    // Guardar sin recalcular stock automáticamente
+    const restoredProduct = await product.save();
 
     handleSuccess(res, 200, 'Producto restaurado correctamente', restoredProduct);
   } catch (err) {
@@ -389,7 +374,11 @@ export const getProductsByCategory = async (req, res) => {
 
     if (!categoria) return handleErrorClient(res, 400, 'Categoría es requerida');
 
-    const products = await Product.find({ Categoria: categoria });
+    // 🔧 CORREGIDO: Excluir productos eliminados
+    const products = await Product.find({ 
+      Categoria: categoria,
+      eliminado: { $ne: true }
+    });
 
     if (products.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 
@@ -402,7 +391,8 @@ export const getProductsByCategory = async (req, res) => {
 // Funcion para verificar stock de productos y enviar alertas si es necesario
 export const verificarStock = async (req, res) => {
   try {
-    const productosConPocoStock = await Product.find();
+    // 🔧 CORREGIDO: Excluir productos eliminados
+    const productosConPocoStock = await Product.find({ eliminado: { $ne: true } });
 
     if (productosConPocoStock.length === 0) return handleErrorClient(res, 404, 'No hay productos registrados');
 
@@ -443,11 +433,13 @@ export const getProductsExpiringSoon = async (req, res) => {
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(today.getDate() + 5);
 
+    // 🔧 CORREGIDO: Excluir productos eliminados
     const productsExpiringSoon = await Product.find({
       fechaVencimiento: {
         $gte: today,
         $lte: thirtyDaysFromNow
-      }
+      },
+      eliminado: { $ne: true }
     });
 
     if (productsExpiringSoon.length === 0) {
@@ -468,10 +460,12 @@ export const getExpiredProducts = async (req, res) => {
   try {
     const today = new Date();
 
+    // 🔧 CORREGIDO: Excluir productos eliminados
     const expiredProducts = await Product.find({
       fechaVencimiento: {
         $lt: today
-      }
+      },
+      eliminado: { $ne: true }
     });
 
     if (expiredProducts.length === 0) {
@@ -719,37 +713,75 @@ export const getProductForCreation = async (req, res) => {
   }
 };
 
-export const eliminarProductosSinStock = async () => {
+// Función para desactivar productos sin stock después de 30 días
+export const desactivarProductosSinStock = async () => {
   try {
-    // Add a timeout to prevent deleting products that were just sold
-    const fiveMinutesAgo = new Date();
-    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+    // Configurar para 30 días de espera antes de desactivar
+    const treintaDiasAtras = new Date();
+    treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
 
-    // Only delete products that have been at 0 stock for at least 5 minutes
+    console.log('🔍 Verificando productos sin stock para desactivar...');
+    
+    // Buscar productos que tienen stock 0, están activos y han estado sin stock por más de 30 días
     const productosSinStock = await Product.find({ 
       Stock: 0,
-      updatedAt: { $lt: fiveMinutesAgo }
+      eliminado: false,
+      updatedAt: { $lt: treintaDiasAtras }
     });
 
-    for (const producto of productosSinStock) {
-      // Check if another product with the same barcode exists with stock
-      const existeOtroProducto = await Product.findOne({
-        codigoBarras: producto.codigoBarras,
-        Stock: { $gt: 0 }
-      });
+    console.log(`📦 Encontrados ${productosSinStock.length} productos sin stock por más de 30 días`);
 
-      if (existeOtroProducto) {
-        // If another product with the same barcode has stock, delete this one
-        await Product.findByIdAndDelete(producto._id);
+    for (const producto of productosSinStock) {
+      try {
+        // Desactivar el producto con información automática
+        const productoDesactivado = await Product.findByIdAndUpdate(
+          producto._id,
+          {
+            eliminado: true,
+            fechaEliminacion: new Date(),
+            motivoEliminacion: 'sin_stock_permanente',
+            comentarioEliminacion: `Producto desactivado automáticamente por estar sin stock por más de 30 días. Última actualización: ${producto.updatedAt.toLocaleDateString('es-ES')}`,
+            usuarioEliminacion: null // Sistema automático
+          },
+          { new: true }
+        );
+
+        // Registrar en el historial de stock
+        if (productoDesactivado.historialStock) {
+          productoDesactivado.historialStock.push({
+            stockAnterior: 0,
+            stockNuevo: 0,
+            tipoMovimiento: 'correccion',
+            motivo: 'Producto desactivado automáticamente por falta de stock durante más de 30 días',
+            usuario: null, // Sistema automático
+            fecha: new Date()
+          });
+          await productoDesactivado.save();
+        }
+
+        console.log(`✅ Producto desactivado: ${producto.Nombre} (ID: ${producto._id})`);
+      } catch (error) {
+        console.error(`❌ Error al desactivar producto ${producto.Nombre}:`, error.message);
       }
     }
+
+    if (productosSinStock.length > 0) {
+      console.log(`🎯 Proceso completado: ${productosSinStock.length} productos desactivados automáticamente`);
+    } else {
+      console.log('✨ No hay productos que requieran desactivación por falta de stock');
+    }
+
   } catch (error) {
-    console.error("❌ Error al eliminar productos sin stock:", error);
+    console.error("❌ Error en el proceso de desactivación automática:", error);
   }
 };
 
-cron.schedule('0 */5 * * *', async () => {
-  await eliminarProductosSinStock();
+// Actualizar el cron job para usar la nueva función
+cron.schedule('0 9 * * *', async () => { // 9am todos los días 
+  console.log('🤖 Ejecutando proceso automático de desactivación de productos sin stock...');
+  await desactivarProductosSinStock();
+}, {
+  timezone: "America/Santiago"
 });
 
 // Función para obtener el historial de precios de un producto
