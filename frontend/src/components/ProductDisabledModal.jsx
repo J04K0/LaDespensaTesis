@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faEyeSlash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import '../styles/ProductDeleteModal.css';
+import '../styles/ProductDisabledModal.css';
 
-const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }) => {
+const ProductDisabledModal = ({ isOpen, onClose, onConfirm, productName, loading }) => {
   const [motivoDesactivacion, setMotivoDesactivacion] = useState('');
   const [comentarioDesactivacion, setComentarioDesactivacion] = useState('');
   const [errors, setErrors] = useState({});
@@ -79,12 +79,12 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
       return;
     }
     
-    const deactivateData = {
+    const disableData = {
       motivoEliminacion: motivoDesactivacion,
       comentarioEliminacion: comentarioDesactivacion.trim()
     };
     
-    onConfirm(deactivateData);
+    onConfirm(disableData);
   };
 
   const handleClose = () => {
@@ -105,15 +105,15 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
   if (!isOpen) return null;
 
   return (
-    <div className="delete-modal-overlay" onClick={handleOverlayClick}>
-      <div className="delete-modal-container" onClick={(e) => e.stopPropagation()}>
-        <div className="delete-modal-header">
-          <div className="delete-modal-icon">
+    <div className="disabled-modal-overlay" onClick={handleOverlayClick}>
+      <div className="disabled-modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="disabled-modal-header">
+          <div className="disabled-modal-icon">
             <FontAwesomeIcon icon={faEyeSlash} />
           </div>
-          <h2 className="delete-modal-title">Desactivar Producto</h2>
+          <h2 className="disabled-modal-title">Desactivar Producto</h2>
           <button 
-            className="delete-modal-close"
+            className="disabled-modal-close"
             onClick={handleClose}
             disabled={loading}
           >
@@ -121,28 +121,28 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           </button>
         </div>
 
-        <div className="delete-modal-content">
-          <div className="delete-warning-card">
-            <div className="delete-warning-icon">
+        <div className="disabled-modal-content">
+          <div className="disabled-warning-card">
+            <div className="disabled-warning-icon">
               <FontAwesomeIcon icon={faExclamationTriangle} />
             </div>
-            <div className="delete-warning-content">
+            <div className="disabled-warning-content">
               <h4>¿Está seguro de que desea desactivar el producto?</h4>
-              <p className="delete-product-name">"{productName}"</p>
+              <p className="disabled-product-name">"{productName}"</p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="delete-form">
-            <div className="delete-form-grid">
-              <div className="delete-form-group">
-                <label htmlFor="motivoDesactivacion" className="delete-form-label">
+          <form onSubmit={handleSubmit} className="disabled-form">
+            <div className="disabled-form-grid">
+              <div className="disabled-form-group">
+                <label htmlFor="motivoDesactivacion" className="disabled-form-label">
                   Motivo de la desactivación <span className="required">*</span>
                 </label>
                 <select
                   id="motivoDesactivacion"
                   value={motivoDesactivacion}
                   onChange={(e) => setMotivoDesactivacion(e.target.value)}
-                  className={`delete-form-control ${errors.motivo ? 'error' : ''}`}
+                  className={`disabled-form-control ${errors.motivo ? 'error' : ''}`}
                   disabled={loading}
                   required
                 >
@@ -155,8 +155,8 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
                 {errors.motivo && <span className="error-message">{errors.motivo}</span>}
               </div>
 
-              <div className="delete-form-group delete-form-group-full">
-                <label htmlFor="comentarioDesactivacion" className="delete-form-label">
+              <div className="disabled-form-group disabled-form-group-full">
+                <label htmlFor="comentarioDesactivacion" className="disabled-form-label">
                   Comentario adicional <span className="required">*</span>
                 </label>
                 <textarea
@@ -164,12 +164,12 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
                   value={comentarioDesactivacion}
                   onChange={(e) => setComentarioDesactivacion(e.target.value)}
                   placeholder="Proporcione detalles adicionales sobre la desactivación del producto..."
-                  className={`delete-form-control delete-textarea ${errors.comentario ? 'error' : ''}`}
+                  className={`disabled-form-control disabled-textarea ${errors.comentario ? 'error' : ''}`}
                   rows={4}
                   disabled={loading}
                   required
                 />
-                <small className="delete-form-help">
+                <small className="disabled-form-help">
                   Mínimo 10 caracteres. Este comentario se guardará para auditoría.
                 </small>
                 {errors.comentario && <span className="error-message">{errors.comentario}</span>}
@@ -178,11 +178,11 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           </form>
         </div>
 
-        <div className="delete-modal-footer">
+        <div className="disabled-modal-footer">
           <button
             type="button"
             onClick={handleClose}
-            className="delete-btn delete-btn-secondary"
+            className="disabled-btn disabled-btn-secondary"
             disabled={loading}
           >
             <FontAwesomeIcon icon={faTimes} />
@@ -191,7 +191,7 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
           <button
             type="submit"
             onClick={handleSubmit}
-            className="delete-btn delete-btn-danger"
+            className="disabled-btn disabled-btn-danger"
             disabled={loading || !motivoDesactivacion || !comentarioDesactivacion.trim()}
           >
             <FontAwesomeIcon icon={faEyeSlash} />
@@ -203,4 +203,4 @@ const ProductDeleteModal = ({ isOpen, onClose, onConfirm, productName, loading }
   );
 };
 
-export default ProductDeleteModal;
+export default ProductDisabledModal;

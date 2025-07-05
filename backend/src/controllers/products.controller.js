@@ -259,8 +259,8 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// Funcion para eliminar un producto
-export const deleteProduct = async (req, res) => {
+// Funcion para desactivar un producto
+export const disableProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const { motivoEliminacion, comentarioEliminacion } = req.body;
@@ -270,19 +270,19 @@ export const deleteProduct = async (req, res) => {
 
     // Validar que se proporcionen motivo y comentario
     if (!motivoEliminacion || !comentarioEliminacion) {
-      return handleErrorClient(res, 400, 'Se requiere motivo y comentario para eliminar el producto');
+      return handleErrorClient(res, 400, 'Se requiere motivo y comentario para desactivar el producto');
     }
 
     // Validar que el motivo sea válido
     const motivosValidos = ['sin_stock_permanente', 'producto_dañado', 'vencido', 'descontinuado', 'error_registro', 'otro'];
     if (!motivosValidos.includes(motivoEliminacion)) {
-      return handleErrorClient(res, 400, 'Motivo de eliminación no válido');
+      return handleErrorClient(res, 400, 'Motivo de desactivación no válido');
     }
 
     const product = await Product.findById(value.id);
     if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
 
-    // En lugar de eliminar físicamente, marcar como eliminado con auditoría
+    // En lugar de eliminar físicamente, marcar como desactivado con auditoría
     const updatedProduct = await Product.findByIdAndUpdate(
       value.id,
       {
@@ -295,12 +295,12 @@ export const deleteProduct = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    handleSuccess(res, 200, 'Producto eliminado con auditoría', {
+    handleSuccess(res, 200, 'Producto desactivado con auditoría', {
       producto: updatedProduct,
-      mensaje: 'El producto ha sido marcado como eliminado y se conserva el registro para auditoría'
+      mensaje: 'El producto ha sido marcado como desactivado y se conserva el registro para auditoría'
     });
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al eliminar un producto', err.message);
+    handleErrorServer(res, 500, 'Error al desactivar un producto', err.message);
   }
 };
 
@@ -780,12 +780,12 @@ export const getProductPriceHistory = async (req, res) => {
   }
 };
 
-// Función para obtener productos eliminados (solo para administradores y admin)
-export const getDeletedProducts = async (req, res) => {
+// Función para obtener productos desactivados (solo para administradores y admin)
+export const getDisabledProducts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     
-    const deletedProducts = await Product.find({ eliminado: true })
+    const disabledProducts = await Product.find({ eliminado: true })
       .populate('usuarioEliminacion', 'username email')
       .collation({ locale: 'es', strength: 2 })
       .sort({ fechaEliminacion: -1 })
@@ -795,14 +795,14 @@ export const getDeletedProducts = async (req, res) => {
       
     const count = await Product.countDocuments({ eliminado: true });
 
-    handleSuccess(res, 200, deletedProducts.length > 0 ? 'Productos eliminados encontrados' : 'No hay productos eliminados', {
-      products: deletedProducts,
+    handleSuccess(res, 200, disabledProducts.length > 0 ? 'Productos desactivados encontrados' : 'No hay productos desactivados', {
+      products: disabledProducts,
       totalPages: Math.ceil(count / limit),
       currentPage: parseInt(page),
       totalCount: count
     });
   } catch (err) {
-    handleErrorServer(res, 500, 'Error al obtener productos eliminados', err.message);
+    handleErrorServer(res, 500, 'Error al obtener productos desactivados', err.message);
   }
 };
 

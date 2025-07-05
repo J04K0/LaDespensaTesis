@@ -12,14 +12,14 @@ import {
   faSpinner,
   faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
-import { getDeletedProducts, restoreProduct } from '../services/AddProducts.service';
+import { getDisabledProducts, restoreProduct } from '../services/AddProducts.service';
 import { showConfirmationAlert, showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import { CATEGORIAS } from '../constants/products.constants';
 import SmartPagination from './SmartPagination';
-import '../styles/DeletedProductsModalStyles.css';
+import '../styles/DisabledProductsModalStyles.css';
 
-const DeletedProductsModal = ({ isOpen, onClose }) => {
-  const [deletedProducts, setDeletedProducts] = useState([]);
+const DisabledProductsModal = ({ isOpen, onClose }) => {
+  const [disabledProducts, setDisabledProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,7 +34,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen && !skipNextFetch) {
-      fetchDeletedProducts();
+      fetchDisabledProducts();
     }
     
     if (skipNextFetch) {
@@ -42,14 +42,14 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen, currentPage]);
 
-  const fetchDeletedProducts = async () => {
+  const fetchDisabledProducts = async () => {
     try {
       setLoading(true);
-      const response = await getDeletedProducts(currentPage, 10);
-      setDeletedProducts(response.data.products);
+      const response = await getDisabledProducts(currentPage, 10);
+      setDisabledProducts(response.data.products);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('Error fetching deleted products:', error);
+      console.error('Error fetching disabled products:', error);
       showErrorAlert('Error', 'No se pudieron cargar los productos desactivados');
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
       });
       
       const productIdToRemove = productToActivate._id;
-      setDeletedProducts(prevProducts => {
+      setDisabledProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
         
         const itemsPerPage = 10;
@@ -127,7 +127,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const filteredProducts = deletedProducts.filter(product => {
+  const filteredProducts = disabledProducts.filter(product => {
     const matchesSearch = product.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.Marca.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !categoryFilter || product.Categoria === categoryFilter;
@@ -155,24 +155,24 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="deleted-products-modal-overlay" onClick={handleOverlayClick}>
-      <div className="deleted-products-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="deleted-products-modal-header">
+    <div className="disabled-products-modal-overlay" onClick={handleOverlayClick}>
+      <div className="disabled-products-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="disabled-products-modal-header">
           <h2>
             <FontAwesomeIcon icon={faEyeSlash} />
             Productos Desactivados
           </h2>
           <button 
-            className="deleted-products-modal-close"
+            className="disabled-products-modal-close"
             onClick={onClose}
           >
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
 
-        <div className="deleted-products-modal-body">
-          <div className="deleted-products-filters">
-            <div className="deleted-products-search">
+        <div className="disabled-products-modal-body">
+          <div className="disabled-products-filters">
+            <div className="disabled-products-search">
               <FontAwesomeIcon icon={faSearch} />
               <input
                 type="text"
@@ -182,7 +182,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
               />
             </div>
             
-            <div className="deleted-products-category-filter">
+            <div className="disabled-products-category-filter">
               <FontAwesomeIcon icon={faFilter} />
               <select 
                 value={categoryFilter} 
@@ -197,27 +197,27 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
           </div>
 
           {loading ? (
-            <div className="deleted-products-loading">
+            <div className="disabled-products-loading">
               <FontAwesomeIcon icon={faSpinner} spin size="2x" />
               <p>Cargando productos desactivados...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="deleted-products-empty">
+            <div className="disabled-products-empty">
               <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
               <p>No hay productos desactivados</p>
             </div>
           ) : (
-            <div className="deleted-products-list">
+            <div className="disabled-products-list">
               {filteredProducts.map(product => (
-                <div key={product._id} className="deleted-product-card">
-                  <div className="deleted-product-info">
+                <div key={product._id} className="disabled-product-card">
+                  <div className="disabled-product-info">
                     <h3>{product.Nombre}</h3>
                     <p><strong>Marca:</strong> {product.Marca}</p>
                     <p><strong>Categoría:</strong> {product.Categoria}</p>
                     <p><strong>Código:</strong> {product.codigoBarras}</p>
                   </div>
                   
-                  <div className="deleted-product-details">
+                  <div className="disabled-product-details">
                     <div className="deletion-info">
                       <div className="deletion-date">
                         <FontAwesomeIcon icon={faCalendarAlt} />
@@ -262,7 +262,7 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
 
           {/* Paginación */}
           {totalPages > 1 && (
-            <div className="deleted-products-pagination">
+            <div className="disabled-products-pagination">
               <button 
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
@@ -330,4 +330,4 @@ const DeletedProductsModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default DeletedProductsModal;
+export default DisabledProductsModal;

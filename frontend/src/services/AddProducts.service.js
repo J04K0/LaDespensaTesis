@@ -44,14 +44,14 @@ export const getProducts = async (page, limit) => {
   }
 };
 
-export const deleteProduct = async (id, deleteData) => {
+export const disableProduct = async (id, disableData) => {
   try {
     const response = await axios.delete(`/products/eliminar/${id}`, {
-      data: deleteData
+      data: disableData
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error('Error disabling product:', error);
     throw error;
   }
 };
@@ -67,13 +67,13 @@ export const getStockHistory = async (productId) => {
   }
 };
 
-// 🆕 NUEVO: Función para obtener productos eliminados
-export const getDeletedProducts = async (page = 1, limit = 10) => {
+// 🆕 NUEVO: Función para obtener productos desactivados
+export const getDisabledProducts = async (page = 1, limit = 10) => {
   try {
     const response = await axios.get(`/products/eliminados?page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
-    // Si el error es 404, significa que no hay productos eliminados, devolver estructura vacía
+    // Si el error es 404, significa que no hay productos desactivados, devolver estructura vacía
     if (error.response && error.response.status === 404) {
       return {
         data: {
@@ -84,7 +84,7 @@ export const getDeletedProducts = async (page = 1, limit = 10) => {
         }
       };
     }
-    console.error('Error fetching deleted products:', error);
+    console.error('Error fetching disabled products:', error);
     throw error;
   }
 };

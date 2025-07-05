@@ -4,7 +4,7 @@ import {
     getProductById, 
     addProduct, 
     updateProduct, 
-    deleteProduct,
+    disableProduct,
     getProductsByCategory,
     verificarStock,
     getProductsExpiringSoon,
@@ -16,7 +16,7 @@ import {
     getProductPriceHistory,
     getStockHistory,
     restoreProduct,
-    getDeletedProducts,
+    getDisabledProducts,
     sendManualDailyReport,
     agregarLoteProducto,
     getLotesProducto
@@ -48,10 +48,10 @@ router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
 router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotesProducto);
 router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
-router.get('/eliminados', authorizeRoles([isAdmin]), getDeletedProducts);
+router.get('/eliminados', authorizeRoles([isAdmin]), getDisabledProducts);
 router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);
-router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), deleteProduct);
+router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), disableProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
 router.post('/test-reporte-diario', authorizeRoles([isAdmin, isJefe]), sendManualDailyReport);

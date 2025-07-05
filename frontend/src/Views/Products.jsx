@@ -6,12 +6,12 @@ import ProductTableView from '../components/ProductTableView';
 import ProductInfoModal from '../components/ProductInfoModal';
 import ProductEditModal from '../components/ProductEditModal';
 import PriceHistoryModal from '../components/PriceHistoryModal';
-import ProductDeleteModal from '../components/ProductDeleteModal';
+import ProductDisabledModal from '../components/ProductDisabledModal';
 import StockHistoryModal from '../components/StockHistoryModal';
-import DeletedProductsModal from '../components/DeletedProductsModal';
+import DisabledProductsModal from '../components/DisabledProductsModal';
 import ProductLotesModal from '../components/ProductLotesModal';
 import '../styles/ProductsStyles.css';
-import { getProducts, getProductsByCategory, deleteProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
+import { getProducts, getProductsByCategory, disableProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
 import { useVentas } from '../context/VentasContext';
 import { useRole } from '../hooks/useRole';
@@ -427,7 +427,7 @@ const Products = () => {
 
     try {
       setLoading(true);
-      await deleteProduct(productToDelete._id, deleteData);
+      await disableProduct(productToDelete._id, deleteData);
       
       // Actualizar la lista de productos
       const updatedProducts = allProducts.filter(product => product._id !== productToDelete._id);
@@ -468,7 +468,7 @@ const Products = () => {
 
   const handleDelete = async (id) => {
     try {
-      await deleteProduct(id);
+      await disableProduct(id);
       const updatedProducts = allProducts.filter(product => product._id !== id);
       setAllProducts(updatedProducts);
 
@@ -983,7 +983,7 @@ const Products = () => {
       )}
       
       {/* 🆕 NUEVO MODAL DE ELIMINACIÓN */}
-      <ProductDeleteModal
+      <ProductDisabledModal
         isOpen={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
@@ -1007,7 +1007,7 @@ const Products = () => {
       />
       
       {/* 🆕 NUEVO MODAL PARA PRODUCTOS ELIMINADOS */}
-      <DeletedProductsModal
+      <DisabledProductsModal
         isOpen={showDeletedProductsModal}
         onClose={() => setShowDeletedProductsModal(false)}
         // Aquí puedes agregar más props si es necesario

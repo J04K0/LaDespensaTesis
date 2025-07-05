@@ -16,7 +16,7 @@
 }
 
 /* Overlay del modal - CENTRADO PERFECTO */
-.delete-modal-overlay {
+.disabled-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -42,7 +42,7 @@
 }
 
 /* Modal principal moderno - CENTRADO PERFECTO */
-.delete-modal-container {
+.disabled-modal-container {
   background: white;
   border-radius: 20px;
   width: 100%;
@@ -73,7 +73,7 @@
 }
 
 /* Header del modal moderno - CENTRADO */
-.delete-modal-header {
+.disabled-modal-header {
   background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
   color: #212529; /* Texto oscuro para mejor contraste con amarillo */
   padding: 1.5rem 2rem;
@@ -87,7 +87,7 @@
   flex-direction: row;
 }
 
-.delete-modal-icon {
+.disabled-modal-icon {
   background: rgba(33, 37, 41, 0.1); /* Fondo oscuro suave para el ícono */
   padding: 0.75rem;
   border-radius: 50%;
@@ -98,7 +98,7 @@
   backdrop-filter: blur(10px);
 }
 
-.delete-modal-title {
+.disabled-modal-title {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
@@ -106,7 +106,7 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.delete-modal-close {
+.disabled-modal-close {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -125,18 +125,18 @@
   backdrop-filter: blur(10px);
 }
 
-.delete-modal-close:hover:not(:disabled) {
+.disabled-modal-close:hover:not(:disabled) {
   background: rgba(33, 37, 41, 0.2);
   transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
 }
 
-.delete-modal-close:disabled {
+.disabled-modal-close:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Contenido principal - CENTRADO */
-.delete-modal-content {
+.disabled-modal-content {
   padding: 1.5rem 2rem;
   flex: 1;
   display: flex;
@@ -146,7 +146,7 @@
 }
 
 /* Tarjeta de advertencia moderna - CENTRADA */
-.delete-warning-card {
+.disabled-warning-card {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -162,7 +162,7 @@
   max-width: 450px;
 }
 
-.delete-warning-icon {
+.disabled-warning-icon {
   background: rgba(255, 193, 7, 0.2); /* Fondo amarillo suave */
   color: var(--warning-dark);
   padding: 1rem;
@@ -175,7 +175,7 @@
   border: 2px solid rgba(255, 193, 7, 0.3);
 }
 
-.delete-warning-content {
+.disabled-warning-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -183,7 +183,7 @@
   width: 100%;
 }
 
-.delete-warning-content h4 {
+.disabled-warning-content h4 {
   font-size: 1.1rem;
   font-weight: 700;
   color: #856404;
@@ -191,7 +191,7 @@
   line-height: 1.3;
 }
 
-.delete-product-name {
+.disabled-product-name {
   font-size: 1rem;
   font-weight: 700;
   color: var(--danger);
@@ -203,7 +203,7 @@
   border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
-.delete-warning-description {
+.disabled-warning-description {
   color: #856404;
   margin: 0;
   line-height: 1.5;
@@ -211,31 +211,31 @@
 }
 
 /* Formulario moderno - CENTRADO */
-.delete-form {
+.disabled-form {
   margin-top: 0;
   width: 100%;
   max-width: 450px;
 }
 
-.delete-form-grid {
+.disabled-form-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
   width: 100%;
 }
 
-.delete-form-group {
+.disabled-form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   text-align: left;
 }
 
-.delete-form-group-full {
+.disabled-form-group-full {
   grid-column: 1 / -1;
 }
 
-.delete-form-label {
+.disabled-form-label {
   font-weight: 600;
   color: var(--gray-dark);
   font-size: 0.95rem;
@@ -247,7 +247,7 @@
   font-weight: bold;
 }
 
-.delete-form-control {
+.disabled-form-control {
   width: 100%;
   padding: 0.875rem;
   border: 2px solid #e1e5e9;
@@ -259,26 +259,26 @@
   box-sizing: border-box;
 }
 
-.delete-form-control:focus {
+.disabled-form-control:focus {
   outline: none;
   border-color: var(--danger);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
   transform: translateY(-1px);
 }
 
-.delete-form-control:disabled {
+.disabled-form-control:disabled {
   background-color: var(--gray-light);
   color: var(--gray);
   cursor: not-allowed;
 }
 
-.delete-textarea {
+.disabled-textarea {
   resize: vertical;
   min-height: 100px;
   line-height: 1.4;
 }
 
-.delete-form-help {
+.disabled-form-help {
   color: var(--gray);
   font-size: 0.825rem;
   margin-top: 0.5rem;
@@ -298,7 +298,7 @@
 }
 
 /* Footer del modal - CENTRADO */
-.delete-modal-footer {
+.disabled-modal-footer {
   padding: 1.25rem 2rem 1.5rem;
   background-color: var(--gray-light);
   border-top: 1px solid #e1e5e9;
@@ -309,7 +309,7 @@
 }
 
 /* Botones modernos - CENTRADOS */
-.delete-btn {
+.disabled-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,7 +328,7 @@
   overflow: hidden;
 }
 
-.delete-btn:before {
+.disabled-btn:before {
   content: '';
   position: absolute;
   top: 0;
@@ -339,40 +339,40 @@
   transition: left 0.5s;
 }
 
-.delete-btn:hover:before {
+.disabled-btn:hover:before {
   left: 100%;
 }
 
-.delete-btn:disabled {
+.disabled-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.delete-btn:disabled:before {
+.disabled-btn:disabled:before {
   display: none;
 }
 
-.delete-btn-secondary {
+.disabled-btn-secondary {
   background: var(--gray);
   color: var(--white);
   border: 2px solid transparent;
 }
 
-.delete-btn-secondary:hover:not(:disabled) {
+.disabled-btn-secondary:hover:not(:disabled) {
   background: #5a6268;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
 }
 
-.delete-btn-danger {
+.disabled-btn-danger {
   background: var(--warning);
   color: #212529; /* Texto oscuro para contraste */
   border: 2px solid transparent;
 }
 
-.delete-btn-danger:hover:not(:disabled) {
+.disabled-btn-danger:hover:not(:disabled) {
   background: var(--warning-dark);
   color: #212529;
   transform: translateY(-2px);
@@ -381,87 +381,87 @@
 
 /* Responsividad - MEJORADA */
 @media (max-width: 768px) {
-  .delete-modal-overlay {
+  .disabled-modal-overlay {
     padding: 1rem;
     align-items: flex-start;
     padding-top: 2rem;
   }
 
-  .delete-modal-container {
+  .disabled-modal-container {
     width: 100%;
     max-width: none;
     max-height: 90vh;
     margin: 0;
   }
 
-  .delete-modal-header {
+  .disabled-modal-header {
     padding: 1.25rem 1.5rem;
     flex-direction: column;
     text-align: center;
   }
 
-  .delete-modal-icon {
+  .disabled-modal-icon {
     margin-bottom: 0.5rem;
   }
 
-  .delete-modal-title {
+  .disabled-modal-title {
     font-size: 1.25rem;
   }
 
-  .delete-modal-content {
+  .disabled-modal-content {
     padding: 1.25rem 1.5rem;
   }
 
-  .delete-warning-card {
+  .disabled-warning-card {
     padding: 1.25rem;
   }
 
-  .delete-modal-footer {
+  .disabled-modal-footer {
     padding: 1rem 1.5rem 1.25rem;
     flex-direction: column-reverse;
     gap: 0.75rem;
   }
 
-  .delete-btn {
+  .disabled-btn {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .delete-modal-overlay {
+  .disabled-modal-overlay {
     padding: 0.5rem;
   }
 
-  .delete-modal-container {
+  .disabled-modal-container {
     border-radius: 15px;
   }
 
-  .delete-modal-header {
+  .disabled-modal-header {
     border-radius: 15px 15px 0 0;
     padding: 1rem;
   }
 
-  .delete-modal-title {
+  .disabled-modal-title {
     font-size: 1.1rem;
   }
 
-  .delete-modal-content {
+  .disabled-modal-content {
     padding: 1rem;
   }
 
-  .delete-modal-footer {
+  .disabled-modal-footer {
     border-radius: 0 0 15px 15px;
     padding: 1rem;
   }
 }
 
 /* Estados de carga */
-.delete-modal-container.loading {
+.disabled-modal-container.loading {
   pointer-events: none;
 }
 
-.delete-modal-container.loading::after {
+.disabled-modal-container.loading::after {
   content: '';
   position: absolute;
   top: 0;
@@ -477,21 +477,21 @@
 }
 
 /* Mejoras de accesibilidad */
-.delete-form-control:focus,
-.delete-btn:focus {
+.disabled-form-control:focus,
+.disabled-btn:focus {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 /* Optimizaciones para mejor rendimiento */
-.delete-modal-container * {
+.disabled-modal-container * {
   box-sizing: border-box;
 }
 
-.delete-modal-container {
+.disabled-modal-container {
   contain: layout style;
 }
 
-.delete-modal-overlay {
+.disabled-modal-overlay {
   contain: strict;
 }
