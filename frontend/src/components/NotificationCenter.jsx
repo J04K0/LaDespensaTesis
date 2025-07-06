@@ -111,16 +111,19 @@ const NotificationCenter = () => {
   useEffect(() => {
     const socket = getSocket();
     
+    // Verificar conexión
+    console.log('🔌 Inicializando NotificationCenter - Socket conectado:', socket.connected);
+    
     socket.on('nueva_alerta', (alerta) => {
-      console.log('Nueva alerta recibida:', alerta);
+      console.log('🔔 Nueva alerta recibida:', alerta);
       
       setNotifications(prev => {
         const newNotification = {
-          id: Date.now(),
-          type: alerta.tipo,
-          message: alerta.mensaje,
-          data: alerta.datos,
-          timestamp: new Date().toISOString(),
+          id: alerta.id || Date.now(), // Usar el ID del backend
+          type: alerta.type,
+          message: alerta.message,
+          data: alerta.data,
+          timestamp: alerta.timestamp || new Date().toISOString(),
           read: false
         };
         
@@ -131,6 +134,19 @@ const NotificationCenter = () => {
       });
       
       setUnreadCount(prev => prev + 1);
+    });
+    
+    // Manejar eventos de conexión para debugging
+    socket.on('connect', () => {
+      console.log('✅ NotificationCenter - Conectado a WebSocket');
+    });
+    
+    socket.on('disconnect', (reason) => {
+      console.log('❌ NotificationCenter - Desconectado de WebSocket:', reason);
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('💥 NotificationCenter - Error de conexión:', error);
     });
     
     const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
@@ -150,6 +166,9 @@ const NotificationCenter = () => {
     
     return () => {
       socket.off('nueva_alerta');
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
     };
   }, []);
   
@@ -234,10 +253,6 @@ const NotificationCenter = () => {
         return '⚠️';
       case 'producto_por_vencer':
         return '⏱️';
-      case 'deudor_pago_proximo':
-        return '💸';
-      case 'cuenta_por_pagar':
-        return '💳';
       case 'reporte_diario':
         return '📊';
       case 'sistema':

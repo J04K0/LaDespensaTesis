@@ -9,13 +9,11 @@ let alertIdCounter = 0;
 const recentExpirationAlerts = new Map();
 const EXPIRATION_ALERT_COOLDOWN = 24 * 60 * 60 * 1000; // 24 horas para alertas de vencimiento
 
-// Tipos de alertas
+// Tipos de alertas (solo los que necesitamos)
 export const ALERT_TYPES = {
   STOCK_BAJO: 'stock_bajo',
   PRODUCTO_VENCIDO: 'producto_vencido',
-  PRODUCTO_POR_VENCER: 'producto_por_vencer',
-  DEUDOR_PAGO_PROXIMO: 'deudor_pago_proximo',
-  CUENTA_POR_PAGAR: 'cuenta_por_pagar'
+  PRODUCTO_POR_VENCER: 'producto_por_vencer'
 };
 
 /**
@@ -54,7 +52,7 @@ const isRecentExpirationAlert = (alertKey) => {
 const emitAlertDirect = (type, data, message) => {
   if (!io) {
     console.error('Socket.io no está inicializado');
-    return;
+    return null;
   }
 
   const alert = {
@@ -64,9 +62,14 @@ const emitAlertDirect = (type, data, message) => {
     message,
     timestamp: new Date(),
     read: false,
-    isGrouped: Array.isArray(data) && data.length > 1
+    isGrouped: Array.isArray(data) && data.length > 1,
+    // Añadir compatibilidad con el frontend
+    tipo: type,
+    datos: data,
+    mensaje: message
   };
 
+  console.log('🔔 Emitiendo alerta:', { type, message, dataCount: Array.isArray(data) ? data.length : 1 });
   io.emit('nueva_alerta', alert);
   return alert;
 };
@@ -218,50 +221,11 @@ export const emitProductoPorVencerAlert = (producto) => {
   }
 };
 
-/**
- * Emite alerta de pago próximo de deudor
- * @param {object} deudor - Deudor con pago próximo
- */
-export const emitDeudorPagoProximoAlert = (deudor) => {
-  if (!deudor || !deudor.Nombre) {
-    console.error('Error: Deudor inválido o sin nombre', deudor);
-    return null;
-  }
-  
-  const fechaPago = new Date(deudor.fechaPaga).toLocaleDateString();
-  return emitAlertDirect(
-    ALERT_TYPES.DEUDOR_PAGO_PROXIMO,
-    deudor,
-    `Pago próximo: ${deudor.Nombre} - ${fechaPago}`
-  );
-};
-
-/**
- * Emite alerta de cuenta por pagar
- * @param {object} cuenta - Cuenta por pagar
- */
-export const emitCuentaPorPagarAlert = (cuenta) => {
-  if (!cuenta || !cuenta.Nombre) {
-    console.error('Error: Cuenta inválida o sin nombre', cuenta);
-    return null;
-  }
-  
-  return emitAlertDirect(
-    ALERT_TYPES.CUENTA_POR_PAGAR,
-    cuenta,
-    `Cuenta por pagar: ${cuenta.Nombre} - ${cuenta.Mes} ($${cuenta.Monto})`
-  );
-};
-
 // Revisión diaria de expiraciones
 const checkDailyExpirations = async () => {
   try {
-    
     const { sendDailyCompleteReport } = await import('./email.service.js');
-    
     await sendDailyCompleteReport();
-    
-    
   } catch (error) {
     console.error('❌ Error en revisión diaria completa:', error);
   }

@@ -1,8 +1,6 @@
 import Deudores from '../models/deudores.model.js';
 import { deudorSchema, idDeudorSchema } from '../schema/deudores.schema.js';
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
-import { emitDeudorPagoProximoAlert } from '../services/alert.service.js';
-import cron from 'node-cron';
 
 
 const formatNumberWithDots = (number) => {

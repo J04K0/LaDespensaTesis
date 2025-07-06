@@ -51,7 +51,10 @@ async function setupServer() {
     
     // Configurar eventos de WebSocket
     io.on('connection', (socket) => {
-      socket.on('disconnect', () => {
+      console.log('✅ Cliente conectado a WebSocket:', socket.id);
+      
+      socket.on('disconnect', (reason) => {
+        console.log('❌ Cliente desconectado:', socket.id, 'Razón:', reason);
       });
       
       socket.on('error', (error) => {
