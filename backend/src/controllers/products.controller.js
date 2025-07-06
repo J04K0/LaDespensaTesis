@@ -999,3 +999,68 @@ export const deleteProductPermanently = async (req, res) => {
     handleErrorServer(res, 500, 'Error al eliminar el producto permanentemente', err.message);
   }
 };
+
+// 🆕 NUEVO: Función para editar un lote específico de un producto
+export const editarLoteProducto = async (req, res) => {
+  try {
+    const { id, loteId } = req.params;
+    const { cantidad, precioCompra, precioVenta, fechaVencimiento } = req.body;
+
+    if (!cantidad || !precioCompra || !precioVenta || !fechaVencimiento) {
+      return handleErrorClient(res, 400, 'Todos los campos del lote son requeridos');
+    }
+
+    if (cantidad < 0) {
+      return handleErrorClient(res, 400, 'La cantidad no puede ser negativa');
+    }
+
+    const product = await Product.findById(id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Buscar el lote específico
+    const loteIndex = product.lotes.findIndex(lote => lote._id.toString() === loteId);
+    if (loteIndex === -1) {
+      return handleErrorClient(res, 404, 'Lote no encontrado');
+    }
+
+    const loteOriginal = product.lotes[loteIndex];
+    const cantidadAnterior = loteOriginal.cantidad;
+
+    // Actualizar los datos del lote
+    product.lotes[loteIndex] = {
+      ...loteOriginal.toObject(),
+      cantidad: parseInt(cantidad),
+      precioCompra: parseFloat(precioCompra),
+      precioVenta: parseFloat(precioVenta),
+      fechaVencimiento: new Date(fechaVencimiento),
+      fechaModificacion: new Date(),
+      usuarioModificacion: req.userId
+    };
+
+    // Guardar el producto (el pre-save hook recalculará el stock total)
+    await product.save();
+
+    // Registrar en el historial de stock si cambió la cantidad
+    if (cantidadAnterior !== parseInt(cantidad)) {
+      const diferencia = parseInt(cantidad) - cantidadAnterior;
+      product.historialStock.push({
+        stockAnterior: product.Stock - diferencia,
+        stockNuevo: product.Stock,
+        tipoMovimiento: diferencia > 0 ? 'entrada_inicial' : 'ajuste_manual',
+        motivo: `Lote ${loteOriginal.numeroLote} editado: cantidad ${cantidadAnterior} → ${cantidad} (${diferencia > 0 ? '+' : ''}${diferencia})`,
+        usuario: req.userId,
+        fecha: new Date()
+      });
+      await product.save();
+    }
+
+    handleSuccess(res, 200, 'Lote editado exitosamente', {
+      producto: product,
+      loteEditado: product.lotes[loteIndex],
+      stockTotal: product.Stock,
+      cambioStock: parseInt(cantidad) - cantidadAnterior
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al editar el lote', err.message);
+  }
+};

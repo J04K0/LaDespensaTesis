@@ -301,3 +301,14 @@ export const deleteProductPermanently = async (id) => {
     throw error;
   }
 };
+
+// 🆕 NUEVO: Función para editar un lote específico de un producto
+export const editarLoteProducto = async (productId, loteId, loteData) => {
+  try {
+    const response = await axios.put(`/products/lotes/${productId}/${loteId}`, loteData);
+    return response.data;
+  } catch (error) {
+    console.error('Error editing product batch:', error);
+    throw error;
+  }
+};

@@ -975,6 +975,7 @@ const Products = () => {
                           categoria={product.Categoria}
                           codigoBarras={product.codigoBarras}
                           onInfo={() => handleProductInfo(product)}
+                          onShowLotes={handleShowLotes} // 🆕 Agregar prop para gestionar lotes
                           onDelete={handleDirectDelete}
                           productId={product._id}
                         />

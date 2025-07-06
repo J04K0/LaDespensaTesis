@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faBoxes, faCalendarAlt, faDollarSign, faUser, faPercent, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faBoxes, faCalendarAlt, faDollarSign, faUser, faPercent, faExclamationTriangle, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { getLotesProducto } from '../services/AddProducts.service';
+import EditLoteModal from './EditLoteModal';
+import { useRole } from '../hooks/useRole';
 import '../styles/ProductLotesModal.css';
 
 const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
@@ -9,6 +11,13 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resumen, setResumen] = useState(null);
+  
+  // 🆕 Estados para el modal de edición
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [loteToEdit, setLoteToEdit] = useState(null);
+  
+  // 🆕 Hook para obtener permisos del usuario
+  const { permissions } = useRole();
 
   useEffect(() => {
     if (isOpen && productId) {
@@ -74,6 +83,25 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  // 🆕 Función para abrir el modal de edición
+  const handleEditLote = (lote) => {
+    setLoteToEdit(lote);
+    setShowEditModal(true);
+  };
+
+  // 🆕 Función para cerrar el modal de edición
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setLoteToEdit(null);
+  };
+
+  // 🆕 Función para manejar cuando se actualiza un lote
+  const handleLoteUpdated = async () => {
+    await fetchLotes(); // Refrescar los lotes
+    setShowEditModal(false);
+    setLoteToEdit(null);
   };
 
   return (
@@ -156,12 +184,23 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
                         <div className="lote-header">
                           <div className="lote-number">
                             <span className="lote-label">
-                              {index === 0 ? 'Lote #101' : `Lote #${101 + index}`}
+                              {lote.numeroLote || `Lote #${101 + index}`}
                             </span>
                             {index === 0 && <span className="siguiente-badge">Siguiente</span>}
                           </div>
-                          <div className="lote-agregado">
-                            Agregado {new Date(lote.fechaCreacion).toLocaleDateString()}
+                          <div className="lote-actions">
+                            {permissions.canEditProduct && (
+                              <button 
+                                className="lote-edit-btn"
+                                onClick={() => handleEditLote(lote)}
+                                title="Editar lote"
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                            )}
+                            <div className="lote-agregado">
+                              Agregado {new Date(lote.fechaCreacion).toLocaleDateString()}
+                            </div>
                           </div>
                         </div>
 
@@ -201,6 +240,17 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
                   </div>
                 )}
               </div>
+
+              {/* 🆕 Modal para editar lote */}
+              {showEditModal && loteToEdit && (
+                <EditLoteModal 
+                  isOpen={showEditModal} 
+                  onClose={handleCloseEditModal} 
+                  lote={loteToEdit}
+                  productId={productId}
+                  onLoteUpdated={handleLoteUpdated} // Callback para refrescar lotes
+                />
+              )}
             </>
           )}
         </div>

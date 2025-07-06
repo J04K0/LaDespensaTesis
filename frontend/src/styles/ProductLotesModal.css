@@ -226,16 +226,10 @@
 }
 
 .lote-header {
-  background: #f8f9fa;
-  padding: 12px 16px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.lote-card.siguiente .lote-header {
-  background: #e8f5e8;
+  align-items: flex-start;
+  margin-bottom: 16px;
 }
 
 .lote-number {
@@ -244,23 +238,38 @@
   gap: 8px;
 }
 
-.lote-label {
-  font-weight: 600;
-  color: #212529;
+.lote-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.siguiente-badge {
-  background: #28a745;
+.lote-edit-btn {
+  background: rgba(0, 110, 223, 0.1);
+  border: 1px solid rgba(0, 110, 223, 0.3);
+  color: #006EDF;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.lote-edit-btn:hover {
+  background: #006EDF;
   color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
 }
 
 .lote-agregado {
+  font-size: 12px;
   color: #6c757d;
-  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .lote-body {

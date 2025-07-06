@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import '../styles/ProductCardStyles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faChevronDown, faChevronUp, faBoxes, faCalendarAlt, faDollarSign, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faChevronDown, faChevronUp, faBoxes, faCalendarAlt, faDollarSign, faExclamationTriangle, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 import { getLotesProducto } from '../services/AddProducts.service';
 import { useRole } from '../hooks/useRole';
 
-const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, productId }) => {
+const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, onShowLotes, productId }) => {
   // Estados para el desplegable de lotes
   const [lotesExpanded, setLotesExpanded] = useState(false);
   const [lotes, setLotes] = useState([]);
@@ -197,55 +197,69 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
                   )}
 
                   {!lotesLoading && !lotesError && lotes.length > 0 && (
-                    <div className="productcard-lotes-list">
-                      {lotes.map((lote, index) => (
-                        <div key={lote._id} className={`productcard-lote-item ${index === 0 ? 'siguiente' : ''}`}>
-                          <div className="productcard-lote-header">
-                            <div className="productcard-lote-number">
-                              <span className="productcard-lote-label">
-                                {lote.numeroLote || `Lote #${index + 1}`}
-                              </span>
-                              {index === 0 && <span className="productcard-siguiente-badge">Siguiente</span>}
-                            </div>
-                            <div className="productcard-lote-fecha-agregado">
-                              Agregado {new Date(lote.fechaCreacion).toLocaleDateString()}
-                            </div>
-                          </div>
-
-                          <div className="productcard-lote-body">
-                            <div className="productcard-lote-info-grid">
-                              <div className="productcard-lote-field">
-                                <span className="productcard-field-label">Cantidad</span>
-                                <span className="productcard-field-value">{lote.cantidad} unidades</span>
-                              </div>
-                              
-                              <div className="productcard-lote-field">
-                                <span className="productcard-field-label">Precio Compra</span>
-                                <span className="productcard-field-value">${lote.precioCompra}</span>
-                              </div>
-                              
-                              <div className="productcard-lote-field">
-                                <span className="productcard-field-label">Vencimiento</span>
-                                <span className="productcard-field-value">
-                                  {new Date(lote.fechaVencimiento).toLocaleDateString()}
+                    <>
+                      {/* 🆕 Botón para abrir modal de lotes */}
+                      <div className="productcard-lotes-actions">
+                        <button 
+                          onClick={() => onShowLotes({ _id: productId, Nombre: name })}
+                          className="productcard-lotes-modal-btn"
+                          title="Abrir modal de gestión de lotes"
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                          Gestionar Lotes
+                        </button>
+                      </div>
+                      
+                      <div className="productcard-lotes-list">
+                        {lotes.map((lote, index) => (
+                          <div key={lote._id} className={`productcard-lote-item ${index === 0 ? 'siguiente' : ''}`}>
+                            <div className="productcard-lote-header">
+                              <div className="productcard-lote-number">
+                                <span className="productcard-lote-label">
+                                  {lote.numeroLote || `Lote #${index + 1}`}
                                 </span>
+                                {index === 0 && <span className="productcard-siguiente-badge">Siguiente</span>}
                               </div>
-                              
-                              <div className="productcard-lote-field">
-                                <span className="productcard-field-label">Margen</span>
-                                <span className="productcard-field-value">
-                                  ${(lote.precioVenta - lote.precioCompra)} ({lote.margen}%)
-                                </span>
+                              <div className="productcard-lote-fecha-agregado">
+                                Agregado {new Date(lote.fechaCreacion).toLocaleDateString()}
                               </div>
                             </div>
 
-                            <div className="productcard-lote-status-row">
-                              {getStatusBadge(lote)}
+                            <div className="productcard-lote-body">
+                              <div className="productcard-lote-info-grid">
+                                <div className="productcard-lote-field">
+                                  <span className="productcard-field-label">Cantidad</span>
+                                  <span className="productcard-field-value">{lote.cantidad} unidades</span>
+                                </div>
+                                
+                                <div className="productcard-lote-field">
+                                  <span className="productcard-field-label">Precio Compra</span>
+                                  <span className="productcard-field-value">${lote.precioCompra}</span>
+                                </div>
+                                
+                                <div className="productcard-lote-field">
+                                  <span className="productcard-field-label">Vencimiento</span>
+                                  <span className="productcard-field-value">
+                                    {new Date(lote.fechaVencimiento).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                
+                                <div className="productcard-lote-field">
+                                  <span className="productcard-field-label">Margen</span>
+                                  <span className="productcard-field-value">
+                                    ${(lote.precioVenta - lote.precioCompra)} ({lote.margen}%)
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="productcard-lote-status-row">
+                                {getStatusBadge(lote)}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -280,6 +294,7 @@ ProductCard.propTypes = process.env.NODE_ENV === 'development' ? {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onInfo: PropTypes.func.isRequired,
+  onShowLotes: PropTypes.func.isRequired, // 🆕 Nueva prop para mostrar modal de lotes
   productId: PropTypes.string.isRequired,
 } : {};
 

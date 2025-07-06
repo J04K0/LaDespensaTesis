@@ -20,7 +20,8 @@ import {
     getDisabledProducts,
     sendManualDailyReport,
     agregarLoteProducto,
-    getLotesProducto
+    getLotesProducto,
+    editarLoteProducto
 } from "../controllers/products.controller.js";
 
 import { 
@@ -49,6 +50,7 @@ router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
 router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotesProducto);
 router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
+router.put('/lotes/:id/:loteId', authorizeRoles([isAdmin, isJefe]), editarLoteProducto);
 router.get('/eliminados', authorizeRoles([isAdmin]), getDisabledProducts);
 router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);

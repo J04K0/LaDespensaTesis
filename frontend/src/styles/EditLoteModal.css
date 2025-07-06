@@ -1,0 +1,281 @@
+/* ============================================
+   ESTILOS PARA EL MODAL DE EDICIÓN DE LOTES
+   ============================================ */
+
+.edit-lote-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.edit-lote-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+  margin: auto;
+  position: relative;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.edit-lote-modal-header {
+  background: #006EDF;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.edit-lote-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-lote-modal-title svg {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.edit-lote-modal-title h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.edit-lote-modal-title p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.edit-lote-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.edit-lote-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.edit-lote-modal-content {
+  padding: 32px;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Formulario */
+.edit-lote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+.edit-lote-form-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.edit-lote-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.edit-lote-form-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-lote-form-label svg {
+  color: #006EDF;
+  font-size: 16px;
+}
+
+.edit-lote-form-input {
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-lote-form-input:focus {
+  outline: none;
+  border-color: #006EDF;
+  box-shadow: 0 0 0 3px rgba(0, 110, 223, 0.1);
+}
+
+.edit-lote-form-input:hover {
+  border-color: #c1c7cd;
+}
+
+/* Campo de solo lectura */
+.edit-lote-form-input-readonly {
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  color: #6c757d !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+}
+
+.edit-lote-form-input-readonly:focus {
+  border-color: #dee2e6 !important;
+  box-shadow: none !important;
+}
+
+/* Mostrar precio de venta actual como información */
+.edit-lote-price-display {
+  background-color: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+}
+
+/* Nota informativa */
+.edit-lote-info-note {
+  display: block;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Botones de acción */
+.edit-lote-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.edit-lote-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.edit-lote-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-lote-btn-secondary {
+  background: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.edit-lote-btn-secondary:hover:not(:disabled) {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+.edit-lote-btn-primary {
+  background: #006EDF;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 110, 223, 0.2);
+}
+
+.edit-lote-btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  box-shadow: 0 4px 8px rgba(0, 110, 223, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .edit-lote-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .edit-lote-form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .edit-lote-modal-content {
+    padding: 20px;
+  }
+  
+  .edit-lote-modal-header {
+    padding: 16px;
+  }
+  
+  .edit-lote-form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .edit-lote-btn {
+    width: 100%;
+  }
+}
