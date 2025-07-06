@@ -300,6 +300,20 @@
   box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
 }
 
+/* Botón de eliminar definitivamente */
+.delete-permanently-btn {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.delete-permanently-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
 /* Responsividad */
 @media (max-width: 1200px) {
   .product-table {

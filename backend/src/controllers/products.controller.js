@@ -974,3 +974,28 @@ export const getLotesProducto = async (req, res) => {
     handleErrorServer(res, 500, 'Error al obtener los lotes del producto', err.message);
   }
 };
+
+// 🆕 NUEVO: Función para eliminar producto de manera definitiva
+export const deleteProductPermanently = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { value, error } = idProductSchema.validate({ id }, { convert: false });
+    if (error) return handleErrorClient(res, 400, error.message);
+
+    const product = await Product.findById(value.id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Eliminar físicamente el producto de la base de datos
+    // Las ventas asociadas se conservan independientemente
+    await Product.findByIdAndDelete(value.id);
+
+    handleSuccess(res, 200, 'Producto eliminado permanentemente', {
+      mensaje: 'El producto ha sido eliminado definitivamente de la base de datos',
+      productName: product.Nombre,
+      productCode: product.codigoBarras
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al eliminar el producto permanentemente', err.message);
+  }
+};

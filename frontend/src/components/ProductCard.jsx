@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle, faChevronDown, faChevronUp, faBoxes, faCalendarAlt, faDollarSign, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 import { getLotesProducto } from '../services/AddProducts.service';
+import { useRole } from '../hooks/useRole';
 
 const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, productId }) => {
   // Estados para el desplegable de lotes
@@ -13,7 +14,11 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
   const [lotesLoading, setLotesLoading] = useState(false);
   const [lotesError, setLotesError] = useState(null);
   const [lotesLoaded, setLotesLoaded] = useState(false);
-  const [lotesCount, setLotesCount] = useState(0); // 🆕 NUEVO: Estado para el conteo de lotes
+  const [lotesCount, setLotesCount] = useState(0);
+
+  // Obtener el rol del usuario
+  const { userRole } = useRole();
+  const isEmpleado = userRole === 'empleado';
 
   const isExpired = React.useMemo(() => {
     return fechaVencimiento ? new Date(fechaVencimiento) < new Date() : false;

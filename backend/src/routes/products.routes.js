@@ -5,6 +5,7 @@ import {
     addProduct, 
     updateProduct, 
     disableProduct,
+    deleteProductPermanently,
     getProductsByCategory,
     verificarStock,
     getProductsExpiringSoon,
@@ -55,5 +56,6 @@ router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), disableProduct
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
 router.post('/test-reporte-diario', authorizeRoles([isAdmin, isJefe]), sendManualDailyReport);
+router.delete('/eliminar-permanente/:id', authorizeRoles([isAdmin]), deleteProductPermanently);
 
 export default router;

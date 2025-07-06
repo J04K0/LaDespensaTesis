@@ -248,6 +248,23 @@
   justify-content: center;
 }
 
+.productcard-action-btn-info {
+  flex: 1;
+}
+
+.productcard-action-btn-delete {
+  flex: 1;
+  background: #fff5f5;
+  border-color: #fed7d7;
+  color: #c53030;
+}
+
+.productcard-action-btn-delete:hover {
+  background: #fed7d7;
+  border-color: #feb2b2;
+  color: #9b2c2c;
+}
+
 /* Estilos específicos para productos sin stock - Optimizados */
 .productcard.productcard-out-of-stock .productcard-image-container {
   opacity: 0.7;

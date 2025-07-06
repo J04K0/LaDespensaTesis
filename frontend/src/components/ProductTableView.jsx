@@ -1,12 +1,13 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faEyeSlash, faInfo, faExclamationTriangle, faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faEyeSlash, faInfo, faExclamationTriangle, faBoxes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProductTableView.css';
 
 const ProductTableView = ({ 
   products, 
   onEdit, 
   onDelete, 
+  onDeletePermanently, // 🆕 Nueva prop para eliminar definitivamente
   onInfo,
   onShowLotes,
   getStockColorClass,
@@ -158,6 +159,13 @@ const ProductTableView = ({
                           title="Desactivar producto"
                         >
                           <FontAwesomeIcon icon={faEyeSlash} />
+                        </button>
+                        <button
+                          onClick={() => onDeletePermanently(product)}
+                          className="action-btn delete-permanently-btn"
+                          title="Eliminar producto permanentemente"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
                         </button>
                       </>
                     )}

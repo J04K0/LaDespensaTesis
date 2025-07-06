@@ -18,7 +18,7 @@ import { CATEGORIAS } from '../constants/products.constants';
 import SmartPagination from './SmartPagination';
 import '../styles/DisabledProductsModalStyles.css';
 
-const DisabledProductsModal = ({ isOpen, onClose }) => {
+const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
   const [disabledProducts, setDisabledProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,6 +75,9 @@ const DisabledProductsModal = ({ isOpen, onClose }) => {
       });
       
       const productIdToRemove = productToActivate._id;
+      const productName = productToActivate.Nombre;
+      
+      // Actualizar la lista local sin recargar la página
       setDisabledProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
         
@@ -98,23 +101,18 @@ const DisabledProductsModal = ({ isOpen, onClose }) => {
         return updatedProducts;
       });
       
+      // Mostrar mensaje de éxito sin opción de redirección
       showSuccessAlert(
         'Producto habilitado exitosamente', 
-        'El producto ha sido habilitado y está disponible en el inventario principal.',
-        {
-          showConfirmButton: true,
-          confirmButtonText: 'Ver en inventario',
-          showCancelButton: true,
-          cancelButtonText: 'Continuar aquí',
-          confirmButtonColor: '#17a2b8'
-        }
-      ).then((result) => {
-        if (result.isConfirmed) {
-          onClose();
-          window.location.href = '/products?fromDeleted=true';
-        }
-      });
+        `"${productName}" ha sido habilitado y está disponible en el inventario principal.`
+      );
       
+      // Llama al callback para actualizar la lista principal de productos
+      if (onProductReactivated) {
+        onProductReactivated();
+      }
+      
+      // Cerrar el modal de confirmación y limpiar estados
       setShowActivateModal(false);
       setProductToActivate(null);
       setActivateComment('');

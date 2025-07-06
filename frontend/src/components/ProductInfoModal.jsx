@@ -16,7 +16,8 @@ const ProductInfoModal = React.memo(({
   onEdit, 
   onDelete, 
   onShowPriceHistory,
-  onShowStockHistory
+  onShowStockHistory,
+  onDeletePermanently // 🆕 Nueva prop para eliminar definitivamente
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const { permissions } = useRole();
@@ -108,6 +109,12 @@ const ProductInfoModal = React.memo(({
 
   const handleDelete = async () => {
     onDelete(productInfo);
+    handleClose();
+  };
+
+  // 🆕 NUEVA función para eliminar definitivamente
+  const handleDeletePermanently = () => {
+    onDeletePermanently(productInfo);
     handleClose();
   };
 
@@ -347,6 +354,14 @@ const ProductInfoModal = React.memo(({
                 className="modern-btn modern-btn-warning"
               >
                 <FontAwesomeIcon icon={faEyeSlash} /> Desactivar
+              </button>
+            )}
+            {permissions.canEditProduct && (
+              <button 
+                onClick={handleDeletePermanently} // 🆕 Botón para eliminar definitivamente
+                className="modern-btn modern-btn-danger"
+              >
+                <FontAwesomeIcon icon={faTrash} /> Eliminar Definitivamente
               </button>
             )}
           </div>

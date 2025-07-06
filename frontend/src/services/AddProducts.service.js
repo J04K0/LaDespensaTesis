@@ -290,3 +290,14 @@ export const getLotesProducto = async (productId) => {
     throw error;
   }
 };
+
+// 🆕 NUEVO: Función para eliminar producto definitivamente
+export const deleteProductPermanently = async (id) => {
+  try {
+    const response = await axios.delete(`/products/eliminar-permanente/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting product permanently:', error);
+    throw error;
+  }
+};

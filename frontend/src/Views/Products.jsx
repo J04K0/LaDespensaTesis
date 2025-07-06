@@ -11,7 +11,7 @@ import StockHistoryModal from '../components/StockHistoryModal';
 import DisabledProductsModal from '../components/DisabledProductsModal';
 import ProductLotesModal from '../components/ProductLotesModal';
 import '../styles/ProductsStyles.css';
-import { getProducts, getProductsByCategory, disableProduct, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
+import { getProducts, getProductsByCategory, disableProduct, deleteProductPermanently, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
 import { useVentas } from '../context/VentasContext';
 import { useRole } from '../hooks/useRole';
@@ -466,6 +466,46 @@ const Products = () => {
     setShowLotesModal(true);
   };
 
+  // 🆕 NUEVA función para eliminar producto directamente sin modal
+  const handleDirectDelete = async (product) => {
+    // Mostrar alerta de confirmación antes de eliminar
+    const result = await showConfirmationAlert(
+      "¿Eliminar producto definitivamente?",
+      `¿Está seguro que desea eliminar "${product.Nombre}" de manera PERMANENTE? Esta acción NO se puede deshacer y eliminará el producto completamente de la base de datos.`,
+      "Sí, eliminar definitivamente",
+      "Cancelar"
+    );
+
+    if (!result.isConfirmed) return; // Si el usuario cancela, no hacer nada
+
+    try {
+      setLoading(true);
+      
+      // Usar la nueva función de eliminación definitiva
+      await deleteProductPermanently(product._id);
+      
+      // Actualizar la lista de productos
+      const updatedProducts = allProducts.filter(p => p._id !== product._id);
+      setAllProducts(updatedProducts);
+
+      if (categoryFilterActive) {
+        const updatedCategoryProducts = productsByCategory.filter(p => p._id !== product._id);
+        setProductsByCategory(updatedCategoryProducts);
+        applyAvailabilityFilter(updatedCategoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(updatedProducts, availabilityFilter);
+      }
+
+      showSuccessAlert('Producto eliminado definitivamente', `"${product.Nombre}" ha sido eliminado permanentemente de la base de datos.`);
+    } catch (error) {
+      console.error('Error deleting product permanently:', error);
+      const errorMessage = error.response?.data?.message || 'No se pudo eliminar el producto. Intente nuevamente.';
+      showErrorAlert('Error al eliminar', errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     try {
       await disableProduct(id);
@@ -786,6 +826,27 @@ const Products = () => {
     setShowDeletedProductsModal(true);
   };
 
+  // 🆕 NUEVA función para manejar cuando se habilita un producto desde el modal de desactivados
+  const handleProductReactivated = useCallback(async () => {
+    try {
+      // Recargar todos los productos
+      const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
+      setAllProducts(productsArray);
+      
+      // Mantener filtros actuales
+      if (categoryFilterActive) {
+        const categoryProducts = productsArray.filter(product => product.Categoria === category);
+        setProductsByCategory(categoryProducts);
+        applyAvailabilityFilter(categoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(productsArray, availabilityFilter);
+      }
+    } catch (error) {
+      console.error('Error al actualizar productos después de reactivación:', error);
+    }
+  }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
+
   return (
     <div className="app-container">
       <Navbar />
@@ -914,6 +975,7 @@ const Products = () => {
                           categoria={product.Categoria}
                           codigoBarras={product.codigoBarras}
                           onInfo={() => handleProductInfo(product)}
+                          onDelete={handleDirectDelete}
                           productId={product._id}
                         />
                       ))
@@ -921,6 +983,7 @@ const Products = () => {
                       <ProductTableView
                         products={displayedProducts}
                         onDelete={handleDeleteClick}
+                        onDeletePermanently={handleDirectDelete} // 🆕 Nueva prop para eliminación definitiva
                         onEdit={handleEdit}
                         onInfo={handleProductInfo}
                         onShowLotes={handleShowLotes}
@@ -953,6 +1016,7 @@ const Products = () => {
         productStats={productStats}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
+        onDeletePermanently={handleDirectDelete} // 🆕 Nueva prop para eliminación definitiva
         onShowPriceHistory={(productId) => {
           setPriceHistoryData(productId);
           setShowPriceHistoryModal(true);
@@ -1010,7 +1074,7 @@ const Products = () => {
       <DisabledProductsModal
         isOpen={showDeletedProductsModal}
         onClose={() => setShowDeletedProductsModal(false)}
-        // Aquí puedes agregar más props si es necesario
+        onProductReactivated={handleProductReactivated} // Pasar el callback aquí
       />
       
       {/* 🆕 NUEVO MODAL PARA LOTES DE PRODUCTOS */}

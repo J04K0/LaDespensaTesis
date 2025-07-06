@@ -559,6 +559,13 @@ const AddProducts = () => {
         <Navbar />
         <div className="content-container">
           <div className="addproducts-page-header">
+            <button 
+              className="addproducts-back-btn"
+              onClick={() => navigate('/products')}
+              type="button"
+            >
+              ← Volver a Productos
+            </button>
             <h1 className="addproducts-page-title">Gestión de Inventario</h1>
             <p className="addproducts-page-subtitle">Selecciona la acción que deseas realizar</p>
           </div>
