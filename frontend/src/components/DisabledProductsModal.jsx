@@ -10,9 +10,10 @@ import {
   faSearch,
   faFilter,
   faSpinner,
-  faEyeSlash
+  faEyeSlash,
+  faTrash // 🆕 Agregar icono de eliminar
 } from '@fortawesome/free-solid-svg-icons';
-import { getDisabledProducts, restoreProduct } from '../services/AddProducts.service';
+import { getDisabledProducts, restoreProduct, deleteProductPermanently } from '../services/AddProducts.service'; // 🆕 Importar función de eliminación
 import { showConfirmationAlert, showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import { CATEGORIAS } from '../constants/products.constants';
 import SmartPagination from './SmartPagination';
@@ -120,6 +121,63 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
     } catch (error) {
       console.error('Error en habilitación:', error);
       showErrorAlert('Error', 'No se pudo habilitar el producto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 NUEVA función para manejar eliminación definitiva
+  const handleDeletePermanently = async (product) => {
+    const result = await showConfirmationAlert(
+      "¿Eliminar producto definitivamente?",
+      `¿Está seguro que desea eliminar "${product.Nombre}" de manera PERMANENTE? Esta acción NO se puede deshacer y eliminará el producto completamente de la base de datos.`,
+      "Sí, eliminar definitivamente",
+      "Cancelar"
+    );
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setLoading(true);
+      
+      await deleteProductPermanently(product._id);
+      
+      const productIdToRemove = product._id;
+      const productName = product.Nombre;
+      
+      // Actualizar la lista local sin recargar la página
+      setDisabledProducts(prevProducts => {
+        const updatedProducts = prevProducts.filter(p => p._id !== productIdToRemove);
+        
+        const itemsPerPage = 10;
+        const remainingItems = updatedProducts.length;
+        const newTotalPages = Math.ceil(remainingItems / itemsPerPage) || 1;
+        
+        if (remainingItems === 0 && currentPage > 1) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(prev => prev - 1);
+          }, 50);
+        } else if (currentPage > newTotalPages) {
+          setSkipNextFetch(true);
+          setTimeout(() => {
+            setCurrentPage(newTotalPages);
+          }, 50);
+        }
+        
+        setTotalPages(newTotalPages);
+        return updatedProducts;
+      });
+      
+      showSuccessAlert(
+        'Producto eliminado definitivamente', 
+        `"${productName}" ha sido eliminado permanentemente de la base de datos.`
+      );
+      
+    } catch (error) {
+      console.error('Error deleting product permanently:', error);
+      const errorMessage = error.response?.data?.message || 'No se pudo eliminar el producto. Intente nuevamente.';
+      showErrorAlert('Error al eliminar', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -240,18 +298,34 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
                       )}
                     </div>
                     
-                    <button 
-                      className="activate-button"
-                      onClick={() => handleActivate(product)}
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <FontAwesomeIcon icon={faSpinner} spin />
-                      ) : (
-                        <FontAwesomeIcon icon={faEye} />
-                      )}
-                      Habilitar
-                    </button>
+                    {/* 🆕 Contenedor de botones con ambas acciones */}
+                    <div className="disabled-product-actions">
+                      <button 
+                        className="activate-button"
+                        onClick={() => handleActivate(product)}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <FontAwesomeIcon icon={faSpinner} spin />
+                        ) : (
+                          <FontAwesomeIcon icon={faEye} />
+                        )}
+                        Habilitar
+                      </button>
+                      
+                      <button 
+                        className="delete-permanently-button"
+                        onClick={() => handleDeletePermanently(product)}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <FontAwesomeIcon icon={faSpinner} spin />
+                        ) : (
+                          <FontAwesomeIcon icon={faTrash} />
+                        )}
+                        Eliminar Definitivamente
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

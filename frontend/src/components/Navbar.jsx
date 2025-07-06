@@ -428,7 +428,7 @@ const Navbar = () => {
                         e.stopPropagation();
                         handleNavigation('/finanzas');
                       }}>
-                        <FontAwesomeIcon icon={faChartLine} /> Dashboard financiero
+                        <FontAwesomeIcon icon={faChartLine} /> Análisis financiero
                       </li>
                       {permissions.canAccessCuentasPorPagar && (
                         <li onClick={(e) => {

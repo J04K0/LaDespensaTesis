@@ -11,6 +11,9 @@ export const getProveedores = async (req, res) => {
     let filtro = {};
     if (incluirInactivos === 'true') {
       filtro = { activo: false };
+    } else if (incluirInactivos === 'todos') {
+      // Sin filtro para obtener todos los proveedores (activos e inactivos)
+      filtro = {};
     } else if (incluirInactivos === 'false' || incluirInactivos === false) {
       filtro = { activo: true };
     }

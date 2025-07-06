@@ -83,6 +83,15 @@ const Products = () => {
   const [lotesProductId, setLotesProductId] = useState(null);
   const [lotesProductName, setLotesProductName] = useState('');
 
+  // 🆕 NUEVO ESTADO para forzar re-renderizado cuando se actualicen lotes
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // 🆕 NUEVO ESTADO para mantener el estado de expansión de lotes por producto
+  const [lotesExpandedState, setLotesExpandedState] = useState({});
+
+  // 🆕 NUEVA referencia para refrescar cards cuando se actualicen lotes
+  const [productCardRefs, setProductCardRefs] = useState({});
+
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
   const [statsExpanded, setStatsExpanded] = useState(true);
   const [showPriceHistoryTab, setShowPriceHistoryTab] = useState(false);
@@ -847,6 +856,39 @@ const Products = () => {
     }
   }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
 
+  // 🆕 NUEVA función para manejar el clic en el toggle de lotes
+  const handleLotesToggle = useCallback((productId, isExpanded) => {
+    setLotesExpandedState(prev => ({
+      ...prev,
+      [productId]: isExpanded
+    }));
+  }, []);
+
+  // 🆕 NUEVA función para manejar cuando se actualiza un lote desde el modal
+  const handleLoteUpdatedCallback = useCallback(async () => {
+    try {
+      // Recargar todos los productos para reflejar los cambios de stock
+      const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
+      setAllProducts(productsArray);
+      
+      // Actualizar productos filtrados manteniendo filtros actuales
+      if (categoryFilterActive) {
+        const categoryProducts = productsArray.filter(product => product.Categoria === category);
+        setProductsByCategory(categoryProducts);
+        applyAvailabilityFilter(categoryProducts, availabilityFilter);
+      } else {
+        applyAvailabilityFilter(productsArray, availabilityFilter);
+      }
+      
+      // 🆕 FORZAR RE-RENDERIZADO: Incrementar el trigger para forzar actualización de las ProductCards
+      setRefreshTrigger(prev => prev + 1);
+      
+    } catch (error) {
+      console.error('Error al actualizar productos después de editar lote:', error);
+    }
+  }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
+
   return (
     <div className="app-container">
       <Navbar />
@@ -965,7 +1007,7 @@ const Products = () => {
                     {viewMode === 'cards' ? (
                       displayedProducts.map((product) => (
                         <ProductCard
-                          key={product._id}
+                          key={`${product._id}-${refreshTrigger}`} // 🆕 Incluir refreshTrigger para forzar re-renderizado
                           image={product.image}
                           name={product.Nombre}
                           marca={product.Marca}
@@ -978,6 +1020,9 @@ const Products = () => {
                           onShowLotes={handleShowLotes} // 🆕 Agregar prop para gestionar lotes
                           onDelete={handleDirectDelete}
                           productId={product._id}
+                          // 🆕 Props para mantener estado de expansión de lotes
+                          lotesExpanded={lotesExpandedState[product._id] || false}
+                          onLotesToggle={handleLotesToggle}
                         />
                       ))
                     ) : (
@@ -1088,6 +1133,8 @@ const Products = () => {
         }}
         productId={lotesProductId}
         productName={lotesProductName}
+        onLoteUpdated={handleLoteUpdatedCallback} // 🆕 Pasar el callback para actualizar productos
+        onToggleLotes={handleLotesToggle} // 🆕 Pasar el handler para toggle de lotes
       />
     </div>
   );

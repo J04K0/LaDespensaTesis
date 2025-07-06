@@ -6,7 +6,7 @@ import EditLoteModal from './EditLoteModal';
 import { useRole } from '../hooks/useRole';
 import '../styles/ProductLotesModal.css';
 
-const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
+const ProductLotesModal = ({ isOpen, onClose, productId, productName, onLoteUpdated }) => {
   const [lotes, setLotes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -102,6 +102,11 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
     await fetchLotes(); // Refrescar los lotes
     setShowEditModal(false);
     setLoteToEdit(null);
+    
+    // 🆕 NUEVO: Notificar al componente padre que se actualizó un lote
+    if (onLoteUpdated) {
+      onLoteUpdated();
+    }
   };
 
   return (
@@ -148,22 +153,6 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName }) => {
                   <div className="summary-card">
                     <span className="summary-value">{resumen.totalLotes}</span>
                     <span className="summary-label">{resumen.totalLotes} lotes</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Próximo a vencer */}
-              {getProximoVencer() && (
-                <div className="proximo-vencer">
-                  <div className="proximo-header">
-                    <FontAwesomeIcon icon={faCalendarAlt} />
-                    <span>Próximo a vencer:</span>
-                  </div>
-                  <div className="proximo-info">
-                    <span className="proximo-dias">{getProximoVencer().diasParaVencer} días</span>
-                    <span className="proximo-text">
-                      Al vender, se usará automáticamente el lote que vence primero (FEFO)
-                    </span>
                   </div>
                 </div>
               )}

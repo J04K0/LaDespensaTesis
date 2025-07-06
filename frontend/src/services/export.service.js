@@ -547,8 +547,9 @@ export class ExportService {
   /**
    * Genera un reporte de proveedores en PDF
    * @param {Array} proveedores - Lista de proveedores para incluir en el reporte
+   * @param {string} estadoFilter - Filtro de estado aplicado ('activos', 'inactivos', 'todos')
    */
-  static generarReporteProveedores(proveedores) {
+  static generarReporteProveedores(proveedores, estadoFilter = 'activos') {
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -559,41 +560,116 @@ export class ExportService {
     const currentDate = new Date().toLocaleDateString();
     doc.text(`Fecha: ${currentDate}`, 14, 22);
     
-    const headers = [
-      'Nombre', 
-      'Teléfono', 
-      'Email',
-      'Contacto Principal',
-      'Dirección',
-      'Categorías',
-      'Notas'
-    ];
+    // Detectar el tipo de proveedores y añadir información del estado
+    let tipoProveedores = 'MIXTO';
+    let infoEstado = '';
     
-    const rows = proveedores.map(proveedor => [
-      proveedor.nombre,
-      proveedor.telefono,
-      proveedor.email,
-      proveedor.contactoPrincipal || '—',
-      proveedor.direccion || '—',
-      proveedor.categorias.join(', '),
-      proveedor.notas || '—'
-    ]);
+    if (proveedores.length > 0) {
+      const proveedoresActivos = proveedores.filter(p => p.activo === true || p.activo === undefined);
+      const proveedoresInactivos = proveedores.filter(p => p.activo === false);
+      
+      if (proveedoresActivos.length > 0 && proveedoresInactivos.length === 0) {
+        tipoProveedores = 'ACTIVOS';
+        infoEstado = `Estado: SOLO PROVEEDORES ACTIVOS (${proveedoresActivos.length})`;
+      } else if (proveedoresInactivos.length > 0 && proveedoresActivos.length === 0) {
+        tipoProveedores = 'INACTIVOS';
+        infoEstado = `Estado: SOLO PROVEEDORES INACTIVOS (${proveedoresInactivos.length})`;
+      } else if (proveedoresActivos.length > 0 && proveedoresInactivos.length > 0) {
+        tipoProveedores = 'MIXTO';
+        infoEstado = `Estado: MIXTO - Activos: ${proveedoresActivos.length}, Inactivos: ${proveedoresInactivos.length}`;
+      }
+    }
+    
+    // Mostrar información del estado en el PDF
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    if (tipoProveedores === 'ACTIVOS') {
+      doc.setTextColor(0, 150, 0); // Verde para activos
+    } else if (tipoProveedores === 'INACTIVOS') {
+      doc.setTextColor(200, 0, 0); // Rojo para inactivos
+    } else {
+      doc.setTextColor(0, 0, 200); // Azul para mixto
+    }
+    doc.text(infoEstado, 14, 30);
+    
+    // Restablecer color y fuente
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    
+    // Definir headers según el filtro de estado
+    let headers;
+    if (estadoFilter === 'todos') {
+      // Incluir columna de Estado cuando se muestran todos los proveedores
+      headers = [
+        'Nombre', 
+        'Teléfono', 
+        'Email',
+        'Contacto Principal',
+        'Dirección',
+        'Categorías',
+        'Estado',
+        'Notas'
+      ];
+    } else {
+      // Headers normales sin columna de Estado
+      headers = [
+        'Nombre', 
+        'Teléfono', 
+        'Email',
+        'Contacto Principal',
+        'Dirección',
+        'Categorías',
+        'Notas'
+      ];
+    }
+    
+    // Generar filas según el filtro de estado
+    let rows;
+    if (estadoFilter === 'todos') {
+      // Incluir columna de Estado
+      rows = proveedores.map(proveedor => [
+        proveedor.nombre,
+        proveedor.telefono,
+        proveedor.email,
+        proveedor.contactoPrincipal || '—',
+        proveedor.direccion || '—',
+        proveedor.categorias.join(', '),
+        proveedor.activo ? 'Activo' : 'Inactivo',
+        proveedor.notas || '—'
+      ]);
+    } else {
+      // Sin columna de Estado
+      rows = proveedores.map(proveedor => [
+        proveedor.nombre,
+        proveedor.telefono,
+        proveedor.email,
+        proveedor.contactoPrincipal || '—',
+        proveedor.direccion || '—',
+        proveedor.categorias.join(', '),
+        proveedor.notas || '—'
+      ]);
+    }
     
     // Generar tabla
     autoTable(doc, {
       head: [headers],
       body: rows,
-      margin: { top: 30 },
-      styles: { overflow: 'linebreak' },
+      margin: { top: 40 }, // Aumentado para dar espacio a la información del estado
+      styles: { 
+        overflow: 'linebreak',
+        fontSize: 9
+      },
       headStyles: { fillColor: [0, 38, 81] }, // Color #002651
       didDrawPage: (data) => {
         doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
         doc.text(`La Despensa - Listado de Proveedores - ${currentDate}`, 14, doc.internal.pageSize.height - 10);
       }
     });
     
-    // Guardar PDF
-    doc.save("Proveedores.pdf");
+    // Guardar PDF con nombre que incluya el tipo de proveedores
+    const tipoParaNombre = tipoProveedores === 'MIXTO' ? 'Completo' : tipoProveedores;
+    doc.save(`Proveedores_${tipoParaNombre}.pdf`);
   }
 
   /**

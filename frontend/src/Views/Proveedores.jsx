@@ -48,8 +48,8 @@ const Proveedores = () => {
   const proveedoresPorPagina = 5;
   const categorias = [
     'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
+    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados',
+    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros',
     'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
   ];
   
@@ -71,7 +71,13 @@ const Proveedores = () => {
       // Determinar qué proveedores cargar basado en el filtro de estado
       let parametroIncluirInactivos = incluirInactivos;
       if (parametroIncluirInactivos === null) {
-        parametroIncluirInactivos = estadoFilter === 'inactivos' ? true : false;
+        if (estadoFilter === 'inactivos') {
+          parametroIncluirInactivos = true;
+        } else if (estadoFilter === 'todos') {
+          parametroIncluirInactivos = 'todos'; // Nuevo parámetro para obtener todos
+        } else {
+          parametroIncluirInactivos = false;
+        }
       }
       
       const data = await getProveedores(1, 10000, parametroIncluirInactivos);
@@ -126,7 +132,15 @@ const Proveedores = () => {
     setEstadoFilter(nuevoEstado);
     
     // Recargar proveedores según el nuevo filtro de estado
-    const incluirInactivos = nuevoEstado === 'inactivos';
+    let incluirInactivos;
+    if (nuevoEstado === 'inactivos') {
+      incluirInactivos = true;
+    } else if (nuevoEstado === 'todos') {
+      incluirInactivos = 'todos';
+    } else {
+      incluirInactivos = false;
+    }
+    
     await fetchProveedores(incluirInactivos);
   };
 
@@ -373,7 +387,7 @@ const Proveedores = () => {
   };
 
   const exportarPDF = () => {
-    ExportService.generarReporteProveedores(filteredProveedores);
+    ExportService.generarReporteProveedores(filteredProveedores, estadoFilter);
   };
 
   const resetForm = () => {
@@ -615,6 +629,7 @@ const Proveedores = () => {
                   >
                     <option value="activos">Proveedores Activos</option>
                     <option value="inactivos">Proveedores Inactivos</option>
+                    <option value="todos">Todos los Proveedores</option> {/* Nueva opción */}
                   </select>
                 </div>
                 

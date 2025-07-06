@@ -52,9 +52,6 @@ function LoginForm() {
         {errors.password && <span>Este campo es requerido</span>}
       </label>
       <button className='boton' type="submit">Iniciar sesión</button>
-      <label className="containerOlvidaste">
-        <a className="olvidaste" href="#">¿Olvidaste tu contraseña?</a>
-      </label>
     </form>
   );
 }

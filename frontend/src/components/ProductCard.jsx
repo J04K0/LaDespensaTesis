@@ -7,14 +7,40 @@ import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
 import { getLotesProducto } from '../services/AddProducts.service';
 import { useRole } from '../hooks/useRole';
 
-const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, categoria, onInfo, onShowLotes, productId }) => {
+const ProductCard = React.memo(({ 
+  image, 
+  name, 
+  stock, 
+  venta, 
+  fechaVencimiento, 
+  categoria, 
+  onInfo, 
+  onShowLotes, 
+  productId,
+  // 🆕 Nuevas props para mantener estado de expansión
+  lotesExpanded: externalLotesExpanded,
+  onLotesToggle
+}) => {
   // Estados para el desplegable de lotes
-  const [lotesExpanded, setLotesExpanded] = useState(false);
+  const [lotesExpanded, setLotesExpanded] = useState(externalLotesExpanded || false);
   const [lotes, setLotes] = useState([]);
   const [lotesLoading, setLotesLoading] = useState(false);
   const [lotesError, setLotesError] = useState(null);
   const [lotesLoaded, setLotesLoaded] = useState(false);
   const [lotesCount, setLotesCount] = useState(0);
+
+  // 🆕 SINCRONIZAR estado externo con estado interno
+  useEffect(() => {
+    setLotesExpanded(externalLotesExpanded || false);
+  }, [externalLotesExpanded]);
+
+  // 🆕 NUEVO: Recargar lotes cuando se expande desde estado externo y no están cargados
+  useEffect(() => {
+    if (externalLotesExpanded && !lotesLoaded && !lotesLoading) {
+      console.log(`🔄 Recargando lotes para producto ${name} - Estado externo expandido`);
+      fetchLotes();
+    }
+  }, [externalLotesExpanded, lotesLoaded, lotesLoading, name]);
 
   // Obtener el rol del usuario
   const { userRole } = useRole();
@@ -75,13 +101,37 @@ const ProductCard = React.memo(({ image, name, stock, venta, fechaVencimiento, c
     }
   }, [productId, lotesLoaded]);
 
+  // 🆕 NUEVA función para refrescar lotes cuando se actualicen
+  const refreshLotes = async () => {
+    if (lotesLoaded) {
+      await fetchLotes();
+    } else {
+      // Si no están cargados, solo actualizar el conteo
+      try {
+        const response = await getLotesProducto(productId);
+        const lotesData = response.data.lotes || [];
+        setLotesCount(lotesData.length);
+      } catch (error) {
+        console.error('Error refreshing lotes count:', error);
+      }
+    }
+  };
+
   // Función para toggle del desplegable de lotes
   const toggleLotes = async () => {
-    if (!lotesExpanded && !lotesLoaded) {
+    const newExpandedState = !lotesExpanded;
+    
+    if (newExpandedState && !lotesLoaded) {
       // Cargar lotes solo la primera vez
       await fetchLotes();
     }
-    setLotesExpanded(!lotesExpanded);
+    
+    setLotesExpanded(newExpandedState);
+    
+    // 🆕 Notificar cambio de estado al componente padre
+    if (onLotesToggle) {
+      onLotesToggle(productId, newExpandedState);
+    }
   };
 
   // Función para cargar los lotes
@@ -296,6 +346,8 @@ ProductCard.propTypes = process.env.NODE_ENV === 'development' ? {
   onInfo: PropTypes.func.isRequired,
   onShowLotes: PropTypes.func.isRequired, // 🆕 Nueva prop para mostrar modal de lotes
   productId: PropTypes.string.isRequired,
+  lotesExpanded: PropTypes.bool, // 🆕 Nueva prop para estado de expansión
+  onLotesToggle: PropTypes.func, // 🆕 Nueva prop para manejar toggle de expansión
 } : {};
 
 ProductCard.displayName = 'ProductCard';

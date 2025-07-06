@@ -784,7 +784,7 @@ const Finanzas = () => {
           <>
             <div className="page-header">
               <div className="title-container">
-                <h1 className="page-title">Dashboard Financiero</h1>
+                <h1 className="page-title">Análisis Financiero</h1>
                 <p className="page-subtitle">Analiza el rendimiento económico y tendencias de ventas de tu negocio</p>
               </div>
               <button className="btn-export-pdf" onClick={descargarReporteFinanciero}>
@@ -1324,7 +1324,7 @@ const Finanzas = () => {
                   </div>
                   
                   <div className="analysis-card">
-                    <h3 className="card-title">Categorías por volumen</h3>
+                    <h3 className="card-title">Cantidad de ventas por categoría</h3>
                     <button 
                       className="info-button"
                       onMouseEnter={(e) => showTooltip(e, tooltipInfo.categoriasPorVolumen)}
@@ -1556,7 +1556,7 @@ const Finanzas = () => {
                 {/* 🔄 NUEVA SECCIÓN: Productos de lenta y alta rotación */}
                 <div className="section-cards">
                   <div className="analysis-card">
-                    <h3 className="card-title">Productos de lenta rotación</h3>
+                    <h3 className="card-title">Ventas de poca frecuencia</h3>
                     <button 
                       className="info-button"
                       onMouseEnter={(e) => showTooltip(e, "Productos que se venden con menor frecuencia. Considera promocionar, reducir stock o discontinuar estos productos para optimizar tu capital de trabajo y reducir costos de almacenamiento.")}
@@ -1632,7 +1632,7 @@ const Finanzas = () => {
                   </div>
 
                   <div className="analysis-card">
-                    <h3 className="card-title">Productos de alta rotación</h3>
+                    <h3 className="card-title">Ventas de alta frecuencia</h3>
                     <button 
                       className="info-button"
                       onMouseEnter={(e) => showTooltip(e, "Productos que se venden con mayor frecuencia y generan más flujo de caja. Asegúrate de mantener stock suficiente y considera incrementar el inventario de estos productos estrella para maximizar ventas.")}

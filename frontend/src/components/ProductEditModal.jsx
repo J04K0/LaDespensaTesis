@@ -1,8 +1,7 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faTimes, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faTimes } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-import { MARGENES_POR_CATEGORIA } from '../constants/products.constants.js';
 import '../styles/ProductEditModal.css';
 
 const ProductEditModal = forwardRef(({ 
@@ -16,9 +15,6 @@ const ProductEditModal = forwardRef(({
   loading, 
   categories 
 }, ref) => {
-  const [stockOriginal, setStockOriginal] = useState(0);
-  const [showMotivoStock, setShowMotivoStock] = useState(false);
-  const [motivoStock, setMotivoStock] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -49,75 +45,10 @@ const ProductEditModal = forwardRef(({
     };
   }, [isOpen]);
 
-  const usarPrecioRecomendado = () => {
-    const margen = MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23;
-    const precioRecomendado = productToEdit.PrecioCompra * (1 + margen);
-    
-    onProductChange({
-      target: {
-        name: 'PrecioVenta',
-        value: precioRecomendado.toFixed(2)
-      }
-    });
-  };
-
-  const handleMotivoStockChange = (e) => {
-    setMotivoStock(e.target.value);
-  };
-
   const handleSubmit = async () => {
-    console.log('🔍 DEBUG - Stock original:', stockOriginal);
-    console.log('🔍 DEBUG - Stock actual:', productToEdit.Stock);
-    console.log('🔍 DEBUG - Tipos:', typeof stockOriginal, typeof productToEdit.Stock);
-    
-    const hayCambioStock = Number(productToEdit.Stock) !== Number(stockOriginal);
-    
-    console.log('🔍 DEBUG - ¿Hay cambio de stock?', hayCambioStock);
-    console.log('🔍 DEBUG - Motivo actual:', motivoStock);
-    
-    if (hayCambioStock && !motivoStock.trim()) {
-      
-      const { value: motivo } = await Swal.fire({
-        title: 'Cambio de Stock Detectado',
-        html: `
-          <div style="text-align: left; margin-bottom: 15px;">
-            <p><strong>Stock original:</strong> ${stockOriginal}</p>
-            <p><strong>Nuevo stock:</strong> ${productToEdit.Stock}</p>
-            <p style="color: #e74c3c; font-weight: bold;">Se requiere un motivo para este cambio:</p>
-          </div>
-        `,
-        input: 'textarea',
-        inputPlaceholder: 'Explique el motivo del cambio de stock (ej: producto dañado, corrección de inventario, etc.)',
-        inputValidator: (value) => {
-          if (!value || value.trim().length < 10) {
-            return 'El motivo debe tener al menos 10 caracteres'
-          }
-        },
-        showCancelButton: true,
-        confirmButtonText: 'Guardar con motivo',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#dc3545',
-        allowOutsideClick: false,
-        allowEscapeKey: false
-      });
-
-      if (!motivo) {
-        return;
-      }
-
-      setMotivoStock(motivo.trim());
-      
-      console.log('📤 Enviando datos con motivo:', { motivo: motivo.trim() });
-      onSubmit({ motivo: motivo.trim() });
-      return;
-    }
-    
     const result = await Swal.fire({
       title: "¿Estás seguro?",
-      text: hayCambioStock 
-        ? `¿Deseas guardar los cambios realizados a este producto?\n\nCambio de stock: ${stockOriginal} → ${productToEdit.Stock}\nMotivo: ${motivoStock}`
-        : "¿Deseas guardar los cambios realizados a este producto?",
+      text: "¿Deseas guardar los cambios realizados a este producto?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -127,42 +58,14 @@ const ProductEditModal = forwardRef(({
     });
 
     if (result.isConfirmed) {
-      const submitData = hayCambioStock ? { motivo: motivoStock.trim() } : {};
-      console.log('📤 Enviando datos:', submitData);
-      onSubmit(submitData);
+      onSubmit();
     }
-  };
-
-  useEffect(() => {
-    if (isOpen && productToEdit) {
-      console.log('🔄 Modal abierto, capturando stock original:', productToEdit.Stock);
-      setStockOriginal(Number(productToEdit.Stock)); // Asegurar que sea número
-      setMotivoStock('');
-      setShowMotivoStock(false);
-    }
-  }, [isOpen, productToEdit._id]);
-
-  useEffect(() => {
-    if (productToEdit && stockOriginal !== undefined) {
-      const hayCambio = Number(productToEdit.Stock) !== Number(stockOriginal);
-      console.log('📊 Detectando cambio de stock:', hayCambio, 'Original:', stockOriginal, 'Actual:', productToEdit.Stock);
-      setShowMotivoStock(hayCambio);
-      if (!hayCambio) {
-        setMotivoStock('');
-      }
-    }
-  }, [productToEdit.Stock, stockOriginal]);
-
-  const handleClose = () => {
-    setMotivoStock('');
-    setShowMotivoStock(false);
-    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="product-edit-modal-overlay" onClick={handleClose}>
+    <div className="product-edit-modal-overlay" onClick={onClose}>
       <div className="product-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="product-edit-modal-header">
           <h2 className="product-edit-modal-title">
@@ -170,7 +73,7 @@ const ProductEditModal = forwardRef(({
           </h2>
           <button 
             className="product-edit-modal-close"
-            onClick={handleClose}
+            onClick={onClose}
             disabled={loading}
           >
             <FontAwesomeIcon icon={faTimes} />
@@ -240,42 +143,14 @@ const ProductEditModal = forwardRef(({
             </div>
             
             <div className="product-edit-form-group">
-              <label className="product-edit-form-label" htmlFor="Stock">Stock</label>
-              <input
-                type="number"
-                id="Stock"
-                name="Stock"
-                value={productToEdit.Stock}
-                onChange={onProductChange}
-                required
-                className="product-edit-form-control"
-                min="0"
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="product-edit-form-group">
-              <label className="product-edit-form-label" htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
-              <input
-                type="date"
-                id="fechaVencimiento"
-                name="fechaVencimiento"
-                value={productToEdit.fechaVencimiento}
-                onChange={onProductChange}
-                className="product-edit-form-control"
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="product-edit-form-group">
-              <label className="product-edit-form-label" htmlFor="PrecioCompra">Precio de Compra</label>
+              <label className="product-edit-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
               <div className="product-edit-input-with-icon">
                 <span className="product-edit-input-prefix">$</span>
                 <input
                   type="number"
-                  id="PrecioCompra"
-                  name="PrecioCompra"
-                  value={productToEdit.PrecioCompra}
+                  id="PrecioVenta"
+                  name="PrecioVenta"
+                  value={productToEdit.PrecioVenta}
                   onChange={onProductChange}
                   required
                   className="product-edit-form-control"
@@ -285,69 +160,7 @@ const ProductEditModal = forwardRef(({
                 />
               </div>
             </div>
-            
-            <div className="product-edit-form-group">
-              <label className="product-edit-form-label" htmlFor="PrecioVenta">Precio de Venta Final</label>
-              <div className="product-edit-precio-recomendado-container">
-                <div className="product-edit-input-with-icon">
-                  <span className="product-edit-input-prefix">$</span>
-                  <input
-                    type="number"
-                    id="PrecioVenta"
-                    name="PrecioVenta"
-                    value={productToEdit.PrecioVenta}
-                    onChange={onProductChange}
-                    required
-                    className="product-edit-form-control"
-                    min="0"
-                    step="0.01"
-                    disabled={loading}
-                  />
-                </div>
-                {productToEdit.PrecioCompra > 0 && productToEdit.Categoria && (
-                  <button
-                    type="button"
-                    onClick={usarPrecioRecomendado}
-                    className="product-edit-btn product-edit-btn-usar-recomendado"
-                    disabled={loading}
-                  >
-                    Usar Precio Recomendado
-                    <br />
-                    <small>$
-                      {(productToEdit.PrecioCompra * 
-                        (1 + (MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23))
-                      ).toFixed(2)}
-                    </small>
-                  </button>
-                )}
-              </div>
-            </div>
           </div>
-
-          {showMotivoStock && (
-            <div className="product-edit-form-group product-edit-form-group-full motivo-stock">
-              <label className="product-edit-form-label" htmlFor="motivoStock">
-                <FontAwesomeIcon icon={faExclamationTriangle} className="text-warning" />
-                Motivo del cambio de stock *
-              </label>
-              <textarea
-                id="motivoStock"
-                name="motivoStock"
-                value={motivoStock}
-                onChange={handleMotivoStockChange}
-                required
-                className="product-edit-form-control product-edit-textarea"
-                rows="3"
-                placeholder="Explique el motivo del cambio de stock (ej: producto dañado, corrección de inventario, etc.)"
-                disabled={loading}
-              />
-              <div className="stock-change-notice">
-                <p className="stock-change-text">
-                  Este comentario se guardará en el historial de cambios del producto
-                </p>
-              </div>
-            </div>
-          )}
                   
           <div className="product-edit-form-group-full">
             <label className="product-edit-form-label" htmlFor="image">Imagen del Producto</label>
@@ -381,7 +194,7 @@ const ProductEditModal = forwardRef(({
             {loading ? 'Guardando...' : 'Guardar Cambios'}
           </button>
           <button 
-            onClick={handleClose} 
+            onClick={onClose} 
             className="product-edit-btn product-edit-btn-secondary"
             disabled={loading}
           >
