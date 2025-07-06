@@ -1,8 +1,6 @@
 import CuentasPorPagar from '../models/cuentasPorPagar.model.js';
 import { handleSuccess, handleErrorClient, handleErrorServer } from '../utils/resHandlers.js';
 import { cuentaPorPagarSchema } from '../schema/cuentasPorPagar.schema.js';
-import { emitCuentaPorPagarAlert } from '../services/alert.service.js';
-import cron from 'node-cron';
 
 // Obtener todas las cuentas por pagar
 export const getCuentasPorPagar = async (req, res) => {
