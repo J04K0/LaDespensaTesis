@@ -1109,15 +1109,31 @@
 
 .btn-estado-cuenta:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.btn-estado-cuenta.btn-success {
-  background-color: #28a745;
+.btn-estado-cuenta.btn-primary {
+  background-color: #006EDF;
 }
 
-.btn-estado-cuenta.btn-success:hover {
-  background-color: #218838;
+.btn-estado-cuenta.btn-primary:hover {
+  background-color: #005bb8;
+}
+
+.btn-estado-cuenta.btn-warning {
+  background-color: #ffc107;
+}
+
+.btn-estado-cuenta.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.btn-estado-cuenta.btn-info {
+  background-color: #17a2b8;
+}
+
+.btn-estado-cuenta.btn-info:hover {
+  background-color: #138496;
 }
 
 .btn-estado-cuenta.btn-danger {
@@ -1126,43 +1142,6 @@
 
 .btn-estado-cuenta.btn-danger:hover {
   background-color: #c82333;
-}
-
-/* Botones de estado del proveedor - Colores iguales a Proveedores */
-.btn-estado-cuenta.btn-warning {
-  background-color: #ffc107; /* Amarillo para desactivar */
-  border-color: #ffc107;
-  color: #212529;
-}
-
-.btn-estado-cuenta.btn-warning:hover {
-  background-color: #e0a800;
-  border-color: #d39e00;
-  color: #212529;
-}
-
-.btn-estado-cuenta.btn-info {
-  background-color: #17a2b8; /* Azul para activar */
-  border-color: #17a2b8;
-  color: white;
-}
-
-.btn-estado-cuenta.btn-info:hover {
-  background-color: #138496;
-  border-color: #117a8b;
-  color: white;
-}
-
-.btn-estado-cuenta.btn-danger {
-  background-color: #dc3545; /* Rojo para eliminar */
-  border-color: #dc3545;
-  color: white;
-}
-
-.btn-estado-cuenta.btn-danger:hover {
-  background-color: #c82333;
-  border-color: #bd2130;
-  color: white;
 }
 
 /* Ajustar el contenedor de información del proveedor */
@@ -1181,4 +1160,119 @@
 .proveedor-id {
   font-size: 12px;
   color: #666;
+}
+
+/* Estilos para información de solo lectura en modal */
+.readonly-info {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.readonly-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #495057;
+}
+
+.readonly-info p:first-child {
+  margin-top: 0;
+}
+
+.readonly-info p:last-child {
+  margin-bottom: 0;
+}
+
+.readonly-info strong {
+  color: #343a40;
+  font-weight: 600;
+}
+
+/* 🆕 Estilos para el autocompletado */
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.autocomplete-suggestion {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f3f4;
+  transition: background-color 0.2s ease;
+}
+
+.autocomplete-suggestion:hover {
+  background-color: #f8f9fa;
+}
+
+.autocomplete-suggestion:last-child {
+  border-bottom: none;
+}
+
+.suggestion-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.suggestion-main strong {
+  color: #002651;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.suggestion-category {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.suggestion-details {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.suggestion-rut {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Scrollbar para las sugerencias */
+.autocomplete-suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.autocomplete-suggestions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.autocomplete-suggestions::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.autocomplete-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }

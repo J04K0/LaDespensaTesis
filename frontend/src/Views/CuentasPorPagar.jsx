@@ -12,8 +12,6 @@ import '../styles/CuentasPorPagarStyles.css';
 import '../styles/SmartPagination.css';
 import axios from "../services/root.service.js";
 import { ExportService } from '../services/export.service.js';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 const CuentasPorPagar = () => {
   const [cuentas, setCuentas] = useState([]);
@@ -32,6 +30,10 @@ const CuentasPorPagar = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  // 🆕 Estados para el autocompletado
+  const [proveedoresSugeridos, setProveedoresSugeridos] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [proveedoresUnicos, setProveedoresUnicos] = useState([]);
   const [currentCuenta, setCurrentCuenta] = useState({
     Nombre: '',
     numeroVerificador: '',
@@ -73,7 +75,7 @@ const CuentasPorPagar = () => {
   const estados = ['Pendiente', 'Pagado',];
 
   // Función para agrupar cuentas por nombre y categoría
-  const agruparCuentas = (cuentasData) => {
+  const agruparCuentas = (cuentasData, filtrarPorAnio = true) => {
     const agrupadas = {};
     const orden = []; // Array para mantener el orden de agregación
 
@@ -90,21 +92,44 @@ const CuentasPorPagar = () => {
           categoria: cuenta.Categoria,
           meses: {},
           cantidadCuentas: 0, // Contador para la cantidad de cuentas por proveedor
-          createdAt: cuenta.createdAt || new Date() // Guardamos la fecha de creación para ordenar
+          createdAt: cuenta.createdAt || new Date(), // Guardamos la fecha de creación para ordenar
+          todosLosAnios: {} // 🆕 Para almacenar cuentas de todos los años cuando hay búsqueda
         };
       }
       
       // Extraer año y mes de la fecha
       const [year, month] = cuenta.Mes.split('-');
       
-      // Agrupar por año y mes
-      if (year === yearSelected) {
-        agrupadas[key].meses[month] = {
+      if (filtrarPorAnio) {
+        // Comportamiento normal: solo mostrar el año seleccionado
+        if (year === yearSelected) {
+          agrupadas[key].meses[month] = {
+            _id: cuenta._id,
+            monto: cuenta.Monto,
+            estado: cuenta.Estado
+          };
+          agrupadas[key].cantidadCuentas++;
+        }
+      } else {
+        // Para búsquedas globales: mostrar todos los años
+        if (!agrupadas[key].todosLosAnios[year]) {
+          agrupadas[key].todosLosAnios[year] = {};
+        }
+        agrupadas[key].todosLosAnios[year][month] = {
           _id: cuenta._id,
           monto: cuenta.Monto,
           estado: cuenta.Estado
         };
-        // Incrementar el contador de cuentas
+        
+        // Si es del año seleccionado, también ponerlo en meses para compatibilidad
+        if (year === yearSelected) {
+          agrupadas[key].meses[month] = {
+            _id: cuenta._id,
+            monto: cuenta.Monto,
+            estado: cuenta.Estado
+          };
+        }
+        
         agrupadas[key].cantidadCuentas++;
       }
     });
@@ -198,23 +223,67 @@ const CuentasPorPagar = () => {
 
   // Filtrar cuentas por búsqueda
   useEffect(() => {
-    if (!cuentas.length) return;
+    let filtered = [];
     
-    const filtered = cuentas.filter(cuenta => 
-      cuenta.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cuenta.numeroVerificador.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    setFilteredCuentas(filtered);
-    
-    // Agrupar cuentas filtradas
-    const { agrupadas, orden } = agruparCuentas(filtered);
-    setCuentasAgrupadas(agrupadas);
-    setOrdenProveedores(orden);
-    
-    setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
-    setCurrentPage(1);
-  }, [searchQuery, cuentas, yearSelected]);
+    if (searchQuery.trim()) {
+      // Si hay búsqueda por nombre, buscar en TODAS las cuentas sin filtro de año
+      const fetchAllCuentasForSearch = async () => {
+        try {
+          const responseAll = await axios.get('/cuentasPorPagar', {
+            params: {
+              page: 1,
+              limit: 10000, // Traer todas las cuentas
+              categoria: categoriaFilter,
+              estado: estadoFilter
+              // NO incluir year para traer todas las cuentas de todos los años
+            }
+          });
+          
+          if (responseAll.data.status === "success") {
+            const todasLasCuentas = responseAll.data.data.cuentas.filter(cuenta => cuenta.Activo !== false);
+            
+            // Filtrar por nombre/RUT en todas las cuentas
+            filtered = todasLasCuentas.filter(cuenta => 
+              cuenta.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              cuenta.numeroVerificador.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          }
+          
+          setFilteredCuentas(filtered);
+          
+          // Agrupar cuentas filtradas (ahora puede incluir múltiples años)
+          const { agrupadas, orden } = agruparCuentas(filtered, false); // Pasar false para no filtrar por año
+          setCuentasAgrupadas(agrupadas);
+          setOrdenProveedores(orden);
+          
+          setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
+          setCurrentPage(1);
+        } catch (error) {
+          console.error('Error al buscar cuentas:', error);
+        }
+      };
+      
+      fetchAllCuentasForSearch();
+    } else {
+      // Si no hay búsqueda, usar las cuentas filtradas normalmente por año
+      if (cuentas.length > 0) {
+        filtered = cuentas.filter(cuenta => 
+          cuenta.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          cuenta.numeroVerificador.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        
+        setFilteredCuentas(filtered);
+        
+        // Agrupar cuentas filtradas
+        const { agrupadas, orden } = agruparCuentas(filtered);
+        setCuentasAgrupadas(agrupadas);
+        setOrdenProveedores(orden);
+        
+        setTotalPages(Math.ceil(orden.length / cuentasPorPagina));
+        setCurrentPage(1);
+      }
+    }
+  }, [searchQuery, categoriaFilter, estadoFilter]); // Remover cuentas y yearSelected de las dependencias
 
   // Efectos para manejar el rendimiento del modal
   useEffect(() => {
@@ -272,7 +341,7 @@ const CuentasPorPagar = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Mostrar proveedores/categorías según la página actual y orden de agregación
+  // Mostrar proveedores/categorías según la página currentPage y orden de agregación
   const displayedProveedores = ordenProveedores
     .map(key => cuentasAgrupadas[key])
     .filter(Boolean)
@@ -300,7 +369,7 @@ const CuentasPorPagar = () => {
     const cuentaExistente = proveedor.meses[mes];
     
     if (cuentaExistente) {
-      // Editar cuenta existente
+      // Editar cuenta existente - SOLO MONTO Y ESTADO
       setCurrentCuenta({
         _id: cuentaExistente._id,
         Nombre: proveedor.nombre,
@@ -308,18 +377,21 @@ const CuentasPorPagar = () => {
         Mes: `${yearSelected}-${mes}`,
         Monto: cuentaExistente.monto,
         Estado: cuentaExistente.estado,
-        Categoria: proveedor.categoria
+        Categoria: proveedor.categoria,
+        isMonthlyEdit: true // Flag para indicar que es edición mensual
       });
       setIsEditing(true);
     } else {
-      // Crear nueva cuenta para este mes
+      // Crear nueva cuenta para este mes de un proveedor existente
       setCurrentCuenta({
         Nombre: proveedor.nombre,
         numeroVerificador: proveedor.numeroVerificador,
         Mes: `${yearSelected}-${mes}`,
         Monto: '',
         Estado: 'Pendiente',
-        Categoria: proveedor.categoria
+        Categoria: proveedor.categoria,
+        isMonthlyEdit: false, // No es edición mensual, es creación
+        isExistingProvider: true // Flag para indicar que es un proveedor existente
       });
       setIsEditing(false);
     }
@@ -338,10 +410,71 @@ const CuentasPorPagar = () => {
 
     if (result.isConfirmed) {
       try {
+        // Primero obtener información de la cuenta que se va a eliminar
+        const cuentaAEliminar = cuentas.find(cuenta => cuenta._id === id);
+        if (!cuentaAEliminar) {
+          showErrorAlert('Error', 'No se encontró la cuenta a eliminar');
+          return;
+        }
+
+        // Contar cuántas cuentas tiene este proveedor en el año actual
+        const cuentasDelProveedor = cuentas.filter(cuenta => 
+          cuenta.Nombre === cuentaAEliminar.Nombre && 
+          cuenta.Categoria === cuentaAEliminar.Categoria &&
+          cuenta.Mes.startsWith(yearSelected)
+        );
+
+        // Eliminar la cuenta
         const response = await axios.delete(`/cuentasPorPagar/eliminar/${id}`);
         if (response.data.status === "success") {
-          await fetchCuentas();
-          showSuccessAlert('Cuenta eliminada con éxito', '');
+          // Si era la única cuenta del proveedor en este año, crear una cuenta "fantasma" 
+          // para mantener visible al proveedor en la tabla
+          if (cuentasDelProveedor.length === 1) {
+            // Crear una cuenta temporal sin mes/monto para mantener al proveedor visible
+            const cuentaFantasma = {
+              _id: `temp-${Date.now()}`,
+              Nombre: cuentaAEliminar.Nombre,
+              numeroVerificador: cuentaAEliminar.numeroVerificador,
+              Categoria: cuentaAEliminar.Categoria,
+              Mes: '', // Sin mes específico
+              Monto: 0,
+              Estado: 'Pendiente',
+              Activo: true,
+              isFantasma: true // Flag para identificar que es una cuenta fantasma
+            };
+            
+            // Agregar la cuenta fantasma temporalmente a la lista local
+            setCuentas(prevCuentas => {
+              const cuentasActualizadas = prevCuentas.filter(cuenta => cuenta._id !== id);
+              return [...cuentasActualizadas, cuentaFantasma];
+            });
+            
+            // Actualizar las cuentas agrupadas manualmente para incluir el proveedor vacío
+            setCuentasAgrupadas(prevAgrupadas => {
+              const key = `${cuentaAEliminar.Nombre}-${cuentaAEliminar.Categoria}`;
+              const nuevasAgrupadas = { ...prevAgrupadas };
+              
+              // Mantener la información del proveedor pero sin meses
+              nuevasAgrupadas[key] = {
+                id: key,
+                nombre: cuentaAEliminar.Nombre,
+                numeroVerificador: cuentaAEliminar.numeroVerificador,
+                categoria: cuentaAEliminar.Categoria,
+                meses: {}, // Sin meses
+                cantidadCuentas: 0,
+                createdAt: new Date(),
+                isFantasma: true // Flag para indicar que es un proveedor vacío
+              };
+              
+              return nuevasAgrupadas;
+            });
+            
+            showSuccessAlert('Cuenta eliminada con éxito', 'El proveedor se mantiene visible para agregar nuevas cuentas');
+          } else {
+            // Si no era la única cuenta, solo actualizar normalmente
+            await fetchCuentas();
+            showSuccessAlert('Cuenta eliminada con éxito', '');
+          }
         } else {
           throw new Error(response.data.message);
         }
@@ -416,28 +549,82 @@ const handleSubmit = async () => {
   // Mostrar confirmación antes de añadir la cuenta
   const result = await showConfirmationAlert(
     "¿Estás seguro?",
-    isEditing
+    currentCuenta.isProveedorEdit
+      ? "¿Deseas actualizar la información de TODAS las cuentas de este proveedor?"
+      : isEditing
       ? "¿Deseas guardar los cambios realizados a esta cuenta?"
       : "¿Deseas añadir esta nueva cuenta?",
-    isEditing ? "Sí, guardar" : "Sí, añadir",
+    currentCuenta.isProveedorEdit ? "Sí, actualizar proveedor" : isEditing ? "Sí, guardar" : "Sí, añadir",
     "No, cancelar"
   );
 
   if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
 
   try {
+    // Validación especial para edición de proveedor
+    if (currentCuenta.isProveedorEdit) {
+      if (!currentCuenta.Nombre || !currentCuenta.numeroVerificador || !currentCuenta.Categoria) {
+        showErrorAlert('Campos incompletos', 'Por favor complete todos los campos requeridos.');
+        return;
+      }
+
+      // Obtener todas las cuentas del proveedor original
+      const cuentasProveedor = cuentas.filter(cuenta => 
+        cuenta.Nombre === currentCuenta.originalNombre && 
+        cuenta.Categoria === currentCuenta.originalCategoria
+      );
+
+      if (cuentasProveedor.length === 0) {
+        showErrorAlert('Error', 'No se encontraron cuentas para este proveedor.');
+        return;
+      }
+
+      // Actualizar todas las cuentas del proveedor
+      const updatePromises = cuentasProveedor.map(cuenta => {
+        const cuentaData = {
+          Nombre: currentCuenta.Nombre,
+          numeroVerificador: currentCuenta.numeroVerificador,
+          Mes: cuenta.Mes, // Mantener el mes original
+          Monto: cuenta.Monto, // Mantener el monto original
+          Estado: cuenta.Estado, // Mantener el estado original
+          Categoria: currentCuenta.Categoria
+        };
+        return axios.patch(`/cuentasPorPagar/actualizar/${cuenta._id}`, cuentaData);
+      });
+
+      await Promise.all(updatePromises);
+
+      await fetchCuentas();
+      setShowModal(false);
+      showSuccessAlert(
+        'Proveedor actualizado con éxito',
+        `Se actualizaron ${cuentasProveedor.length} cuentas del proveedor.`
+      );
+      return;
+    }
+
+    // Validación normal para otras operaciones
     if (!currentCuenta.Nombre || !currentCuenta.numeroVerificador || !currentCuenta.Mes || 
         !currentCuenta.Monto || !currentCuenta.Estado || !currentCuenta.Categoria) {
       showErrorAlert('Campos incompletos', 'Por favor complete todos los campos requeridos.');
       return;
     }
 
+    // Filtrar solo los campos que acepta el backend
+    const cuentaData = {
+      Nombre: currentCuenta.Nombre,
+      numeroVerificador: currentCuenta.numeroVerificador,
+      Mes: currentCuenta.Mes,
+      Monto: parseFloat(currentCuenta.Monto), // Asegurar que sea número
+      Estado: currentCuenta.Estado,
+      Categoria: currentCuenta.Categoria
+    };
+
     let response;
-    if (isEditing) {
-      const { _id, ...cuentaData } = currentCuenta;
-      response = await axios.patch(`/cuentasPorPagar/actualizar/${_id}`, cuentaData);
+    if (isEditing && !currentCuenta.isProveedorEdit) {
+      response = await axios.patch(`/cuentasPorPagar/actualizar/${currentCuenta._id}`, cuentaData);
     } else {
-      response = await axios.post('/cuentasPorPagar/agregar', currentCuenta);
+      response = await axios.post('/cuentasPorPagar/agregar', cuentaData);
     }
 
     if (response.data.status === "success") {
@@ -453,7 +640,9 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error('Error al guardar la cuenta:', error);
     showErrorAlert(
-      isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
+      currentCuenta.isProveedorEdit 
+        ? 'Error al actualizar el proveedor' 
+        : isEditing ? 'Error al actualizar la cuenta' : 'Error al crear la cuenta',
       'Ocurrió un error al intentar guardar la cuenta.'
     );
   }
@@ -566,6 +755,27 @@ const handleAddCuentaClick = () => {
     return;
   }
   handleAddCuenta();
+};
+
+// 🆕 Función para manejar edición de proveedor con verificación de permisos
+const handleEditProveedorClick = (proveedor) => {
+  if (isEmpleado) {
+    showEmpleadoAlert();
+    return;
+  }
+  
+  // Para la edición del proveedor, no necesitamos datos de una cuenta específica
+  // Solo los datos generales del proveedor
+  setCurrentCuenta({
+    Nombre: proveedor.nombre,
+    numeroVerificador: proveedor.numeroVerificador,
+    Categoria: proveedor.categoria,
+    isProveedorEdit: true, // Flag para indicar que es edición de proveedor
+    originalNombre: proveedor.nombre, // Guardar el nombre original para la búsqueda
+    originalCategoria: proveedor.categoria // Guardar la categoría original
+  });
+  setIsEditing(true);
+  setShowModal(true);
 };
 
 // 🆕 Función para manejar edición con verificación de permisos
@@ -683,6 +893,102 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
   }
 };
 
+// 🆕 Función para manejar el autocompletado de proveedores
+const handleProveedorChange = async (e) => {
+  const { value } = e.target;
+  setCurrentCuenta(prev => ({
+    ...prev,
+    Nombre: value
+  }));
+  
+  if (!value) {
+    setProveedoresSugeridos([]);
+    setShowSuggestions(false);
+    return;
+  }
+  
+  try {
+    // Buscar en TODAS las cuentas sin filtro de año para el autocompletado
+    const responseAll = await axios.get('/cuentasPorPagar', {
+      params: {
+        page: 1,
+        limit: 10000, // Traer todas las cuentas
+        categoria: '', // Sin filtro de categoría para autocompletado
+        estado: '' // Sin filtro de estado para autocompletado
+        // NO incluir year para traer todas las cuentas de todos los años
+      }
+    });
+    
+    if (responseAll.data.status === "success") {
+      const todasLasCuentas = responseAll.data.data.cuentas.filter(cuenta => cuenta.Activo !== false);
+      
+      // Filtrar proveedores que coincidan con la búsqueda
+      const proveedoresFiltrados = todasLasCuentas.filter(cuenta => 
+        cuenta.Nombre.toLowerCase().includes(value.toLowerCase())
+      );
+      
+      // Obtener proveedores únicos con toda su información
+      const proveedoresUnicos = proveedoresFiltrados.reduce((acc, cuenta) => {
+        const key = `${cuenta.Nombre}-${cuenta.Categoria}`;
+        if (!acc.find(p => p.key === key)) {
+          acc.push({
+            key,
+            Nombre: cuenta.Nombre,
+            numeroVerificador: cuenta.numeroVerificador,
+            Categoria: cuenta.Categoria
+          });
+        }
+        return acc;
+      }, []);
+      
+      setProveedoresSugeridos(proveedoresUnicos);
+      setShowSuggestions(proveedoresUnicos.length > 0);
+    }
+  } catch (error) {
+    console.error('Error al buscar proveedores para autocompletado:', error);
+    // En caso de error, usar las cuentas locales como fallback
+    const proveedoresFiltrados = cuentas.filter(cuenta => 
+      cuenta.Nombre.toLowerCase().includes(value.toLowerCase()) &&
+      cuenta.Activo !== false
+    );
+    
+    const proveedoresUnicos = proveedoresFiltrados.reduce((acc, cuenta) => {
+      const key = `${cuenta.Nombre}-${cuenta.Categoria}`;
+      if (!acc.find(p => p.key === key)) {
+        acc.push({
+          key,
+          Nombre: cuenta.Nombre,
+          numeroVerificador: cuenta.numeroVerificador,
+          Categoria: cuenta.Categoria
+        });
+      }
+      return acc;
+    }, []);
+    
+    setProveedoresSugeridos(proveedoresUnicos);
+    setShowSuggestions(proveedoresUnicos.length > 0);
+  }
+};
+
+// Seleccionar proveedor del autocompletado
+const handleSelectProveedor = (proveedorSeleccionado) => {
+  setCurrentCuenta(prev => ({
+    ...prev,
+    Nombre: proveedorSeleccionado.Nombre,
+    numeroVerificador: proveedorSeleccionado.numeroVerificador,
+    Categoria: proveedorSeleccionado.Categoria,
+    isExistingProvider: true // Marcar como proveedor existente
+  }));
+  setShowSuggestions(false);
+};
+
+// Función para limpiar las sugerencias cuando se hace clic fuera
+const handleBlurProveedor = () => {
+  // Usar setTimeout para permitir que el clic en la sugerencia se procese primero
+  setTimeout(() => {
+    setShowSuggestions(false);
+  }, 150);
+};
   return (
     <div className="app-container">
       <Navbar />
@@ -859,9 +1165,38 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
                   <tr>
                     <th className="proveedor-column">Proveedor</th>
                     <th className="categoria-column">Categoría</th>
-                    {meses.map(mes => (
-                      <th key={mes.id} className="mes-column">{mes.nombre}</th>
-                    ))}
+                    {searchQuery.trim() ? (
+                      // Mostrar columnas dinámicas cuando hay búsqueda
+                      (() => {
+                        const añosYMeses = new Set();
+                        displayedProveedores.forEach(proveedor => {
+                          if (proveedor.todosLosAnios) {
+                            Object.entries(proveedor.todosLosAnios).forEach(([año, mesesDelAño]) => {
+                              Object.keys(mesesDelAño).forEach(mes => {
+                                añosYMeses.add(`${año}-${mes}`);
+                              });
+                            });
+                          }
+                        });
+                        
+                        const añosYMesesOrdenados = Array.from(añosYMeses).sort();
+                        
+                        return añosYMesesOrdenados.map(añoMes => {
+                          const [año, mes] = añoMes.split('-');
+                          const mesNombre = meses.find(m => m.id === mes)?.nombre || mes;
+                          return (
+                            <th key={añoMes} className="mes-column">
+                              {mesNombre} {año}
+                            </th>
+                          );
+                        });
+                      })()
+                    ) : (
+                      // Mostrar solo meses del año seleccionado cuando no hay búsqueda
+                      meses.map(mes => (
+                        <th key={mes.id} className="mes-column">{mes.nombre}</th>
+                      ))
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -883,6 +1218,18 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
                                 
                                 return (
                                   <>
+                                    {/* Botón de edición rápida */}
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditProveedorClick(proveedor);
+                                      }}
+                                      className="btn-icon btn-primary btn-estado-cuenta"
+                                      title="Editar información del proveedor"
+                                    >
+                                      <FontAwesomeIcon icon={faEdit} />
+                                    </button>
+
                                     {/* Botón de estado (activar/desactivar) */}
                                     {todasActivas ? (
                                       <button 
@@ -929,55 +1276,136 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
                           <span className="state-badge">{proveedor.categoria}</span>
                         </td>
                         
-                        {meses.map(mes => {
-                          const cuentaMes = proveedor.meses[mes.id];
-                          return (
-                            <td 
-                              key={mes.id} 
-                              className={`mes-cell ${cuentaMes ? `estado-${cuentaMes.estado.toLowerCase()}` : ''}`}
-                              onClick={() => handleEditMes(proveedor, mes.id)}
-                            >
-                              {cuentaMes ? (
-                                <div className="cuenta-mes-info">
-                                  <div className="cuenta-monto">
-                                    ${formatNumberWithDots(cuentaMes.monto)}
+                        {searchQuery.trim() ? (
+                          // Renderizar celdas dinámicas cuando hay búsqueda
+                          (() => {
+                            const añosYMeses = new Set();
+                            displayedProveedores.forEach(p => {
+                              if (p.todosLosAnios) {
+                                Object.entries(p.todosLosAnios).forEach(([año, mesesDelAño]) => {
+                                  Object.keys(mesesDelAño).forEach(mes => {
+                                    añosYMeses.add(`${año}-${mes}`);
+                                  });
+                                });
+                              }
+                            });
+                            
+                            const añosYMesesOrdenados = Array.from(añosYMeses).sort();
+                            
+                            return añosYMesesOrdenados.map(añoMes => {
+                              const [año, mes] = añoMes.split('-');
+                              const cuentaMes = proveedor.todosLosAnios && proveedor.todosLosAnios[año] 
+                                ? proveedor.todosLosAnios[año][mes] 
+                                : null;
+                              
+                              return (
+                                <td 
+                                  key={añoMes} 
+                                  className={`mes-cell ${cuentaMes ? `estado-${cuentaMes.estado.toLowerCase()}` : ''}`}
+                                  onClick={() => {
+                                    // Para cuentas de otros años, solo mostrar información
+                                    if (año !== yearSelected) {
+                                      showErrorAlert('Información', `Esta cuenta pertenece al año ${año}. Solo se pueden editar cuentas del año ${yearSelected}.`);
+                                      return;
+                                    }
+                                    handleEditMes(proveedor, mes);
+                                  }}
+                                >
+                                  {cuentaMes ? (
+                                    <div className="cuenta-mes-info">
+                                      <div className="cuenta-monto">
+                                        ${formatNumberWithDots(cuentaMes.monto)}
+                                      </div>
+                                      {año === yearSelected ? (
+                                        <div className="cuenta-actions">
+                                          <button 
+                                            className={`btn-icon ${cuentaMes.estado === 'Pagado' ? 'btn-success' : 'btn-outline-success'}`}
+                                            title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagada' : 'Marcar como pagada'}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleTogglePaidClick(cuentaMes._id, cuentaMes.estado);
+                                            }}
+                                          >
+                                            <FontAwesomeIcon icon={faCheck} />
+                                          </button>
+                                          <button 
+                                            className="btn-icon btn-danger"
+                                            title="Eliminar"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDeleteClick(cuentaMes._id);
+                                            }}
+                                          >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="cuenta-actions">
+                                          <small className="text-muted">Año {año}</small>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="add-cuenta-placeholder">
+                                      {año === yearSelected ? <span>+</span> : <span>-</span>}
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                            });
+                          })()
+                        ) : (
+                          // Renderizar meses normalmente cuando no hay búsqueda
+                          meses.map(mes => {
+                            const cuentaMes = proveedor.meses[mes.id];
+                            return (
+                              <td 
+                                key={mes.id} 
+                                className={`mes-cell ${cuentaMes ? `estado-${cuentaMes.estado.toLowerCase()}` : ''}`}
+                                onClick={() => handleEditMes(proveedor, mes.id)}
+                              >
+                                {cuentaMes ? (
+                                  <div className="cuenta-mes-info">
+                                    <div className="cuenta-monto">
+                                      ${formatNumberWithDots(cuentaMes.monto)}
+                                    </div>
+                                    <div className="cuenta-actions">
+                                      <button 
+                                        className={`btn-icon ${cuentaMes.estado === 'Pagado' ? 'btn-success' : 'btn-outline-success'}`}
+                                        title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagada' : 'Marcar como pagada'}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleTogglePaidClick(cuentaMes._id, cuentaMes.estado);
+                                        }}
+                                      >
+                                        <FontAwesomeIcon icon={faCheck} />
+                                      </button>
+                                      <button 
+                                        className="btn-icon btn-danger"
+                                        title="Eliminar"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteClick(cuentaMes._id);
+                                        }}
+                                      >
+                                        <FontAwesomeIcon icon={faTrash} />
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="cuenta-actions">
-                                    <button 
-                                      className={`btn-icon ${cuentaMes.estado === 'Pagado' ? 'btn-success' : 'btn-outline-success'}`}
-                                      title={cuentaMes.estado === 'Pagado' ? 'Desmarcar como pagada' : 'Marcar como pagada'}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleTogglePaidClick(cuentaMes._id, cuentaMes.estado);
-                                      }}
-                                    >
-                                      <FontAwesomeIcon icon={faCheck} />
-                                    </button>
-                                    <button 
-                                      className="btn-icon btn-danger"
-                                      title="Eliminar"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteClick(cuentaMes._id);
-                                      }}
-                                    >
-                                      <FontAwesomeIcon icon={faTrash} />
-                                    </button>
+                                ) : (
+                                  <div className="add-cuenta-placeholder">
+                                    <span>+</span>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className="add-cuenta-placeholder">
-                                  <span>+</span>
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
+                                )}
+                              </td>
+                            );
+                          })
+                        )}
                       </tr>
                     ))
                     : (
                       <tr>
-                        <td colSpan={meses.length + 2} className="text-center">
+                        <td colSpan={searchQuery.trim() ? "100%" : meses.length + 2} className="text-center">
                           No se encontraron cuentas que coincidan con los filtros.
                         </td>
                       </tr>
@@ -999,94 +1427,176 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
               <div className="modal-overlay" onClick={handleModalOverlayClick}>
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h2 className="modal-title">{isEditing ? 'Editar Cuenta' : 'Agregar Nueva Cuenta'}</h2>
+                    <h2 className="modal-title">
+                      {currentCuenta.isMonthlyEdit 
+                        ? `Editar ${meses.find(m => currentCuenta.Mes.endsWith('-' + m.id))?.nombre} - ${currentCuenta.Nombre}` 
+                        : isEditing ? 'Editar Cuenta' : 'Agregar Nueva Cuenta'
+                      }
+                    </h2>
                   </div>
                   
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="Nombre">Nombre:</label>
-                    <input
-                      type="text"
-                      id="Nombre"
-                      name="Nombre"
-                      value={currentCuenta.Nombre}
-                      onChange={handleInputChange}
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="numeroVerificador">Identificador/RUT:</label>
-                    <input
-                      type="text"
-                      id="numeroVerificador"
-                      name="numeroVerificador"
-                      value={currentCuenta.numeroVerificador}
-                      onChange={handleInputChange}
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="Mes">Mes:</label>
-                    <input
-                      type="month"
-                      id="Mes"
-                      name="Mes"
-                      value={currentCuenta.Mes}
-                      onChange={handleInputChange}
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="Monto">Monto:</label>
-                    <input
-                      type="number"
-                      id="Monto"
-                      name="Monto"
-                      value={currentCuenta.Monto}
-                      onChange={handleInputChange}
-                      min="0"
-                      required
-                      className="form-control"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="Categoria">Categoría:</label>
-                    <select
-                      id="Categoria"
-                      name="Categoria"
-                      value={currentCuenta.Categoria}
-                      onChange={handleInputChange}
-                      required
-                      className="form-select"
-                    >
-                      <option value="">Seleccione una categoría</option>
-                      {categorias.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  {isEditing && (
+                  {/* Solo mostrar campos editables según el tipo de edición */}
+                  {!currentCuenta.isMonthlyEdit && (
+                    <>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Nombre">Nombre:</label>
+                        <div className="autocomplete-container">
+                          <input
+                            type="text"
+                            id="Nombre"
+                            name="Nombre"
+                            value={currentCuenta.Nombre}
+                            onChange={currentCuenta.isExistingProvider ? handleInputChange : handleProveedorChange}
+                            onBlur={handleBlurProveedor}
+                            required
+                            className="form-control"
+                            placeholder="Escriba el nombre del proveedor..."
+                            disabled={currentCuenta.isExistingProvider} // Deshabilitar si es proveedor existente
+                            autoComplete="off"
+                          />
+                          {showSuggestions && proveedoresSugeridos.length > 0 && (
+                            <div className="autocomplete-suggestions">
+                              {proveedoresSugeridos.map((proveedor, index) => (
+                                <div
+                                  key={proveedor.key}
+                                  className="autocomplete-suggestion"
+                                  onClick={() => handleSelectProveedor(proveedor)}
+                                >
+                                  <div className="suggestion-main">
+                                    <strong>{proveedor.Nombre}</strong>
+                                    <span className="suggestion-category">{proveedor.Categoria}</span>
+                                  </div>
+                                  <div className="suggestion-details">
+                                    <span className="suggestion-rut">{proveedor.numeroVerificador}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="numeroVerificador">Identificador/RUT:</label>
+                        <input
+                          type="text"
+                          id="numeroVerificador"
+                          name="numeroVerificador"
+                          value={currentCuenta.numeroVerificador}
+                          onChange={handleInputChange}
+                          required
+                          className="form-control"
+                          disabled={currentCuenta.isExistingProvider} // Deshabilitar si es proveedor existente
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Categoria">Categoría:</label>
+                        <select
+                          id="Categoria"
+                          name="Categoria"
+                          value={currentCuenta.Categoria}
+                          onChange={handleInputChange}
+                          required
+                          className="form-select"
+                          disabled={currentCuenta.isExistingProvider} // Deshabilitar si es proveedor existente
+                        >
+                          <option value="">Seleccione una categoría</option>
+                          {categorias.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Campos que solo se muestran en edición mensual: Monto y Estado */}
+                  {currentCuenta.isMonthlyEdit && (
+                    <>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Monto">Monto:</label>
+                        <input
+                          type="number"
+                          id="Monto"
+                          name="Monto"
+                          value={currentCuenta.Monto}
+                          onChange={handleInputChange}
+                          min="0"
+                          required
+                          className="form-control"
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Estado">Estado:</label>
+                        <select
+                          id="Estado"
+                          name="Estado"
+                          value={currentCuenta.Estado}
+                          onChange={handleInputChange}
+                          required
+                          className="form-select"
+                        >
+                          {estados.map(estado => (
+                            <option key={estado} value={estado}>{estado}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Campos que se muestran en creación de nueva cuenta: todos incluyendo monto y mes */}
+                  {!isEditing && !currentCuenta.isMonthlyEdit && (
+                    <>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Mes">Mes:</label>
+                        <input
+                          type="month"
+                          id="Mes"
+                          name="Mes"
+                          value={currentCuenta.Mes}
+                          onChange={handleInputChange}
+                          required
+                          className="form-control"
+                          // NO deshabilitar el campo de fecha, permitir elegir cualquier mes
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="Monto">Monto:</label>
+                        <input
+                          type="number"
+                          id="Monto"
+                          name="Monto"
+                          value={currentCuenta.Monto}
+                          onChange={handleInputChange}
+                          min="0"
+                          required
+                          className="form-control"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Mostrar información de solo lectura en edición mensual */}
+                  {currentCuenta.isMonthlyEdit && (
                     <div className="form-group">
-                      <label className="form-label" htmlFor="Estado">Estado:</label>
-                      <select
-                        id="Estado"
-                        name="Estado"
-                        value={currentCuenta.Estado}
-                        onChange={handleInputChange}
-                        required
-                        className="form-select"
-                      >
-                        {estados.map(estado => (
-                          <option key={estado} value={estado}>{estado}</option>
-                        ))}
-                      </select>
+                      <div className="readonly-info">
+                        <p><strong>Proveedor:</strong> {currentCuenta.Nombre}</p>
+                        <p><strong>Identificador:</strong> {currentCuenta.numeroVerificador}</p>
+                        <p><strong>Categoría:</strong> {currentCuenta.Categoria}</p>
+                        <p><strong>Mes:</strong> {meses.find(m => currentCuenta.Mes.endsWith('-' + m.id))?.nombre} {currentCuenta.Mes.split('-')[0]}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mostrar información de solo lectura para proveedores existentes */}
+                  {currentCuenta.isExistingProvider && !currentCuenta.isMonthlyEdit && (
+                    <div className="form-group">
+                      <div className="readonly-info">
+                        <p><strong>Nota:</strong> Los datos del proveedor no se pueden modificar al agregar una nueva cuenta mensual.</p>
+                        <p>Use el botón de edición del proveedor para cambiar nombre, identificador o categoría.</p>
+                      </div>
                     </div>
                   )}
                   
@@ -1095,7 +1605,10 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
                       className="btn btn-success"
                       onClick={handleSubmit}
                     >
-                      {isEditing ? 'Guardar Cambios' : 'Agregar Cuenta'}
+                      {currentCuenta.isMonthlyEdit 
+                        ? 'Actualizar Mes' 
+                        : isEditing ? 'Guardar Cambios' : 'Agregar Cuenta'
+                      }
                     </button>
                     <button 
                       className="btn btn-danger"

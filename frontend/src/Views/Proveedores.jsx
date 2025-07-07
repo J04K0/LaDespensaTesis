@@ -512,12 +512,7 @@ const Proveedores = () => {
   };
 
   const handleProductsSubmit = async () => {
-    if (selectedProducts.length === 0) {
-      return showWarningAlert('Advertencia', 'Debes seleccionar al menos un producto');
-    }
-
     // Si estamos creando un nuevo proveedor (no hay ID), solo cerramos el modal
-    // Los productos se guardarán después de crear el proveedor
     if (!isEditing || !currentProveedor._id) {
       setShowProductsModal(false);
       return;

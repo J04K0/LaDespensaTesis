@@ -5,7 +5,7 @@ import { cuentaPorPagarSchema } from '../schema/cuentasPorPagar.schema.js';
 // Obtener todas las cuentas por pagar
 export const getCuentasPorPagar = async (req, res) => {
   try {
-    const { page = 1, limit = 10, categoria, estado, year } = req.query;
+    const { page = 1, limit = 10000, categoria, estado, year } = req.query; // Cambiar limit por defecto a 10000
     const query = {};
     
     if (categoria) query.Categoria = categoria;
