@@ -9,6 +9,7 @@ import { getProducts } from '../services/AddProducts.service';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showWarningAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { ExportService } from '../services/export.service';
 import { useRole } from '../hooks/useRole';
+import { CATEGORIAS } from '../constants/products.constants';
 import '../styles/ProveedoresStyles.css';
 import '../styles/SmartPagination.css';
 
@@ -33,6 +34,8 @@ const Proveedores = () => {
   const [proveedorProductos, setProveedorProductos] = useState([]);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
   const [viewingProveedor, setViewingProveedor] = useState(null);
+  // 🆕 NUEVO: Estado para guardar los productos originales del proveedor
+  const [originalSelectedProducts, setOriginalSelectedProducts] = useState([]);
   
   const [currentProveedor, setCurrentProveedor] = useState({
     nombre: '',
@@ -46,12 +49,8 @@ const Proveedores = () => {
   });
   
   const proveedoresPorPagina = 5;
-  const categorias = [
-    'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y Refrigerados',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros',
-    'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
-  ];
+  // 🔧 Usar las constantes de categorías del sistema para mantener consistencia
+  const categorias = CATEGORIAS;
   
   // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
@@ -216,11 +215,13 @@ const Proveedores = () => {
         setProveedorProductos(productosActuales);
         // También establecer los IDs como selectedProducts por si quiere modificarlos
         setSelectedProducts(proveedor.productos || []);
+        setOriginalSelectedProducts(proveedor.productos || []); // Guardar productos originales
         console.log('🔄 Productos cargados del proveedor:', productosActuales);
       } catch (error) {
         console.warn('⚠️ No se pudieron cargar los productos del proveedor:', error);
         setProveedorProductos([]);
         setSelectedProducts([]);
+        setOriginalSelectedProducts([]); // Asegurar que esté vacío en caso de error
       }
       
       setIsEditing(true);
@@ -425,6 +426,11 @@ const Proveedores = () => {
       if (!result.isConfirmed) return;
     }
 
+    // 🔧 CORREGIDO: Restaurar productos originales al cancelar
+    if (isEditing) {
+      setSelectedProducts(originalSelectedProducts);
+    }
+
     resetForm();
   };
 
@@ -511,30 +517,30 @@ const Proveedores = () => {
     });
   };
 
-  const handleProductsSubmit = async () => {
-    // Si estamos creando un nuevo proveedor (no hay ID), solo cerramos el modal
-    if (!isEditing || !currentProveedor._id) {
-      setShowProductsModal(false);
-      return;
-    }
-
-    // Si estamos editando un proveedor existente, vincular productos inmediatamente
-    try {
-      setLoading(true);
-      await vincularProductosAProveedor(currentProveedor._id, selectedProducts);
+  const handleProductsSubmit = () => {
+    // 🔧 ACTUALIZADO: Actualizar la vista previa inmediatamente cuando se vinculan productos
+    
+    if (isEditing && selectedProducts.length > 0) {
+      // Si estamos editando, crear una vista previa con los productos seleccionados
+      const productosSeleccionados = allProducts.filter(product => 
+        selectedProducts.includes(product._id)
+      );
       
-      // Actualizar la lista de productos del proveedor
-      const productosActuales = await getProductosProveedor(currentProveedor._id);
-      setProveedorProductos(productosActuales);
+      // Convertir a formato compatible con proveedorProductos
+      const productosPreview = productosSeleccionados.map(product => ({
+        _id: product._id,
+        Nombre: product.Nombre,
+        nombre: product.Nombre, // Compatibilidad con ambos formatos
+        image: product.image,
+        Marca: product.Marca,
+        Categoria: product.Categoria
+      }));
       
-      setShowProductsModal(false);
-      showSuccessAlert('Éxito', 'Productos vinculados correctamente');
-    } catch (error) {
-      console.error('Error al vincular productos:', error);
-      showErrorAlert('Error', 'No se pudieron vincular los productos');
-    } finally {
-      setLoading(false);
+      setProveedorProductos(productosPreview);
     }
+    
+    // Cerrar el modal
+    setShowProductsModal(false);
   };
 
   const handleViewProveedorProductos = async (proveedorId) => {
@@ -905,49 +911,79 @@ const Proveedores = () => {
                 {isEditing ? (
                   proveedorProductos.length > 0 ? (
                     <div className="productos-list">
-                      <p className="productos-count">
-                        {proveedorProductos.length} producto{proveedorProductos.length !== 1 ? 's' : ''} registrado{proveedorProductos.length !== 1 ? 's' : ''}
-                      </p>
-                      <div className="productos-preview-mini">
-                        {proveedorProductos.slice(0, 3).map(producto => (
-                          <span key={producto._id} className="producto-tag">
-                            {producto.nombre}
-                          </span>
+                      <div className="productos-preview-images">
+                        {proveedorProductos.slice(0, 6).map(producto => (
+                          <div key={producto._id} className="producto-image-preview">
+                            <img 
+                              src={producto.image} 
+                              alt={producto.Nombre || producto.nombre}
+                              className="producto-preview-img"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/50?text=N/A';
+                              }}
+                            />
+                            <span className="producto-preview-name">
+                              {(producto.Nombre || producto.nombre)?.slice(0, 15)}
+                              {(producto.Nombre || producto.nombre)?.length > 15 ? '...' : ''}
+                            </span>
+                          </div>
                         ))}
-                        {proveedorProductos.length > 3 && (
-                          <span className="productos-more-tag">
-                            +{proveedorProductos.length - 3} más
-                          </span>
+                        {proveedorProductos.length > 6 && (
+                          <div className="producto-image-preview more-products">
+                            <div className="more-products-indicator">
+                              +{proveedorProductos.length - 6}
+                            </div>
+                            <span className="producto-preview-name">más productos</span>
+                          </div>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <p className="no-productos">No hay productos registrados para este proveedor</p>
+                    <div className="no-productos-visual">
+                      <FontAwesomeIcon icon={faBox} className="no-productos-icon" />
+                      <p className="no-productos-text">No hay productos registrados para este proveedor</p>
+                    </div>
                   )
                 ) : (
                   selectedProducts.length > 0 ? (
                     <div className="productos-list">
-                      <p className="productos-count">
-                        {selectedProducts.length} producto{selectedProducts.length !== 1 ? 's' : ''} seleccionado{selectedProducts.length !== 1 ? 's' : ''}
-                      </p>
-                      <div className="productos-preview-mini">
+                      <div className="productos-preview-images">
                         {allProducts
                           .filter(product => selectedProducts.includes(product._id))
-                          .slice(0, 3)
+                          .slice(0, 6)
                           .map(producto => (
-                            <span key={producto._id} className="producto-tag">
-                              {producto.Nombre}
-                            </span>
+                            <div key={producto._id} className="producto-image-preview">
+                              <img 
+                                src={producto.image} 
+                                alt={producto.Nombre}
+                                className="producto-preview-img"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'https://via.placeholder.com/50?text=N/A';
+                                }}
+                              />
+                              <span className="producto-preview-name">
+                                {producto.Nombre?.slice(0, 15)}
+                                {producto.Nombre?.length > 15 ? '...' : ''}
+                              </span>
+                            </div>
                           ))}
-                        {selectedProducts.length > 3 && (
-                          <span className="productos-more-tag">
-                            +{selectedProducts.length - 3} más
-                          </span>
+                        {selectedProducts.length > 6 && (
+                          <div className="producto-image-preview more-products">
+                            <div className="more-products-indicator">
+                              +{selectedProducts.length - 6}
+                            </div>
+                            <span className="producto-preview-name">más productos</span>
+                          </div>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <p className="no-productos">No hay productos seleccionados</p>
+                    <div className="no-productos-visual">
+                      <FontAwesomeIcon icon={faBox} className="no-productos-icon" />
+                      <p className="no-productos-text">No hay productos seleccionados</p>
+                    </div>
                   )
                 )}
                 

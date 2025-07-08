@@ -1064,3 +1064,62 @@ export const editarLoteProducto = async (req, res) => {
     handleErrorServer(res, 500, 'Error al editar el lote', err.message);
   }
 };
+
+// 🆕 NUEVO: Función para obtener información del próximo lote a usar (FIFO)
+export const getProximoLoteProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await Product.findById(id);
+    if (!product) return handleErrorClient(res, 404, 'Producto no encontrado');
+
+    // Si no tiene lotes, devolver información del producto principal
+    if (!product.lotes || product.lotes.length === 0) {
+      return handleSuccess(res, 200, 'Producto sin sistema de lotes', {
+        tieneMultiplesLotes: false,
+        lotePrincipal: {
+          precioCompra: product.PrecioCompra,
+          fechaVencimiento: product.fechaVencimiento,
+          origen: 'producto_principal'
+        }
+      });
+    }
+
+    // Obtener lotes activos ordenados por fecha de vencimiento (FIFO)
+    const lotesActivos = product.lotes
+      .filter(lote => lote.activo && lote.cantidad > 0)
+      .sort((a, b) => new Date(a.fechaVencimiento) - new Date(b.fechaVencimiento));
+
+    if (lotesActivos.length === 0) {
+      return handleSuccess(res, 200, 'No hay lotes activos con stock', {
+        tieneMultiplesLotes: true,
+        lotePrincipal: null,
+        sinStock: true
+      });
+    }
+
+    // El primer lote es el que se usará primero (FIFO)
+    const proximoLote = lotesActivos[0];
+    const today = new Date();
+    const diasParaVencer = Math.ceil((new Date(proximoLote.fechaVencimiento) - today) / (1000 * 60 * 60 * 24));
+
+    handleSuccess(res, 200, 'Información del próximo lote obtenida', {
+      tieneMultiplesLotes: true,
+      totalLotes: product.lotes.filter(l => l.activo).length,
+      lotePrincipal: {
+        _id: proximoLote._id,
+        numeroLote: proximoLote.numeroLote,
+        precioCompra: proximoLote.precioCompra,
+        precioVenta: proximoLote.precioVenta,
+        fechaVencimiento: proximoLote.fechaVencimiento,
+        cantidad: proximoLote.cantidad,
+        diasParaVencer,
+        estaVencido: diasParaVencer < 0,
+        estaPorVencer: diasParaVencer >= 0 && diasParaVencer <= 30,
+        origen: 'lote_fifo'
+      }
+    });
+  } catch (err) {
+    handleErrorServer(res, 500, 'Error al obtener información del próximo lote', err.message);
+  }
+};

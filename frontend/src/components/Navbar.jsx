@@ -128,19 +128,55 @@ const Navbar = () => {
         
         console.log('📦 Total de ventas en el sistema:', todasLasVentas.length);
         
+        // 🆕 MEJORA: Mostrar información detallada de las últimas 5 ventas para debug
+        console.log('🔍 DEBUG: Últimas 5 ventas en el sistema:');
+        todasLasVentas.slice(-5).forEach((venta, index) => {
+          console.log(`  📄 Venta ${index + 1}:`, {
+            id: venta._id,
+            fecha: venta.fecha,
+            fechaFormateada: new Date(venta.fecha).toLocaleString(),
+            metodoPago: venta.metodoPago,
+            deudorId: venta.deudorId,
+            productos: venta.ventas?.length || 0
+          });
+        });
+        
         ventasSesion = todasLasVentas.filter(venta => {
           const fechaVenta = new Date(venta.fecha);
           const esDeSesion = fechaVenta >= sessionStartTime && fechaVenta <= ahora;
+          
+          // 🆕 MEJORA: Debug detallado del filtrado
           if (esDeSesion) {
-            console.log(`✅ Venta de sesión encontrada: ${venta._id} - ${fechaVenta.toLocaleString()}`);
+            console.log(`✅ Venta de sesión encontrada:`, {
+              id: venta._id,
+              fecha: fechaVenta.toLocaleString(),
+              metodoPago: venta.metodoPago,
+              deudorId: venta.deudorId ? 'SÍ' : 'NO',
+              productos: venta.ventas?.length || 0
+            });
           }
+          
           return esDeSesion;
         });
         
         console.log('🎪 Ventas de esta sesión:', ventasSesion.length);
         
+        if (ventasSesion.length === 0) {
+          console.warn('⚠️ No se encontraron ventas en esta sesión. Verificando datos...');
+          console.log('🕐 Rango de sesión:', {
+            inicio: sessionStartTime.toLocaleString(),
+            fin: ahora.toLocaleString(),
+            duracionHoras: ((ahora - sessionStartTime) / (1000 * 60 * 60)).toFixed(2)
+          });
+        }
+        
         ventasSesion.forEach((venta, index) => {
-          console.log(`🛍️ Procesando venta ${index + 1}:`, venta._id);
+          console.log(`🛍️ Procesando venta ${index + 1}:`, {
+            id: venta._id,
+            metodoPago: venta.metodoPago || 'NO DEFINIDO',
+            deudorId: venta.deudorId || 'NO',
+            fecha: new Date(venta.fecha).toLocaleString()
+          });
           
           const importeVenta = Array.isArray(venta.ventas) 
             ? venta.ventas.reduce((sum, producto) => {
@@ -154,31 +190,39 @@ const Navbar = () => {
           
           totalVentas += importeVenta;
 
+          // 🆕 MEJORA: Debug más detallado de la clasificación
           if (venta.deudorId) {
-            console.log('👤 Venta a deudor detectada');
+            console.log('👤 Clasificada como: VENTA A DEUDOR');
             ventasADeudores += importeVenta;
             cantidadVentasADeudores++;
           } else if (venta.metodoPago === 'tarjeta') {
-            console.log('💳 Venta con tarjeta detectada');
+            console.log('💳 Clasificada como: VENTA CON TARJETA');
             totalTarjeta += importeVenta;
             cantidadVentasTarjeta++;
+          } else if (venta.metodoPago === 'efectivo') {
+            console.log('💵 Clasificada como: VENTA EN EFECTIVO');
+            totalEfectivo += importeVenta;
+            cantidadVentasEfectivo++;
           } else {
-            console.log('💵 Venta en efectivo detectada');
+            console.warn(`⚠️ VENTA SIN MÉTODO DE PAGO DEFINIDO:`, {
+              id: venta._id,
+              metodoPago: venta.metodoPago,
+              deudorId: venta.deudorId
+            });
+            // Por defecto, asignar a efectivo si no está definido
             totalEfectivo += importeVenta;
             cantidadVentasEfectivo++;
           }
         });
         
-        console.log('📈 Totales calculados:', {
-          totalVentas,
-          totalEfectivo,
-          totalTarjeta,
-          ventasADeudores,
-          cantidadVentasTotal: ventasSesion.length
-        });
+        console.log('📈 RESUMEN DE TOTALES CALCULADOS:');
+        console.log(`  💵 Efectivo: $${totalEfectivo} (${cantidadVentasEfectivo} ventas)`);
+        console.log(`  💳 Tarjeta: $${totalTarjeta} (${cantidadVentasTarjeta} ventas)`);
+        console.log(`  👤 Deudores: $${ventasADeudores} (${cantidadVentasADeudores} ventas)`);
+        console.log(`  📊 Total: $${totalVentas} (${ventasSesion.length} ventas)`);
         
       } catch (ventasError) {
-        console.warn("⚠️ No se pudo obtener el historial de ventas:", ventasError);
+        console.error("❌ Error al obtener el historial de ventas:", ventasError);
       }
 
       let deudoresData = [];
@@ -190,8 +234,11 @@ const Navbar = () => {
       let cantidadNuevasDeudas = 0;
 
       try {
+        console.log('🔍 DEBUG: Obteniendo pagos de deudores...');
         const respuestaDeudores = await getDeudores(1, 1000);
         const deudores = respuestaDeudores.deudores || [];
+        
+        console.log(`📋 Total de deudores en el sistema: ${deudores.length}`);
         
         const deudoresSesion = deudores.filter(deudor => {
           if (!deudor.historialPagos || !Array.isArray(deudor.historialPagos)) return false;
@@ -202,24 +249,38 @@ const Navbar = () => {
           });
         });
 
+        console.log(`👥 Deudores con actividad en esta sesión: ${deudoresSesion.length}`);
+
         deudoresSesion.forEach(deudor => {
           const pagosSesion = deudor.historialPagos.filter(pago => {
             const fechaPago = new Date(pago.fecha);
             return fechaPago >= sessionStartTime && fechaPago <= ahora;
           });
 
+          console.log(`💰 ${deudor.Nombre}: ${pagosSesion.length} operaciones en esta sesión`);
+
           pagosSesion.forEach(pago => {
+            console.log(`  📝 Operación:`, {
+              tipo: pago.tipo,
+              monto: pago.monto,
+              metodoPago: pago.metodoPago,
+              fecha: new Date(pago.fecha).toLocaleString()
+            });
+
             if (pago.tipo === 'pago') {
               if (pago.metodoPago === 'tarjeta') {
                 totalPagosDeudoresTarjeta += pago.monto;
                 cantidadPagosTarjeta++;
+                console.log(`    💳 Sumado a pagos tarjeta: $${pago.monto}`);
               } else {
                 totalPagosDeudoresEfectivo += pago.monto;
                 cantidadPagosEfectivo++;
+                console.log(`    💵 Sumado a pagos efectivo: $${pago.monto}`);
               }
             } else {
               totalNuevasDeudas += pago.monto;
               cantidadNuevasDeudas++;
+              console.log(`    📈 Sumado a nuevas deudas: $${pago.monto}`);
             }
             
             deudoresData.push([
@@ -232,8 +293,14 @@ const Navbar = () => {
             ]);
           });
         });
+
+        console.log('📈 RESUMEN DE PAGOS DE DEUDORES:');
+        console.log(`  💵 Pagos efectivo: $${totalPagosDeudoresEfectivo} (${cantidadPagosEfectivo} pagos)`);
+        console.log(`  💳 Pagos tarjeta: $${totalPagosDeudoresTarjeta} (${cantidadPagosTarjeta} pagos)`);
+        console.log(`  📈 Nuevas deudas: $${totalNuevasDeudas} (${cantidadNuevasDeudas} registros)`);
+
       } catch (deudoresError) {
-        console.warn("⚠️ No se pudo obtener información de deudores:", deudoresError);
+        console.error("❌ Error al obtener información de deudores:", deudoresError);
       }
 
       const balanceEfectivo = totalEfectivo + totalPagosDeudoresEfectivo;
@@ -248,6 +315,12 @@ const Navbar = () => {
         ["Nuevas Deudas Registradas", cantidadNuevasDeudas, `$${totalNuevasDeudas.toLocaleString('es-ES')}`],
         ["Total Ventas", ventasSesion.length, `$${totalVentas.toLocaleString('es-ES')}`]
       ];
+      
+      console.log('📄 DATOS FINALES PARA EL PDF:');
+      resumenCajaData.slice(1).forEach(fila => {
+        console.log(`  ${fila[0]}: ${fila[1]} → ${fila[2]}`);
+      });
+      console.log(`  💰 Balance en Efectivo: $${balanceEfectivo.toLocaleString('es-ES')}`);
       
       const mensajeExito = "Reporte de actividad de sesión generado exitosamente";
       

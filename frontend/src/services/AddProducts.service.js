@@ -312,3 +312,14 @@ export const editarLoteProducto = async (productId, loteId, loteData) => {
     throw error;
   }
 };
+
+// 🆕 NUEVO: Función para obtener información del próximo lote a usar (FIFO)
+export const getProximoLoteProducto = async (productId) => {
+  try {
+    const response = await axios.get(`/products/proximo-lote/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching next batch info:', error);
+    throw error;
+  }
+};

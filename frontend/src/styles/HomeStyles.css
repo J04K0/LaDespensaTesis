@@ -918,11 +918,28 @@
   font-size: 18px;
 }
 
+/* Color de icono específico para deudores sin deuda */
+.zero-debt-row td:first-child svg {
+  color: var(--gray);
+  opacity: 0.7;
+}
+
 /* Estilo para la columna de deuda */
 .home-deudores-table td:last-child {
   font-weight: bold;
   color: var(--gray);
   text-align: right;
   font-size: 16px;
+}
+
+/* Estilo para deudores con deuda cero */
+.zero-debt-row td {
+  color: var(--gray) !important;
+  background-color: #f2f2f2;
+  font-weight: 500 !important;
+}
+
+.zero-debt-row:hover {
+  background-color: #e9ecef !important;
 }
 

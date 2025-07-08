@@ -21,7 +21,8 @@ import {
     sendManualDailyReport,
     agregarLoteProducto,
     getLotesProducto,
-    editarLoteProducto
+    editarLoteProducto,
+    getProximoLoteProducto // 🆕 Nueva importación
 } from "../controllers/products.controller.js";
 
 import { 
@@ -49,6 +50,7 @@ router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAd
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
 router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotesProducto);
+router.get('/proximo-lote/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProximoLoteProducto); // 🆕 Nueva ruta para obtener próximo lote
 router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
 router.put('/lotes/:id/:loteId', authorizeRoles([isAdmin, isJefe]), editarLoteProducto);
 router.get('/eliminados', authorizeRoles([isAdmin]), getDisabledProducts);

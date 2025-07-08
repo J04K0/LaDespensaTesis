@@ -136,7 +136,9 @@ const Finanzas = () => {
         categoriasPorVolumen: [],
         margenPorCategoria: [],
         ventasPorDiaSemana: {},
-        rentabilidadTemporal: []
+        rentabilidadTemporal: [],
+        productosPocaFrecuencia: [],
+        productosAltaFrecuencia: []
       };
     }
 
@@ -311,92 +313,39 @@ const Finanzas = () => {
     // Valor promedio por transacción
     const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
     
-    // 🔄 NUEVA FUNCIONALIDAD: Cálculo de rotación de inventario
-    const calcularRotacionInventario = () => {
-      // Obtener período en días basado en el rango de fechas
-      const { inicio: fechaInicio, fin: fechaFin } = calcularRangoFechas();
+    // 🆕 NUEVA FUNCIONALIDAD: Análisis simple de frecuencia de ventas (sin rotación compleja)
+    const calcularFrecuenciaVentas = () => {
       const diasPeriodo = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
       
-      // Rotación global de inventario
-      const rotacionGlobal = {
-        costoVendido: costosTotales,
-        valorInventarioPromedio: datosFinancieros?.inversionMercaderia || 0,
-        rotacionAnual: 0,
-        diasInventario: 0,
-        periodoAnalizado: diasPeriodo
-      };
-      
-      if (rotacionGlobal.valorInventarioPromedio > 0 && diasPeriodo > 0) {
-        // Calcular rotación anualizada
-        const factorAnualizacion = 365 / diasPeriodo;
-        rotacionGlobal.rotacionAnual = (costosTotales * factorAnualizacion) / rotacionGlobal.valorInventarioPromedio;
-        rotacionGlobal.diasInventario = rotacionGlobal.valorInventarioPromedio / (costosTotales / diasPeriodo);
-      }
-      
-      // Rotación por categoría
-      const rotacionPorCategoria = Object.keys(costosPorCategoria)
-        .map(categoria => {
-          const costoCategoria = costosPorCategoria[categoria];
-          const inversionCategoria = datosFinancieros?.inversionPorCategoria?.[categoria] || 0;
-          let rotacionAnual = 0;
-          let diasInventario = 0;
-          let velocidad = 'lenta';
+      // Productos ordenados por frecuencia de venta
+      const productosConFrecuencia = Object.entries(productoVendido)
+        .map(([nombre, data]) => {
+          const frecuenciaVenta = data.ventas / diasPeriodo; // Ventas por día
+          let clasificacion = 'baja';
           
-          if (inversionCategoria > 0 && diasPeriodo > 0) {
-            const factorAnualizacion = 365 / diasPeriodo;
-            rotacionAnual = (costoCategoria * factorAnualizacion) / inversionCategoria;
-            diasInventario = inversionCategoria / (costoCategoria / diasPeriodo);
-            
-            // Clasificar velocidad de rotación
-            if (rotacionAnual >= 12) {
-              velocidad = 'muy_rapida'; // Más de 1 vez por mes
-            } else if (rotacionAnual >= 6) {
-              velocidad = 'rapida'; // Cada 2 meses
-            } else if (rotacionAnual >= 3) {
-              velocidad = 'media'; // Cada 4 meses
-            } else if (rotacionAnual >= 1) {
-              velocidad = 'lenta'; // Menos de 1 vez por año
-            } else {
-              velocidad = 'muy_lenta'; // Casi no rota
-            }
+          if (frecuenciaVenta >= 1) {
+            clasificacion = 'alta';
+          } else if (frecuenciaVenta >= 0.3) {
+            clasificacion = 'media';
           }
           
-          return {
-            categoria,
-            rotacionAnual: parseFloat(rotacionAnual.toFixed(2)),
-            diasInventario: parseFloat(diasInventario.toFixed(0)),
-            velocidad,
-            costoVendido: costoCategoria,
-            inversionInventario: inversionCategoria
-          };
-        })
-        .sort((a, b) => b.rotacionAnual - a.rotacionAnual);
-      
-      // Productos de lenta rotación (basado en las ventas del período)
-      const productosRotacion = Object.entries(productoVendido)
-        .map(([nombre, data]) => {
-          const costosProducto = data.ventas * (data.ingreso / data.ventas * 0.7); // Estimación de costos
           return {
             nombre,
             ventasUnidades: data.ventas,
             ingresos: data.ingreso,
-            costosEstimados: costosProducto,
-            frecuenciaVenta: data.ventas / diasPeriodo, // Ventas por día
-            clasificacion: data.ventas / diasPeriodo >= 1 ? 'alta' : 
-                          data.ventas / diasPeriodo >= 0.3 ? 'media' : 'baja'
+            frecuenciaVenta: parseFloat(frecuenciaVenta.toFixed(2)),
+            clasificacion
           };
         })
-        .sort((a, b) => a.frecuenciaVenta - b.frecuenciaVenta); // Los de menor rotación primero
+        .sort((a, b) => a.frecuenciaVenta - b.frecuenciaVenta); // Ordenar por frecuencia ascendente
       
       return {
-        global: rotacionGlobal,
-        porCategoria: rotacionPorCategoria,
-        productosLentaRotacion: productosRotacion.slice(0, 5), // Top 5 de lenta rotación
-        productosAltaRotacion: productosRotacion.slice(-5).reverse() // Top 5 de alta rotación
+        productosPocaFrecuencia: productosConFrecuencia.slice(0, 5), // Top 5 de menor frecuencia
+        productosAltaFrecuencia: productosConFrecuencia.slice(-5).reverse() // Top 5 de mayor frecuencia
       };
     };
     
-    const rotacionInventario = calcularRotacionInventario();
+    const { productosPocaFrecuencia, productosAltaFrecuencia } = calcularFrecuenciaVentas();
     
     // Calcular márgenes por categoría reales
     const margenPorCategoria = Object.keys(ingresosPorCategoria)
@@ -459,7 +408,8 @@ const Finanzas = () => {
       margenPorCategoria,
       ventasPorDiaSemana,
       rentabilidadTemporal,
-      rotacionInventario // Incluir rotación de inventario en los datos optimizados
+      productosPocaFrecuencia,
+      productosAltaFrecuencia
     };
   }, [ventasGlobales, calcularRangoFechas, getVentasByDateRange]);
 
@@ -769,7 +719,6 @@ const Finanzas = () => {
     productosMasVendidos: "Productos con mayor cantidad de unidades vendidas.",
     categoriasPorVolumen: "Categorías ordenadas por cantidad de unidades vendidas.",
     inversionPorCategoria: "Valor del inventario actual distribuido por categorías.",
-    rotacionInventario: "Métrica que indica cuántas veces se renueva tu inventario en un año. Una rotación alta (6x o más) significa que vendes tu inventario rápidamente, lo que mejora tu flujo de caja. Una rotación baja (menos de 3x) indica que tienes capital inmovilizado. También muestra los días de cobertura: cuántos días puedes operar con tu stock actual al ritmo de ventas actual.",
     margenPorCategoria: "Porcentaje de ganancia por categoría de productos. Los valores superiores al 30% se consideran de alto rendimiento (verde), entre 20-30% de rendimiento medio (amarillo) y menores al 20% de rendimiento bajo (rojo). Permite identificar qué categorías generan mayor rentabilidad para priorizar la inversión o ajustar precios en aquellas con margen bajo.",
     comparativaFinanciera: "Visualización de la relación entre ingresos, costos y ganancias para el período seleccionado. La barra completa representa el 100% de los ingresos, mientras que las barras de costos y ganancias muestran su proporción respecto a los ingresos. Permite evaluar rápidamente la estructura financiera del negocio e identificar oportunidades para mejorar márgenes."
   };
@@ -1258,6 +1207,7 @@ const Finanzas = () => {
               <div className="finanzas-section">
                 <h2 className="section-title">Análisis de productos</h2>
                 
+                {/* Primera fila: Productos más vendidos y Ventas por categoría */}
                 <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Productos más vendidos</h3>
@@ -1388,6 +1338,7 @@ const Finanzas = () => {
                   </div>
                 </div>
                 
+                {/* Segunda fila: Inversión por categoría y Ventas de poca frecuencia */}
                 <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Inversión por categoría</h3>
@@ -1437,7 +1388,6 @@ const Finanzas = () => {
                       <div className="inventory-distribution">
                         {Object.entries(datosFinancieros.inversionPorCategoria || {})
                           .sort(([, a], [, b]) => b - a)
-                          .slice(0, 5)
                           .map(([categoria, valor], index) => {
                             const porcentaje = datosFinancieros.inversionMercaderia > 0 
                               ? (valor / datosFinancieros.inversionMercaderia) * 100 
@@ -1460,101 +1410,6 @@ const Finanzas = () => {
                     )}
                   </div>
 
-                  {/* 🔄 NUEVA FUNCIONALIDAD: Rotación de Inventario */}
-                  <div className="analysis-card">
-                    <h3 className="card-title">Rotación de inventario</h3>
-                    <button 
-                      className="info-button"
-                      onMouseEnter={(e) => showTooltip(e, tooltipInfo.rotacionInventario)}
-                      onMouseLeave={hideTooltip}
-                    >
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </button>
-                    <button 
-                      className="toggle-view-btn"
-                      onClick={() => toggleTableView('rotacionInventario')}
-                    >
-                      <FontAwesomeIcon icon={verTabla === 'rotacionInventario' ? faChartBar : faTable} />
-                      {verTabla === 'rotacionInventario' ? ' Ver resumen' : ' Ver tabla'}
-                    </button>
-
-                    {verTabla !== 'rotacionInventario' ? (
-                      <div className="inventory-turnover">
-                        {/* Métrica global de rotación */}
-                        <div className="turnover-global">
-                          <div className="turnover-metric">
-                            <div className="turnover-label">Rotación anual global</div>
-                            <div className="turnover-value">
-                              {datosFinancieros.rotacionInventario?.global?.rotacionAnual?.toFixed(1) || '0.0'}x
-                            </div>
-                            <div className="turnover-caption">
-                              {datosFinancieros.rotacionInventario?.global?.diasInventario 
-                                ? `${Math.round(datosFinancieros.rotacionInventario.global.diasInventario)} días de cobertura`
-                                : 'Sin datos suficientes'
-                              }
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Top categorías por rotación */}
-                        <div className="turnover-categories">
-                          {datosFinancieros.rotacionInventario?.porCategoria?.slice(0, 5).map((cat, index) => (
-                            <div key={index} className="turnover-category-item">
-                              <div className="turnover-category-info">
-                                <span className="turnover-category-name">{cat.categoria}</span>
-                                <span className={`turnover-velocity ${cat.velocidad}`}>
-                                  {cat.velocidad === 'muy_rapida' ? 'Muy Rápida' :
-                                   cat.velocidad === 'rapida' ? 'Rápida' :
-                                   cat.velocidad === 'media' ? 'Media' :
-                                   cat.velocidad === 'lenta' ? 'Lenta' : 'Muy Lenta'}
-                                </span>
-                              </div>
-                              <div className="turnover-metrics">
-                                <span className="turnover-rate">{cat.rotacionAnual}x/año</span>
-                                <span className="turnover-days">{cat.diasInventario} días</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Categoría</th>
-                            <th>Rotación anual</th>
-                            <th>Días inventario</th>
-                            <th>Velocidad</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {datosFinancieros.rotacionInventario?.porCategoria?.map((cat, index) => (
-                            <tr key={index}>
-                              <td>{cat.categoria}</td>
-                              <td>{cat.rotacionAnual}x</td>
-                              <td>{cat.diasInventario} días</td>
-                              <td>
-                                <span className={`velocity-badge ${cat.velocidad}`}>
-                                  {cat.velocidad === 'muy_rapida' ? 'Muy Rápida' :
-                                   cat.velocidad === 'rapida' ? 'Rápida' :
-                                   cat.velocidad === 'media' ? 'Media' :
-                                   cat.velocidad === 'lenta' ? 'Lenta' : 'Muy Lenta'}
-                                </span>
-                              </td>
-                            </tr>
-                          )) || (
-                            <tr>
-                              <td colSpan="4" className="no-data">No hay datos disponibles</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                </div>
-
-                {/* 🔄 NUEVA SECCIÓN: Productos de lenta y alta rotación */}
-                <div className="section-cards">
                   <div className="analysis-card">
                     <h3 className="card-title">Ventas de poca frecuencia</h3>
                     <button 
@@ -1568,14 +1423,48 @@ const Finanzas = () => {
                       className="toggle-view-btn"
                       onClick={() => toggleTableView('productosLentaRotacion')}
                     >
-                      <FontAwesomeIcon icon={verTabla === 'productosLentaRotacion' ? faChartBar : faTable} />
-                      {verTabla === 'productosLentaRotacion' ? ' Ver lista' : ' Ver tabla'}
+                      <FontAwesomeIcon icon={verTabla.productosLentaRotacion ? faChartBar : faTable} />
+                      {verTabla.productosLentaRotacion ? ' Ver lista' : ' Ver tabla'}
                     </button>
 
-                    {verTabla !== 'productosLentaRotacion' ? (
+                    {verTabla.productosLentaRotacion ? (
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Ranking</th>
+                            <th>Producto</th>
+                            <th>Unidades vendidas</th>
+                            <th>Ventas por día</th>
+                            <th>Clasificación</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {datosFinancieros.productosPocaFrecuencia.length > 0 ? (
+                            datosFinancieros.productosPocaFrecuencia.map((producto, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{producto.nombre}</td>
+                                <td>{producto.ventasUnidades}</td>
+                                <td>{producto.frecuenciaVenta.toFixed(2)}</td>
+                                <td>
+                                  <span className={`product-classification ${producto.clasificacion}`}>
+                                    {producto.clasificacion === 'alta' ? 'Alta' :
+                                     producto.clasificacion === 'media' ? 'Media' : 'Baja'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="5" className="no-data">No hay datos disponibles</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    ) : (
                       <div className="product-list">
-                        {datosFinancieros.rotacionInventario?.productosLentaRotacion?.length > 0 ? (
-                          datosFinancieros.rotacionInventario.productosLentaRotacion.map((producto, index) => (
+                        {datosFinancieros.productosPocaFrecuencia.length > 0 ? (
+                          datosFinancieros.productosPocaFrecuencia.map((producto, index) => (
                             <div key={index} className="product-item slow-rotation">
                               <div className="product-rank">{index + 1}</div>
                               <div className="product-info">
@@ -1594,7 +1483,30 @@ const Finanzas = () => {
                           <div className="no-data">No hay datos disponibles para el período seleccionado</div>
                         )}
                       </div>
-                    ) : (
+                    )}
+                  </div>
+                </div>
+
+                {/* Tercera fila: Solo Ventas de alta frecuencia (centrada) */}
+                <div className="section-cards single-card">
+                  <div className="analysis-card">
+                    <h3 className="card-title">Ventas de alta frecuencia</h3>
+                    <button 
+                      className="info-button"
+                      onMouseEnter={(e) => showTooltip(e, "Productos que se venden con mayor frecuencia y generan más flujo de caja. Asegúrate de mantener stock suficiente y considera incrementar el inventario de estos productos estrella para maximizar ventas.")}
+                      onMouseLeave={hideTooltip}
+                    >
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                    </button>
+                    <button 
+                      className="toggle-view-btn"
+                      onClick={() => toggleTableView('productosAltaRotacion')}
+                    >
+                      <FontAwesomeIcon icon={verTabla.productosAltaRotacion ? faChartBar : faTable} />
+                      {verTabla.productosAltaRotacion ? ' Ver lista' : ' Ver tabla'}
+                    </button>
+
+                    {verTabla.productosAltaRotacion ? (
                       <table className="data-table">
                         <thead>
                           <tr>
@@ -1606,8 +1518,8 @@ const Finanzas = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {datosFinancieros.rotacionInventario?.productosLentaRotacion?.length > 0 ? (
-                            datosFinancieros.rotacionInventario.productosLentaRotacion.map((producto, index) => (
+                          {datosFinancieros.productosAltaFrecuencia.length > 0 ? (
+                            datosFinancieros.productosAltaFrecuencia.map((producto, index) => (
                               <tr key={index}>
                                 <td>{index + 1}</td>
                                 <td>{producto.nombre}</td>
@@ -1628,30 +1540,10 @@ const Finanzas = () => {
                           )}
                         </tbody>
                       </table>
-                    )}
-                  </div>
-
-                  <div className="analysis-card">
-                    <h3 className="card-title">Ventas de alta frecuencia</h3>
-                    <button 
-                      className="info-button"
-                      onMouseEnter={(e) => showTooltip(e, "Productos que se venden con mayor frecuencia y generan más flujo de caja. Asegúrate de mantener stock suficiente y considera incrementar el inventario de estos productos estrella para maximizar ventas.")}
-                      onMouseLeave={hideTooltip}
-                    >
-                      <FontAwesomeIcon icon={faQuestionCircle} />
-                    </button>
-                    <button 
-                      className="toggle-view-btn"
-                      onClick={() => toggleTableView('productosAltaRotacion')}
-                    >
-                      <FontAwesomeIcon icon={verTabla === 'productosAltaRotacion' ? faChartBar : faTable} />
-                      {verTabla === 'productosAltaRotacion' ? ' Ver lista' : ' Ver tabla'}
-                    </button>
-
-                    {verTabla !== 'productosAltaRotacion' ? (
+                    ) : (
                       <div className="product-list">
-                        {datosFinancieros.rotacionInventario?.productosAltaRotacion?.length > 0 ? (
-                          datosFinancieros.rotacionInventario.productosAltaRotacion.map((producto, index) => (
+                        {datosFinancieros.productosAltaFrecuencia.length > 0 ? (
+                          datosFinancieros.productosAltaFrecuencia.map((producto, index) => (
                             <div key={index} className="product-item high-rotation">
                               <div className="product-rank">{index + 1}</div>
                               <div className="product-info">
@@ -1670,40 +1562,6 @@ const Finanzas = () => {
                           <div className="no-data">No hay datos disponibles para el período seleccionado</div>
                         )}
                       </div>
-                    ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Ranking</th>
-                            <th>Producto</th>
-                            <th>Unidades vendidas</th>
-                            <th>Ventas por día</th>
-                            <th>Clasificación</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {datosFinancieros.rotacionInventario?.productosAltaRotacion?.length > 0 ? (
-                            datosFinancieros.rotacionInventario.productosAltaRotacion.map((producto, index) => (
-                              <tr key={index}>
-                                <td>{index + 1}</td>
-                                <td>{producto.nombre}</td>
-                                <td>{producto.ventasUnidades}</td>
-                                <td>{producto.frecuenciaVenta.toFixed(2)}</td>
-                                <td>
-                                  <span className={`product-classification ${producto.clasificacion}`}>
-                                    {producto.clasificacion === 'alta' ? 'Alta' :
-                                     producto.clasificacion === 'media' ? 'Media' : 'Baja'}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="5" className="no-data">No hay datos disponibles</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
                     )}
                   </div>
                 </div>

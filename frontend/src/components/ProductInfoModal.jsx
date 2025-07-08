@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faTimes, faInfo, faEye, faEyeSlash, faPen, faHistory, faTrash 
+  faTimes, faInfo, faEye, faEyeSlash, faPen, faHistory, faTrash, faBoxes 
 } from '@fortawesome/free-solid-svg-icons';
 import { showConfirmationAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
 import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
+import { getProximoLoteProducto } from '../services/AddProducts.service'; // 🆕 Importar nueva función
 import '../styles/ProductInfoModal.css';
 
 const ProductInfoModal = React.memo(({ 
@@ -37,6 +38,9 @@ const ProductInfoModal = React.memo(({
         overflow-y: scroll;
       `;
       document.body.dataset.scrollY = scrollY;
+      
+      // 🔧 Resetear el estado de cierre cuando se abre el modal
+      setIsClosing(false);
     } else {
       const scrollY = document.body.dataset.scrollY;
       document.body.style.cssText = '';
@@ -66,39 +70,97 @@ const ProductInfoModal = React.memo(({
     return 'modern-stock-value-green';
   }, [productInfo]);
 
+  // 🆕 NUEVO: Estados y lógica para información de lotes
+  const [proximoLote, setProximoLote] = useState(null);
+  const [loadingLote, setLoadingLote] = useState(false);
+
+  // 🆕 NUEVO: Cargar información del próximo lote cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && productInfo && productInfo._id) {
+      const fetchProximoLote = async () => {
+        try {
+          setLoadingLote(true);
+          const response = await getProximoLoteProducto(productInfo._id);
+          setProximoLote(response.data);
+        } catch (error) {
+          console.error('Error al cargar información del próximo lote:', error);
+          setProximoLote(null);
+        } finally {
+          setLoadingLote(false);
+        }
+      };
+
+      fetchProximoLote();
+    }
+  }, [isOpen, productInfo]);
+
+  // 🆕 NUEVO: Información mejorada con datos de lotes
+  const enhancedProductInfo = useMemo(() => {
+    if (!productInfo || !proximoLote) return productInfo;
+
+    // Si tiene múltiples lotes y hay un lote principal
+    if (proximoLote.tieneMultiplesLotes && proximoLote.lotePrincipal) {
+      const lote = proximoLote.lotePrincipal;
+      
+      return {
+        ...productInfo,
+        // Usar precio de compra del lote FIFO
+        PrecioCompra: lote.precioCompra || productInfo.PrecioCompra,
+        // Usar fecha de vencimiento del lote FIFO
+        fechaVencimiento: lote.fechaVencimiento || productInfo.fechaVencimiento,
+        // Información adicional del lote
+        _loteInfo: {
+          tieneMultiplesLotes: true,
+          totalLotes: proximoLote.totalLotes,
+          numeroLote: lote.numeroLote,
+          diasParaVencer: lote.diasParaVencer,
+          estaVencido: lote.estaVencido,
+          estaPorVencer: lote.estaPorVencer,
+          origen: lote.origen
+        }
+      };
+    }
+
+    // Si no tiene lotes múltiples, usar datos del producto principal
+    return {
+      ...productInfo,
+      _loteInfo: {
+        tieneMultiplesLotes: false,
+        origen: 'producto_principal'
+      }
+    };
+  }, [productInfo, proximoLote]);
+
   const formattedDates = useMemo(() => {
-    if (!productInfo) return {};
+    if (!enhancedProductInfo) return {};
     
     return {
-      expiration: productInfo.fechaVencimiento 
-        ? new Date(productInfo.fechaVencimiento).toLocaleDateString()
+      expiration: enhancedProductInfo.fechaVencimiento 
+        ? new Date(enhancedProductInfo.fechaVencimiento).toLocaleDateString()
         : 'No especificada',
-      created: productInfo.createdAt 
-        ? new Date(productInfo.createdAt).toLocaleDateString()
+      created: enhancedProductInfo.createdAt 
+        ? new Date(enhancedProductInfo.createdAt).toLocaleDateString()
         : 'No disponible'
     };
-  }, [productInfo]);
+  }, [enhancedProductInfo]);
 
   const commercialInfo = useMemo(() => {
-    if (!productInfo) return {};
+    if (!enhancedProductInfo) return {};
     
-    const margin = productInfo.PrecioVenta && productInfo.PrecioCompra 
-      ? ((productInfo.PrecioVenta - productInfo.PrecioCompra) / productInfo.PrecioCompra * 100).toFixed(1)
+    const margin = enhancedProductInfo.PrecioVenta && enhancedProductInfo.PrecioCompra 
+      ? ((enhancedProductInfo.PrecioVenta - enhancedProductInfo.PrecioCompra) / enhancedProductInfo.PrecioCompra * 100).toFixed(1)
       : '0';
     
-    const inventoryValue = productInfo.PrecioCompra && productInfo.Stock
-      ? formatNumber(productInfo.PrecioCompra * productInfo.Stock)
+    const inventoryValue = enhancedProductInfo.PrecioCompra && enhancedProductInfo.Stock
+      ? formatNumber(enhancedProductInfo.PrecioCompra * enhancedProductInfo.Stock)
       : '0';
 
     return { margin, inventoryValue };
-  }, [productInfo]);
+  }, [enhancedProductInfo]);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 200);
+    // 🔧 SIMPLIFICADO: Cierre directo sin animación de delay para evitar parpadeo
+    onClose();
   };
 
   const handleOverlayClick = (e) => {
@@ -109,10 +171,8 @@ const ProductInfoModal = React.memo(({
 
   const handleDelete = async () => {
     onDelete(productInfo);
-    handleClose();
   };
 
-  // 🆕 NUEVA función para eliminar definitivamente
   const handleDeletePermanently = () => {
     onDeletePermanently(productInfo);
     handleClose();
@@ -120,12 +180,10 @@ const ProductInfoModal = React.memo(({
 
   const handleStockHistory = () => {
     onShowStockHistory(productInfo);
-    handleClose();
   };
 
   const handleEdit = () => {
     onEdit(productInfo._id);
-    handleClose();
   };
 
   const handlePriceHistory = () => {
@@ -200,6 +258,71 @@ const ProductInfoModal = React.memo(({
             </div>
           </div>
 
+          {/* 🆕 NUEVA SECCIÓN: Información específica de lotes */}
+          {enhancedProductInfo && enhancedProductInfo._loteInfo && (
+            <div className="modern-lote-info-section">
+              <h3 className="modern-section-title">
+                <FontAwesomeIcon icon={faBoxes} />
+                Información de Inventario
+              </h3>
+              
+              {loadingLote ? (
+                <div className="modern-loading-lote">
+                  <p>Cargando información de lotes...</p>
+                </div>
+              ) : (
+                <div className="modern-lote-details">
+                  <div className="modern-lote-alert">
+                    <FontAwesomeIcon icon={faBoxes} />
+                    <div>
+                      <strong>Sistema de Lotes Activo</strong>
+                      <p>
+                        {enhancedProductInfo._loteInfo.tieneMultiplesLotes 
+                          ? "Los datos mostrados corresponden al lote que se usará primero (FIFO)"
+                          : "Los datos mostrados corresponden al lote principal del producto"
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {enhancedProductInfo._loteInfo.tieneMultiplesLotes ? (
+                    <div className="modern-lote-grid">
+                      <div className="modern-lote-item">
+                        <span className="modern-lote-label">Lote Actual:</span>
+                        <span className="modern-lote-value">{enhancedProductInfo._loteInfo.numeroLote}</span>
+                      </div>
+                      <div className="modern-lote-item">
+                        <span className="modern-lote-label">Total de Lotes:</span>
+                        <span className="modern-lote-value">{enhancedProductInfo._loteInfo.totalLotes}</span>
+                      </div>
+                      <div className="modern-lote-item">
+                        <span className="modern-lote-label">Días para Vencer:</span>
+                        <span className={`modern-lote-value ${
+                          enhancedProductInfo._loteInfo.estaVencido ? 'vencido' : 
+                          enhancedProductInfo._loteInfo.estaPorVencer ? 'por-vencer' : 'bueno'
+                        }`}>
+                          {enhancedProductInfo._loteInfo.estaVencido ? 'VENCIDO' : 
+                           `${enhancedProductInfo._loteInfo.diasParaVencer} días`}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="modern-lote-grid">
+                      <div className="modern-lote-item">
+                        <span className="modern-lote-label">Tipo de Gestión:</span>
+                        <span className="modern-lote-value">Lote Principal</span>
+                      </div>
+                      <div className="modern-lote-item">
+                        <span className="modern-lote-label">Origen de Datos:</span>
+                        <span className="modern-lote-value">Producto Base</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="modern-specifications-section">
             <h3 className="modern-section-title">
               <FontAwesomeIcon icon={faInfo} />
@@ -245,8 +368,13 @@ const ProductInfoModal = React.memo(({
                     <FontAwesomeIcon icon={faInfo} />
                   </div>
                   <div className="modern-spec-content">
-                    <span className="modern-spec-label">Precio de Compra</span>
-                    <span className="modern-spec-value">${formatNumber(productInfo.PrecioCompra)}</span>
+                    <span className="modern-spec-label">
+                      Precio de Compra
+                      {enhancedProductInfo && enhancedProductInfo._loteInfo?.tieneMultiplesLotes && (
+                        <span className="modern-data-source"> (Lote FIFO)</span>
+                      )}
+                    </span>
+                    <span className="modern-spec-value">${formatNumber(enhancedProductInfo?.PrecioCompra || productInfo.PrecioCompra)}</span>
                   </div>
                 </div>
 
@@ -255,7 +383,12 @@ const ProductInfoModal = React.memo(({
                     <FontAwesomeIcon icon={faInfo} />
                   </div>
                   <div className="modern-spec-content">
-                    <span className="modern-spec-label">Fecha de Vencimiento</span>
+                    <span className="modern-spec-label">
+                      Fecha de Vencimiento
+                      {enhancedProductInfo && enhancedProductInfo._loteInfo?.tieneMultiplesLotes && (
+                        <span className="modern-data-source"> (Próximo a vencer)</span>
+                      )}
+                    </span>
                     <span className="modern-spec-value">{formattedDates.expiration}</span>
                   </div>
                 </div>
@@ -279,8 +412,13 @@ const ProductInfoModal = React.memo(({
                 <h4 className="modern-info-card-title">Información Comercial</h4>
                 <div className="modern-info-card-content">
                   <div className="modern-info-row">
-                    <span className="modern-info-label">Precio de Compra:</span>
-                    <span className="modern-info-value">${formatNumber(productInfo.PrecioCompra)}</span>
+                    <span className="modern-info-label">
+                      Precio de Compra:
+                      {enhancedProductInfo && enhancedProductInfo._loteInfo?.tieneMultiplesLotes && (
+                        <span className="modern-data-source-small"> (Lote FIFO)</span>
+                      )}
+                    </span>
+                    <span className="modern-info-value">${formatNumber(enhancedProductInfo?.PrecioCompra || productInfo.PrecioCompra)}</span>
                   </div>
                   <div className="modern-info-row">
                     <span className="modern-info-label">Precio de Venta:</span>

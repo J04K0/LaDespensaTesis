@@ -393,7 +393,18 @@ const HistorySale = () => {
 
   const exportToPDF = () => {
     const dataToExport = sortedVentas.length > 0 ? sortedVentas : ventas;
-    ExportService.generarReporteHistorialVentas(dataToExport);
+    
+    // Preparar filtros aplicados para incluir en el reporte
+    const filtrosAplicados = {};
+    if (searchQuery) filtrosAplicados.busqueda = searchQuery;
+    if (categoryFilter) filtrosAplicados.categoria = categoryFilter;
+    if (dateRange.start) filtrosAplicados.fechaInicio = dateRange.start;
+    if (dateRange.end) filtrosAplicados.fechaFin = dateRange.end;
+    if (totalRange.min) filtrosAplicados.montoMin = totalRange.min;
+    if (totalRange.max) filtrosAplicados.montoMax = totalRange.max;
+    
+    // Llamar al servicio de exportación con la información del tipo de ventas
+    ExportService.generarReporteHistorialVentas(dataToExport, showVentasAnuladas, filtrosAplicados);
   };
 
   const exportToExcel = () => {

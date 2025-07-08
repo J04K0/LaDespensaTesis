@@ -516,32 +516,197 @@ export class ExportService {
   /**
    * Genera un reporte del historial de ventas en PDF
    * @param {Array} ventas - Lista de ventas para incluir en el reporte
+   * @param {boolean} esVentasAnuladas - Indica si son ventas anuladas o activas
+   * @param {Object} filtrosAplicados - Filtros aplicados en la vista (opcional)
    */
-  static generarReporteHistorialVentas(ventas) {
-    const doc = new jsPDF();
-    doc.text("Historial de Ventas", 20, 10);
+  static generarReporteHistorialVentas(ventas, esVentasAnuladas = false, filtrosAplicados = {}) {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm', 
+      format: 'a4'
+    });
 
-    autoTable(doc, {
-      head: [["Ticket", "Fecha", "Usuario", "Método de Pago", "Productos", "Total"]],
-      body: ventas.map((venta) => [
+    // Configurar título y encabezado según el tipo de ventas
+    const tipoVentas = esVentasAnuladas ? 'VENTAS ANULADAS' : 'VENTAS ACTIVAS';
+    const fechaActual = new Date().toLocaleDateString();
+    const horaActual = new Date().toLocaleTimeString();
+    
+    // Título principal
+    doc.setFontSize(18);
+    doc.setTextColor(0, 38, 81);
+    doc.text(`La Despensa - Historial de ${tipoVentas}`, 14, 15);
+    
+    // Información del reporte
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha de generación: ${fechaActual} - ${horaActual}`, 14, 25);
+    
+    // Información del estado de las ventas
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    if (esVentasAnuladas) {
+      doc.setTextColor(220, 53, 69); // Rojo para anuladas
+      doc.text(`⚠️ REGISTRO DE AUDITORÍA - ${tipoVentas}`, 14, 35);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text("Estas ventas han sido anuladas y se conservan únicamente para fines de auditoría y control", 14, 42);
+    } else {
+      doc.setTextColor(40, 167, 69); // Verde para activas
+      doc.text(`✓ ${tipoVentas} - REGISTRO OPERATIVO`, 14, 35);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text("Ventas activas del sistema - Registro de operaciones comerciales", 14, 42);
+    }
+    
+    // Información de filtros aplicados (si los hay)
+    let yPos = 50;
+    if (filtrosAplicados && Object.keys(filtrosAplicados).length > 0) {
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Filtros aplicados:", 14, yPos);
+      yPos += 5;
+      
+      if (filtrosAplicados.busqueda) {
+        doc.text(`• Búsqueda: "${filtrosAplicados.busqueda}"`, 16, yPos);
+        yPos += 4;
+      }
+      if (filtrosAplicados.categoria) {
+        doc.text(`• Categoría: ${filtrosAplicados.categoria}`, 16, yPos);
+        yPos += 4;
+      }
+      if (filtrosAplicados.fechaInicio || filtrosAplicados.fechaFin) {
+        const desde = filtrosAplicados.fechaInicio || 'Sin límite';
+        const hasta = filtrosAplicados.fechaFin || 'Sin límite';
+        doc.text(`• Período: Desde ${desde} hasta ${hasta}`, 16, yPos);
+        yPos += 4;
+      }
+      if (filtrosAplicados.montoMin || filtrosAplicados.montoMax) {
+        const min = filtrosAplicados.montoMin || 'Sin límite';
+        const max = filtrosAplicados.montoMax || 'Sin límite';
+        doc.text(`• Rango de monto: $${min} - $${max}`, 16, yPos);
+        yPos += 4;
+      }
+      yPos += 5;
+    }
+    
+    // Estadísticas del reporte
+    const totalVentas = ventas.length;
+    const montoTotal = ventas.reduce((acc, venta) => {
+      return acc + venta.ventas.reduce((sum, producto) => sum + (producto.cantidad * producto.precioVenta), 0);
+    }, 0);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 38, 81);
+    doc.text(`Total de registros: ${totalVentas}`, 14, yPos);
+    doc.text(`Monto total: $${formatNumberWithDots(montoTotal)}`, 120, yPos);
+    yPos += 10;
+
+    // Configurar headers según el tipo de ventas
+    let headers;
+    if (esVentasAnuladas) {
+      headers = ["Ticket", "Fecha Original", "Usuario", "Método de Pago", "Productos", "Total", "Fecha Anulación", "Anulado Por", "Motivo/Comentario"];
+    } else {
+      headers = ["Ticket", "Fecha", "Usuario", "Método de Pago", "Productos", "Total"];
+    }
+
+    // Generar filas de datos según el tipo de ventas
+    const rows = ventas.map((venta) => {
+      const productos = venta.ventas
+        .map(producto => `${producto.nombre} - ${producto.cantidad}x $${formatNumberWithDots(producto.precioVenta)}`)
+        .join("\n");
+      
+      const total = venta.ventas.reduce((acc, producto) => acc + producto.cantidad * producto.precioVenta, 0);
+      const metodoPago = venta.deudorId ? `Deudor: ${venta.deudor?.Nombre || 'Desconocido'}` : 
+                        venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo';
+      
+      const baseRow = [
         venta._id,
         new Date(venta.fecha).toLocaleDateString(),
         venta.usuario ? venta.usuario.nombre || venta.usuario.username : "Usuario desconocido",
-        venta.deudorId ? `Deudor: ${venta.deudor?.Nombre || 'Desconocido'}` : venta.metodoPago === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-        venta.ventas
-          .map(
-            (producto) =>
-              `${producto.nombre} - ${producto.cantidad}x $${producto.precioVenta}`
-          )
-          .join("\n"),
-        venta.ventas.reduce(
-          (acc, producto) => acc + producto.cantidad * producto.precioVenta,
-          0
-        ),
-      ]),
+        metodoPago,
+        productos,
+        `$${formatNumberWithDots(total)}`
+      ];
+
+      if (esVentasAnuladas) {
+        // Agregar información específica de ventas anuladas
+        const fechaAnulacion = venta.fechaAnulacion ? 
+          new Date(venta.fechaAnulacion).toLocaleDateString() : 
+          (venta.fechaDevolucion ? new Date(venta.fechaDevolucion).toLocaleDateString() : 'N/A');
+        
+        const usuarioAnulacion = venta.usuarioAnulacion ? 
+          (venta.usuarioAnulacion.nombre || venta.usuarioAnulacion.username) :
+          (venta.usuarioDevolucion ? 
+            (venta.usuarioDevolucion.nombre || venta.usuarioDevolucion.username) : 'N/A');
+        
+        const motivoComentario = venta.estado === 'anulada' ? 
+          (venta.motivoAnulacion || 'Sin motivo especificado') :
+          venta.estado === 'devuelta_parcial' ? 
+            (`Devolución Parcial: ${venta.comentarioDevolucion || 'Sin comentario'}`) :
+            (venta.motivoAnulacion || venta.comentarioDevolucion || 'Sin información');
+
+        return [...baseRow, fechaAnulacion, usuarioAnulacion, motivoComentario];
+      }
+
+      return baseRow;
     });
 
-    doc.save("historial_ventas.pdf");
+    autoTable(doc, {
+      startY: yPos,
+      head: [headers],
+      body: rows,
+      styles: { 
+        fontSize: 8,
+        cellPadding: 2,
+        overflow: 'linebreak'
+      },
+      headStyles: { 
+        fillColor: esVentasAnuladas ? [220, 53, 69] : [0, 38, 81],
+        fontSize: 9,
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        0: { cellWidth: 25 }, // Ticket
+        1: { cellWidth: 20 }, // Fecha
+        2: { cellWidth: 25 }, // Usuario
+        3: { cellWidth: 25 }, // Método de Pago
+        4: { cellWidth: 45 }, // Productos
+        5: { cellWidth: 20, halign: 'right' }, // Total
+        ...(esVentasAnuladas && {
+          6: { cellWidth: 20 }, // Fecha Anulación
+          7: { cellWidth: 25 }, // Anulado Por
+          8: { cellWidth: 35 }  // Motivo/Comentario
+        })
+      },
+      didDrawPage: (data) => {
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+        // Línea separadora
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+        
+        // Información del pie
+        doc.text(`La Despensa - ${tipoVentas} - ${fechaActual}`, 14, pageHeight - 8);
+        doc.text(`Página ${data.pageNumber}`, pageWidth - 30, pageHeight - 8);
+        
+        if (esVentasAnuladas) {
+          doc.text("⚠️ Documento de Auditoría - Solo para Control Interno", pageWidth / 2, pageHeight - 8, { align: 'center' });
+        }
+      }
+    });
+
+    // Guardar PDF con nombre descriptivo
+    const timestamp = new Date().toISOString().split('T')[0];
+    const tipoArchivo = esVentasAnuladas ? 'Ventas_Anuladas' : 'Ventas_Activas';
+    const nombreArchivo = `LaDespensa_${tipoArchivo}_${timestamp}.pdf`;
+    
+    doc.save(nombreArchivo);
   }
 
   /**

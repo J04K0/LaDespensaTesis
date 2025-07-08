@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { scanProducts, actualizarStockVenta } from "../services/AddProducts.service.js";
+import { scanProducts, actualizarStockVenta, addProducts } from "../services/AddProducts.service.js";
 import { registrarVenta } from "../services/venta.service.js";
 import { getDeudoresSimple } from "../services/deudores.service.js";
 import { addDeudor } from "../services/deudores.service.js";
@@ -10,8 +10,10 @@ import ProductScannerSkeleton from '../components/Skeleton/ProductScannerSkeleto
 import "../styles/ProductScannerStyles.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, 
-  faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2'; // Agregando la importación de SweetAlert2
+  faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2';
+// 🆕 Importar categorías de productos
+import { CATEGORIAS } from '../constants/products.constants.js';
 
 const ProductScanner = () => {
   const navigate = useNavigate();
@@ -30,6 +32,19 @@ const ProductScanner = () => {
   const [selectedDeudorId, setSelectedDeudorId] = useState("");
   const [isDeudor, setIsDeudor] = useState(false);
   const [loadingDeudores, setLoadingDeudores] = useState(false);
+  // 🆕 Estados para modal de creación rápida de producto
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [newProductData, setNewProductData] = useState({
+    nombre: '',
+    marca: '',
+    categoria: '',
+    stock: '',
+    precioCompra: '',
+    precioVenta: '',
+    fechaVencimiento: '',
+    codigoBarras: ''
+  });
+  const [creatingProduct, setCreatingProduct] = useState(false);
   const total = carrito.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0);
   const vuelto = montoEntregado ? parseFloat(montoEntregado) - total : 0;
 
@@ -124,12 +139,18 @@ const ProductScanner = () => {
         }
       } else {
         setProductoActual(null);
-        showProductNotFoundAlert(codigoEscaneado).then((result) => {
-          if (result.isConfirmed) {
-            // Navigate to add product page with the barcode pre-filled
-            navigate(`/addproduct?barcode=${codigoEscaneado}`);
-          }
+        // 🆕 CAMBIO: Mostrar modal para crear producto en lugar de redirigir
+        setNewProductData({
+          nombre: '',
+          marca: '',
+          categoria: '',
+          stock: '',
+          precioCompra: '',
+          precioVenta: '',
+          fechaVencimiento: '',
+          codigoBarras: codigoEscaneado // Pre-llenar con el código escaneado
         });
+        setShowCreateProductModal(true);
       }
       setCodigoEscaneado("");
       setCantidad(1);
@@ -142,10 +163,21 @@ const ProductScanner = () => {
         const errorMessage = error.response.data && error.response.data.message;
         
         if (statusCode === 404) {
-          // Producto no encontrado
+          // 🆕 CAMBIO: Mostrar alerta primero, luego modal si confirma
           showProductNotFoundAlert(codigoEscaneado).then((result) => {
             if (result.isConfirmed) {
-              navigate(`/addproduct?barcode=${codigoEscaneado}`);
+              // Usuario confirmó que quiere crear el producto, abrir modal
+              setNewProductData({
+                nombre: '',
+                marca: '',
+                categoria: '',
+                stock: '',
+                precioCompra: '',
+                precioVenta: '',
+                fechaVencimiento: '',
+                codigoBarras: codigoEscaneado // Pre-llenar con el código escaneado
+              });
+              setShowCreateProductModal(true);
             }
           });
         } else if (statusCode === 400 && errorMessage && errorMessage.includes("stock")) {
@@ -160,14 +192,14 @@ const ProductScanner = () => {
               showOutOfStockAlert(codigoEscaneado, productName).then((result) => {
                 if (result.isConfirmed) {
                   // Navigate to add product page with the barcode pre-filled for stock addition
-                  navigate(`/addproduct?barcode=${codigoEscaneado}`);
+                  navigate(`/add-product?barcode=${codigoEscaneado}`);
                 }
               });
             } else {
               // Si no podemos obtener el nombre, usar el código de barras
               showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
                 if (result.isConfirmed) {
-                  navigate(`/addproduct?barcode=${codigoEscaneado}`);
+                  navigate(`/add-product?barcode=${codigoEscaneado}`);
                 }
               });
             }
@@ -175,7 +207,7 @@ const ProductScanner = () => {
             // Si hay error al obtener el producto, usar mensaje genérico
             showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
               if (result.isConfirmed) {
-                navigate(`/addproduct?barcode=${codigoEscaneado}`);
+                navigate(`/add-product?barcode=${codigoEscaneado}`);
               }
             });
           }
@@ -491,6 +523,95 @@ const ProductScanner = () => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
+  // 🆕 Función para manejar la creación rápida de productos
+  const handleCreateProduct = async () => {
+    // Validar datos del nuevo producto
+    const { nombre, marca, categoria, stock, precioCompra, precioVenta, fechaVencimiento, codigoBarras } = newProductData;
+    
+    if (!nombre || !marca || !categoria || !codigoBarras) {
+      return showWarningAlert("Faltan datos", "Por favor, complete todos los campos obligatorios.");
+    }
+    
+    // Confirmar creación del producto
+    const result = await Swal.fire({
+      title: 'Confirmar creación de producto',
+      text: `¿Desea crear el producto "${nombre}" con los siguientes datos?\n\n` + 
+            `Marca: ${marca}\n` +
+            `Categoría: ${categoria}\n` +
+            `Código de barras: ${codigoBarras}\n` +
+            `Stock: ${stock}\n` +
+            `Precio de compra: $${precioCompra}\n` +
+            `Precio de venta: $${precioVenta}\n` +
+            `Fecha de vencimiento: ${fechaVencimiento ? new Date(fechaVencimiento).toLocaleDateString() : 'N/A'}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear producto',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#dc3545',
+      customClass: {
+        container: 'swal-optimized-container',
+        popup: 'swal-optimized-popup'
+      }
+    });
+    
+    if (!result.isConfirmed) {
+      return;
+    }
+    
+    setCreatingProduct(true);
+    
+    try {
+      // 🔧 CAMBIO: Usar FormData con el formato correcto del servicio addProducts
+      const formData = new FormData();
+      formData.append('addproducts-nombre', nombre);
+      formData.append('addproducts-marca', marca);
+      formData.append('addproducts-categoria', categoria);
+      formData.append('addproducts-codigo-barras', codigoBarras);
+      formData.append('addproducts-stock', parseInt(stock) || 0);
+      formData.append('addproducts-precio-compra', parseFloat(precioCompra) || 0);
+      formData.append('addproducts-precio-venta', parseFloat(precioVenta) || 0);
+      
+      if (fechaVencimiento) {
+        formData.append('addproducts-fecha-vencimiento', fechaVencimiento);
+      }
+      
+      // 🔧 CORRECCIÓN: Usar el servicio addProducts en lugar de fetch directo
+      await addProducts(formData);
+      
+      showSuccessAlert('Producto creado', 'El producto ha sido creado exitosamente y ya puede ser escaneado.');
+      
+      // Limpiar datos del nuevo producto y cerrar modal
+      setNewProductData({
+        nombre: '',
+        marca: '',
+        categoria: '',
+        stock: '',
+        precioCompra: '',
+        precioVenta: '',
+        fechaVencimiento: '',
+        codigoBarras: ''
+      });
+      setShowCreateProductModal(false);
+      
+      // Opcional: Intentar escanear automáticamente el producto recién creado
+      if (codigoBarras) {
+        setTimeout(() => {
+          setCodigoEscaneado(codigoBarras);
+          // Simular el envío del formulario de escaneo
+          const scanEvent = { preventDefault: () => {} };
+          handleScan(scanEvent);
+        }, 1000);
+      }
+      
+    } catch (error) {
+      console.error('Error al crear producto:', error);
+      showErrorAlert('Error', 'No se pudo crear el producto. Por favor, intente nuevamente.');
+    } finally {
+      setCreatingProduct(false);
+    }
+  };
+
   return (
     <div className="productscanner-container">
       <Navbar />
@@ -764,6 +885,133 @@ const ProductScanner = () => {
           </div>
         )}
       </div>
+      
+      {/* 🆕 Modal para creación rápida de productos */}
+      {showCreateProductModal && (
+        <div className="productscanner-create-product-modal">
+          <div className="productscanner-modal-content">
+            <h2>Crear Producto Rápido</h2>
+            
+            <div className="productscanner-modal-body">
+              <div className="productscanner-modal-field">
+                <label>Nombre <span className="required-field">*</span>:</label>
+                <input
+                  type="text"
+                  value={newProductData.nombre}
+                  onChange={(e) => setNewProductData({ ...newProductData, nombre: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Marca <span className="required-field">*</span>:</label>
+                <input
+                  type="text"
+                  value={newProductData.marca}
+                  onChange={(e) => setNewProductData({ ...newProductData, marca: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Categoría <span className="required-field">*</span>:</label>
+                <select
+                  value={newProductData.categoria}
+                  onChange={(e) => setNewProductData({ ...newProductData, categoria: e.target.value })}
+                  disabled={creatingProduct}
+                  className="productscanner-category-select"
+                >
+                  <option value="">Seleccione una categoría</option>
+                  {CATEGORIAS.map((categoria) => (
+                    <option key={categoria} value={categoria}>
+                      {categoria}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Código de barras <span className="required-field">*</span>:</label>
+                <input
+                  type="text"
+                  value={newProductData.codigoBarras}
+                  onChange={(e) => setNewProductData({ ...newProductData, codigoBarras: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Stock:</label>
+                <input
+                  type="number"
+                  value={newProductData.stock}
+                  onChange={(e) => setNewProductData({ ...newProductData, stock: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Precio de compra:</label>
+                <input
+                  type="number"
+                  value={newProductData.precioCompra}
+                  onChange={(e) => setNewProductData({ ...newProductData, precioCompra: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Precio de venta:</label>
+                <input
+                  type="number"
+                  value={newProductData.precioVenta}
+                  onChange={(e) => setNewProductData({ ...newProductData, precioVenta: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+              
+              <div className="productscanner-modal-field">
+                <label>Fecha de vencimiento:</label>
+                <input
+                  type="date"
+                  value={newProductData.fechaVencimiento}
+                  onChange={(e) => setNewProductData({ ...newProductData, fechaVencimiento: e.target.value })}
+                  disabled={creatingProduct}
+                />
+              </div>
+            </div>
+            
+            <div className="productscanner-modal-actions">
+              <button 
+                className="productscanner-modal-save-btn"
+                onClick={handleCreateProduct}
+                disabled={creatingProduct}
+              >
+                {creatingProduct ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faCheck} />
+                    Guardar Producto
+                  </>
+                )}
+              </button>
+              
+              <button 
+                className="productscanner-modal-cancel-btn"
+                onClick={() => setShowCreateProductModal(false)}
+                disabled={creatingProduct}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

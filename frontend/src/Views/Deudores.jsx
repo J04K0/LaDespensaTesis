@@ -680,40 +680,175 @@ const DeudoresList = () => {
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    const tableColumn = ["Nombre", "Fecha a Pagar", "Número de Teléfono", "Deuda Total"];
-    const tableRows = [];
+    
+    // Configurar título y encabezado según el tipo de deudores
+    const tipoDeudores = estadoFilter === 'inactivos' ? 'DEUDORES INACTIVOS' : 'DEUDORES ACTIVOS';
+    const fechaActual = new Date().toLocaleDateString();
+    const horaActual = new Date().toLocaleTimeString();
+    
+    // Título principal
+    doc.setFontSize(18);
+    doc.setTextColor(0, 38, 81);
+    doc.text(`La Despensa - Listado de ${tipoDeudores}`, 14, 15);
+    
+    // Información del reporte
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha de generación: ${fechaActual} - ${horaActual}`, 14, 25);
+    
+    // Información del estado de los deudores
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    if (estadoFilter === 'inactivos') {
+      doc.setTextColor(220, 53, 69); // Rojo para inactivos
+      doc.text(`⚠️ REGISTRO DE DEUDORES INACTIVOS`, 14, 35);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text("Estos deudores han sido desactivados y se mantienen únicamente para referencia histórica", 14, 42);
+    } else {
+      doc.setTextColor(40, 167, 69); // Verde para activos
+      doc.text(`✓ REGISTRO DE DEUDORES ACTIVOS`, 14, 35);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100, 100, 100);
+      doc.text("Deudores activos del sistema - Registro operativo de clientes con crédito", 14, 42);
+    }
+    
+    // Información de filtros aplicados (si los hay)
+    let yPos = 50;
+    if (searchQuery) {
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Filtros aplicados:", 14, yPos);
+      yPos += 5;
+      doc.text(`• Búsqueda: "${searchQuery}"`, 16, yPos);
+      yPos += 4;
+      if (sortOption) {
+        const sortLabels = {
+          'name-asc': 'Nombre (A-Z)',
+          'name-desc': 'Nombre (Z-A)',
+          'debt-asc': 'Deuda (Ascendente)',
+          'debt-desc': 'Deuda (Descendente)',
+          'date-asc': 'Fecha a Pagar (Ascendente)',
+          'date-desc': 'Fecha a Pagar (Descendente)',
+          'status-asc': 'Estado (Vencido → Al día)',
+          'status-desc': 'Estado (Al día → Vencido)'
+        };
+        doc.text(`• Ordenamiento: ${sortLabels[sortOption] || sortOption}`, 16, yPos);
+        yPos += 4;
+      }
+      yPos += 5;
+    }
+    
+    // Estadísticas del reporte
+    const totalDeudores = filteredDeudores.length;
+    const deudaTotal = filteredDeudores.reduce((acc, deudor) => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      return acc + deudaValue;
+    }, 0);
+    
+    const deudoresConDeuda = filteredDeudores.filter(deudor => {
+      const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
+      return deudaValue > 0;
+    }).length;
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 38, 81);
+    doc.text(`Total de registros: ${totalDeudores}`, 14, yPos);
+    doc.text(`Deuda total: $${formatNumberWithDots(deudaTotal)}`, 120, yPos);
+    doc.text(`Deudores con deuda activa: ${deudoresConDeuda}`, 14, yPos + 7);
+    yPos += 17;
 
-    filteredDeudores.forEach(deudor => {
+    // Configurar headers según el tipo de deudores
+    let headers;
+    if (estadoFilter === 'inactivos') {
+      headers = ["Nombre", "Fecha a Pagar", "Teléfono", "Deuda Total", "Estado", "Fecha Desactivación"];
+    } else {
+      headers = ["Nombre", "Fecha a Pagar", "Teléfono", "Deuda Total", "Estado de Pago"];
+    }
+
+    // Generar filas de datos
+    const tableRows = filteredDeudores.map(deudor => {
       const deudaValue = parseFloat(deudor.deudaTotal.replace(/\$|\./g, '').replace(',', '.'));
       const isZeroDebt = deudaValue === 0;
-
-      tableRows.push([
+      const paymentStatus = getPaymentStatus(deudor.fechaPaga, deudor.deudaTotal);
+      
+      const baseRow = [
         deudor.Nombre || 'Nombre desconocido',
         new Date(deudor.fechaPaga).toLocaleDateString() || 'Fecha desconocida',
         deudor.numeroTelefono || 'Teléfono desconocido',
-        isZeroDebt ? { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [0, 128, 0] } } : { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [255, 0, 0] } }
-      ]);
+        isZeroDebt ? 
+          { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [0, 128, 0] } } : 
+          { content: `$${formatNumberWithDots(deudaValue)}`, styles: { textColor: [255, 0, 0] } },
+        paymentStatus.label
+      ];
+
+      if (estadoFilter === 'inactivos') {
+        // Para deudores inactivos, agregar fecha de desactivación (si está disponible)
+        const fechaDesactivacion = deudor.fechaDesactivacion ? 
+          new Date(deudor.fechaDesactivacion).toLocaleDateString() : 
+          'No disponible';
+        return [...baseRow, fechaDesactivacion];
+      }
+
+      return baseRow;
     });
 
     autoTable(doc, {
-      head: [tableColumn],
+      startY: yPos,
+      head: [headers],
       body: tableRows,
-      startY: 20,
-      theme: 'striped',
-      headStyles: { fillColor: [0, 38, 81] }, // Color primario oscuro
+      styles: { 
+        fontSize: 9,
+        cellPadding: 3
+      },
+      headStyles: { 
+        fillColor: estadoFilter === 'inactivos' ? [220, 53, 69] : [0, 38, 81],
+        fontSize: 10,
+        fontStyle: 'bold'
+      },
+      columnStyles: estadoFilter === 'inactivos' ? {
+        0: { cellWidth: 35 }, // Nombre
+        1: { cellWidth: 25 }, // Fecha
+        2: { cellWidth: 25 }, // Teléfono
+        3: { cellWidth: 25, halign: 'right' }, // Deuda
+        4: { cellWidth: 25 }, // Estado
+        5: { cellWidth: 30 }  // Fecha Desactivación
+      } : {
+        0: { cellWidth: 40 }, // Nombre
+        1: { cellWidth: 30 }, // Fecha
+        2: { cellWidth: 30 }, // Teléfono
+        3: { cellWidth: 30, halign: 'right' }, // Deuda
+        4: { cellWidth: 35 }  // Estado
+      },
       didDrawPage: (data) => {
-        // Agregar título y fecha
-        doc.setFontSize(18);
-        doc.text("La Despensa - Listado de Deudores", 14, 15);
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         
-        // Agregar pie de página
-        const currentDate = new Date().toLocaleDateString();
-        doc.setFontSize(10);
-        doc.text(`Fecha de emisión: ${currentDate}`, 14, doc.internal.pageSize.height - 10);
+        // Línea separadora
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+        
+        // Información del pie
+        doc.text(`La Despensa - ${tipoDeudores} - ${fechaActual}`, 14, pageHeight - 8);
+        doc.text(`Página ${data.pageNumber}`, pageWidth - 30, pageHeight - 8);
+        
+        if (estadoFilter === 'inactivos') {
+          doc.text("⚠️ Documento de Referencia - Deudores Desactivados", pageWidth / 2, pageHeight - 8, { align: 'center' });
+        }
       }
     });
+
+    // Guardar PDF con nombre descriptivo
+    const timestamp = new Date().toISOString().split('T')[0];
+    const tipoArchivo = estadoFilter === 'inactivos' ? 'Deudores_Inactivos' : 'Deudores_Activos';
+    const nombreArchivo = `LaDespensa_${tipoArchivo}_${timestamp}.pdf`;
     
-    doc.save(`deudores_${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(nombreArchivo);
   };
 
   // 🔧 Obtener el rol del usuario para restricciones
