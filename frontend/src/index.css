@@ -12,7 +12,6 @@ html, body, #root {
     padding: 0;
 }
 
-/* Ajuste para contenido principal en toda la aplicación, excepto en login */
 body:not(.login-page) {
   padding-top: calc(var(--navbar-height) + 20px);
 }
@@ -30,12 +29,10 @@ body:not(.login-page) {
   margin-top: 0;
 }
 
-/* Clase específica para la página de login */
 .login-page {
   padding-top: 0;
 }
 
-/* Estilos optimizados para SweetAlert2 para mejorar rendimiento */
 .swal-optimized-container {
   z-index: 9999;
   will-change: auto !important;
@@ -53,7 +50,6 @@ body:not(.login-page) {
   will-change: auto !important;
 }
 
-/* Optimizaciones para evitar lag con transformaciones y transiciones */
 .swal2-show, .swal2-hide {
   animation: none !important;
   transition: none !important;
@@ -64,7 +60,6 @@ body:not(.login-page) {
   transition: none !important;
 }
 
-/* 🔧 NUEVO: Evitar problemas de accesibilidad con aria-hidden */
 .swal2-container {
   position: fixed !important;
   z-index: 10000 !important;
@@ -78,14 +73,12 @@ body:not(.login-page) {
   justify-content: center !important;
 }
 
-/* Asegurar que el popup tenga foco correcto */
 .swal2-popup {
   outline: none !important;
   max-height: 90vh !important;
   overflow-y: auto !important;
 }
 
-/* Mejorar visibilidad de botones de foco */
 .swal2-confirm:focus,
 .swal2-cancel:focus,
 .swal2-input:focus,

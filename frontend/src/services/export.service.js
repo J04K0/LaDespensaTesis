@@ -85,7 +85,17 @@ export class ExportService {
       
       // Añadir información adicional
       doc.setFontSize(10);
-      const totalTransacciones = ventasSesion.length + deudoresData.length;
+      // 🔧 FIX: Corregir cálculo de transacciones para evitar duplicar ventas a deudores
+      // Las ventas a deudores ya están contadas en ventasSesion, no hay que contarlas otra vez
+      const ventasRegulares = ventasSesion.filter(venta => !venta.deudorId).length;
+      const ventasADeudores = ventasSesion.filter(venta => venta.deudorId).length;
+      
+      // Solo contar los pagos y otros movimientos que NO sean creación de deuda por ventas
+      const movimientosDeudoresSinVentas = deudoresData.filter(movimiento => 
+        !movimiento[1].includes('Aumento de deuda') // Excluir "Aumento de deuda" que corresponden a ventas
+      ).length;
+      
+      const totalTransacciones = ventasRegulares + ventasADeudores + movimientosDeudoresSinVentas;
       doc.text(`Total de transacciones: ${totalTransacciones}`, 14, doc.lastAutoTable.finalY + 30);
       doc.text(`Período del reporte: ${sessionStartTime.toLocaleString('es-ES')} - ${new Date().toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 40);
       
@@ -1209,7 +1219,7 @@ export class ExportService {
           ["Total de Deudores", deudores.length.toString()],
           ["Deudores con Deuda", deudoresConDeuda.length.toString()],
           ["Deuda Total", `$${formatNumberWithDots(deudaTotal)}`],
-          ["Deuda Promedio", `$${formatNumberWithDots(deudaTotal/deudores.length)}`]
+          ["Deuda Promedio", `$${formatNumberWithDots(Math.round(deudaTotal/deudores.length))}`]
         ];
 
         autoTable(doc, {

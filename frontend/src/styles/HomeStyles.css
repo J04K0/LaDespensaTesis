@@ -347,7 +347,7 @@
 .home-stats-download-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
-  background-color: #c82333; /* Color hover más oscuro */
+  background-color: #c82333 !important; /* Color hover más oscuro */
 }
 
 .home-stats-nav-button:hover, .home-stats-download-button:hover {
