@@ -85,9 +85,9 @@ export const productSchema = Joi.object({
   image: Joi.string().optional().allow(null).messages({
     "string.base": "El archivo debe ser de tipo string.",
   }),
-  motivo: Joi.string().min(10).max(500).optional().messages({
+  motivo: Joi.string().min(10).max(50).optional().messages({
     'string.min': 'El motivo debe tener al menos 10 caracteres',
-    'string.max': 'El motivo no puede exceder los 500 caracteres',
+    'string.max': 'El motivo no puede exceder los 50 caracteres',
     'string.base': 'El motivo debe ser texto'
   }),
   tipoMovimiento: Joi.string().valid('ajuste_manual', 'venta', 'devolucion', 'perdida', 'entrada_inicial', 'correccion').optional().messages({

@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { getProducts } from '../services/AddProducts.service.js';
 import { getDeudores } from '../services/deudores.service.js';
-import { obtenerVentasPorTicket } from '../services/venta.service.js';
-import axios from '../services/root.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxes, faUsers, faShoppingCart, faMoneyBillWave, faArrowRight, faArrowLeft, faPlus, faEye, faCalendarAlt, faChartLine, faExclamationTriangle, faUser, faStar, faChartPie, faSpinner, faFilePdf, faDownload, faFileExport } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faArrowLeft,faCalendarAlt, faChartLine, faExclamationTriangle, faUser, faStar, faChartPie, faSpinner, faFilePdf, faDownload, faFileExport } from '@fortawesome/free-solid-svg-icons';
 import '../styles/HomeStyles.css';
 import DeudoresTableSkeleton from '../components/Skeleton/DeudoresTableSkeleton';
 import ChartSkeleton from '../components/Skeleton/ChartSkeleton';
@@ -63,11 +60,24 @@ const Home = () => {
   const chartRef = useRef(null);
 
   // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
-  const { ventasGlobales, loading: ventasLoading, error: ventasError } = useVentas();
+  const { ventasGlobales, loading: ventasLoading, error: ventasError, initialLoadComplete } = useVentas();
   const { userRole: role } = useRole();
 
-  // 🔧 FIX: Calcular loading basado en si tenemos datos y el estado del contexto
-  const isDataLoading = ventasLoading || (!ventasGlobales && !ventasError);
+  // 🔧 FIX: Mejorar la lógica de loading para una experiencia más fluida
+  const isDataLoading = useMemo(() => {
+    // Si es la primera carga y aún no se ha completado
+    if (!initialLoadComplete && ventasLoading) {
+      return true;
+    }
+    
+    // Si hay un error y no tenemos datos
+    if (ventasError && !ventasGlobales) {
+      return false;
+    }
+    
+    // Si ya completamos la carga inicial, mostrar los datos aunque estén vacíos
+    return !initialLoadComplete;
+  }, [ventasLoading, ventasGlobales, ventasError, initialLoadComplete]);
 
   // 🔧 FIX: Usar useCallback para evitar recreaciones innecesarias
   const filtrarVentasPorPeriodo = useCallback((ventas) => {

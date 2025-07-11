@@ -18,6 +18,7 @@ export const VentasProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [lastFetch, setLastFetch] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     const fetchVentas = async () => {
@@ -27,9 +28,14 @@ export const VentasProvider = ({ children }) => {
         
         if (!user || !token) {
           setLoading(false);
+          setInitialLoadComplete(true);
           return;
         }
-        setLoading(true);
+        
+        // 🔧 FIX: Solo mostrar loading en la carga inicial
+        if (!initialLoadComplete) {
+          setLoading(true);
+        }
         setError(null);
         
         const response = await obtenerVentasPorTicket();
@@ -38,6 +44,10 @@ export const VentasProvider = ({ children }) => {
         setVentasGlobales(ventas);
         setLastFetch(new Date());
         setRetryCount(0);
+        setInitialLoadComplete(true);
+        
+        // 🔧 FIX: Establecer loading a false inmediatamente después de cargar los datos
+        setLoading(false);
       } catch (err) {
         console.error('❌ Error al cargar ventas globales:', err);
         
@@ -55,7 +65,7 @@ export const VentasProvider = ({ children }) => {
         
         setError('Error al cargar los datos de ventas');
         setVentasGlobales([]);
-      } finally {
+        setInitialLoadComplete(true);
         setLoading(false);
       }
     };
@@ -217,7 +227,12 @@ export const VentasProvider = ({ children }) => {
   }, [ventasGlobales]);
 
   const refreshVentas = async () => {
-    setLoading(true);
+    // 🔧 FIX: No mostrar loading global al refrescar, solo un indicador local si es necesario
+    const wasLoading = loading;
+    if (!wasLoading) {
+      setLoading(true);
+    }
+    
     try {
       const response = await obtenerVentasPorTicket();
       const ventas = response.data || [];
@@ -239,6 +254,7 @@ export const VentasProvider = ({ children }) => {
     loading,
     error,
     lastFetch,
+    initialLoadComplete,
     
     getVentasProducto,
     getVentasByDateRange,
