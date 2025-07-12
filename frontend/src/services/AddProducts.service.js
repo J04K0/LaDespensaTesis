@@ -2,8 +2,26 @@ import axios from './root.service.js';
 
 export const addProducts = async (formData) => {
     try {
-        // Crear un nuevo FormData para mapear los campos
+        // 🔧 MEJORADO: Crear un nuevo FormData completamente limpio para evitar corrupción
         const mappedFormData = new FormData();
+        
+        // 🆕 NUEVO: Validar que el FormData original no esté corrupto
+        if (!formData || typeof formData.entries !== 'function') {
+            throw new Error('FormData inválido o corrupto');
+        }
+        
+        // 🆕 NUEVO: Log para debugging
+        console.log('🔍 Procesando FormData original...');
+        let originalEntries = [];
+        try {
+            for (let [key, value] of formData.entries()) {
+                originalEntries.push([key, value]);
+                console.log(`  - ${key}:`, typeof value, value instanceof File ? `File(${value.name})` : value);
+            }
+        } catch (entriesError) {
+            console.error('❌ Error al leer entradas del FormData:', entriesError);
+            throw new Error('Error al procesar los datos del formulario');
+        }
         
         // Mapear los nombres de campos con prefijo al formato esperado por el backend
         if (formData.has('addproducts-nombre')) mappedFormData.append('Nombre', formData.get('addproducts-nombre'));
@@ -15,19 +33,118 @@ export const addProducts = async (formData) => {
         if (formData.has('addproducts-fecha-vencimiento')) mappedFormData.append('fechaVencimiento', formData.get('addproducts-fecha-vencimiento'));
         if (formData.has('addproducts-precio-venta')) mappedFormData.append('PrecioVenta', formData.get('addproducts-precio-venta'));
         
-        // Conservar la imagen si existe
-        if (formData.has('image')) mappedFormData.append('image', formData.get('image'));
-        if (formData.has('imageUrl')) mappedFormData.append('imageUrl', formData.get('imageUrl'));
+        // 🔧 MEJORADO: Manejo más robusto de la imagen con recreación del archivo
+        const imageFile = formData.get('image');
+        const imageUrl = formData.get('imageUrl');
         
+        if (imageFile && imageFile instanceof File) {
+            // 🆕 NUEVO: Validaciones más estrictas del archivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            // Verificar que el archivo no esté corrupto
+            if (!imageFile.name || imageFile.size === 0) {
+                throw new Error('Archivo de imagen corrupto o vacío');
+            }
+            
+            if (!allowedTypes.includes(imageFile.type)) {
+                throw new Error('Formato de imagen no válido. Solo se permiten JPG, PNG y WebP');
+            }
+            
+            if (imageFile.size > maxSize) {
+                throw new Error('La imagen no puede exceder 5MB');
+            }
+            
+            // 🆕 CRÍTICO: Crear una nueva instancia completamente independiente del archivo
+            try {
+                // Leer el archivo como ArrayBuffer para crear una copia completamente nueva
+                const arrayBuffer = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Error al leer el archivo de imagen'));
+                    reader.readAsArrayBuffer(imageFile);
+                });
+                
+                // Crear un nuevo Blob y luego un nuevo File completamente independiente
+                const newBlob = new Blob([arrayBuffer], { type: imageFile.type });
+                const newImageFile = new File([newBlob], imageFile.name, {
+                    type: imageFile.type,
+                    lastModified: Date.now() // Usar timestamp actual para evitar conflictos
+                });
+                
+                // Verificar que el nuevo archivo se creó correctamente
+                if (newImageFile.size !== imageFile.size) {
+                    console.warn('⚠️ Tamaño del archivo cambió durante la recreación');
+                }
+                
+                mappedFormData.append('image', newImageFile);
+                console.log('🖼️ Imagen recreada exitosamente:', {
+                    originalName: imageFile.name,
+                    newName: newImageFile.name,
+                    originalSize: imageFile.size,
+                    newSize: newImageFile.size,
+                    type: newImageFile.type
+                });
+            } catch (fileProcessingError) {
+                console.error('❌ Error al procesar archivo de imagen:', fileProcessingError);
+                throw new Error('Error al procesar la imagen. Por favor, seleccione la imagen nuevamente.');
+            }
+        } else if (imageUrl && typeof imageUrl === 'string') {
+            mappedFormData.append('imageUrl', imageUrl);
+            console.log('🔗 URL de imagen agregada:', imageUrl);
+        }
+        
+        // 🆕 NUEVO: Verificar que el FormData final no esté vacío
+        let finalEntries = [];
+        for (let [key, value] of mappedFormData.entries()) {
+            finalEntries.push([key, value]);
+        }
+        
+        if (finalEntries.length === 0) {
+            throw new Error('No se pudieron procesar los datos del formulario');
+        }
+        
+        console.log('✅ FormData final procesado con', finalEntries.length, 'campos');
+        
+        // 🔧 MEJORADO: Configuración más robusta para el request
         const config = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            timeout: 30000, // 30 segundos de timeout
+            maxContentLength: 10 * 1024 * 1024, // 10MB máximo
+            maxBodyLength: 10 * 1024 * 1024, // 10MB máximo
+            // 🆕 NUEVO: Configuraciones adicionales para evitar problemas de red
+            validateStatus: function (status) {
+                return status < 500; // Considerar válidos todos los status codes menores a 500
+            },
+            maxRedirects: 0, // Evitar redirecciones que puedan corromper el FormData
         };
+        
+        console.log('📤 Enviando producto al servidor...');
         const response = await axios.post('/products/agregar', mappedFormData, config);
+        console.log('✅ Producto creado exitosamente');
         return response;
     } catch (error) {
-        console.error('Error al añadir el producto:', error);
+        console.error('❌ Error al añadir el producto:', error);
+        
+        // 🔧 MEJORADO: Manejo de errores más específico y detallado
+        if (error.code === 'ERR_UPLOAD_FILE_CHANGED') {
+            throw new Error('Error al procesar la imagen. La imagen se modificó durante el envío. Por favor, seleccione la imagen nuevamente y vuelva a intentar.');
+        } else if (error.code === 'ECONNABORTED') {
+            throw new Error('La operación tardó demasiado tiempo. Verifique su conexión e intente nuevamente.');
+        } else if (error.code === 'ERR_NETWORK') {
+            throw new Error('Error de conexión. Verifique su conexión a internet y que el servidor esté disponible.');
+        } else if (error.message && error.message.includes('imagen')) {
+            throw error; // Mantener errores de validación de imagen
+        } else if (error.message && error.message.includes('archivo')) {
+            throw error; // Mantener errores de validación de archivo
+        } else if (error.response) {
+            // Error del servidor con respuesta
+            const serverMessage = error.response.data?.message || error.response.data?.error || 'Error del servidor';
+            throw new Error(serverMessage);
+        }
+        
         throw error;
     }
 };

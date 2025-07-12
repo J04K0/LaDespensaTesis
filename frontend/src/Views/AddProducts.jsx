@@ -345,18 +345,53 @@ const AddProducts = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 🔧 MEJORADO: Función para manejar cambio de imagen con validación robusta
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    setImage(file);
     
-    if (file) {
+    // Limpiar imagen anterior
+    setImage(null);
+    setImagePreview(null);
+    
+    if (!file) {
+      return;
+    }
+    
+    // Validaciones del archivo
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    
+    if (!allowedTypes.includes(file.type)) {
+      showErrorAlert('Formato no válido', 'Solo se permiten archivos JPG, PNG y WebP');
+      return;
+    }
+    
+    if (file.size > maxSize) {
+      showErrorAlert('Archivo muy grande', 'La imagen no puede exceder 5MB');
+      return;
+    }
+    
+    // Crear una copia inmutable del archivo para evitar cambios
+    const fileClone = new File([file], file.name, {
+      type: file.type,
+      lastModified: file.lastModified
+    });
+    
+    setImage(fileClone);
+    
+    // Crear preview
+    if (fileClone) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
+      reader.onerror = () => {
+        console.error('Error al leer el archivo');
+        setImage(null);
+        setImagePreview(null);
+        showErrorAlert('Error', 'No se pudo procesar la imagen seleccionada');
+      };
+      reader.readAsDataURL(fileClone);
     }
   };
 
@@ -470,8 +505,14 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 NUEVO: Función para manejar nuevo producto
+  // 🔧 MEJORADO: Función para manejar nuevo producto con mejor manejo de errores
   const handleNewProductSubmit = async () => {
+    console.log('🔍 INICIANDO handleNewProductSubmit...');
+    console.log('📋 Estado actual del formulario:', formData);
+    
+    // Limpiar errores previos
+    clearFormOnError();
+    
     const result = await showConfirmationAlert(
       "¿Estás seguro?",
       "¿Deseas crear este nuevo producto en el inventario?",
@@ -479,37 +520,207 @@ const AddProducts = () => {
       "No, cancelar"
     );
 
-    if (!result.isConfirmed) return;
-
-    if (formData['addproducts-categoria'] === '') {
-      showErrorAlert('Error', 'Por favor, seleccione una categoría válida.');
+    if (!result.isConfirmed) {
+      console.log('❌ Usuario canceló la operación');
       return;
     }
+
+    console.log('✅ Usuario confirmó, procediendo con validaciones...');
+
+    // Validación adicional del frontend
+    if (!formData['addproducts-nombre'] || formData['addproducts-nombre'].trim().length < 2) {
+      const errorMsg = 'El nombre del producto debe tener al menos 2 caracteres';
+      console.log('❌ Error de validación - Nombre:', errorMsg);
+      setError(errorMsg);
+      showErrorAlert('Error de validación', errorMsg);
+      return;
+    }
+
+    if (!formData['addproducts-marca'] || formData['addproducts-marca'].trim().length < 2) {
+      const errorMsg = 'La marca del producto debe tener al menos 2 caracteres';
+      console.log('❌ Error de validación - Marca:', errorMsg);
+      setError(errorMsg);
+      showErrorAlert('Error de validación', errorMsg);
+      return;
+    }
+
+    if (!formData['addproducts-codigo-barras'] || !/^\d{8,20}$/.test(formData['addproducts-codigo-barras'])) {
+      const errorMsg = 'El código de barras debe contener solo números y 13 digitos';
+      console.log('❌ Error de validación - Código de barras:', {
+        valor: formData['addproducts-codigo-barras'],
+        longitud: formData['addproducts-codigo-barras']?.length,
+        esNumero: /^\d+$/.test(formData['addproducts-codigo-barras'] || ''),
+        regex: /^\d{8,20}$/.test(formData['addproducts-codigo-barras'] || '')
+      });
+      setError(errorMsg);
+      showErrorAlert('Error de validación', errorMsg);
+      return;
+    }
+
+    if (formData['addproducts-categoria'] === '') {
+      const errorMsg = 'Por favor, seleccione una categoría válida';
+      console.log('❌ Error de validación - Categoría:', errorMsg);
+      setError(errorMsg);
+      showErrorAlert('Error de validación', errorMsg);
+      return;
+    }
+
+    console.log('✅ Todas las validaciones frontend pasaron, enviando al servidor...');
 
     setLoading(true);
     setError(null);
 
-    const productFormData = new FormData();
-    for (const key in formData) {
-      productFormData.append(key, formData[key]);
-    }
-
-    if (image instanceof File) {
-      productFormData.append('image', image);
-    } else if (imagePreview && typeof imagePreview === 'string' && imagePreview.startsWith('http')) {
-      productFormData.append('imageUrl', imagePreview);
-    }
-
     try {
-      await addProducts(productFormData);
+      // 🆕 CRÍTICO: Crear un FormData completamente nuevo para cada intento
+      const productFormData = new FormData();
+      
+      // 🆕 NUEVO: Validar y limpiar los datos antes de agregarlos
+      const cleanedData = {};
+      Object.keys(formData).forEach(key => {
+        const value = formData[key];
+        if (value !== null && value !== undefined && value !== '') {
+          cleanedData[key] = typeof value === 'string' ? value.trim() : value;
+        }
+      });
+      
+      // Asegurar que todos los campos se envíen correctamente
+      Object.keys(cleanedData).forEach(key => {
+        productFormData.append(key, cleanedData[key]);
+        console.log(`📝 Agregando campo: ${key} = ${cleanedData[key]}`);
+      });
+
+      // 🆕 CRÍTICO: Manejo mejorado de la imagen para evitar corrupción
+      if (image instanceof File) {
+        // Verificar que la imagen sigue siendo válida
+        if (!image.name || image.size === 0) {
+          throw new Error('La imagen seleccionada está corrupta. Por favor, seleccione la imagen nuevamente.');
+        }
+        
+        // Crear una nueva referencia del archivo para evitar modificaciones
+        const imageClone = new File([image], image.name, {
+          type: image.type,
+          lastModified: image.lastModified
+        });
+        
+        productFormData.append('image', imageClone);
+        console.log('🖼️ Imagen agregada al FormData:', {
+          name: imageClone.name,
+          size: imageClone.size,
+          type: imageClone.type
+        });
+      } else if (imagePreview && typeof imagePreview === 'string' && imagePreview.startsWith('http')) {
+        productFormData.append('imageUrl', imagePreview);
+        console.log('🔗 URL de imagen agregada al FormData:', imagePreview);
+      }
+
+      // 🆕 NUEVO: Verificar que el FormData tiene contenido antes de enviar
+      let formDataEntries = 0;
+      for (let [key, value] of productFormData.entries()) {
+        formDataEntries++;
+        console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
+      }
+      
+      if (formDataEntries === 0) {
+        throw new Error('No se pudieron preparar los datos para enviar. Por favor, verifique que todos los campos estén completados.');
+      }
+
+      console.log(`📤 Enviando ${formDataEntries} campos al servidor...`);
+      const response = await addProducts(productFormData);
+      console.log('✅ Respuesta exitosa del servidor:', response);
+      
       showSuccessAlert('Éxito', 'Producto creado correctamente en el inventario');
       navigate('/products');
     } catch (error) {
-      console.error('Error al crear el producto', error);
-      setError('Ocurrió un error al intentar crear el producto.');
-      showErrorAlert('Error', 'No se pudo crear el producto. Intente nuevamente.');
+      console.error('❌ Error completo al crear el producto:', error);
+      console.error('❌ Error object keys:', Object.keys(error));
+      console.error('❌ Error response:', error.response);
+      console.error('❌ Error request:', error.request);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      
+      if (error.response) {
+        console.error('📋 Response details:');
+        console.error('  - Status:', error.response.status);
+        console.error('  - Status Text:', error.response.statusText);
+        console.error('  - Headers:', error.response.headers);
+        console.error('  - Data:', error.response.data);
+        console.error('  - Config:', error.response.config);
+      }
+      
+      let errorMessage = 'Ocurrió un error al intentar crear el producto.';
+      
+      // 🆕 MEJORADO: Manejo de errores más específico
+      if (error.message && error.message.includes('imagen se modificó durante el envío')) {
+        errorMessage = error.message;
+        // Limpiar la imagen para forzar una nueva selección
+        setImage(null);
+        setImagePreview(null);
+        console.log('🧹 Imagen limpiada debido a corrupción');
+      } else if (error.message && error.message.includes('imagen corrupta')) {
+        errorMessage = error.message;
+        // Limpiar la imagen para forzar una nueva selección
+        setImage(null);
+        setImagePreview(null);
+        console.log('🧹 Imagen limpiada debido a corrupción');
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        console.log('🎯 Usando mensaje específico del servidor:', errorMessage);
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+        console.log('🎯 Usando error específico del servidor:', errorMessage);
+      } else if (error.message) {
+        errorMessage = error.message.startsWith('Error:') ? error.message : `Error: ${error.message}`;
+        console.log('🎯 Usando mensaje de error genérico:', errorMessage);
+      }
+      
+      console.log('🔍 Mensaje de error final que se mostrará:', errorMessage);
+      setError(errorMessage);
+      showErrorAlert('Error al crear producto', errorMessage);
     } finally {
       setLoading(false);
+      console.log('🏁 Finalizando handleNewProductSubmit');
+    }
+  };
+
+  // 🆕 MEJORADO: Función para limpiar completamente el estado en caso de error
+  const clearFormOnError = () => {
+    console.log('🧹 Limpiando estado de errores...');
+    setError(null);
+    setLoading(false);
+    
+    // 🆕 NUEVO: Verificar y limpiar estados corruptos
+    try {
+      // Verificar que la imagen sigue siendo válida si existe
+      if (image instanceof File) {
+        if (!image.name || image.size === 0) {
+          console.log('⚠️ Imagen corrupta detectada, limpiando...');
+          setImage(null);
+          setImagePreview(null);
+        }
+      }
+      
+      // Limpiar cualquier estado de validación HTML5 que pueda estar interfiriendo
+      const form = document.querySelector('.addproducts-form');
+      if (form) {
+        // Resetear validación HTML5
+        console.log('🔄 Reseteando validación HTML5...');
+        form.noValidate = true;
+        setTimeout(() => {
+          form.noValidate = false;
+        }, 100);
+      }
+      
+      // 🆕 NUEVO: Forzar limpieza de caché de red si es necesario
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.update();
+          }
+        });
+      }
+      
+    } catch (cleanupError) {
+      console.error('❌ Error durante limpieza:', cleanupError);
     }
   };
 

@@ -77,10 +77,11 @@ export const productSchema = Joi.object({
     'number.base': 'El precio antiguo debe ser un número',
     'number.min': 'El precio antiguo no puede ser negativo',
   }),
-  codigoBarras: Joi.string().min(8).max(20).required().messages({
+  codigoBarras: Joi.string().min(13).max(13).pattern(/^\d+$/).required().messages({
     'string.empty': 'El código de barras del producto es obligatorio',
-    'string.min': 'El código de barras debe tener al menos 8 caracteres',
-    'string.max': 'El código de barras no puede exceder los 20 caracteres'
+    'string.min': 'El código de barras debe tener 13 caracteres',
+    'string.max': 'El código de barras debe tener 13 caracteres',
+    'string.pattern.base': 'El código de barras debe contener solo números'
   }),
   image: Joi.string().optional().allow(null).messages({
     "string.base": "El archivo debe ser de tipo string.",

@@ -797,6 +797,7 @@ body {
   margin: 0 0 20px 0;
   color: var(--primary-dark);
   text-align: center;
+  font-size: 20px;
 }
 
 .productscanner-modal-body {
@@ -818,34 +819,52 @@ body {
   font-size: 14px;
 }
 
-.productscanner-modal-field input {
-  padding: 8px 12px;
+.productscanner-modal-field input,
+.productscanner-modal-field select {
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   font-size: 14px;
   transition: border-color 0.3s;
 }
 
-.productscanner-modal-field input:focus {
+.productscanner-modal-field input:focus,
+.productscanner-modal-field select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.2);
+  box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.1);
 }
 
-.productscanner-modal-field input:disabled {
+.productscanner-modal-field input:disabled,
+.productscanner-modal-field select:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
 }
 
+/* Estilos para campos obligatorios */
 .required-field {
   color: var(--danger);
   font-weight: bold;
+}
+
+.productscanner-modal-field input:invalid {
+  border-color: var(--danger);
+}
+
+.productscanner-category-select {
+  background-color: white;
+  cursor: pointer;
+}
+
+.productscanner-category-select:disabled {
+  cursor: not-allowed;
 }
 
 .productscanner-modal-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .productscanner-modal-save-btn {
@@ -860,6 +879,8 @@ body {
   align-items: center;
   gap: 8px;
   transition: background-color 0.3s;
+  min-width: 140px;
+  justify-content: center;
 }
 
 .productscanner-modal-save-btn:hover:not(:disabled) {
@@ -899,6 +920,7 @@ body {
   .productscanner-modal-content {
     width: 95%;
     padding: 15px;
+    max-height: 95vh;
   }
   
   .productscanner-modal-actions {
@@ -909,6 +931,16 @@ body {
   .productscanner-modal-cancel-btn {
     width: 100%;
     justify-content: center;
+  }
+  
+  .productscanner-modal-body {
+    gap: 12px;
+  }
+  
+  .productscanner-modal-field input,
+  .productscanner-modal-field select {
+    padding: 12px;
+    font-size: 16px; /* Evitar zoom en iOS */
   }
 }
 

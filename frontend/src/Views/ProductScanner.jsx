@@ -12,7 +12,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, faCheck, faSearch, 
   faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-// 🆕 Importar categorías de productos
 import { CATEGORIAS } from '../constants/products.constants.js';
 
 const ProductScanner = () => {
@@ -32,7 +31,6 @@ const ProductScanner = () => {
   const [selectedDeudorId, setSelectedDeudorId] = useState("");
   const [isDeudor, setIsDeudor] = useState(false);
   const [loadingDeudores, setLoadingDeudores] = useState(false);
-  // 🆕 Estados para modal de creación rápida de producto
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [newProductData, setNewProductData] = useState({
     nombre: '',
@@ -163,7 +161,6 @@ const ProductScanner = () => {
         const errorMessage = error.response.data && error.response.data.message;
         
         if (statusCode === 404) {
-          // 🆕 CAMBIO: Mostrar alerta primero, luego modal si confirma
           showProductNotFoundAlert(codigoEscaneado).then((result) => {
             if (result.isConfirmed) {
               // Usuario confirmó que quiere crear el producto, abrir modal
@@ -523,26 +520,88 @@ const ProductScanner = () => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
-  // 🆕 Función para manejar la creación rápida de productos
   const handleCreateProduct = async () => {
     // Validar datos del nuevo producto
     const { nombre, marca, categoria, stock, precioCompra, precioVenta, fechaVencimiento, codigoBarras } = newProductData;
     
-    if (!nombre || !marca || !categoria || !codigoBarras) {
-      return showWarningAlert("Faltan datos", "Por favor, complete todos los campos obligatorios.");
+    const errores = [];
+    
+    // Validaciones obligatorias
+    if (!nombre || nombre.trim().length < 2) {
+      errores.push('El nombre debe tener al menos 2 caracteres');
+    }
+    
+    if (!marca || marca.trim().length < 2) {
+      errores.push('La marca debe tener al menos 2 caracteres');
+    }
+    
+    if (!categoria) {
+      errores.push('Debe seleccionar una categoría');
+    }
+    
+    if (!codigoBarras || codigoBarras.trim().length !== 13) {
+      errores.push('El código de barras debe tener exactamente 13 caracteres');
+    }
+    
+    // Validaciones numéricas
+    const stockNum = parseInt(stock);
+    if (!stock || isNaN(stockNum) || stockNum < 0) {
+      errores.push('El stock debe ser un número mayor o igual a 0');
+    }
+    
+    const precioCompraNum = parseFloat(precioCompra);
+    if (!precioCompra || isNaN(precioCompraNum) || precioCompraNum <= 0) {
+      errores.push('El precio de compra debe ser un número mayor a 0');
+    }
+    
+    const precioVentaNum = parseFloat(precioVenta);
+    if (!precioVenta || isNaN(precioVentaNum) || precioVentaNum <= 0) {
+      errores.push('El precio de venta debe ser un número mayor a 0');
+    }
+    
+    // Validar que precio de venta sea mayor o igual al precio de compra
+    if (precioVentaNum > 0 && precioCompraNum > 0 && precioVentaNum < precioCompraNum) {
+      errores.push('El precio de venta debe ser mayor o igual al precio de compra');
+    }
+    
+    // Validar fecha de vencimiento (debe ser futura)
+    if (!fechaVencimiento) {
+      errores.push('La fecha de vencimiento es obligatoria');
+    } else {
+      const fechaVencimientoDate = new Date(fechaVencimiento);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0); // Establecer a medianoche para comparar solo fechas
+      
+      if (fechaVencimientoDate <= hoy) {
+        errores.push('La fecha de vencimiento debe ser posterior a hoy');
+      }
+    }
+    
+    // Si hay errores, mostrarlos
+    if (errores.length > 0) {
+      return showErrorAlert(
+        "Errores en el formulario", 
+        `Por favor, corrija los siguientes errores:\n\n• ${errores.join('\n• ')}`
+      );
     }
     
     // Confirmar creación del producto
     const result = await Swal.fire({
       title: 'Confirmar creación de producto',
-      text: `¿Desea crear el producto "${nombre}" con los siguientes datos?\n\n` + 
-            `Marca: ${marca}\n` +
-            `Categoría: ${categoria}\n` +
-            `Código de barras: ${codigoBarras}\n` +
-            `Stock: ${stock}\n` +
-            `Precio de compra: $${precioCompra}\n` +
-            `Precio de venta: $${precioVenta}\n` +
-            `Fecha de vencimiento: ${fechaVencimiento ? new Date(fechaVencimiento).toLocaleDateString() : 'N/A'}`,
+      html: `
+        <div style="text-align: left; margin: 20px 0;">
+          <p><strong>¿Desea crear el producto "${nombre}" con los siguientes datos?</strong></p>
+          <ul style="list-style: none; padding: 0; margin-top: 15px;">
+            <li><strong>Marca:</strong> ${marca}</li>
+            <li><strong>Categoría:</strong> ${categoria}</li>
+            <li><strong>Código de barras:</strong> ${codigoBarras}</li>
+            <li><strong>Stock inicial:</strong> ${stockNum} unidades</li>
+            <li><strong>Precio de compra:</strong> $${formatNumberWithDots(precioCompraNum)}</li>
+            <li><strong>Precio de venta:</strong> $${formatNumberWithDots(precioVentaNum)}</li>
+            <li><strong>Fecha de vencimiento:</strong> ${new Date(fechaVencimiento).toLocaleDateString('es-ES')}</li>
+          </ul>
+        </div>
+      `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, crear producto',
@@ -564,20 +623,19 @@ const ProductScanner = () => {
     try {
       // 🔧 CAMBIO: Usar FormData con el formato correcto del servicio addProducts
       const formData = new FormData();
-      formData.append('addproducts-nombre', nombre);
-      formData.append('addproducts-marca', marca);
+      formData.append('addproducts-nombre', nombre.trim());
+      formData.append('addproducts-marca', marca.trim());
       formData.append('addproducts-categoria', categoria);
-      formData.append('addproducts-codigo-barras', codigoBarras);
-      formData.append('addproducts-stock', parseInt(stock) || 0);
-      formData.append('addproducts-precio-compra', parseFloat(precioCompra) || 0);
-      formData.append('addproducts-precio-venta', parseFloat(precioVenta) || 0);
+      formData.append('addproducts-codigo-barras', codigoBarras.trim());
+      formData.append('addproducts-stock', stockNum.toString());
+      formData.append('addproducts-precio-compra', precioCompraNum.toString());
+      formData.append('addproducts-precio-venta', precioVentaNum.toString());
+      formData.append('addproducts-fecha-vencimiento', fechaVencimiento);
       
-      if (fechaVencimiento) {
-        formData.append('addproducts-fecha-vencimiento', fechaVencimiento);
-      }
-      
-      // 🔧 CORRECCIÓN: Usar el servicio addProducts en lugar de fetch directo
-      await addProducts(formData);
+      // 🔧 CORRECCIÓN: Usar el servicio addProducts con mejor manejo de errores
+      console.log('📤 Enviando producto al servidor:', Object.fromEntries(formData));
+      const response = await addProducts(formData);
+      console.log('✅ Respuesta del servidor:', response);
       
       showSuccessAlert('Producto creado', 'El producto ha sido creado exitosamente y ya puede ser escaneado.');
       
@@ -605,8 +663,42 @@ const ProductScanner = () => {
       }
       
     } catch (error) {
-      console.error('Error al crear producto:', error);
-      showErrorAlert('Error', 'No se pudo crear el producto. Por favor, intente nuevamente.');
+      console.error('❌ Error al crear producto:', error);
+      
+      // Manejo de errores más específico
+      let errorMessage = 'No se pudo crear el producto. Por favor, intente nuevamente.';
+      
+      if (error.response) {
+        const serverMessage = error.response.data?.message;
+        if (serverMessage) {
+          if (serverMessage.includes('código de barras')) {
+            errorMessage = 'Ya existe un producto con este código de barras. Por favor, use un código diferente.';
+          } else if (serverMessage.includes('Producto creado')) {
+            // Si el servidor dice que se creó pero hay error, es un caso especial
+            showSuccessAlert('Producto creado', 'El producto se creó correctamente en el servidor.');
+            setNewProductData({
+              nombre: '',
+              marca: '',
+              categoria: '',
+              stock: '',
+              precioCompra: '',
+              precioVenta: '',
+              fechaVencimiento: '',
+              codigoBarras: ''
+            });
+            setShowCreateProductModal(false);
+            return;
+          } else {
+            errorMessage = `Error del servidor: ${serverMessage}`;
+          }
+        }
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage = 'Error de conexión. Verifique su conexión a internet e intente nuevamente.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      showErrorAlert('Error al crear producto', errorMessage);
     } finally {
       setCreatingProduct(false);
     }
