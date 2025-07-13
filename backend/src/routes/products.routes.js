@@ -50,7 +50,7 @@ router.get('/getbybarcodecreate/:codigoBarras', authorizeRoles([isEmpleado, isAd
 router.get('/historial-precios/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProductPriceHistory);
 router.get('/historial-stock/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getStockHistory);
 router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotesProducto);
-router.get('/proximo-lote/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProximoLoteProducto); // 🆕 Nueva ruta para obtener próximo lote
+router.get('/proximo-lote/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProximoLoteProducto);
 router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
 router.put('/lotes/:id/:loteId', authorizeRoles([isAdmin, isJefe]), editarLoteProducto);
 router.get('/eliminados', authorizeRoles([isAdmin]), getDisabledProducts);
@@ -59,7 +59,6 @@ router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, aut
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), disableProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
 router.post('/actualizar-stock-venta', authorizeRoles([isEmpleado, isAdmin, isJefe]), actualizarStockVenta);
-router.post('/test-reporte-diario', authorizeRoles([isAdmin, isJefe]), sendManualDailyReport);
 router.delete('/eliminar-permanente/:id', authorizeRoles([isAdmin, isJefe]), deleteProductPermanently);
 
 export default router;

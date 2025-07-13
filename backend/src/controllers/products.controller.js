@@ -481,9 +481,6 @@ export const getExpiredProducts = async (req, res) => {
   }
 };
 
-// Terminal de ventas - validaciones estrictas para el flujo de ventas
-// Verifica existencia del producto independientemente del stock,
-// Valida stock específicamente.
 export const scanProducts = async (req, res) => {
   try {
     const { codigoBarras } = req.body;
@@ -728,8 +725,6 @@ export const desactivarProductosSinStock = async () => {
       eliminado: false,
       updatedAt: { $lt: treintaDiasAtras }
     });
-
-    console.log(`📦 Encontrados ${productosSinStock.length} productos sin stock por más de 30 días`);
 
     for (const producto of productosSinStock) {
       try {
