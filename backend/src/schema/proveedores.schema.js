@@ -34,10 +34,17 @@ export const proveedorSchema = Joi.object({
     'any.required': 'El email del proveedor es obligatorio'
   }),
   contactoPrincipal: Joi.string().allow('').optional(),
-  sitioWeb: Joi.string().allow('').uri().optional().messages({
-    'string.uri': 'El sitio web debe tener un formato de URL válido'
+  sitioWeb: Joi.string().min(1).max(100).allow('').uri().optional().messages({
+    'string.uri': 'El sitio web debe tener un formato de URL válido',
+    'string.min': 'El sitio web debe tener al menos 1 carácter',
+    'string.max': 'El sitio web no puede exceder los 100 caracteres',
+    'string.empty': 'El sitio web no puede estar vacío'
   }),
-  direccion: Joi.string().allow('').optional(),
+  direccion: Joi.string().min(2).max(100).allow('').optional().messages({
+    'string.empty': 'La dirección del proveedor no puede estar vacía',
+    'string.min': 'La dirección del proveedor debe tener al menos 2 caracteres',
+    'string.max': 'La dirección del proveedor no puede exceder los 100 caracteres'
+  }),
   categorias: Joi.array()
     .items(Joi.string().valid(...CATEGORIAS_PRODUCTOS))
     .min(1)
@@ -48,7 +55,11 @@ export const proveedorSchema = Joi.object({
       'any.required': 'Debe seleccionar al menos una categoría',
       'array.min': 'Debe seleccionar al menos una categoría'
     }),
-  notas: Joi.string().allow('').optional(),
+  notas: Joi.string().min(1).max(200).allow('').optional().messages({
+    'string.empty': 'Las notas del proveedor no pueden estar vacías',
+    'string.min': 'Las notas del proveedor deben tener al menos 1 carácter',
+    'string.max': 'Las notas del proveedor no pueden exceder los 200 caracteres'
+  }),
   productos: Joi.array().items(Joi.string()).optional(),
   activo: Joi.boolean().optional(),
   createdAt: Joi.date().optional(),
