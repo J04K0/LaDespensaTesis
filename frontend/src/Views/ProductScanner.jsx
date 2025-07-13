@@ -13,9 +13,11 @@ import { faPlus, faMinus, faTrash, faShoppingCart, faBarcode, faMoneyBillAlt, fa
   faExclamationTriangle, faStore, faCreditCard, faUser, faUserPlus, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
 import { CATEGORIAS } from '../constants/products.constants.js';
+import { useRole } from '../hooks/useRole';
 
 const ProductScanner = () => {
   const navigate = useNavigate();
+  const { permissions, isEmpleado } = useRole();
   const [codigoEscaneado, setCodigoEscaneado] = useState("");
   const [productoActual, setProductoActual] = useState(null);
   const [stockPorProducto, setStockPorProducto] = useState({});
@@ -133,6 +135,18 @@ const ProductScanner = () => {
         }
       } else {
         setProductoActual(null);
+        
+        // Verificar si el usuario es empleado y no puede crear productos
+        if (isEmpleado && !permissions.canAddProduct) {
+          showErrorAlert(
+            "Producto no encontrado", 
+            "El código de barras no se encuentra en el sistema. Los empleados no pueden crear nuevos productos. Contacte a un administrador."
+          );
+          setCodigoEscaneado("");
+          setCantidad(1);
+          return;
+        }
+        
         setNewProductData({
           nombre: '',
           marca: '',

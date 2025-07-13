@@ -15,8 +15,10 @@ const CATEGORIAS_CUENTAS_POR_PAGAR = [
 ];
 
 export const cuentaPorPagarSchema = Joi.object({
-  Nombre: Joi.string().required().messages({
+  Nombre: Joi.string().min(2).max(25).required().messages({
     'string.base': 'El nombre debe ser una cadena de texto.',
+    'string.min': 'El nombre debe tener al menos 2 caracteres.',
+    'string.max': 'El nombre no puede exceder los 25 caracteres.',
     'string.empty': 'El nombre no puede estar vacío.',
     'any.required': 'El nombre es un campo requerido.'
   }),

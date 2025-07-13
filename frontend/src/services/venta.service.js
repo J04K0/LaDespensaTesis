@@ -139,9 +139,7 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
       if (motivo.trim().length > 255) {
         throw new Error('El motivo no puede exceder 255 caracteres');
       }
-      
-      console.log('🔍 Motivo validado a enviar:', motivo.trim()); // DEBUG
-      
+            
       const response = await axios.delete(`/ventas/ticket/${encodeURIComponent(ticketId.trim())}`, { 
         data: { motivo: motivo.trim() } 
       });
