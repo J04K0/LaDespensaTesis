@@ -20,32 +20,4 @@ router.use('/proveedores', proveedoresRoutes);
 router.use('/cuentasPorPagar', cuentasPorPagarRoutes);
 router.use('/ventas', ventaRoutes);
 
-// Endpoint temporal para probar notificaciones - ELIMINAR EN PRODUCCIÓN
-router.post('/test-notification', (req, res) => {
-  try {
-    const testProduct = {
-      _id: 'test123',
-      Nombre: 'Producto de Prueba',
-      Stock: 2,
-      Categoria: 'Test'
-    };
-    
-    console.log('🧪 Enviando notificación de prueba...');
-    emitStockBajoAlert(testProduct);
-    
-    res.json({ 
-      success: true, 
-      message: 'Notificación de prueba enviada',
-      product: testProduct
-    });
-  } catch (error) {
-    console.error('Error enviando notificación de prueba:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error enviando notificación de prueba',
-      error: error.message
-    });
-  }
-});
-
 export default router;

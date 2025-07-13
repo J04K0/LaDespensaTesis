@@ -53,8 +53,8 @@ router.get('/lotes/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getLotes
 router.get('/proximo-lote/:id', authorizeRoles([isEmpleado, isAdmin, isJefe]), getProximoLoteProducto);
 router.post('/lotes/:id', authorizeRoles([isAdmin, isJefe]), agregarLoteProducto);
 router.put('/lotes/:id/:loteId', authorizeRoles([isAdmin, isJefe]), editarLoteProducto);
-router.get('/eliminados', authorizeRoles([isAdmin]), getDisabledProducts);
-router.patch('/restaurar/:id', authorizeRoles([isAdmin]), restoreProduct);
+router.get('/eliminados', authorizeRoles([isAdmin, isJefe]), getDisabledProducts);
+router.patch('/restaurar/:id', authorizeRoles([isAdmin, isJefe]), restoreProduct);
 router.patch('/actualizar/:id', upload.single('image'), handleFileSizeLimit, authorizeRoles([isAdmin, isJefe]), updateProduct);
 router.delete('/eliminar/:id', authorizeRoles([isAdmin, isJefe]), disableProduct);
 router.post('/scan', authorizeRoles([isEmpleado, isAdmin, isJefe]), scanProducts);
