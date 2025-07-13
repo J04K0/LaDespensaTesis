@@ -1296,6 +1296,14 @@
   margin-bottom: 20px;
 }
 
+/* New grid layout for 2x2 display */
+.addproducts-lote-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
 .addproducts-lote-item {
   display: flex;
   justify-content: space-between;
@@ -1344,6 +1352,11 @@
   }
   
   .addproducts-lote-details {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Make grid responsive for mobile */
+  .addproducts-lote-details-grid {
     grid-template-columns: 1fr;
   }
   

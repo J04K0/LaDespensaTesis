@@ -76,11 +76,7 @@ const ProductScanner = () => {
     fetchDeudores();
   }, []);
 
-  // Eliminar el reset automático del deudor cuando se selecciona tarjeta
-  // Permitir que la opción de deudor esté siempre disponible independientemente del método de pago
   useEffect(() => {
-    // Este efecto se mantiene vacío para futuras funcionalidades si son necesarias
-    // pero ya no resetea la opción de deudor al cambiar el método de pago
   }, [metodoPago]);
 
   const handleScan = async (e) => {
@@ -137,7 +133,6 @@ const ProductScanner = () => {
         }
       } else {
         setProductoActual(null);
-        // 🆕 CAMBIO: Mostrar modal para crear producto en lugar de redirigir
         setNewProductData({
           nombre: '',
           marca: '',
@@ -146,7 +141,7 @@ const ProductScanner = () => {
           precioCompra: '',
           precioVenta: '',
           fechaVencimiento: '',
-          codigoBarras: codigoEscaneado // Pre-llenar con el código escaneado
+          codigoBarras: codigoEscaneado
         });
         setShowCreateProductModal(true);
       }
@@ -172,14 +167,12 @@ const ProductScanner = () => {
                 precioCompra: '',
                 precioVenta: '',
                 fechaVencimiento: '',
-                codigoBarras: codigoEscaneado // Pre-llenar con el código escaneado
+                codigoBarras: codigoEscaneado
               });
               setShowCreateProductModal(true);
             }
           });
         } else if (statusCode === 400 && errorMessage && errorMessage.includes("stock")) {
-          // Error específico de stock insuficiente - necesitamos obtener el nombre del producto
-          // Primero intentamos obtener la información del producto para mostrar su nombre
           try {
             const productResponse = await fetch(`/api/products/creation/${codigoEscaneado}`);
             if (productResponse.ok) {
@@ -188,7 +181,6 @@ const ProductScanner = () => {
               
               showOutOfStockAlert(codigoEscaneado, productName).then((result) => {
                 if (result.isConfirmed) {
-                  // Navigate to add product page with the barcode pre-filled for stock addition
                   navigate(`/add-product?barcode=${codigoEscaneado}`);
                 }
               });
@@ -246,13 +238,10 @@ const ProductScanner = () => {
     // Verificar si el producto ya existe en el carrito
     const productoEnCarrito = carrito.find((p) => p.codigoBarras === producto.codigoBarras);
     
-    // Calcular stock disponible considerando lo que ya está en el carrito
-    // Si no existe en stockPorProducto, usar el stock del producto escaneado
     const stockDisponible = stockPorProducto[producto.codigoBarras] !== undefined 
       ? stockPorProducto[producto.codigoBarras] 
       : producto.stock || 0;
     
-    // Usar la cantidad personalizada si se proporciona, sino usar la cantidad del estado
     const cantidadAUsar = cantidadPersonalizada || cantidad;
     
     if (stockDisponible < cantidadAUsar) {
@@ -281,8 +270,6 @@ const ProductScanner = () => {
     
     setCarrito(nuevoCarrito);
     
-    // Actualizar el stock disponible restando la cantidad agregada
-    // Si es la primera vez que agregamos este producto, inicializar con su stock real
     setStockPorProducto(prevStock => ({
       ...prevStock,
       [producto.codigoBarras]: stockDisponible - cantidadAUsar
@@ -348,10 +335,9 @@ const ProductScanner = () => {
     setError(null);
     setMontoEntregado(""); 
     setErrorMonto("");
-    // Resetear estados relacionados con deudores
     setIsDeudor(false);
     setSelectedDeudorId("");
-    setMetodoPago("efectivo"); // Resetear método de pago a efectivo por defecto
+    setMetodoPago("efectivo");
   };
 
   const finalizarVenta = async () => {
@@ -372,7 +358,6 @@ const ProductScanner = () => {
       // Determinar si se debe enviar un ID de deudor
       const deudorIdToSend = isDeudor && selectedDeudorId ? selectedDeudorId : null;
       
-      // 🆕 SIMPLIFICADO: Solo registrar la venta (que ahora incluye automáticamente la actualización del stock)
       const response = await registrarVenta(carrito, metodoPago, deudorIdToSend);
       
       // Verificar si hay productos vencidos vendidos en la respuesta
@@ -621,7 +606,6 @@ const ProductScanner = () => {
     setCreatingProduct(true);
     
     try {
-      // 🔧 CAMBIO: Usar FormData con el formato correcto del servicio addProducts
       const formData = new FormData();
       formData.append('addproducts-nombre', nombre.trim());
       formData.append('addproducts-marca', marca.trim());
@@ -632,7 +616,6 @@ const ProductScanner = () => {
       formData.append('addproducts-precio-venta', precioVentaNum.toString());
       formData.append('addproducts-fecha-vencimiento', fechaVencimiento);
       
-      // 🔧 CORRECCIÓN: Usar el servicio addProducts con mejor manejo de errores
       console.log('📤 Enviando producto al servidor:', Object.fromEntries(formData));
       const response = await addProducts(formData);
       console.log('✅ Respuesta del servidor:', response);
@@ -842,7 +825,6 @@ const ProductScanner = () => {
                               checked={isDeudor}
                               onChange={(e) => {
                                 setIsDeudor(e.target.checked);
-                                // Si marca como deudor, establecer método de pago a efectivo por defecto
                                 if (e.target.checked) {
                                   setMetodoPago("efectivo");
                                 }
@@ -904,7 +886,6 @@ const ProductScanner = () => {
                           </div>
                         )}
 
-                        {/* Mostrar selector de método de pago solo si NO es deudor */}
                         {!isDeudor && (
                           <div className="productscanner-payment-method">
                             <label>Método de pago:</label>
@@ -978,7 +959,6 @@ const ProductScanner = () => {
         )}
       </div>
       
-      {/* 🆕 Modal para creación rápida de productos */}
       {showCreateProductModal && (
         <div className="productscanner-create-product-modal">
           <div className="productscanner-modal-content">

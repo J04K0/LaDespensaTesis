@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import mongoose from 'mongoose';
+import { CATEGORIAS_PRODUCTOS } from '../constants/products.constants.js';
 
 const objectIdValidator = (value, helpers) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -9,8 +10,10 @@ const objectIdValidator = (value, helpers) => {
 };
 
 export const proveedorSchema = Joi.object({
-  nombre: Joi.string().required().messages({
+  nombre: Joi.string().min(2).max(20).required().messages({
     'string.empty': 'El nombre del proveedor es obligatorio',
+    'string.min': 'El nombre del proveedor debe tener al menos 2 caracteres',
+    'string.max': 'El nombre del proveedor no puede exceder los 20 caracteres',
     'any.required': 'El nombre del proveedor es obligatorio'
   }),
   telefono: Joi.string()
@@ -25,7 +28,7 @@ export const proveedorSchema = Joi.object({
         'string.pattern.base': 'El número de teléfono debe ser un número.',
         'any.required': 'El número de teléfono es un campo requerido.'
       }),
-  email: Joi.string().email().required().messages({
+  email: Joi.string().email().max(30).required().messages({
     'string.empty': 'El email del proveedor es obligatorio',
     'string.email': 'El email debe tener un formato válido',
     'any.required': 'El email del proveedor es obligatorio'
@@ -36,23 +39,7 @@ export const proveedorSchema = Joi.object({
   }),
   direccion: Joi.string().allow('').optional(),
   categorias: Joi.array()
-    .items(Joi.string().valid(
-      'Congelados',
-      'Carnes',
-      'Despensa',
-      'Panaderia y Pasteleria',
-      'Quesos y Fiambres',
-      'Bebidas y Licores',
-      'Lacteos, Huevos y Refrigerados',
-      'Desayuno y Dulces',
-      'Bebes y Niños',
-      'Cigarros',
-      'Limpieza y Hogar',
-      'Cuidado Personal',
-      'Mascotas',
-      'Remedios',
-      'Otros'
-    ))
+    .items(Joi.string().valid(...CATEGORIAS_PRODUCTOS))
     .min(1)
     .required()
     .messages({

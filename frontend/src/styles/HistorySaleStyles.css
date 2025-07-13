@@ -75,10 +75,6 @@
   background-color: var(--danger);
 }
 
-.historysaleexportbtn.excel {
-  background-color: var(--success);
-}
-
 .historysaleexportbtn.anuladas {
   background-color: var(--primary-dark);
   border: 1px solid var(--primary-dark);

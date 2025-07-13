@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import mongoose from 'mongoose';
+import { CATEGORIAS_PRODUCTOS } from '../constants/products.constants.js';
 
 const objectIdValidator = (value, helpers) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -21,15 +22,15 @@ const dateValidator = (value, helpers) => {
 };
 
 export const productSchema = Joi.object({
-  Nombre: Joi.string().min(2).max(50).required().messages({
+  Nombre: Joi.string().min(2).max(25).required().messages({
     'string.empty': 'El nombre del producto es obligatorio',
     'string.min': 'El nombre debe tener al menos 2 caracteres',
-    'string.max': 'El nombre no puede exceder los 50 caracteres'
+    'string.max': 'El nombre no puede exceder los 25 caracteres'
   }),
-  Marca: Joi.string().min(2).max(50).required().messages({
+  Marca: Joi.string().min(2).max(15).required().messages({
     'string.empty': 'La marca del producto es obligatoria',
     'string.min': 'La marca debe tener al menos 2 caracteres',
-    'string.max': 'La marca no puede exceder los 50 caracteres'
+    'string.max': 'La marca no puede exceder los 15 caracteres'
   }),
   Stock: Joi.number().integer().min(0).required().messages({
     'number.base': 'El stock debe ser un número entero',
@@ -37,22 +38,7 @@ export const productSchema = Joi.object({
     'number.empty': 'El stock del producto es obligatorio'
   }),
   Categoria: Joi.string()
-    .valid(
-      'Congelados', 
-      'Carnes', 
-      'Despensa', 
-      'Panaderia y Pasteleria', 
-      'Quesos y Fiambres', 
-      'Bebidas y Licores', 
-      'Lacteos, Huevos y Refrigerados',
-      'Desayuno y Dulces', 
-      'Bebes y Niños', 
-      'Cigarros',
-      'Cuidado Personal',
-      'Limpieza y Hogar',
-      'Mascotas',
-      'Remedios',
-      'Otros')
+    .valid(...CATEGORIAS_PRODUCTOS)
     .required()
     .messages({
       'any.only': 'Categoría no válida',
@@ -77,10 +63,10 @@ export const productSchema = Joi.object({
     'number.base': 'El precio antiguo debe ser un número',
     'number.min': 'El precio antiguo no puede ser negativo',
   }),
-  codigoBarras: Joi.string().min(13).max(13).pattern(/^\d+$/).required().messages({
+  codigoBarras: Joi.string().min(8).max(20).pattern(/^\d+$/).required().messages({
     'string.empty': 'El código de barras del producto es obligatorio',
-    'string.min': 'El código de barras debe tener 13 caracteres',
-    'string.max': 'El código de barras debe tener 13 caracteres',
+    'string.min': 'El código de barras debe tener entre 8 y 20 caracteres',
+    'string.max': 'El código de barras debe tener entre 8 y 20 caracteres',
     'string.pattern.base': 'El código de barras debe contener solo números'
   }),
   image: Joi.string().optional().allow(null).messages({

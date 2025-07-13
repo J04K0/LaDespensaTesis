@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar.jsx";
 import SmartPagination from '../components/SmartPagination.jsx';
 import { obtenerVentasPorTicket, eliminarTicket, editarTicket, obtenerVentasAnuladas } from "../services/venta.service.js";
 import { ExportService } from '../services/export.service.js';
+import { CATEGORIAS } from '../constants/products.constants.js';
 import "../styles/HistorySaleStyles.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -516,21 +517,9 @@ const HistorySale = () => {
                       className="historysaleselect"
                     >
                       <option value="">Todas las categorías</option>
-                      <option value="Congelados">Congelados</option>
-                      <option value="Carnes">Carnes</option>
-                      <option value="Despensa">Despensa</option>
-                      <option value="Panaderia y Pasteleria">Panaderia y Pasteleria</option>
-                      <option value="Quesos y Fiambres">Quesos y Fiambres</option>
-                      <option value="Bebidas y Licores">Bebidas y Licores</option>
-                      <option value="Lacteos, Huevos y Refrigerados">Lacteos, Huevos y Refrigerados</option>
-                      <option value="Desayuno y Dulces">Desayuno y Dulces</option>
-                      <option value="Bebes y Niños">Bebes y Niños</option>
-                      <option value="Mascotas">Mascotas</option>
-                      <option value="Cuidado Personal">Cuidado Personal</option>
-                      <option value="Limpieza y Hogar">Limpieza y Hogar</option>
-                      <option value="Remedios">Remedios</option>
-                      <option value="Cigarros">Cigarros</option>
-                      <option value="Otros">Otros</option>
+                      {CATEGORIAS.map((categoria, index) => (
+                        <option key={index} value={categoria}>{categoria}</option>
+                      ))}
                     </select>
                   </div>
                 </div>

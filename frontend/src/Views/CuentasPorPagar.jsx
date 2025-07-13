@@ -12,6 +12,7 @@ import '../styles/CuentasPorPagarStyles.css';
 import '../styles/SmartPagination.css';
 import axios from "../services/root.service.js";
 import { ExportService } from '../services/export.service.js';
+import { CATEGORIAS } from '../constants/products.constants.js';
 
 const CuentasPorPagar = () => {
   const [cuentas, setCuentas] = useState([]);
@@ -68,7 +69,7 @@ const CuentasPorPagar = () => {
   const cuentasPorPagina = 5; // Modificado de 25 a 5 para mostrar menos elementos por página
   const navigate = useNavigate();
 
-  // Categorías disponibles
+  // Usar las categorías centralizadas del sistema
   const categorias = ['Luz', 'Agua','Servicios','Otros'];
   
   // Estados disponibles

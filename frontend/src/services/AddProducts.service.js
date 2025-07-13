@@ -2,21 +2,16 @@ import axios from './root.service.js';
 
 export const addProducts = async (formData) => {
     try {
-        // 🔧 MEJORADO: Crear un nuevo FormData completamente limpio para evitar corrupción
         const mappedFormData = new FormData();
         
-        // 🆕 NUEVO: Validar que el FormData original no esté corrupto
         if (!formData || typeof formData.entries !== 'function') {
             throw new Error('FormData inválido o corrupto');
         }
         
-        // 🆕 NUEVO: Log para debugging
-        console.log('🔍 Procesando FormData original...');
         let originalEntries = [];
         try {
             for (let [key, value] of formData.entries()) {
                 originalEntries.push([key, value]);
-                console.log(`  - ${key}:`, typeof value, value instanceof File ? `File(${value.name})` : value);
             }
         } catch (entriesError) {
             console.error('❌ Error al leer entradas del FormData:', entriesError);
@@ -33,16 +28,13 @@ export const addProducts = async (formData) => {
         if (formData.has('addproducts-fecha-vencimiento')) mappedFormData.append('fechaVencimiento', formData.get('addproducts-fecha-vencimiento'));
         if (formData.has('addproducts-precio-venta')) mappedFormData.append('PrecioVenta', formData.get('addproducts-precio-venta'));
         
-        // 🔧 MEJORADO: Manejo más robusto de la imagen con recreación del archivo
         const imageFile = formData.get('image');
         const imageUrl = formData.get('imageUrl');
         
         if (imageFile && imageFile instanceof File) {
-            // 🆕 NUEVO: Validaciones más estrictas del archivo
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
             const maxSize = 5 * 1024 * 1024; // 5MB
             
-            // Verificar que el archivo no esté corrupto
             if (!imageFile.name || imageFile.size === 0) {
                 throw new Error('Archivo de imagen corrupto o vacío');
             }
@@ -55,9 +47,7 @@ export const addProducts = async (formData) => {
                 throw new Error('La imagen no puede exceder 5MB');
             }
             
-            // 🆕 CRÍTICO: Crear una nueva instancia completamente independiente del archivo
             try {
-                // Leer el archivo como ArrayBuffer para crear una copia completamente nueva
                 const arrayBuffer = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
@@ -65,7 +55,6 @@ export const addProducts = async (formData) => {
                     reader.readAsArrayBuffer(imageFile);
                 });
                 
-                // Crear un nuevo Blob y luego un nuevo File completamente independiente
                 const newBlob = new Blob([arrayBuffer], { type: imageFile.type });
                 const newImageFile = new File([newBlob], imageFile.name, {
                     type: imageFile.type,
@@ -104,9 +93,7 @@ export const addProducts = async (formData) => {
             throw new Error('No se pudieron procesar los datos del formulario');
         }
         
-        console.log('✅ FormData final procesado con', finalEntries.length, 'campos');
         
-        // 🔧 MEJORADO: Configuración más robusta para el request
         const config = {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -114,16 +101,13 @@ export const addProducts = async (formData) => {
             timeout: 30000, // 30 segundos de timeout
             maxContentLength: 10 * 1024 * 1024, // 10MB máximo
             maxBodyLength: 10 * 1024 * 1024, // 10MB máximo
-            // 🆕 NUEVO: Configuraciones adicionales para evitar problemas de red
             validateStatus: function (status) {
                 return status < 500; // Considerar válidos todos los status codes menores a 500
             },
             maxRedirects: 0, // Evitar redirecciones que puedan corromper el FormData
         };
         
-        console.log('📤 Enviando producto al servidor...');
         const response = await axios.post('/products/agregar', mappedFormData, config);
-        console.log('✅ Producto creado exitosamente');
         return response;
     } catch (error) {
         console.error('❌ Error al añadir el producto:', error);

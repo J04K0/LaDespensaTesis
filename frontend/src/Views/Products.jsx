@@ -19,11 +19,9 @@ import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAc
 import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { ExportService } from '../services/export.service.js';
 import SmartPagination from '../components/SmartPagination';
-import { MARGENES_POR_CATEGORIA, STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
+import { MARGENES_POR_CATEGORIA, STOCK_MINIMO_POR_CATEGORIA, CATEGORIAS } from '../constants/products.constants.js';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -68,28 +66,22 @@ const Products = () => {
   const [showPriceHistoryModal, setShowPriceHistoryModal] = useState(false);
   const [priceHistoryData, setPriceHistoryData] = useState([]);
 
-  // 🆕 NUEVOS ESTADOS para los modales de eliminación y historial de stock
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [showStockHistoryModal, setShowStockHistoryModal] = useState(false);
   const [stockHistoryProductId, setStockHistoryProductId] = useState(null);
   const [stockHistoryProductName, setStockHistoryProductName] = useState('');
   
-  // 🆕 NUEVO ESTADO para el modal de productos eliminados
   const [showDeletedProductsModal, setShowDeletedProductsModal] = useState(false);
 
-  // 🆕 NUEVO ESTADO para el modal de lotes
   const [showLotesModal, setShowLotesModal] = useState(false);
   const [lotesProductId, setLotesProductId] = useState(null);
   const [lotesProductName, setLotesProductName] = useState('');
 
-  // 🆕 NUEVO ESTADO para forzar re-renderizado cuando se actualicen lotes
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // 🆕 NUEVO ESTADO para mantener el estado de expansión de lotes por producto
   const [lotesExpandedState, setLotesExpandedState] = useState({});
 
-  // 🆕 NUEVA referencia para refrescar cards cuando se actualicen lotes
   const [productCardRefs, setProductCardRefs] = useState({});
 
   const [characteristicsExpanded, setCharacteristicsExpanded] = useState(true);
@@ -192,12 +184,8 @@ const Products = () => {
     };
   }, [showInfoModal, showEditModal, showPriceHistoryModal]);
 
-  const categories = [
-    'Congelados', 'Carnes', 'Despensa', 'Panaderia y Pasteleria',
-    'Quesos y Fiambres', 'Bebidas y Licores', 'Lacteos, Huevos y otros',
-    'Desayuno y Dulces', 'Bebes y Niños', 'Cigarros y Tabacos',
-    'Limpieza y Hogar', 'Cuidado Personal', 'Mascotas', 'Remedios', 'Otros'
-  ];
+  // Usar las categorías centralizadas
+  const categories = CATEGORIAS;
 
   // Optimizar handlers con useCallback
   const handleSearchChange = useCallback((e) => {

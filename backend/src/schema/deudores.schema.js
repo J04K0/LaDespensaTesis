@@ -19,9 +19,11 @@ const pagoSchema = Joi.object({
 });
 
 export const deudorSchema = Joi.object({
-  Nombre: Joi.string().required().empty('').messages({
+  Nombre: Joi.string().required().empty('').min(2).max(20).messages({
     'string.base': 'El nombre debe ser una cadena de texto.',
     'string.empty': 'El nombre no puede estar vacío.',
+    'string.min': 'El nombre debe tener al menos 2 caracteres.',
+    'string.max': 'El nombre no puede exceder los 20 caracteres.',
     'any.required': 'El nombre es un campo requerido.'
   }),
   fechaPaga: Joi.string().isoDate().required().empty('').messages({

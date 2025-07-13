@@ -16,7 +16,6 @@ const PrecioHistorialSchema = new Schema({
   }
 });
 
-// Nuevo schema para historial de cambios de stock
 const StockHistorialSchema = new Schema({
   stockAnterior: {
     type: Number,
@@ -43,12 +42,11 @@ const StockHistorialSchema = new Schema({
   usuario: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: false, // Permitir null para procesos automáticos del sistema
+    required: false,
     default: null
   }
 });
 
-// 🆕 NUEVO: Schema para lotes de productos
 const LoteSchema = new Schema({
   numeroLote: {
     type: String,
@@ -95,7 +93,6 @@ const ProductSchema = new Schema({
     type: String,
     required: true,
   },
-  // 🔄 MODIFICADO: Stock ahora es calculado desde los lotes
   Stock: {
     type: Number,
     required: true,
@@ -105,7 +102,6 @@ const ProductSchema = new Schema({
     type: String,
     required: true,
   },
-  // 🔄 MODIFICADO: Precios principales (pueden ser promedio o del lote más reciente)
   PrecioVenta: {
     type: Number,
     required: true,
@@ -119,11 +115,9 @@ const ProductSchema = new Schema({
     required: false,
     default: 0,
   },
-  // 🆕 NUEVO: Array de lotes
   lotes: [LoteSchema],
   historialPrecios: [PrecioHistorialSchema],
   historialStock: [StockHistorialSchema],
-  // 🔄 MODIFICADO: Fecha de vencimiento principal (del lote que vence primero)
   fechaVencimiento: {
     type: Date,
     required: true,

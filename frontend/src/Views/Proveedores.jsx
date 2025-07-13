@@ -34,7 +34,6 @@ const Proveedores = () => {
   const [proveedorProductos, setProveedorProductos] = useState([]);
   const [showViewProductsModal, setShowViewProductsModal] = useState(false);
   const [viewingProveedor, setViewingProveedor] = useState(null);
-  // 🆕 NUEVO: Estado para guardar los productos originales del proveedor
   const [originalSelectedProducts, setOriginalSelectedProducts] = useState([]);
   
   const [currentProveedor, setCurrentProveedor] = useState({
@@ -49,10 +48,8 @@ const Proveedores = () => {
   });
   
   const proveedoresPorPagina = 5;
-  // 🔧 Usar las constantes de categorías del sistema para mantener consistencia
   const categorias = CATEGORIAS;
   
-  // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
   const isEmpleado = userRole === 'empleado';
 
@@ -73,7 +70,7 @@ const Proveedores = () => {
         if (estadoFilter === 'inactivos') {
           parametroIncluirInactivos = true;
         } else if (estadoFilter === 'todos') {
-          parametroIncluirInactivos = 'todos'; // Nuevo parámetro para obtener todos
+          parametroIncluirInactivos = 'todos';
         } else {
           parametroIncluirInactivos = false;
         }
@@ -130,7 +127,6 @@ const Proveedores = () => {
     const nuevoEstado = e.target.value;
     setEstadoFilter(nuevoEstado);
     
-    // Recargar proveedores según el nuevo filtro de estado
     let incluirInactivos;
     if (nuevoEstado === 'inactivos') {
       incluirInactivos = true;
@@ -213,15 +209,14 @@ const Proveedores = () => {
       try {
         const productosActuales = await getProductosProveedor(id);
         setProveedorProductos(productosActuales);
-        // También establecer los IDs como selectedProducts por si quiere modificarlos
         setSelectedProducts(proveedor.productos || []);
-        setOriginalSelectedProducts(proveedor.productos || []); // Guardar productos originales
+        setOriginalSelectedProducts(proveedor.productos || []);
         console.log('🔄 Productos cargados del proveedor:', productosActuales);
       } catch (error) {
         console.warn('⚠️ No se pudieron cargar los productos del proveedor:', error);
         setProveedorProductos([]);
         setSelectedProducts([]);
-        setOriginalSelectedProducts([]); // Asegurar que esté vacío en caso de error
+        setOriginalSelectedProducts([]);
       }
       
       setIsEditing(true);
@@ -332,7 +327,7 @@ const Proveedores = () => {
       "No, cancelar"
     );
 
-    if (!result.isConfirmed) return; // Si el usuario cancela, no se realiza la acción
+    if (!result.isConfirmed) return;
 
     if (!currentProveedor.nombre || !currentProveedor.telefono) {
       showWarningAlert('Error', 'El nombre y teléfono son obligatorios');
@@ -426,7 +421,6 @@ const Proveedores = () => {
       if (!result.isConfirmed) return;
     }
 
-    // 🔧 CORREGIDO: Restaurar productos originales al cancelar
     if (isEditing) {
       setSelectedProducts(originalSelectedProducts);
     }
@@ -434,21 +428,18 @@ const Proveedores = () => {
     resetForm();
   };
 
-  // 🆕 Función para manejar clic en el overlay del modal principal
   const handleMainModalOverlayClick = async (e) => {
     if (e.target === e.currentTarget) {
       await handleCancel();
     }
   };
 
-  // 🆕 Función para manejar clic en el overlay del modal de productos
   const handleProductsModalOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       setShowProductsModal(false);
     }
   };
 
-  // 🆕 Función para manejar clic en el overlay del modal de visualización
   const handleViewModalOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       setShowViewProductsModal(false);
@@ -459,12 +450,10 @@ const Proveedores = () => {
   const indexOfFirstProveedor = indexOfLastProveedor - proveedoresPorPagina;
   const currentProveedores = filteredProveedores.slice(indexOfFirstProveedor, indexOfLastProveedor);
 
-  // 🔧 Función para mostrar alerta de empleado
   const showEmpleadoAlert = () => {
     showEmpleadoAccessDeniedAlert("la gestión de proveedores", "Los proveedores pueden ser consultados pero solo administradores y jefes pueden crear, editar o eliminar.");
   };
 
-  // 🆕 Función para manejar clic en "Agregar Proveedor" con verificación de permisos
   const handleAddProveedorClick = () => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -473,7 +462,6 @@ const Proveedores = () => {
     handleAddProveedor();
   };
 
-  // 🆕 Función para manejar edición con verificación de permisos
   const handleEditProveedorClick = async (id) => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -482,7 +470,6 @@ const Proveedores = () => {
     await handleEditProveedor(id);
   };
 
-  // 🆕 Función para manejar eliminación con verificación de permisos
   const handleDeleteProveedorClick = async (id) => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -491,7 +478,6 @@ const Proveedores = () => {
     await handleDeleteProveedor(id);
   };
 
-  // 🆕 Función para manejar cambio de estado con verificación de permisos
   const handleCambiarEstadoProveedorClick = async (id, activo) => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -503,7 +489,6 @@ const Proveedores = () => {
   const handleLinkProducts = (e) => {
     e.preventDefault();
     
-    // Ya no verificamos si es un nuevo proveedor - permitimos siempre seleccionar productos
     setShowProductsModal(true);
   };
 
@@ -518,10 +503,8 @@ const Proveedores = () => {
   };
 
   const handleProductsSubmit = () => {
-    // 🔧 ACTUALIZADO: Actualizar la vista previa inmediatamente cuando se vinculan productos
     
     if (isEditing && selectedProducts.length > 0) {
-      // Si estamos editando, crear una vista previa con los productos seleccionados
       const productosSeleccionados = allProducts.filter(product => 
         selectedProducts.includes(product._id)
       );
@@ -630,7 +613,7 @@ const Proveedores = () => {
                   >
                     <option value="activos">Proveedores Activos</option>
                     <option value="inactivos">Proveedores Inactivos</option>
-                    <option value="todos">Todos los Proveedores</option> {/* Nueva opción */}
+                    <option value="todos">Todos los Proveedores</option>
                   </select>
                 </div>
                 
@@ -781,7 +764,6 @@ const Proveedores = () => {
         )}
       </div>
 
-      {/* Modal de creación/edición de proveedores */}
       {showModal && (
         <div className="modal-overlay" onClick={handleMainModalOverlayClick}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

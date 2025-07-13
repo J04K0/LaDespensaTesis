@@ -11,9 +11,6 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { useVentas } from '../context/VentasContext';
-import { ExportService } from '../services/export.service';
-import { DataCollectionService } from '../services/dataCollection.service';
-import { showSuccessAlert, showErrorAlert, showWarningAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
 
 import { 
@@ -59,11 +56,9 @@ const Home = () => {
   // Referencia al contenedor del gráfico
   const chartRef = useRef(null);
 
-  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
   const { ventasGlobales, loading: ventasLoading, error: ventasError, initialLoadComplete } = useVentas();
   const { userRole: role } = useRole();
 
-  // 🔧 FIX: Mejorar la lógica de loading para una experiencia más fluida
   const isDataLoading = useMemo(() => {
     // Si es la primera carga y aún no se ha completado
     if (!initialLoadComplete && ventasLoading) {
@@ -79,7 +74,6 @@ const Home = () => {
     return !initialLoadComplete;
   }, [ventasLoading, ventasGlobales, ventasError, initialLoadComplete]);
 
-  // 🔧 FIX: Usar useCallback para evitar recreaciones innecesarias
   const filtrarVentasPorPeriodo = useCallback((ventas) => {
     if (!ventas || timeRange === "todo") {
       return ventas || [];
@@ -148,7 +142,6 @@ const Home = () => {
     fetchDeudores();
   }, []);
 
-  // ELIMINAR procesarDatos y procesarProductosPocoVendidos - no se usan
 
   const nextChart = () => {
     setCurrentChart((prevChart) => (prevChart + 1) % 3);
@@ -342,8 +335,6 @@ const Home = () => {
       console.error("Error al generar el PDF:", error);
       alert("No se pudo generar el PDF. Por favor, intenta nuevamente.");
     } finally {
-      // Desactivar estado de descarga después de un pequeño retraso
-      // para asegurar que el usuario vea el indicador de carga
       setTimeout(() => {
         setIsDownloading(false);
       }, 500);
@@ -556,7 +547,6 @@ const Home = () => {
     }
   };
 
-  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular estadísticas cuando ya están cargadas las ventas
   const datosEstadisticasOptimized = useMemo(() => {
     if (!ventasGlobales || ventasGlobales.length === 0) {
       return {
@@ -663,7 +653,6 @@ const Home = () => {
     };
   }, [ventasGlobales, filtrarVentasPorPeriodo]);
 
-  // 🔧 FIX: Extraer datos del useMemo optimizado
   const { ventasPorCategoria, topProductos, productosPocoVendidos } = datosEstadisticasOptimized;
 
   // Función helper para formatear números con punto como separador de miles

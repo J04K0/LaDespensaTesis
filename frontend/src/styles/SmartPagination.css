@@ -1,7 +1,3 @@
-/* ===============================================
-   COMPONENTE DE PAGINACIÓN INTELIGENTE
-   =============================================== */
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -66,7 +62,6 @@
   height: 44px;
 }
 
-/* Responsividad para dispositivos móviles */
 @media (max-width: 768px) {
   .pagination {
     gap: 3px;

@@ -3,10 +3,16 @@ import mongoose from 'mongoose';
 
 const objectIdValidator = (value, helpers) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
-    return helpers.message('Identificador no válido.');
+    return helpers.message('Identificador de cuenta por pagar no válido');
   }
   return value;
 };
+
+// Categorías específicas para cuentas por pagar (servicios y gastos operativos)
+const CATEGORIAS_CUENTAS_POR_PAGAR = [
+  'Luz', 'Agua', 'Gas', 'Internet', 'Alquiler', 'Impuestos', 
+  'Salarios', 'Proveedores', 'Servicios', 'Otros'
+];
 
 export const cuentaPorPagarSchema = Joi.object({
   Nombre: Joi.string().required().messages({
@@ -14,9 +20,11 @@ export const cuentaPorPagarSchema = Joi.object({
     'string.empty': 'El nombre no puede estar vacío.',
     'any.required': 'El nombre es un campo requerido.'
   }),
-  numeroVerificador: Joi.string().required().messages({
+  numeroVerificador: Joi.string().required().min(3).max(20).messages({
     'string.base': 'El número verificador debe ser una cadena de texto.',
     'string.empty': 'El número verificador no puede estar vacío.',
+    'string.min': 'El número verificador debe tener al menos 3 caracteres.',
+    'string.max': 'El número verificador no puede exceder los 20 caracteres.',
     'any.required': 'El número verificador es un campo requerido.'
   }),
   Mes: Joi.string().required().messages({
@@ -34,7 +42,7 @@ export const cuentaPorPagarSchema = Joi.object({
     'any.only': 'El estado debe ser uno de los siguientes valores: Pendiente, Pagado o Vencido.',
     'any.required': 'El estado es un campo requerido.'
   }),
-  Categoria: Joi.string().valid('Luz', 'Agua', 'Gas', 'Internet', 'Alquiler', 'Impuestos', 'Salarios', 'Proveedores', 'Servicios', 'Otros').required().messages({
+  Categoria: Joi.string().valid(...CATEGORIAS_CUENTAS_POR_PAGAR).required().messages({
     'string.base': 'La categoría debe ser una cadena de texto.',
     'any.only': 'La categoría debe ser una de las categorías válidas.',
     'any.required': 'La categoría es un campo requerido.'

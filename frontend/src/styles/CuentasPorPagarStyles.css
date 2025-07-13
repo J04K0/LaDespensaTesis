@@ -808,7 +808,7 @@
     width: 100%;
   }
 
-  .btn-export-pdf, .btn-export-excel {
+  .btn-export-pdf{
     width: 100%;
     padding: 12px 0;
     font-size: 18px;

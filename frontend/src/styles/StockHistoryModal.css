@@ -59,10 +59,10 @@
   color: #6c757d;
   cursor: pointer;
   padding: 5px;
-  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
-  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
-  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
-  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@
 .close-button:hover {
   background-color: #e9ecef;
   color: #495057;
-  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
+  transform: scale(1.1);
 }
 
 .stock-history-modal-body {
@@ -308,7 +308,6 @@
   background-color: #545b62;
 }
 
-/* 🆕 NUEVOS ESTILOS para comentarios de restauración */
 .restore-comment {
   background-color: #d4edda;
   color: #155724;
@@ -322,7 +321,6 @@
   line-height: 1.4;
 }
 
-/* Mejora visual para restauraciones */
 .timeline-item:has(.restore-comment) .timeline-marker {
   box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }

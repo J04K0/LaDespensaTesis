@@ -1,37 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { addProducts, getProductByBarcodeForCreation, updateProduct, getProducts, agregarLoteProducto } from '../services/AddProducts.service';
-import { showSuccessAlert, showErrorAlert, showEmpleadoAccessDeniedAlert, showConfirmationAlert } from '../helpers/swaHelper';
-import { useRole } from '../hooks/useRole';
-import { MARGENES_POR_CATEGORIA, CATEGORIAS } from '../constants/products.constants.js';
-import '../styles/AddProductStyles.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faImage, faDollarSign, faBarcode, faTag, faCalendar, faBoxes, faCalculator, faClipboardList, faFile, faSave, faTimes, faSearch, faBox, faCheck, faEdit, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import Swal from 'sweetalert2';
+import { faBoxes, faTag, faDollarSign, faCalendarAlt, faCamera, faBarcode, faInfoCircle, faSearch, faPlus, faStore, faShoppingCart, faClipboardList, faTimes, faImage, faChevronLeft, faChevronRight, faBox, faCalendar, faCheck, faEdit, faCalculator, faSave } from '@fortawesome/free-solid-svg-icons';
+import { addProducts, getProducts, getProductByBarcode, agregarLoteProducto, getProductByBarcodeForCreation, updateProduct } from "../services/AddProducts.service";
+import { CATEGORIAS, MARGENES_POR_CATEGORIA } from '../constants/products.constants.js';
+import SmartPagination from '../components/SmartPagination';
+import AddProductsSkeleton from '../components/Skeleton/AddProductsSkeleton';
+import { showSuccessAlert, showErrorAlert, showConfirmationAlert } from "../helpers/swaHelper";
+import { useRole } from '../hooks/useRole';
+import "../styles/AddProductStyles.css";
 
 const AddProducts = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   
-  // 🆕 NUEVO: Estado para controlar el modo de operación
-  const [operationMode, setOperationMode] = useState(null); // 'new' | 'stock' | null
-  const [existingProduct, setExistingProduct] = useState(null);
-  const [stockToAdd, setStockToAdd] = useState('');
-  const [stockMotivo, setStockMotivo] = useState('');
+  // Estado para el modo de operación: null para mostrar selector, 'new' para nuevo producto, 'stock' para agregar stock
+  const [operationMode, setOperationMode] = useState(null);
   
-  // 🆕 NUEVO: Estados para búsqueda inteligente de productos
-  const [searchQuery, setSearchQuery] = useState('');
-  const [productsList, setProductsList] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  
-  // 🆕 NUEVO: Estados para paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const productsPerPage = 12; // Productos por página en el grid
-  
+  // Estado para los datos del formulario
   const [formData, setFormData] = useState({
     'addproducts-nombre': '',
     'addproducts-codigo-barras': '',
@@ -42,41 +29,63 @@ const AddProducts = () => {
     'addproducts-fecha-vencimiento': '',
     'addproducts-precio-venta': '',
   });
-  const [precioRecomendado, setPrecioRecomendado] = useState(0);
+  
+  // Estado para manejar la imagen del producto
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  
+  // Estado para manejar el loading y errores
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // 🆕 NUEVO: Estados para el modal de edición de precio
+  
+  // Estado para el precio recomendado
+  const [precioRecomendado, setPrecioRecomendado] = useState(0);
+  
+  // Estado para el producto existente (al agregar stock)
+  const [existingProduct, setExistingProduct] = useState(null);
+  
+  // Estados para búsqueda y paginación de productos
+  const [searchQuery, setSearchQuery] = useState('');
+  const [productsList, setProductsList] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const productsPerPage = 12;
+  const [searchLoading, setSearchLoading] = useState(false);
+  
+  // Estados para el modal de edición de precio
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [newPriceValue, setNewPriceValue] = useState('');
   const [priceModalLoading, setPriceModalLoading] = useState(false);
 
-  // 🔧 Obtener el rol del usuario para restricciones
+  // Estados para el modo de agregar stock
+  const [stockToAdd, setStockToAdd] = useState('');
+  const [stockMotivo, setStockMotivo] = useState('');
+
+  // Obtener el rol del usuario
   const { userRole } = useRole();
   const isEmpleado = userRole === 'empleado';
 
-  // 🔧 Verificar permisos al cargar el componente
+  // Redirigir a la lista de productos si el usuario es empleado
   useEffect(() => {
     if (isEmpleado) {
-      showEmpleadoAccessDeniedAlert("la creación de productos nuevos", "Solo administradores y jefes pueden agregar productos al inventario.");
+      showErrorAlert('Acceso denegado', 'No tienes permiso para acceder a esta sección');
       navigate('/products');
-      return;
     }
   }, [isEmpleado, navigate]);
 
+  // Cargar datos del producto si se proporciona un código de barras en la URL
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const barcode = params.get('barcode');
+    const barcode = searchParams.get('barcode');
     
     if (barcode) {
       setFormData(prev => ({ ...prev, 'addproducts-codigo-barras': barcode }));
       handleCodigoBarrasChange(barcode);
     }
-  }, []);
+  }, [searchParams]);
 
-  // Calcular precio recomendado cuando cambia el precio de compra o la categoría
+  // Calcular el precio recomendado al cambiar el precio de compra o la categoría
   useEffect(() => {
     const precioCompra = parseFloat(formData['addproducts-precio-compra']) || 0;
     const categoria = formData['addproducts-categoria'] || 'Otros';
@@ -85,19 +94,19 @@ const AddProducts = () => {
     setPrecioRecomendado(nuevoPrecioRecomendado);
   }, [formData['addproducts-precio-compra'], formData['addproducts-categoria']]);
 
-  // 🆕 NUEVO: Función para abrir el modal de edición de precio
+  // Función para abrir el modal de edición de precio
   const handleOpenPriceModal = () => {
     setNewPriceValue(existingProduct?.precioVenta || formData['addproducts-precio-venta'] || '');
     setShowPriceModal(true);
   };
 
-  // 🆕 NUEVO: Función para cerrar el modal de edición de precio
+  // Función para cerrar el modal de edición de precio
   const handleClosePriceModal = () => {
     setShowPriceModal(false);
     setNewPriceValue('');
   };
 
-  // 🆕 NUEVO: Función para actualizar el precio del producto
+  // Función para actualizar el precio del producto
   const handleUpdatePrice = async () => {
     if (!newPriceValue || parseFloat(newPriceValue) <= 0) {
       showErrorAlert('Error', 'Debe ingresar un precio válido mayor a 0');
@@ -116,7 +125,7 @@ const AddProducts = () => {
     setPriceModalLoading(true);
 
     try {
-      // 🔧 ARREGLO: Enviar todos los campos del producto, no solo el precio
+      // Enviar todos los campos del producto, no solo el precio
       const formData = new FormData();
       
       // Agregar todos los campos necesarios del producto existente
@@ -165,7 +174,7 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 MODIFICADO: Cargar lista de productos con paginación
+  // Cargar lista de productos con paginación
   const loadProductsList = async (page = 1) => {
     try {
       setSearchLoading(true);
@@ -199,14 +208,14 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 NUEVO: Función para cambiar de página
+  // Función para cambiar de página
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       loadProductsList(newPage);
     }
   };
 
-  // 🆕 NUEVO: Función para generar números de páginas a mostrar
+  // Función para generar números de páginas a mostrar
   const getPaginationNumbers = () => {
     const pages = [];
     const maxPagesToShow = 5;
@@ -224,7 +233,7 @@ const AddProducts = () => {
     return pages;
   };
 
-  // 🆕 NUEVO: Función para filtrar productos por búsqueda
+  // Función para filtrar productos por búsqueda
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredProducts(productsList);
@@ -241,7 +250,7 @@ const AddProducts = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, productsList]);
 
-  // 🆕 NUEVO: Función para seleccionar modo de operación
+  // Función para seleccionar modo de operación
   const handleSelectMode = (mode) => {
     setOperationMode(mode);
     setError(null);
@@ -270,7 +279,7 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 NUEVO: Función para seleccionar un producto de la lista
+  // Función para seleccionar un producto de la lista
   const handleSelectProduct = (product) => {
     setExistingProduct({
       _id: product._id,
@@ -298,7 +307,7 @@ const AddProducts = () => {
     setSearchQuery('');
   };
 
-  // 🆕 NUEVO: Función para buscar producto existente para agregar stock
+  // Función para buscar producto existente para agregar stock
   const handleSearchExistingProduct = async () => {
     const barcode = formData['addproducts-codigo-barras'];
     
@@ -398,8 +407,8 @@ const AddProducts = () => {
   const handleCodigoBarrasChange = async (value) => {
     setFormData(prev => ({ ...prev, 'addproducts-codigo-barras': value }));
 
-    // Solo buscar automáticamente si estamos en modo nuevo producto
-    if (operationMode === 'new' && value.length === 13) {
+    // Solo buscar automáticamente si estamos en modo nuevo producto y el código tiene entre 8 a 20 dígitos
+    if (operationMode === 'new' && value.length >= 8 && value.length <= 20 && /^\d+$/.test(value)) {
       setLoading(true);
       setError(null);
       try {
@@ -443,7 +452,6 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 MODIFICADO: Función para agregar un nuevo lote al producto existente
   const handleStockSubmit = async () => {
     if (!existingProduct) {
       setError('Debe buscar y seleccionar un producto existente');
@@ -507,8 +515,6 @@ const AddProducts = () => {
 
   // 🔧 MEJORADO: Función para manejar nuevo producto con mejor manejo de errores
   const handleNewProductSubmit = async () => {
-    console.log('🔍 INICIANDO handleNewProductSubmit...');
-    console.log('📋 Estado actual del formulario:', formData);
     
     // Limpiar errores previos
     clearFormOnError();
@@ -545,7 +551,7 @@ const AddProducts = () => {
     }
 
     if (!formData['addproducts-codigo-barras'] || !/^\d{8,20}$/.test(formData['addproducts-codigo-barras'])) {
-      const errorMsg = 'El código de barras debe contener solo números y 13 digitos';
+      const errorMsg = 'El código de barras debe contener solo números y 8 a 20 digitos';
       console.log('❌ Error de validación - Código de barras:', {
         valor: formData['addproducts-codigo-barras'],
         longitud: formData['addproducts-codigo-barras']?.length,
@@ -586,7 +592,6 @@ const AddProducts = () => {
       // Asegurar que todos los campos se envíen correctamente
       Object.keys(cleanedData).forEach(key => {
         productFormData.append(key, cleanedData[key]);
-        console.log(`📝 Agregando campo: ${key} = ${cleanedData[key]}`);
       });
 
       // 🆕 CRÍTICO: Manejo mejorado de la imagen para evitar corrupción
@@ -613,20 +618,16 @@ const AddProducts = () => {
         console.log('🔗 URL de imagen agregada al FormData:', imagePreview);
       }
 
-      // 🆕 NUEVO: Verificar que el FormData tiene contenido antes de enviar
       let formDataEntries = 0;
       for (let [key, value] of productFormData.entries()) {
         formDataEntries++;
-        console.log(`  ${key}:`, value instanceof File ? `File(${value.name}, ${value.size} bytes)` : value);
       }
       
       if (formDataEntries === 0) {
         throw new Error('No se pudieron preparar los datos para enviar. Por favor, verifique que todos los campos estén completados.');
       }
 
-      console.log(`📤 Enviando ${formDataEntries} campos al servidor...`);
       const response = await addProducts(productFormData);
-      console.log('✅ Respuesta exitosa del servidor:', response);
       
       showSuccessAlert('Éxito', 'Producto creado correctamente en el inventario');
       navigate('/products');
@@ -1157,7 +1158,7 @@ const AddProducts = () => {
                         <div className="addproducts-confirmation-content">
                           <div className="addproducts-lote-summary">
                             <h4>Agregar stock a {existingProduct.nombre}</h4>
-                            <div className="addproducts-lote-details">
+                            <div className="addproducts-lote-details-grid">
                               <div className="addproducts-lote-item">
                                 <span className="addproducts-lote-label">Stock actual:</span>
                                 <span className="addproducts-lote-value">{existingProduct.stock} unidades</span>
@@ -1179,14 +1180,6 @@ const AddProducts = () => {
                                   }
                                 </span>
                               </div>
-                            </div>
-                            <div className="addproducts-stock-calculation">
-                              <p>
-                                <strong>Se actualizará el stock del producto existente</strong>
-                              </p>
-                              <p className="addproducts-lote-note">
-                                ✅ Se agregará al inventario actual sin crear productos duplicados
-                              </p>
                             </div>
                           </div>
                         </div>
