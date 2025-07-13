@@ -64,7 +64,6 @@ const Proveedores = () => {
   const fetchProveedores = async (incluirInactivos = null) => {
     try {
       setLoading(true);
-      // Determinar qué proveedores cargar basado en el filtro de estado
       let parametroIncluirInactivos = incluirInactivos;
       if (parametroIncluirInactivos === null) {
         if (estadoFilter === 'inactivos') {
@@ -94,7 +93,6 @@ const Proveedores = () => {
   const fetchAllProducts = async () => {
     try {
       const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
-      // Extraer el array de productos de la estructura de respuesta
       const productsArray = Array.isArray(data.products) 
         ? data.products 
         : (data.data && Array.isArray(data.data.products) 
@@ -104,7 +102,7 @@ const Proveedores = () => {
       setAllProducts(productsArray);
     } catch (error) {
       console.error('Error al obtener productos:', error);
-      setAllProducts([]); // Asegurar que sea un array vacío en caso de error
+      setAllProducts([]);
     }
   };
   
@@ -181,7 +179,6 @@ const Proveedores = () => {
   };
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    // Desplazar la ventana hacia arriba
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const handleAddProveedor = async () => {
@@ -205,13 +202,11 @@ const Proveedores = () => {
       const proveedor = await getProveedorById(id);
       setCurrentProveedor(proveedor);
       
-      // Cargar los productos actuales del proveedor para mostrarlos en el modal
       try {
         const productosActuales = await getProductosProveedor(id);
         setProveedorProductos(productosActuales);
         setSelectedProducts(proveedor.productos || []);
         setOriginalSelectedProducts(proveedor.productos || []);
-        console.log('🔄 Productos cargados del proveedor:', productosActuales);
       } catch (error) {
         console.warn('⚠️ No se pudieron cargar los productos del proveedor:', error);
         setProveedorProductos([]);
@@ -317,7 +312,6 @@ const Proveedores = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mostrar confirmación antes de añadir el proveedor
     const result = await showConfirmationAlert(
       "¿Estás seguro?",
       isEditing

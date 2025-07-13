@@ -95,18 +95,13 @@ const ProductScanner = () => {
       const productoEncontrado = response.data.data;
 
       if (productoEncontrado) {
-        // Verificar si el producto ya existe en el carrito
         const productoEnCarrito = carrito.find((p) => p.codigoBarras === productoEncontrado.codigoBarras);
         
-        // Calcular stock disponible real considerando lo que ya está en el carrito
         let stockDisponibleReal;
         if (productoEnCarrito) {
-          // Si ya está en el carrito, usar el stock que ya tenemos guardado
           stockDisponibleReal = stockPorProducto[productoEncontrado.codigoBarras] || 0;
         } else {
-          // Si no está en el carrito, usar el stock completo del producto
           stockDisponibleReal = productoEncontrado.stock;
-          // Actualizar el stock en nuestro estado local
           setStockPorProducto(prevStock => ({
             ...prevStock,
             [productoEncontrado.codigoBarras]: productoEncontrado.stock
@@ -116,18 +111,16 @@ const ProductScanner = () => {
         if (stockDisponibleReal > 0) {
           setProductoActual(productoEncontrado);
           
-          // Verificar si el producto está vencido y mostrar advertencia
           if (productoEncontrado.isExpired) {
             showWarningAlert(
               "¡Producto vencido!",
               `El producto ${productoEncontrado.nombre} está vencido (Fecha: ${new Date(productoEncontrado.fechaVencimiento).toLocaleDateString()}). Puede continuar con la venta, pero se recomienda revisar el producto.`,
               null,
               "warning",
-              true  // Necesita confirmación
+              true
             );
           }
           
-          // Agregar automáticamente al carrito con cantidad 1
           agregarAlCarrito({...productoEncontrado}, 1);
         } else {
           console.warn("⚠️ Producto agotado.");
@@ -199,7 +192,6 @@ const ProductScanner = () => {
                 }
               });
             } else {
-              // Si no podemos obtener el nombre, usar el código de barras
               showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
                 if (result.isConfirmed) {
                   navigate(`/add-product?barcode=${codigoEscaneado}`);
@@ -207,7 +199,6 @@ const ProductScanner = () => {
               });
             }
           } catch (fetchError) {
-            // Si hay error al obtener el producto, usar mensaje genérico
             showOutOfStockAlert(codigoEscaneado, `código ${codigoEscaneado}`).then((result) => {
               if (result.isConfirmed) {
                 navigate(`/add-product?barcode=${codigoEscaneado}`);
@@ -649,11 +640,9 @@ const ProductScanner = () => {
       });
       setShowCreateProductModal(false);
       
-      // Opcional: Intentar escanear automáticamente el producto recién creado
       if (codigoBarras) {
         setTimeout(() => {
           setCodigoEscaneado(codigoBarras);
-          // Simular el envío del formulario de escaneo
           const scanEvent = { preventDefault: () => {} };
           handleScan(scanEvent);
         }, 1000);
@@ -662,7 +651,6 @@ const ProductScanner = () => {
     } catch (error) {
       console.error('❌ Error al crear producto:', error);
       
-      // Manejo de errores más específico
       let errorMessage = 'No se pudo crear el producto. Por favor, intente nuevamente.';
       
       if (error.response) {
@@ -671,7 +659,6 @@ const ProductScanner = () => {
           if (serverMessage.includes('código de barras')) {
             errorMessage = 'Ya existe un producto con este código de barras. Por favor, use un código diferente.';
           } else if (serverMessage.includes('Producto creado')) {
-            // Si el servidor dice que se creó pero hay error, es un caso especial
             showSuccessAlert('Producto creado', 'El producto se creó correctamente en el servidor.');
             setNewProductData({
               nombre: '',

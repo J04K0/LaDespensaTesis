@@ -353,7 +353,6 @@ const Products = () => {
     }
   }, [productsPerPage]);
 
-  // Memoizar función de determinación de color de stock
   const getStockColorClass = useCallback((stock, categoria) => {
     const stockMinimo = STOCK_MINIMO_POR_CATEGORIA[categoria] || 5;
 
@@ -362,7 +361,6 @@ const Products = () => {
     return 'modern-stock-value-green';
   }, []);
 
-  // Efecto para cargar productos al montar el componente
   useEffect(() => {
     const fetchAllProducts = async () => {
       setLoading(true);
@@ -412,13 +410,11 @@ const Products = () => {
     }
   }, [location.search, allProducts]);
 
-  // 🆕 NUEVA función para manejar eliminación con modal de confirmación
   const handleDeleteClick = (product) => {
     setProductToDelete(product);
     setShowDeleteModal(true);
   };
 
-  // 🆕 NUEVA función para confirmar eliminación con comentario
   const handleDeleteConfirm = async (deleteData) => {
     if (!productToDelete) return;
 
@@ -449,21 +445,18 @@ const Products = () => {
     }
   };
 
-  // 🆕 NUEVA función para mostrar historial de stock
   const handleShowStockHistory = (product) => {
     setStockHistoryProductId(product._id);
     setStockHistoryProductName(product.Nombre);
     setShowStockHistoryModal(true);
   };
 
-  // 🆕 NUEVA función para mostrar lotes del producto
   const handleShowLotes = (product) => {
     setLotesProductId(product._id);
     setLotesProductName(product.Nombre);
     setShowLotesModal(true);
   };
 
-  // 🆕 NUEVA función para eliminar producto directamente sin modal
   const handleDirectDelete = async (product) => {
     // Mostrar alerta de confirmación antes de eliminar
     const result = await showConfirmationAlert(
@@ -533,8 +526,7 @@ const Products = () => {
         ? new Date(data.fechaVencimiento).toISOString().split('T')[0]
         : '';
 
-      // 🆕 IMPORTANTE: Mantener el stock original sin conversión innecesaria
-      const stockOriginal = data.Stock; // Mantener el valor tal como viene del servidor
+      const stockOriginal = data.Stock;
       
       console.log('🔍 DATOS DEL SERVIDOR - Stock:', data.Stock, 'Tipo:', typeof data.Stock);
 
@@ -543,7 +535,7 @@ const Products = () => {
         Nombre: data.Nombre || '',
         codigoBarras: data.codigoBarras || '',
         Marca: data.Marca || '',
-        Stock: stockOriginal, // Usar el valor original
+        Stock: stockOriginal,
         Categoria: data.Categoria || '',
         PrecioVenta: Number(data.PrecioVenta) || 0,
         PrecioCompra: Number(data.PrecioCompra) || 0,
@@ -576,7 +568,6 @@ const Products = () => {
     setEditImage(e.target.files[0]);
   };
 
-  // 🆕 MODIFICAR función de edición para pasar datos adicionales
   const handleEditSubmit = async (additionalData = {}) => {
     try {
       setLoading(true);
@@ -594,7 +585,6 @@ const Products = () => {
         }
       });
 
-      // 🆕 NUEVO: Agregar datos adicionales (como motivo de stock)
       Object.keys(additionalData).forEach(key => {
         formData.append(key, additionalData[key]);
       });
@@ -629,17 +619,14 @@ const Products = () => {
     setLoading(true);
     setProductInfo(product);
 
-    // Restablecer las pestañas - características siempre visible primero
     setShowPriceHistoryTab(false);
     setCharacteristicsExpanded(true);
     setStatsExpanded(false);
 
     try {
-      // 🚀 OPTIMIZACIÓN: Usar la nueva función que filtra por producto específico
       const response = await obtenerVentasProducto(product.codigoBarras, product.Nombre);
       const ventas = response.data?.ventas || [];
 
-      // Filtrar ventas del producto específico (como medida adicional de seguridad)
       const ventasProducto = ventas.filter(venta =>
         venta.nombre === product.Nombre && venta.codigoBarras === product.codigoBarras
       );
@@ -684,7 +671,6 @@ const Products = () => {
     ExportService.generarReporteProductos(filteredAndSearchedProducts, category, availabilityFilter, searchQuery);
   };
 
-  // Calcular el precio recomendado cuando cambia el precio de compra o la categoría
   useEffect(() => {
     if (productToEdit.PrecioCompra && productToEdit.Categoria) {
       const margen = MARGENES_POR_CATEGORIA[productToEdit.Categoria] || 0.23;
@@ -703,17 +689,14 @@ const Products = () => {
     }));
   };
 
-  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
   const { ventasGlobales, loading: ventasLoading, getVentasProducto } = useVentas();
 
-  // 🚀 OPTIMIZACIÓN: Filtrar ventas del producto específico cuando se abre el modal
   const ventasProducto = useMemo(() => {
     return (ventasGlobales || []).filter(v => 
       v.codigoBarras === productInfo?.codigoBarras && v.nombre === productInfo?.Nombre
     );
   }, [ventasGlobales, productInfo]);
 
-  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular estadísticas cuando ya están cargadas las ventas
   const productStatsOptimized = useMemo(() => {
     if (!productInfo || !ventasGlobales) {
       return {
@@ -724,7 +707,6 @@ const Products = () => {
       };
     }
 
-    // Filtrar ventas del producto específico usando el cache global
     const ventasProductoFiltered = getVentasProducto(productInfo.codigoBarras, productInfo.Nombre);
 
     const totalVentas = ventasProductoFiltered.reduce((sum, venta) => sum + venta.cantidad, 0);
@@ -786,7 +768,6 @@ const Products = () => {
     }
   }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
 
-  // Efecto para detectar cuando se navega desde productos eliminados
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const fromDeleted = searchParams.get('fromDeleted');
@@ -794,18 +775,15 @@ const Products = () => {
     if (fromDeleted === 'true') {
       refreshProductsFromDeleted();
       
-      // Limpiar el parámetro de la URL sin recargar la página
       const newUrl = window.location.pathname + window.location.search.replace(/[?&]fromDeleted=true/, '');
       window.history.replaceState({}, '', newUrl);
     }
   }, [location.search, refreshProductsFromDeleted]);
 
-  // 🔧 Mostrar mensaje informativo para empleados usando el helper común
   const showEmpleadoAlert = () => {
     showEmpleadoAccessDeniedAlert("la gestión de productos eliminados");
   };
 
-  // 🆕 NUEVA función para manejar el clic en "Nuevo Producto" con verificación de permisos
   const handleAddProductClick = () => {
     if (isEmpleado) {
       showEmpleadoAccessDeniedAlert("la creación de productos nuevos", "Puede consultar productos existentes pero no crear nuevos.");
@@ -814,7 +792,6 @@ const Products = () => {
     navigate('/add-product');
   };
 
-  // 🆕 NUEVA función para manejar el clic en "Productos eliminados" con verificación de permisos
   const handleDeletedProductsClick = () => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -823,15 +800,12 @@ const Products = () => {
     setShowDeletedProductsModal(true);
   };
 
-  // 🆕 NUEVA función para manejar cuando se habilita un producto desde el modal de desactivados
   const handleProductReactivated = useCallback(async () => {
     try {
-      // Recargar todos los productos
       const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
       const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
       setAllProducts(productsArray);
       
-      // Mantener filtros actuales
       if (categoryFilterActive) {
         const categoryProducts = productsArray.filter(product => product.Categoria === category);
         setProductsByCategory(categoryProducts);
@@ -844,7 +818,6 @@ const Products = () => {
     }
   }, [categoryFilterActive, category, availabilityFilter, applyAvailabilityFilter]);
 
-  // 🆕 NUEVA función para manejar el clic en el toggle de lotes
   const handleLotesToggle = useCallback((productId, isExpanded) => {
     setLotesExpandedState(prev => ({
       ...prev,
@@ -852,15 +825,12 @@ const Products = () => {
     }));
   }, []);
 
-  // 🆕 NUEVA función para manejar cuando se actualiza un lote desde el modal
   const handleLoteUpdatedCallback = useCallback(async () => {
     try {
-      // Recargar todos los productos para reflejar los cambios de stock
       const data = await getProducts(1, Number.MAX_SAFE_INTEGER);
       const productsArray = Array.isArray(data.products) ? data.products : data.data.products;
       setAllProducts(productsArray);
       
-      // Actualizar productos filtrados manteniendo filtros actuales
       if (categoryFilterActive) {
         const categoryProducts = productsArray.filter(product => product.Categoria === category);
         setProductsByCategory(categoryProducts);
@@ -869,7 +839,6 @@ const Products = () => {
         applyAvailabilityFilter(productsArray, availabilityFilter);
       }
       
-      // 🆕 FORZAR RE-RENDERIZADO: Incrementar el trigger para forzar actualización de las ProductCards
       setRefreshTrigger(prev => prev + 1);
       
     } catch (error) {
@@ -995,7 +964,7 @@ const Products = () => {
                     {viewMode === 'cards' ? (
                       displayedProducts.map((product) => (
                         <ProductCard
-                          key={`${product._id}-${refreshTrigger}`} // 🆕 Incluir refreshTrigger para forzar re-renderizado
+                          key={`${product._id}-${refreshTrigger}`}
                           image={product.image}
                           name={product.Nombre}
                           marca={product.Marca}
@@ -1005,10 +974,9 @@ const Products = () => {
                           categoria={product.Categoria}
                           codigoBarras={product.codigoBarras}
                           onInfo={() => handleProductInfo(product)}
-                          onShowLotes={handleShowLotes} // 🆕 Agregar prop para gestionar lotes
+                          onShowLotes={handleShowLotes}
                           onDelete={handleDirectDelete}
                           productId={product._id}
-                          // 🆕 Props para mantener estado de expansión de lotes
                           lotesExpanded={lotesExpandedState[product._id] || false}
                           onLotesToggle={handleLotesToggle}
                         />
@@ -1017,7 +985,7 @@ const Products = () => {
                       <ProductTableView
                         products={displayedProducts}
                         onDelete={handleDeleteClick}
-                        onDeletePermanently={handleDirectDelete} // 🆕 Nueva prop para eliminación definitiva
+                        onDeletePermanently={handleDirectDelete}
                         onEdit={handleEdit}
                         onInfo={handleProductInfo}
                         onShowLotes={handleShowLotes}
@@ -1050,7 +1018,7 @@ const Products = () => {
         productStats={productStats}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
-        onDeletePermanently={handleDirectDelete} // 🆕 Nueva prop para eliminación definitiva
+        onDeletePermanently={handleDirectDelete}
         onShowPriceHistory={(productId) => {
           setPriceHistoryData(productId);
           setShowPriceHistoryModal(true);
@@ -1104,14 +1072,12 @@ const Products = () => {
         productName={stockHistoryProductName}
       />
       
-      {/* 🆕 NUEVO MODAL PARA PRODUCTOS ELIMINADOS */}
       <DisabledProductsModal
         isOpen={showDeletedProductsModal}
         onClose={() => setShowDeletedProductsModal(false)}
-        onProductReactivated={handleProductReactivated} // Pasar el callback aquí
+        onProductReactivated={handleProductReactivated}
       />
       
-      {/* 🆕 NUEVO MODAL PARA LOTES DE PRODUCTOS */}
       <ProductLotesModal
         isOpen={showLotesModal}
         onClose={() => {
@@ -1121,8 +1087,8 @@ const Products = () => {
         }}
         productId={lotesProductId}
         productName={lotesProductName}
-        onLoteUpdated={handleLoteUpdatedCallback} // 🆕 Pasar el callback para actualizar productos
-        onToggleLotes={handleLotesToggle} // 🆕 Pasar el handler para toggle de lotes
+        onLoteUpdated={handleLoteUpdatedCallback}
+        onToggleLotes={handleLotesToggle}
       />
     </div>
   );

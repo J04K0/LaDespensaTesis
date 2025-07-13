@@ -20,18 +20,17 @@ const CuentasPorPagar = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [cuentasAgrupadas, setCuentasAgrupadas] = useState({});
-  const [ordenProveedores, setOrdenProveedores] = useState([]); // Movido aquí arriba
+  const [ordenProveedores, setOrdenProveedores] = useState([]);
   const [totalGeneral, setTotalGeneral] = useState(0);
   const [totalPagado, setTotalPagado] = useState(0);
   const [totalPendiente, setTotalPendiente] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
-  const [estadoCuentasFilter, setEstadoCuentasFilter] = useState('activas'); // Nuevo filtro para activas/inactivas
+  const [estadoCuentasFilter, setEstadoCuentasFilter] = useState('activas');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  // 🆕 Estados para el autocompletado
   const [proveedoresSugeridos, setProveedoresSugeridos] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [proveedoresUnicos, setProveedoresUnicos] = useState([]);
@@ -83,7 +82,6 @@ const CuentasPorPagar = () => {
     cuentasData.forEach(cuenta => {
       const key = `${cuenta.Nombre}-${cuenta.Categoria}`;
       
-      // Si es la primera vez que vemos este proveedor, lo guardamos en el array de orden
       if (!agrupadas[key]) {
         orden.push(key);
         agrupadas[key] = {
@@ -94,7 +92,7 @@ const CuentasPorPagar = () => {
           meses: {},
           cantidadCuentas: 0, // Contador para la cantidad de cuentas por proveedor
           createdAt: cuenta.createdAt || new Date(), // Guardamos la fecha de creación para ordenar
-          todosLosAnios: {} // 🆕 Para almacenar cuentas de todos los años cuando hay búsqueda
+          todosLosAnios: {} 
         };
       }
       
@@ -135,7 +133,6 @@ const CuentasPorPagar = () => {
       }
     });
     
-    // Ordenar el array 'orden' basado en la cantidad de cuentas que tiene cada proveedor
     orden.sort((a, b) => {
       return agrupadas[b].cantidadCuentas - agrupadas[a].cantidadCuentas;
     });
@@ -227,7 +224,6 @@ const CuentasPorPagar = () => {
     let filtered = [];
     
     if (searchQuery.trim()) {
-      // Si hay búsqueda por nombre, buscar en TODAS las cuentas sin filtro de año
       const fetchAllCuentasForSearch = async () => {
         try {
           const responseAll = await axios.get('/cuentasPorPagar', {
@@ -236,14 +232,12 @@ const CuentasPorPagar = () => {
               limit: 10000, // Traer todas las cuentas
               categoria: categoriaFilter,
               estado: estadoFilter
-              // NO incluir year para traer todas las cuentas de todos los años
             }
           });
           
           if (responseAll.data.status === "success") {
             const todasLasCuentas = responseAll.data.data.cuentas.filter(cuenta => cuenta.Activo !== false);
             
-            // Filtrar por nombre/RUT en todas las cuentas
             filtered = todasLasCuentas.filter(cuenta => 
               cuenta.Nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
               cuenta.numeroVerificador.toLowerCase().includes(searchQuery.toLowerCase())
@@ -252,8 +246,7 @@ const CuentasPorPagar = () => {
           
           setFilteredCuentas(filtered);
           
-          // Agrupar cuentas filtradas (ahora puede incluir múltiples años)
-          const { agrupadas, orden } = agruparCuentas(filtered, false); // Pasar false para no filtrar por año
+          const { agrupadas, orden } = agruparCuentas(filtered, false);
           setCuentasAgrupadas(agrupadas);
           setOrdenProveedores(orden);
           
@@ -284,7 +277,7 @@ const CuentasPorPagar = () => {
         setCurrentPage(1);
       }
     }
-  }, [searchQuery, categoriaFilter, estadoFilter]); // Remover cuentas y yearSelected de las dependencias
+  }, [searchQuery, categoriaFilter, estadoFilter]);
 
   // Efectos para manejar el rendimiento del modal
   useEffect(() => {
@@ -426,10 +419,7 @@ const CuentasPorPagar = () => {
         // Eliminar la cuenta
         const response = await axios.delete(`/cuentasPorPagar/eliminar/${id}`);
         if (response.data.status === "success") {
-          // Si era la única cuenta del proveedor en este año, crear una cuenta "fantasma" 
-          // para mantener visible al proveedor en la tabla
           if (cuentasDelProveedor.length === 1) {
-            // Crear una cuenta temporal sin mes/monto para mantener al proveedor visible
             const cuentaFantasma = {
               _id: `temp-${Date.now()}`,
               Nombre: cuentaAEliminar.Nombre,
@@ -609,12 +599,11 @@ const handleSubmit = async () => {
       return;
     }
 
-    // Filtrar solo los campos que acepta el backend
     const cuentaData = {
       Nombre: currentCuenta.Nombre,
       numeroVerificador: currentCuenta.numeroVerificador,
       Mes: currentCuenta.Mes,
-      Monto: parseFloat(currentCuenta.Monto), // Asegurar que sea número
+      Monto: parseFloat(currentCuenta.Monto),
       Estado: currentCuenta.Estado,
       Categoria: currentCuenta.Categoria
     };
@@ -647,7 +636,6 @@ const handleSubmit = async () => {
   }
 };
   
-  // Generar años para el selector (10 años atrás y 5 años adelante)
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
@@ -672,11 +660,10 @@ const handleCancel = async () => {
   );
 
   if (result.isConfirmed) {
-    setShowModal(false); // Cerrar el modal si el usuario confirma
+    setShowModal(false);
   }
 };
 
-// 🆕 Función para manejar clic en el overlay del modal
 const handleModalOverlayClick = async (e) => {
   if (e.target === e.currentTarget) {
     await handleCancel();
@@ -738,16 +725,13 @@ const formatNumberWithDots = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
-// 🔧 Obtener el rol del usuario para restricciones
 const { userRole } = useRole();
 const isEmpleado = userRole === 'empleado';
 
-// 🔧 Función para mostrar alerta de empleado
 const showEmpleadoAlert = () => {
   showEmpleadoAccessDeniedAlert("la gestión de cuentas por pagar", "Las cuentas pueden ser consultadas pero solo administradores y jefes pueden crear, editar o eliminar.");
 };
 
-// 🆕 Función para manejar clic en "Agregar Cuenta" con verificación de permisos
 const handleAddCuentaClick = () => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -756,28 +740,24 @@ const handleAddCuentaClick = () => {
   handleAddCuenta();
 };
 
-// 🆕 Función para manejar edición de proveedor con verificación de permisos
 const handleEditProveedorClick = (proveedor) => {
   if (isEmpleado) {
     showEmpleadoAlert();
     return;
   }
-  
-  // Para la edición del proveedor, no necesitamos datos de una cuenta específica
-  // Solo los datos generales del proveedor
+
   setCurrentCuenta({
     Nombre: proveedor.nombre,
     numeroVerificador: proveedor.numeroVerificador,
     Categoria: proveedor.categoria,
-    isProveedorEdit: true, // Flag para indicar que es edición de proveedor
-    originalNombre: proveedor.nombre, // Guardar el nombre original para la búsqueda
-    originalCategoria: proveedor.categoria // Guardar la categoría original
+    isProveedorEdit: true,
+    originalNombre: proveedor.nombre,
+    originalCategoria: proveedor.categoria
   });
   setIsEditing(true);
   setShowModal(true);
 };
 
-// 🆕 Función para manejar edición con verificación de permisos
 const handleEditMesClick = (proveedor, mes) => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -786,7 +766,6 @@ const handleEditMesClick = (proveedor, mes) => {
   handleEditMes(proveedor, mes);
 };
 
-// 🆕 Función para manejar eliminación con verificación de permisos
 const handleDeleteClick = async (id) => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -795,7 +774,6 @@ const handleDeleteClick = async (id) => {
   await handleDelete(id);
 };
 
-// 🆕 Función para manejar toggle de pago con verificación de permisos
 const handleTogglePaidClick = async (id, estadoActual) => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -804,7 +782,6 @@ const handleTogglePaidClick = async (id, estadoActual) => {
   await handleTogglePaid(id, estadoActual);
 };
 
-// 🆕 Función para manejar cambio de estado de cuenta (activo/inactivo)
 const handleCambiarEstadoCuenta = async (proveedor, activo) => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -853,7 +830,6 @@ const handleCambiarEstadoCuenta = async (proveedor, activo) => {
   }
 };
 
-// 🆕 Función para manejar eliminación permanente de cuenta
 const handleDeleteCuentaPermanente = async (proveedor) => {
   if (isEmpleado) {
     showEmpleadoAlert();
@@ -892,7 +868,6 @@ const handleDeleteCuentaPermanente = async (proveedor) => {
   }
 };
 
-// 🆕 Función para manejar el autocompletado de proveedores
 const handleProveedorChange = async (e) => {
   const { value } = e.target;
   setCurrentCuenta(prev => ({
@@ -907,14 +882,12 @@ const handleProveedorChange = async (e) => {
   }
   
   try {
-    // Buscar en TODAS las cuentas sin filtro de año para el autocompletado
     const responseAll = await axios.get('/cuentasPorPagar', {
       params: {
         page: 1,
-        limit: 10000, // Traer todas las cuentas
-        categoria: '', // Sin filtro de categoría para autocompletado
-        estado: '' // Sin filtro de estado para autocompletado
-        // NO incluir year para traer todas las cuentas de todos los años
+        limit: 10000,
+        categoria: '',
+        estado: ''
       }
     });
     

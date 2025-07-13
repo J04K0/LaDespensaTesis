@@ -180,24 +180,14 @@ const AddProducts = () => {
       setSearchLoading(true);
       const response = await getProducts(page, productsPerPage);
       
-      console.log('🔍 DEBUGGING - Respuesta completa del backend:', response);
-      
       const products = response.data?.products || response.products || [];
       const totalPagesFromBackend = response.data?.totalPages || response.totalPages || 1;
       const currentPageFromBackend = response.data?.currentPage || response.currentPage || 1;
-      const totalProductsFromBackend = response.data?.total || response.total || 0; // 🆕 USAR: Campo total del backend
-      
-      console.log('📊 DEBUGGING - Datos de paginación:', {
-        products: products.length,
-        totalPages: totalPagesFromBackend,
-        currentPage: currentPageFromBackend,
-        productsPerPage,
-        totalFromBackend: totalProductsFromBackend
-      });
+      const totalProductsFromBackend = response.data?.total || response.total || 0;
       
       setProductsList(products);
       setFilteredProducts(products);
-      setTotalProducts(totalProductsFromBackend); // 🔄 CAMBIO: Usar el total exacto del backend
+      setTotalProducts(totalProductsFromBackend);
       setTotalPages(totalPagesFromBackend);
       setCurrentPage(parseInt(currentPageFromBackend));
     } catch (error) {
@@ -294,11 +284,11 @@ const AddProducts = () => {
       fechaVencimiento: product.fechaVencimiento
     });
     
-    // 🔄 MODIFICADO: Fijar el precio de venta del producto existente (no modificable)
+    //Fijar el precio de venta del producto existente
     setFormData(prev => ({
       ...prev,
       'addproducts-precio-compra': product.PrecioCompra || '',
-      'addproducts-precio-venta': product.PrecioVenta || '', // 🆕 FIJO: Usar el precio actual del producto
+      'addproducts-precio-venta': product.PrecioVenta || '', 
       'addproducts-categoria': product.Categoria || '', // Necesario para calcular precio recomendado
       'addproducts-fecha-vencimiento': '' // Limpiar fecha para que sea del nuevo lote
     }));
@@ -354,7 +344,6 @@ const AddProducts = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 🔧 MEJORADO: Función para manejar cambio de imagen con validación robusta
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     
@@ -486,7 +475,6 @@ const AddProducts = () => {
     setError(null);
     
     try {
-      // 🔄 CAMBIO PRINCIPAL: Usar el servicio en lugar de fetch directo
       const loteData = {
         cantidad: parseInt(stockToAdd),
         precioCompra: parseFloat(formData['addproducts-precio-compra']),
@@ -494,9 +482,6 @@ const AddProducts = () => {
         fechaVencimiento: formData['addproducts-fecha-vencimiento']
       };
 
-      console.log('🔍 DEBUGGING - Creando nuevo lote:', loteData);
-
-      // 🆕 USAR EL NUEVO SERVICIO DE LOTES
       const result = await agregarLoteProducto(existingProduct._id, loteData);
       
       showSuccessAlert(
@@ -513,7 +498,6 @@ const AddProducts = () => {
     }
   };
 
-  // 🔧 MEJORADO: Función para manejar nuevo producto con mejor manejo de errores
   const handleNewProductSubmit = async () => {
     
     // Limpiar errores previos
@@ -577,10 +561,8 @@ const AddProducts = () => {
     setError(null);
 
     try {
-      // 🆕 CRÍTICO: Crear un FormData completamente nuevo para cada intento
       const productFormData = new FormData();
       
-      // 🆕 NUEVO: Validar y limpiar los datos antes de agregarlos
       const cleanedData = {};
       Object.keys(formData).forEach(key => {
         const value = formData[key];
@@ -594,7 +576,6 @@ const AddProducts = () => {
         productFormData.append(key, cleanedData[key]);
       });
 
-      // 🆕 CRÍTICO: Manejo mejorado de la imagen para evitar corrupción
       if (image instanceof File) {
         // Verificar que la imagen sigue siendo válida
         if (!image.name || image.size === 0) {
@@ -650,28 +631,20 @@ const AddProducts = () => {
       
       let errorMessage = 'Ocurrió un error al intentar crear el producto.';
       
-      // 🆕 MEJORADO: Manejo de errores más específico
       if (error.message && error.message.includes('imagen se modificó durante el envío')) {
         errorMessage = error.message;
-        // Limpiar la imagen para forzar una nueva selección
         setImage(null);
         setImagePreview(null);
-        console.log('🧹 Imagen limpiada debido a corrupción');
       } else if (error.message && error.message.includes('imagen corrupta')) {
         errorMessage = error.message;
-        // Limpiar la imagen para forzar una nueva selección
         setImage(null);
         setImagePreview(null);
-        console.log('🧹 Imagen limpiada debido a corrupción');
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        console.log('🎯 Usando mensaje específico del servidor:', errorMessage);
       } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
-        console.log('🎯 Usando error específico del servidor:', errorMessage);
       } else if (error.message) {
         errorMessage = error.message.startsWith('Error:') ? error.message : `Error: ${error.message}`;
-        console.log('🎯 Usando mensaje de error genérico:', errorMessage);
       }
       
       console.log('🔍 Mensaje de error final que se mostrará:', errorMessage);
@@ -683,13 +656,11 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 MEJORADO: Función para limpiar completamente el estado en caso de error
   const clearFormOnError = () => {
     console.log('🧹 Limpiando estado de errores...');
     setError(null);
     setLoading(false);
     
-    // 🆕 NUEVO: Verificar y limpiar estados corruptos
     try {
       // Verificar que la imagen sigue siendo válida si existe
       if (image instanceof File) {
@@ -711,7 +682,6 @@ const AddProducts = () => {
         }, 100);
       }
       
-      // 🆕 NUEVO: Forzar limpieza de caché de red si es necesario
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for(let registration of registrations) {
@@ -738,7 +708,6 @@ const AddProducts = () => {
     }
   };
 
-  // 🆕 NUEVO: Función para volver a selección de modo
   const handleBackToModeSelection = () => {
     setOperationMode(null);
     setExistingProduct(null);
@@ -764,7 +733,6 @@ const AddProducts = () => {
     return null;
   }
 
-  // 🆕 NUEVO: Renderizar selector de modo si no se ha seleccionado
   if (!operationMode) {
     return (
       <div className="app-container">
@@ -847,7 +815,6 @@ const AddProducts = () => {
           <div className="addproducts-card">
             <div className="addproducts-card-body">
               {operationMode === 'stock' && !existingProduct ? (
-                // 🆕 NUEVO: Vista de búsqueda inteligente de productos
                 <div className="addproducts-search-section">
                   <div className="addproducts-section-header">
                     <FontAwesomeIcon icon={faSearch} className="addproducts-section-icon" />
@@ -999,7 +966,6 @@ const AddProducts = () => {
                   )}
                 </div>
               ) : operationMode === 'stock' && existingProduct ? (
-                // 🆕 NUEVO: Vista mejorada para agregar stock con formulario completo
                 <form onSubmit={handleSubmit} className="addproducts-form">
                   {error && (
                     <div className="addproducts-alert addproducts-alert-danger">{error}</div>
@@ -1476,7 +1442,6 @@ const AddProducts = () => {
         </div>
       </div>
       
-      {/* 🆕 NUEVO: Modal para edición de precio */}
       {showPriceModal && (
         <div className="addproducts-price-modal">
           <div className="addproducts-price-modal-content">

@@ -809,21 +809,20 @@ const DeudoresList = () => {
         fontStyle: 'bold'
       },
       columnStyles: estadoFilter === 'inactivos' ? {
-        0: { cellWidth: 35 }, // Nombre
-        1: { cellWidth: 25 }, // Fecha
-        2: { cellWidth: 25 }, // Teléfono
-        3: { cellWidth: 25, halign: 'right' }, // Deuda
-        4: { cellWidth: 25 }, // Estado
-        5: { cellWidth: 30 }  // Fecha Desactivación
+        0: { cellWidth: 35 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25, halign: 'right' },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 30 }
       } : {
-        0: { cellWidth: 40 }, // Nombre
-        1: { cellWidth: 30 }, // Fecha
-        2: { cellWidth: 30 }, // Teléfono
-        3: { cellWidth: 30, halign: 'right' }, // Deuda
-        4: { cellWidth: 35 }  // Estado
+        0: { cellWidth: 40 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 30, halign: 'right' },
+        4: { cellWidth: 35 }
       },
       didDrawPage: (data) => {
-        // Pie de página
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -851,16 +850,13 @@ const DeudoresList = () => {
     doc.save(nombreArchivo);
   };
 
-  // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
   const isEmpleado = userRole === 'empleado';
 
-  // 🔧 Función para mostrar alerta de empleado
   const showEmpleadoAlert = () => {
     showEmpleadoAccessDeniedAlert("la gestión de deudores", "Los deudores pueden ser consultados pero solo administradores y jefes pueden crear, editar o eliminar.");
   };
 
-  // 🆕 Función para manejar clic en "Agregar Deudor" con verificación de permisos
   const handleAddDeudorClick = () => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -869,7 +865,6 @@ const DeudoresList = () => {
     navigate('/agregar-deudor');
   };
 
-  // 🆕 Función para manejar edición con verificación de permisos
   const handleEditClick = (deudor) => {
     if (isEmpleado) {
       showEmpleadoAlert();
@@ -878,7 +873,6 @@ const DeudoresList = () => {
     handleEdit(deudor); // Usar la función handleEdit correcta
   };
 
-  // 🆕 Función para manejar eliminación con verificación de permisos
   const handleDeleteClick = async (id) => {
     if (isEmpleado) {
       showEmpleadoAlert();

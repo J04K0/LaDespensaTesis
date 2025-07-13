@@ -36,11 +36,9 @@ const HistorySale = () => {
   // Estado para mostrar u ocultar ventas anuladas
   const [showVentasAnuladas, setShowVentasAnuladas] = useState(false);
 
-  // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
   const isEmpleado = userRole === 'empleado';
 
-  // 🔧 Mostrar mensaje informativo para empleados
   const showEmpleadoAlert = () => {
     showErrorAlert(
       "Acceso Restringido", 
@@ -64,7 +62,6 @@ const HistorySale = () => {
         response = await obtenerVentasPorTicket();
       }
       
-      // 🔧 FIX: Acceder correctamente a los datos según el tipo de respuesta
       let ventasData = [];
       if (showVentasAnuladas) {
         // Para ventas anuladas: response.data.ventas
@@ -90,7 +87,6 @@ const HistorySale = () => {
     } catch (error) {
       console.error("Error al obtener el historial de ventas:", error);
       setError("Error al obtener el historial de ventas.");
-      // Asegurar que tenemos arrays vacíos en caso de error
       setVentas([]);
       setFilteredVentas([]);
       setLoading(false);
@@ -148,9 +144,7 @@ const HistorySale = () => {
     setTotalRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Función para manejar la eliminación de un ticket
   const handleDeleteTicket = async (ticketId) => {
-    // Usar SweetAlert2 directamente para tener más control sobre el input
     const Swal = (await import('sweetalert2')).default;
     
     const { value: motivo, dismiss } = await Swal.fire({
@@ -205,7 +199,6 @@ const HistorySale = () => {
     } catch (error) {
       console.error("Error al anular ticket:", error);
       
-      // 🔧 MEJORAR: Manejo de errores más específico
       let errorMessage = "No se pudo anular la venta";
       
       if (error.message) {
@@ -238,13 +231,12 @@ const HistorySale = () => {
     setSelectedTicket(ticket);
     // Clonar los productos para poder editarlos
     setEditedProducts([...ticket.ventas.map(item => ({...item}))]);
-    setComentarioDevolucion(''); // Reiniciar comentario al editar
+    setComentarioDevolucion('');
     setShowEditModal(true);
   };
 
   // Función para guardar los cambios en un ticket
   const handleSaveEdit = async () => {
-    // 🆕 Validar que el comentario no esté vacío
     if (!comentarioDevolucion.trim()) {
       showErrorAlert("Comentario requerido", "Debe ingresar un comentario explicando el motivo de la devolución.");
       return;
@@ -260,7 +252,6 @@ const HistorySale = () => {
       await editarTicket(selectedTicket._id, editedProducts, comentarioDevolucion);
       setShowEditModal(false);
       showSuccessAlert("Éxito", "Venta actualizada correctamente");
-      // Refrescar la lista de ventas
       await fetchVentas();
     } catch (error) {
       console.error("Error al editar ticket:", error);
@@ -291,7 +282,6 @@ const HistorySale = () => {
     setComentarioDevolucion(''); // Reiniciar comentario al cerrar
   };
 
-  // 🆕 Función para manejar clic en el overlay del modal de edición
   const handleEditModalOverlayClick = async (e) => {
     if (e.target === e.currentTarget) {
       await handleCancelEdit();
@@ -715,12 +705,10 @@ const HistorySale = () => {
                                 <td className="acciones-cell">
                                   <div className="historysaleactionbuttons">
                                     {isEmpleado ? (
-                                      // 🔧 Mensaje informativo para empleados
                                       <div className="employee-info-text">
                                         <span>Solo lectura</span>
                                       </div>
                                     ) : (
-                                      // 🔧 Botones completos para admin y jefe
                                       <>
                                         <button 
                                           onClick={() => handleEditTicket(venta)} 

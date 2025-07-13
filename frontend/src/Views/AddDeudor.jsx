@@ -13,11 +13,9 @@ const AddDeudor = () => {
   const [deudaTotal, setDeudaTotal] = useState('');
   const navigate = useNavigate();
 
-  // 🔧 Obtener el rol del usuario para restricciones
   const { userRole } = useRole();
   const isEmpleado = userRole === 'empleado';
 
-  // 🔧 Verificar permisos al cargar el componente
   useEffect(() => {
     if (isEmpleado) {
       showEmpleadoAccessDeniedAlert("la creación de deudores", "Solo administradores y jefes pueden agregar nuevos deudores al sistema.");

@@ -47,30 +47,25 @@ const Home = () => {
   const [deudores, setDeudores] = useState([]);
   const navigate = useNavigate();
   
-  // Remover estados innecesarios que se manejan con useMemo
   const [currentChart, setCurrentChart] = useState(0);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [timeRange, setTimeRange] = useState("todo");
 
-  // Referencia al contenedor del gráfico
   const chartRef = useRef(null);
 
   const { ventasGlobales, loading: ventasLoading, error: ventasError, initialLoadComplete } = useVentas();
   const { userRole: role } = useRole();
 
   const isDataLoading = useMemo(() => {
-    // Si es la primera carga y aún no se ha completado
     if (!initialLoadComplete && ventasLoading) {
       return true;
     }
     
-    // Si hay un error y no tenemos datos
     if (ventasError && !ventasGlobales) {
       return false;
     }
     
-    // Si ya completamos la carga inicial, mostrar los datos aunque estén vacíos
     return !initialLoadComplete;
   }, [ventasLoading, ventasGlobales, ventasError, initialLoadComplete]);
 
@@ -184,7 +179,6 @@ const Home = () => {
           return percentage > 5 ? `${percentage}%` : '';
         }
       },
-      // Mantener un tamaño consistente independientemente de la cantidad de datos
       layout: {
         padding: {
           left: 20,
@@ -193,12 +187,10 @@ const Home = () => {
           bottom: 20
         }
       },
-      // Asegurar que el gráfico siempre ocupe todo el espacio disponible
       aspectRatio: 1
     },
   };
 
-  // Función para descargar todos los gráficos como PDF
   const downloadAllChartsAsPDF = async () => {
     try {
       // Activar estado de descarga
