@@ -7,13 +7,11 @@ let isConnecting = false;
 export const initializeSocket = () => {
   // Si ya existe una conexión activa, devolverla
   if (socket && socket.connected) {
-    console.log('🔄 Reutilizando conexión WebSocket existente');
     return socket;
   }
 
   // Si ya se está conectando, esperar a que termine
   if (isConnecting) {
-    console.log('⏳ Ya se está conectando al WebSocket...');
     return socket;
   }
 
@@ -21,9 +19,7 @@ export const initializeSocket = () => {
   isConnecting = true;
 
   // Determinar la URL base del servidor
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-  console.log('🌐 Conectando a WebSocket en:', baseUrl);
-    
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';    
   // Crear la conexión WebSocket con configuración mejorada
   socket = io(baseUrl, {
     autoConnect: true,
@@ -38,11 +34,9 @@ export const initializeSocket = () => {
   
   socket.on('connect', () => {
     isConnecting = false;
-    console.log('Conectado al servidor de alertas');
   });
   
   socket.on('disconnect', (reason) => {
-    console.log('Desconectado del servidor de alertas:', reason);
     // Solo marcar como no conectando si es una desconexión permanente
     if (reason === 'io client disconnect') {
       isConnecting = false;

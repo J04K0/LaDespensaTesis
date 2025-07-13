@@ -234,7 +234,6 @@ export class DataCollectionService {
 
     const stockTotal = productosArray.reduce((sum, p) => sum + (p.Stock || 0), 0);
     
-    // Calcular productos sin rotación (sin ventas en los últimos 30 días)
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() - 30);
     
@@ -252,7 +251,7 @@ export class DataCollectionService {
     ).length;
 
     // Calcular promedio de días de inventario
-    const ventasDiarias = ventasArray.length / 30; // Aproximación de ventas diarias
+    const ventasDiarias = ventasArray.length / 30;
     const diasInventario = ventasDiarias > 0 ? stockTotal / ventasDiarias : 0;
 
     // Calcular deuda total

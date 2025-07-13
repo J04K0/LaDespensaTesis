@@ -17,7 +17,7 @@
   width: 100vw; 
   padding: 0;
   margin: 0;
-  background-color: #f5f8fa; /* Fondo más suave */
+  background-color: #f5f8fa;
 }
 
 .add-deudor-main-content {
@@ -31,7 +31,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.3s ease; /* Efecto sutil al cargar */
+  transition: transform 0.3s ease;
 }
 
 .add-deudor-main-content:hover {
@@ -40,8 +40,8 @@
 
 .add-deudor-main-content h2 {
   text-align: center;
-  margin-bottom: 25px; /* Reducido de 30px */
-  font-size: 24px; /* Reducido de 28px */
+  margin-bottom: 25px;
+  font-size: 24px;
   width: 100%;
   color: var(--primary-dark);
   border-bottom: 1px solid #eee;
@@ -52,7 +52,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 15px; /* Reducido de 20px */
+  gap: 15px;
   max-width: 500px;
 }
 
@@ -63,18 +63,18 @@
 }
 
 .add-deudor-form-group label {
-  margin-bottom: 8px; /* Reducido de 10px */
+  margin-bottom: 8px;
   font-weight: 600;
-  font-size: 16px; /* Reducido de 18px */
+  font-size: 16px;
   color: #333;
 }
 
 .add-deudor-form-group input {
   width: 100%;
-  padding: 12px; /* Reducido de 15px */
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 14px; /* Reducido de 16px */
+  font-size: 14px;
   box-sizing: border-box;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
@@ -88,7 +88,7 @@
 .add-deudor-button-group {
   display: flex;
   justify-content: center;
-  margin-top: 25px; /* Reducido de 30px */
+  margin-top: 25px;
   width: 100%;
   gap: 15px;
 }
@@ -96,9 +96,9 @@
 .add-deudor-button-group .submit-button,
 .add-deudor-button-group .add-deudor-cancel-button {
   flex: 1;
-  padding: 12px 20px; /* Reducido de 15px 30px */
+  padding: 12px 20px;
   border-radius: 8px;
-  font-size: 16px; /* Reducido de 18px */
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   color: white;

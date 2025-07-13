@@ -124,7 +124,6 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
 
   export const eliminarTicket = async (ticketId, motivo) => {
     try {
-      // 🔧 VALIDACIÓN: Verificar parámetros antes de enviar
       if (!ticketId || typeof ticketId !== 'string' || ticketId.trim() === '') {
         throw new Error('ID de ticket inválido');
       }

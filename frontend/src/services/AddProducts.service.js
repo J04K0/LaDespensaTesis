@@ -128,7 +128,6 @@ export const addProducts = async (formData) => {
     } catch (error) {
         console.error('❌ Error al añadir el producto:', error);
         
-        // 🔧 MEJORADO: Manejo de errores más específico y detallado
         if (error.code === 'ERR_UPLOAD_FILE_CHANGED') {
             throw new Error('Error al procesar la imagen. La imagen se modificó durante el envío. Por favor, seleccione la imagen nuevamente y vuelva a intentar.');
         } else if (error.code === 'ECONNABORTED') {
@@ -140,7 +139,6 @@ export const addProducts = async (formData) => {
         } else if (error.message && error.message.includes('archivo')) {
             throw error; // Mantener errores de validación de archivo
         } else if (error.response) {
-            // Error del servidor con respuesta
             const serverMessage = error.response.data?.message || error.response.data?.error || 'Error del servidor';
             throw new Error(serverMessage);
         }
@@ -173,7 +171,6 @@ export const disableProduct = async (id, disableData) => {
   }
 };
 
-// 🆕 NUEVO: Función para obtener historial de stock
 export const getStockHistory = async (productId) => {
   try {
     const response = await axios.get(`/products/historial-stock/${productId}`);
@@ -184,13 +181,11 @@ export const getStockHistory = async (productId) => {
   }
 };
 
-// 🆕 NUEVO: Función para obtener productos desactivados
 export const getDisabledProducts = async (page = 1, limit = 10) => {
   try {
     const response = await axios.get(`/products/eliminados?page=${page}&limit=${limit}`);
     return response.data;
   } catch (error) {
-    // Si el error es 404, significa que no hay productos desactivados, devolver estructura vacía
     if (error.response && error.response.status === 404) {
       return {
         data: {
@@ -206,7 +201,6 @@ export const getDisabledProducts = async (page = 1, limit = 10) => {
   }
 };
 
-// 🆕 NUEVO: Función para restaurar un producto eliminado
 export const restoreProduct = async (productId, restoreData) => {
   try {
     const response = await axios.patch(`/products/restaurar/${productId}`, restoreData);
@@ -314,37 +308,6 @@ export const actualizarStockVenta = async (productosVendidos) => {
   }
 };
 
-/*export const registrarVenta = async (productosVendidos) => {
-  try {
-    const response = await axios.post("/products/registrar-venta", { productosVendidos });
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al registrar la venta:", error);
-    throw error;
-  }
-}; */
-
-/*export const obtenerVentas = async () => {
-  try {
-    const response = await axios.get("/products/ventas/obtener");
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al obtener las ventas:", error);
-    throw error;
-  }
-}
-*/
-/*
-export const obtenerVentasPorTicket = async () => {
-  try {
-    const response = await axios.get("/products/ventas/tickets");
-    return response.data;
-  } catch (error) {
-    console.error("❌ Error al obtener las ventas por ticket:", error);
-    throw error;
-  }
-};*/
-
 export const getProductByBarcode = async (barcode) => {
   try {
     const response = await axios.get(`/products/getbybarcode/${barcode}`);
@@ -386,7 +349,6 @@ export const getProductPriceHistory = async (id) => {
   }
 };
 
-// 🆕 NUEVO: Función para agregar un nuevo lote a un producto
 export const agregarLoteProducto = async (productId, loteData) => {
   try {
     const response = await axios.post(`/products/lotes/${productId}`, loteData);
@@ -397,7 +359,6 @@ export const agregarLoteProducto = async (productId, loteData) => {
   }
 };
 
-// 🆕 NUEVO: Función para obtener los lotes de un producto
 export const getLotesProducto = async (productId) => {
   try {
     const response = await axios.get(`/products/lotes/${productId}`);
@@ -408,7 +369,6 @@ export const getLotesProducto = async (productId) => {
   }
 };
 
-// 🆕 NUEVO: Función para eliminar producto definitivamente
 export const deleteProductPermanently = async (id) => {
   try {
     const response = await axios.delete(`/products/eliminar-permanente/${id}`);
@@ -419,7 +379,6 @@ export const deleteProductPermanently = async (id) => {
   }
 };
 
-// 🆕 NUEVO: Función para editar un lote específico de un producto
 export const editarLoteProducto = async (productId, loteId, loteData) => {
   try {
     const response = await axios.put(`/products/lotes/${productId}/${loteId}`, loteData);
@@ -430,7 +389,6 @@ export const editarLoteProducto = async (productId, loteId, loteData) => {
   }
 };
 
-// 🆕 NUEVO: Función para obtener información del próximo lote a usar (FIFO)
 export const getProximoLoteProducto = async (productId) => {
   try {
     const response = await axios.get(`/products/proximo-lote/${productId}`);

@@ -110,16 +110,11 @@ const NotificationCenter = () => {
 
   useEffect(() => {
     const socket = getSocket();
-    
-    // Verificar conexión
-    console.log('🔌 Inicializando NotificationCenter - Socket conectado:', socket.connected);
-    
-    socket.on('nueva_alerta', (alerta) => {
-      console.log('🔔 Nueva alerta recibida:', alerta);
-      
+        
+    socket.on('nueva_alerta', (alerta) => {      
       setNotifications(prev => {
         const newNotification = {
-          id: alerta.id || Date.now(), // Usar el ID del backend
+          id: alerta.id || Date.now(),
           type: alerta.type,
           message: alerta.message,
           data: alerta.data,
@@ -138,13 +133,9 @@ const NotificationCenter = () => {
     
     // Manejar eventos de conexión para debugging
     socket.on('connect', () => {
-      console.log('✅ NotificationCenter - Conectado a WebSocket');
     });
-    
     socket.on('disconnect', (reason) => {
-      console.log('❌ NotificationCenter - Desconectado de WebSocket:', reason);
     });
-    
     socket.on('connect_error', (error) => {
       console.error('💥 NotificationCenter - Error de conexión:', error);
     });
@@ -155,7 +146,6 @@ const NotificationCenter = () => {
     const groupedNotifications = groupSimilarNotifications(cleanNotifications);
     
     if (cleanNotifications.length !== savedNotifications.length) {
-      console.log(`🧹 Limpiadas ${savedNotifications.length - cleanNotifications.length} notificaciones duplicadas`);
       localStorage.setItem('notifications', JSON.stringify(groupedNotifications));
     }
     

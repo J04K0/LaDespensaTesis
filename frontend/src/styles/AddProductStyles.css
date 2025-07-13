@@ -70,17 +70,14 @@
   max-width: 100%;
 }
 
-/* Card contenedora del formulario - OPTIMIZADA */
 .addproducts-card {
   background-color: white;
   border-radius: 16px;
-  /* Sombra simplificada para mejor rendimiento */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   margin-bottom: 30px;
   border: 1px solid #e0e0e0;
   width: 100%;
-  /* Optimización de rendering */
   will-change: auto;
 }
 
@@ -88,10 +85,9 @@
   padding: 30px;
 }
 
-/* Estilos para las secciones del formulario */
 .addproducts-form-section {
-  margin-bottom: 25px; /* Reducido de 30px */
-  padding-bottom: 15px; /* Reducido de 20px */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -102,33 +98,33 @@
 .addproducts-section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 20px; /* Reducido de 25px */
+  margin-bottom: 20px;
   justify-content: flex-start;
-  gap: 8px; /* Reducido de 10px */
-  padding-bottom: 8px; /* Añadido para separar del contenido */
-  border-bottom: 1px solid #f0f0f0; /* Añadido para mejor separación visual */
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .addproducts-section-icon {
   color: var(--secondary);
-  font-size: 1.2rem; /* Reducido de 1.4rem para mejor proporción con el icono */
-  width: 28px; /* Forzado con !important */
-  height: 28px; /* Forzado con !important */
+  font-size: 1.2rem;
+  width: 28px;
+  height: 28px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: var(--primary-light);
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-right: 10px; /* Forzado con !important */
+  margin-right: 10px;
 }
 
 .addproducts-section-title {
   color: var(--primary-dark);
-  font-size: 1.25rem; /* Reducido de 1.4rem para mejor proporción con el icono */
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
-  letter-spacing: -0.01em; /* Añadido para mejorar legibilidad */
+  letter-spacing: -0.01em;
 }
 
 /* Organización del formulario en filas */
@@ -145,7 +141,7 @@
 
 /* Grupos de formularios */
 .addproducts-form-group {
-  margin-bottom: 18px; /* Reducido de 20px */
+  margin-bottom: 18px;
   padding: 0 10px;
   flex: 1;
   min-width: calc(50% - 20px);
@@ -157,19 +153,16 @@
   min-width: calc(50% - 20px);
 }
 
-/* En la sección de inventario queremos 3 columnas */
 .addproducts-form-section:nth-child(2) .addproducts-form-row:first-child .addproducts-form-group {
   flex: 1;
   min-width: calc(33.33% - 20px);
 }
 
-/* La fecha de vencimiento debe ocupar menos espacio */
 .addproducts-fecha-vencimiento {
   flex: 0 0 auto;
   min-width: calc(50% - 20px);
 }
 
-/* Estilos para etiquetas de formulario */
 .addproducts-form-label {
   font-weight: 600;
   font-size: 0.95rem;
@@ -178,14 +171,14 @@
 
 /* Estilos para inputs y selects */
 .addproducts-form-control, .addproducts-form-select {
-  padding: 9px 12px; /* Reducido de 10px 12px */
-  font-size: 0.9rem; /* Reducido de 0.95rem */
+  padding: 9px 12px;
+  font-size: 0.9rem;
   border-radius: 8px;
   border: 1px solid #ced4da;
   background-color: #fff;
   color: #212529;
-  width: 100%; /* Asegurar que ocupen todo el ancho disponible */
-  height: 38px; /* Altura fija para consistencia */
+  width: 100%;
+  height: 38px;
 }
 
 .addproducts-form-control::placeholder {
@@ -194,11 +187,9 @@
 
 .addproducts-form-control:focus, .addproducts-form-select:focus {
   border-color: var(--primary);
-  /* Sombra de foco más ligera */
   box-shadow: 0 0 0 2px rgba(0, 110, 223, 0.08);
   outline: none;
   background-color: #fff;
-  /* Transición solo en propiedades específicas */
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -208,34 +199,34 @@
   display: flex;
   align-items: stretch;
   width: 100%;
-  height: 38px; /* Igualado a la altura de los otros inputs */
+  height: 38px;
 }
 
 .addproducts-input-group-text {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 10px; /* Reducido de 0 12px */
+  padding: 0 10px;
   background-color: #e9ecef;
   border: 1px solid #e0e0e0;
   border-radius: 8px 0 0 8px;
   border-right: none;
   color: #495057;
   font-weight: 500;
-  width: 30px; /* Ancho fijo para el prefijo */
+  width: 30px;
 }
 
 .addproducts-input-group .addproducts-form-control {
   border-radius: 0 8px 8px 0;
   flex: 1;
-  padding-left: 8px; /* Ajustado para mejor visualización */
+  padding-left: 8px;
 }
 
 /* Estilos para la carga de archivos */
 .addproducts-file-input {
   padding: 8px 10px;
   background-color: #f9f9f9;
-  height: auto; /* Permitir altura flexible para inputs de archivo */
+  height: auto;
   display: flex;
   align-items: center;
 }
@@ -244,11 +235,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 150px; /* Aumentado para mayor visibilidad */
-  min-width: 400px; /* Aseguramos un ancho aún mayor */
+  min-height: 150px;
+  min-width: 400px;
   border: 1px dashed #ced4da;
   border-radius: 8px;
-  padding: 20px; /* Aumentado el padding */
+  padding: 20px;
   background-color: #f9f9f9;
   position: relative;
   margin-bottom: 15px;
@@ -275,31 +266,31 @@
   padding: 15px;
   text-align: center;
   color: #6c757d;
-  font-style: normal; /* Cambiado de itálica a normal */
-  background-color: #f0f0f0; /* Fondo más destacado */
-  border: 1px solid #e0e0e0; /* Borde adicional */
+  font-style: normal;
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
-  width: 90%; /* Reducido ligeramente del 100% */
-  max-width: 350px; /* Limitando el ancho máximo para mejor control */
-  font-size: 16px; /* Aumentado el tamaño de la fuente */
-  font-weight: 500; /* Un poco más visible con mayor peso */
+  width: 90%;
+  max-width: 350px;
+  font-size: 16px;
+  font-weight: 500;
   margin-left: auto;
   margin-right: auto;
   overflow: visible;
   display: block;
-  white-space: normal; /* Permitir que el texto se ajuste en múltiples líneas si es necesario */
+  white-space: normal;
   line-height: 1.5;
 }
 
 /* Estilos para los botones del formulario */
 .addproducts-form-actions {
   display: flex;
-  justify-content: flex-end; /* Cambiado de space-between a flex-end */
+  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 15px; /* Aumentado de 10px */
-  margin-top: 20px; /* Añadido margen superior */
-  padding-top: 15px; /* Añadido padding superior */
-  border-top: 1px solid #f0f0f0; /* Añadido borde superior */
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .addproducts-btn {
@@ -314,7 +305,6 @@
   border: none;
   min-width: 120px;
   font-weight: 500;
-  /* Transición optimizada */
   transition: background-color 0.2s ease;
 }
 
@@ -325,9 +315,7 @@
 
 .addproducts-btn-primary:hover {
   background-color: #0056b3;
-  /* Sombra más ligera */
   box-shadow: 0 2px 6px rgba(0, 110, 223, 0.2);
-  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn-secondary {
@@ -337,9 +325,7 @@
 
 .addproducts-btn-secondary:hover {
   background-color: var(--danger-hover);
-  /* Sombra más ligera */
   box-shadow: 0 2px 6px rgba(220, 53, 69, 0.2);
-  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn:disabled {
@@ -348,7 +334,6 @@
   box-shadow: none !important;
 }
 
-/* Estilos para mensajes de alerta */
 .addproducts-alert {
   padding: 12px 16px;
   border-radius: 8px;
@@ -375,8 +360,8 @@
 
 /* Sección de imagen del producto */
 .addproducts-image-section {
-  gap: 20px; /* Añadido para separar mejor los elementos de la imagen */
-  align-items: flex-start; /* Mejor alineación */
+  gap: 20px;
+  align-items: flex-start;
 }
 
 .addproducts-preview-container {
@@ -406,7 +391,6 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/* 🆕 NUEVO: Estilos para vista previa de imagen que coincidan con el modal de productos */
 .addproducts-preview-img {
   max-width: 200px;
   max-height: 200px;
@@ -437,7 +421,7 @@
   color: #6c757d;
 }
 
-/* Controles de carga de imagen mejorados */
+/* Controles de carga de imagen */
 .addproducts-upload-controls {
   display: flex;
   gap: 10px;
@@ -489,12 +473,10 @@
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
-/* Ocultar el input file real */
 .addproducts-file-input {
   display: none;
 }
 
-/* Estilos para el contenedor del precio recomendado */
 .addproducts-recomendado-container {
   display: flex;
   align-items: center;
@@ -516,15 +498,12 @@
   min-width: 120px;
   border: none;
   cursor: pointer;
-  /* Transición simplificada */
   transition: background-color 0.2s ease;
 }
 
 .addproducts-btn-usar-recomendado:hover {
   background-color: var(--success-hover);
-  /* Sombra más ligera */
   box-shadow: 0 1px 3px rgba(40, 167, 69, 0.2);
-  /* Eliminamos transform costoso */
 }
 
 .addproducts-btn-usar-recomendado:disabled {
@@ -533,7 +512,6 @@
   box-shadow: none;
 }
 
-/* 🆕 NUEVOS ESTILOS PARA SELECTOR DE MODO */
 .addproducts-mode-selector {
   display: flex;
   justify-content: center;
@@ -621,7 +599,6 @@
   transform: translateY(-2px);
 }
 
-/* 🆕 BOTÓN DE VOLVER */
 .addproducts-back-btn {
   background: var(--primary);
   color: white;
@@ -642,7 +619,6 @@
   border-color: var(--primary-dark);
 }
 
-/* 🆕 ESTILOS PARA BÚSQUEDA DE PRODUCTO */
 .addproducts-search-section {
   text-align: center;
   padding: 40px 20px;
@@ -689,7 +665,6 @@
   cursor: not-allowed;
 }
 
-/* 🆕 ESTILOS PARA INFORMACIÓN DE PRODUCTO EXISTENTE */
 .addproducts-existing-product-info {
   display: flex;
   gap: 20px;
@@ -731,7 +706,6 @@
   font-weight: 600;
 }
 
-/* 🆕 ESTILOS PARA TEXTAREA */
 .addproducts-textarea {
   resize: vertical;
   min-height: 80px;
@@ -739,7 +713,6 @@
   line-height: 1.5;
 }
 
-/* 🆕 RESPONSIVIDAD PARA NUEVOS ELEMENTOS */
 @media (max-width: 768px) {
   .addproducts-mode-options {
     grid-template-columns: 1fr;
@@ -827,9 +800,9 @@
   }
   
   .addproducts-section-icon {
-    width: 24px; /* Reducido para móviles */
-    height: 24px; /* Reducido para móviles */
-    font-size: 0.8rem; /* Reducido para móviles */
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
   }
   
   .addproducts-recomendado-container {
@@ -849,18 +822,18 @@
   }
   
   .addproducts-section-title {
-    font-size: 1.1rem; /* Reducido de 1.2rem */
+    font-size: 1.1rem;
   }
   
   .addproducts-section-icon {
-    width: 22px; /* Aún más pequeño en pantallas muy pequeñas */
+    width: 22px;
     height: 22px;
     font-size: 0.75rem;
     margin-right: 8px;
   }
   
   .addproducts-form-label {
-    font-size: 0.9rem; /* Reducción para móviles */
+    font-size: 0.9rem;
   }
   
   .addproducts-file-input::-webkit-file-upload-button {
@@ -869,12 +842,11 @@
   }
   
   .addproducts-img-preview {
-    max-width: 150px; /* Reducido para móviles */
+    max-width: 150px;
     max-height: 150px;
   }
 }
 
-/* 🆕 ESTILOS PARA BÚSQUEDA INTELIGENTE DE PRODUCTOS */
 .addproducts-smart-search {
   margin-bottom: 30px;
 }
@@ -937,7 +909,6 @@
   margin-bottom: 20px;
 }
 
-/* 🆕 GRID DE PRODUCTOS */
 .addproducts-products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -955,10 +926,10 @@
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  text-align: center; /* 🆕 CENTRAR TODO EL CONTENIDO */
+  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center; /* 🆕 CENTRAR HORIZONTALMENTE */
+  align-items: center;
 }
 
 .addproducts-product-card:hover {
@@ -972,7 +943,7 @@
   height: 80px;
   border-radius: 8px;
   overflow: hidden;
-  margin: 0 auto 15px auto; /* 🆕 CENTRAR LA IMAGEN */
+  margin: 0 auto 15px auto;
   border: 1px solid #e0e0e0;
 }
 
@@ -995,8 +966,8 @@
 
 .addproducts-product-info {
   flex: 1;
-  width: 100%; /* 🆕 ASEGURAR QUE OCUPE TODO EL ANCHO */
-  text-align: center; /* 🆕 CENTRAR TEXTO */
+  width: 100%;
+  text-align: center;
 }
 
 .addproducts-product-name {
@@ -1005,14 +976,14 @@
   color: var(--primary-dark);
   margin-bottom: 5px;
   line-height: 1.2;
-  text-align: center; /* 🆕 CENTRAR NOMBRE */
+  text-align: center;
 }
 
 .addproducts-product-brand {
   color: var(--gray);
   font-size: 0.9rem;
   margin-bottom: 3px;
-  text-align: center; /* 🆕 CENTRAR MARCA */
+  text-align: center;
 }
 
 .addproducts-product-category {
@@ -1020,14 +991,14 @@
   font-size: 0.85rem;
   margin-bottom: 15px;
   font-style: italic;
-  text-align: center; /* 🆕 CENTRAR CATEGORÍA */
+  text-align: center;
 }
 
 .addproducts-product-details {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: center; /* 🆕 CENTRAR DETALLES */
+  align-items: center;
   width: 100%;
 }
 
@@ -1036,7 +1007,7 @@
 .addproducts-product-barcode {
   display: flex;
   align-items: center;
-  justify-content: center; /* 🆕 CENTRAR HORIZONTALMENTE */
+  justify-content: center;
   gap: 8px;
   font-size: 0.85rem;
   color: var(--gray-dark);
@@ -1073,7 +1044,6 @@
   color: white;
 }
 
-/* 🆕 ESTADOS DE CARGA Y VACÍO */
 .addproducts-loading-state,
 .addproducts-empty-state {
   grid-column: 1 / -1;
@@ -1093,7 +1063,6 @@
   margin-bottom: 10px;
 }
 
-/* 🆕 PRODUCTO SELECCIONADO */
 .addproducts-selected-product {
   display: flex;
   gap: 20px;
@@ -1156,7 +1125,6 @@
   color: white;
 }
 
-/* 🆕 CALCULADORA DE STOCK */
 .addproducts-stock-calculator {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1249,7 +1217,6 @@
   font-weight: 600;
 }
 
-/* 🆕 ESTILOS PARA FORMULARIO DE LOTES */
 .addproducts-section-subtitle {
   color: var(--gray);
   font-size: 0.9rem;
@@ -1365,7 +1332,6 @@
   color: var(--primary-dark);
 }
 
-/* 🆕 RESPONSIVIDAD PARA FORMULARIO DE LOTES */
 @media (max-width: 768px) {
   .addproducts-price-input-container {
     flex-direction: column;
@@ -1408,7 +1374,6 @@
   }
 }
 
-/* 🆕 ESTILOS ESPECÍFICOS PARA LOTES SEPARADOS */
 .addproducts-lote-note {
   display: flex;
   align-items: center;
@@ -1460,7 +1425,6 @@
   line-height: 1.5;
 }
 
-/* Destacar cuando se está creando un lote separado */
 .addproducts-form-section.lote-separado {
   background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
   border: 2px solid var(--warning);
@@ -1476,7 +1440,6 @@
   color: var(--primary-dark);
 }
 
-/* 🆕 ESTILOS PARA PRECIO FIJO NO EDITABLE */
 .addproducts-readonly-input {
   background-color: #f8f9fa !important;
   border-color: #dee2e6 !important;
@@ -1510,7 +1473,6 @@
   gap: 6px;
 }
 
-/* 🆕 ESTILOS PARA BOTÓN DE EDITAR PRECIO */
 .addproducts-edit-price-btn {
   background: var(--warning) !important;
   color: var(--primary-dark) !important;
@@ -1533,7 +1495,6 @@
   box-shadow: 0 2px 6px rgba(255, 190, 11, 0.3);
 }
 
-/* 🆕 ESTILOS PARA MODAL DE EDICIÓN DE PRECIO */
 .addproducts-price-modal {
   position: fixed;
   top: 0;
@@ -1576,22 +1537,22 @@
 .addproducts-price-modal-close {
   background: #f8f9fa;
   border: none;
-  border-radius: 50%; /* 🔄 Estandarizado: Siempre circular */
-  width: 40px; /* 🔄 Estandarizado: Tamaño consistente */
-  height: 40px; /* 🔄 Estandarizado: Tamaño consistente */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #6c757d;
   font-size: 16px;
-  transition: all 0.2s ease; /* 🔄 Estandarizado: Transición suave */
+  transition: all 0.2s ease;
 }
 
 .addproducts-price-modal-close:hover {
   background: #e9ecef;
   color: #495057;
-  transform: scale(1.1); /* 🔄 Estandarizado: Efecto hover consistente */
+  transform: scale(1.1);
 }
 
 .addproducts-price-modal-body {
@@ -1695,7 +1656,6 @@
   box-shadow: none;
 }
 
-/* 🆕 RESPONSIVIDAD PARA MODAL DE PRECIO */
 @media (max-width: 576px) {
   .addproducts-price-modal {
     padding: 10px;
@@ -1735,7 +1695,6 @@
   }
 }
 
-/* 🆕 ESTILOS PARA PAGINACIÓN EN BÚSQUEDA DE PRODUCTOS */
 .addproducts-pagination {
   display: flex;
   align-items: center;
@@ -1809,7 +1768,6 @@
   border-color: var(--primary);
 }
 
-/* Responsividad para paginación */
 @media (max-width: 768px) {
   .addproducts-pagination {
     flex-direction: column;

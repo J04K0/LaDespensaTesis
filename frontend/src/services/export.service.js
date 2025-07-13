@@ -25,7 +25,7 @@ export class ExportService {
         deudoresData,
         resumenCajaData,
         balanceEfectivo,
-        tienePermisoHistorial = true // Por defecto asumimos que tiene permisos completos
+        tienePermisoHistorial = true
       } = data;
       
       // Crear nuevo documento PDF
@@ -85,26 +85,21 @@ export class ExportService {
       
       // Añadir información adicional
       doc.setFontSize(10);
-      // 🔧 FIX: Corregir cálculo de transacciones para evitar duplicar ventas a deudores
-      // Las ventas a deudores ya están contadas en ventasSesion, no hay que contarlas otra vez
       const ventasRegulares = ventasSesion.filter(venta => !venta.deudorId).length;
       const ventasADeudores = ventasSesion.filter(venta => venta.deudorId).length;
-      
-      // Solo contar los pagos y otros movimientos que NO sean creación de deuda por ventas
       const movimientosDeudoresSinVentas = deudoresData.filter(movimiento => 
-        !movimiento[1].includes('Aumento de deuda') // Excluir "Aumento de deuda" que corresponden a ventas
+        !movimiento[1].includes('Aumento de deuda')
       ).length;
       
       const totalTransacciones = ventasRegulares + ventasADeudores + movimientosDeudoresSinVentas;
       doc.text(`Total de transacciones: ${totalTransacciones}`, 14, doc.lastAutoTable.finalY + 30);
       doc.text(`Período del reporte: ${sessionStartTime.toLocaleString('es-ES')} - ${new Date().toLocaleString('es-ES')}`, 14, doc.lastAutoTable.finalY + 40);
       
-      // Nota adicional sobre limitaciones si no tiene permisos completos
       if (!tienePermisoHistorial) {
-        doc.setTextColor(150, 150, 150); // Color gris
+        doc.setTextColor(150, 150, 150);
         doc.text(`Nota: Este reporte incluye solo datos de deudores y operaciones`, 14, doc.lastAutoTable.finalY + 50);
         doc.text(`disponibles para el rol actual (${usuarioActual.roles?.[0]?.name || 'empleado'}).`, 14, doc.lastAutoTable.finalY + 60);
-        doc.setTextColor(0, 0, 0); // Volver a negro
+        doc.setTextColor(0, 0, 0);
       }
       
       // Pie de página con información del usuario
@@ -128,7 +123,6 @@ export class ExportService {
    * @param {string} timeRange - Rango de tiempo para el reporte ('semana', 'mes', 'año')
    */
   static generarReporteFinanciero(data, timeRange) {
-    // Extraer todos los datos financieros necesarios
     const { 
       ingresosTotales, 
       costosTotales, 
@@ -151,9 +145,9 @@ export class ExportService {
     const doc = new jsPDF();
     
     // Estilo para títulos y secciones
-    const colorPrimario = [0, 38, 81]; // Color #002651
-    const colorSecundario = [17, 138, 178]; // Color #118AB2
-    const colorAcento = [239, 71, 111]; // Color #EF476F
+    const colorPrimario = [0, 38, 81];
+    const colorSecundario = [17, 138, 178];
+    const colorAcento = [239, 71, 111];
     
     // Formatear la fecha actual para el nombre del archivo
     const fechaActual = new Date().toLocaleDateString('es-AR', {
