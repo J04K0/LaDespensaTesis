@@ -62,17 +62,14 @@ const Finanzas = () => {
   // Referencia al contenedor principal para calcular posiciones de tooltips
   const containerRef = useRef(null);
 
-  // 🧠 USAR CONTEXTO DE VENTAS CON USEMEMO PARA OPTIMIZAR ESTADÍSTICAS
   const { ventasGlobales, loading: ventasLoading, getVentasByDateRange } = useVentas();
 
-  // 📅 FUNCIÓN PARA CALCULAR RANGOS DE FECHAS (memoizada para evitar re-renders)
   const calcularRangoFechas = useCallback(() => {
     const hoy = new Date();
     let inicio = new Date();
     let fin = new Date();
     
     if (timeRange === "semana") {
-      // Obtener el lunes de la semana seleccionada
       const diaSemana = hoy.getDay() || 7;
       const diasDesdeInicio = diaSemana - 1;
       
@@ -118,7 +115,6 @@ const Finanzas = () => {
     return { inicio, fin };
   }, [timeRange, seleccionSemana, seleccionMes, seleccionAnio, periodoPersonalizado, fechaInicio, fechaFin]);
 
-  // 🚀 OPTIMIZACIÓN: Usar useMemo para calcular datos financieros cuando ya están cargadas las ventas
   const datosFinancierosOptimized = useMemo(() => {
     if (!ventasGlobales || ventasGlobales.length === 0) {
       return {
@@ -185,12 +181,10 @@ const Finanzas = () => {
       ventasPorDiaSemana[dia] = 0;
     });
     
-    // Mapeo correcto de los días de JavaScript a nuestro array
     const mapeoJSaDias = {
       0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb'
     };
     
-    // Procesar las ventas - CORREGIDO: Verificar que venta.ventas existe
     ventasFiltradas.forEach(venta => {
       const fecha = new Date(venta.fecha);
       const fechaStr = fecha.toISOString().split('T')[0];
@@ -201,7 +195,6 @@ const Finanzas = () => {
       let ingresoVenta = 0;
       let costoVenta = 0;
       
-      // 🔧 FIX: Verificar que venta.ventas existe y es un array antes de usar forEach
       if (venta.ventas && Array.isArray(venta.ventas)) {
         venta.ventas.forEach(producto => {
           ingresoVenta += producto.precioVenta * producto.cantidad;
@@ -231,7 +224,6 @@ const Finanzas = () => {
           productoVendido[productoKey].ingreso += producto.precioVenta * producto.cantidad;
         });
       } else {
-        // Si es una venta individual (formato anterior) - también verificar que tenga las propiedades necesarias
         if (venta.precioVenta && venta.cantidad) {
           ingresoVenta += venta.precioVenta * venta.cantidad;
           costoVenta += (venta.precioCompra || (venta.precioVenta * 0.7)) * venta.cantidad;
@@ -313,7 +305,19 @@ const Finanzas = () => {
     // Valor promedio por transacción
     const valorPromedioTransaccion = ventasFiltradas.length > 0 ? ingresosTotales / ventasFiltradas.length : 0;
     
-    // 🆕 NUEVA FUNCIONALIDAD: Análisis simple de frecuencia de ventas (sin rotación compleja)
+    let valorPromedioValidado = 0;
+    
+    if (ventasFiltradas.length > 0 && ingresosTotales > 0) {
+      const promedio = ingresosTotales / ventasFiltradas.length;
+      
+      if (isFinite(promedio) && promedio >= 0 && promedio < 10000000) {
+        valorPromedioValidado = Math.round(promedio * 100) / 100; // Redondear a 2 decimales
+      } else {
+        console.warn('⚠️ Valor promedio por transacción inválido, usando 0');
+        valorPromedioValidado = 0;
+      }
+    }
+        
     const calcularFrecuenciaVentas = () => {
       const diasPeriodo = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
       
@@ -398,7 +402,7 @@ const Finanzas = () => {
       costosTotales,
       gananciasTotales,
       rentabilidadPromedio,
-      valorPromedioTransaccion,
+      valorPromedioTransaccion: valorPromedioValidado,
       topCategorias: categoriasOrdenadas,
       datosDisponibles: true,
       ingresosPorPeriodo: ingresosPorDia,
@@ -413,13 +417,10 @@ const Finanzas = () => {
     };
   }, [ventasGlobales, calcularRangoFechas, getVentasByDateRange]);
 
-  // 🔧 FIX: Simplificar useEffect para evitar bucles infinitos
   useEffect(() => {
     if (ventasGlobales && datosFinancierosOptimized.datosDisponibles) {
-      // 🚀 CORRECIÓN: Preservar los datos de inventario al actualizar datos financieros
       setDatosFinancieros(prevState => ({
         ...datosFinancierosOptimized,
-        // Mantener los datos de inventario que son independientes del filtro temporal
         inversionMercaderia: prevState.inversionMercaderia,
         inversionPorCategoria: prevState.inversionPorCategoria
       }));
@@ -445,7 +446,6 @@ const Finanzas = () => {
       const productos = response.products || response.data?.products || response.data || [];
       
       if (!productos || productos.length === 0) {
-        console.warn("⚠️ No hay productos en inventario.");
         return;
       }
 
@@ -459,8 +459,10 @@ const Finanzas = () => {
     let inversionTotal = 0;
     const inversionPorCategoria = {};
     
-    productos.forEach(producto => {
-      if (!producto) return;
+    productos.forEach((producto) => {
+      if (!producto) {
+        return;
+      }
       
       const categoria = producto.Categoria || producto.categoria || "Sin categoría";
       if (!inversionPorCategoria[categoria]) {
@@ -621,7 +623,6 @@ const Finanzas = () => {
       const todasLasVentas = response.data || [];
       
       if (!todasLasVentas || todasLasVentas.length === 0) {
-        console.warn("⚠️ No hay datos de ventas disponibles para el año completo.");
         return {};
       }
       
@@ -1724,26 +1725,13 @@ const Finanzas = () => {
                             <div className="comparison-value">{formatMoney(datosFinancieros.gananciasTotales)}</div>
                           </div>
                           <div className="comparison-bar-container">
-                            <div 
-                              className="comparison-bar profits" 
-                              style={{ width: `${(datosFinancieros.gananciasTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}
-                            ></div>
-                          </div>
-                          <div className="comparison-percentage">
-                            Margen de ganancia: <span className="profit-percentage">{formatPercent(datosFinancieros.rentabilidadPromedio)}</span>
+                            <div className="comparison-bar profit" style={{ width: `${(datosFinancieros.gananciasTotales / Math.max(datosFinancieros.ingresosTotales, 1)) * 100}%` }}></div>
                           </div>
                         </div>
-                      </div>
+                                           </div>
                     )}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Tooltip de información */}
-            {activeTooltip && (
-              <div className="tooltip" style={{ top: tooltipPosition.top, left: tooltipPosition.left }}>
-                {activeTooltip}
               </div>
             )}
           </>

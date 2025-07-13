@@ -79,14 +79,16 @@ export class DataCollectionService {
   static async obtenerProductos() {
     try {
       const response = await getProducts(1, Number.MAX_SAFE_INTEGER);
+      
       // Asegurar que siempre devolvamos un array
-      if (response && response.products) {
-        return response.products;
-      } else if (response && Array.isArray(response.data)) {
+      if (response && response.data && response.data.products && Array.isArray(response.data.products)) {
+        return response.data.products;
+      } else if (response && response.data && Array.isArray(response.data)) {
         return response.data;
       } else if (Array.isArray(response)) {
         return response;
       }
+      
       return [];
     } catch (error) {
       console.warn('⚠️ Error al obtener productos:', error);
@@ -150,6 +152,19 @@ export class DataCollectionService {
    * Calcula datos financieros a partir de las ventas y productos
    */
   static calcularDatosFinancieros(ventas, productos) {
+    // Asegurar que productos sea un array válido
+    const productosArray = Array.isArray(productos) ? productos : [];
+    
+    // Calcular inversión en mercadería primero (independiente de las ventas)
+    const inversionMercaderia = productosArray.reduce((sum, producto) => {
+      if (!producto) return sum;
+      const precio = producto.PrecioCompra || 0;
+      const stock = producto.Stock || 0;
+      const inversion = precio * stock;
+      return sum + inversion;
+    }, 0);
+
+    // Si no hay ventas, retornar datos básicos con la inversión calculada
     if (!ventas || ventas.length === 0) {
       return {
         ingresosTotales: 0,
@@ -158,13 +173,10 @@ export class DataCollectionService {
         rentabilidadPromedio: 0,
         transacciones: 0,
         valorPromedioTransaccion: 0,
-        inversionMercaderia: 0,
+        inversionMercaderia,
         topCategorias: []
       };
     }
-
-    // Asegurar que productos sea un array válido
-    const productosArray = Array.isArray(productos) ? productos : [];
 
     let ingresosTotales = 0;
     let costosTotales = 0;
@@ -194,12 +206,6 @@ export class DataCollectionService {
     const rentabilidadPromedio = ingresosTotales > 0 ? (gananciasTotales / ingresosTotales) * 100 : 0;
     const transacciones = ventas.length;
     const valorPromedioTransaccion = transacciones > 0 ? ingresosTotales / transacciones : 0;
-
-    // Calcular inversión en mercadería con protección adicional
-    const inversionMercaderia = productosArray.reduce((sum, producto) => {
-      if (!producto) return sum;
-      return sum + ((producto.PrecioCompra || 0) * (producto.Stock || 0));
-    }, 0);
 
     // Top categorías por ingresos
     const topCategorias = Object.entries(categorias)
@@ -265,11 +271,11 @@ export class DataCollectionService {
       productosSinRotacion,
       diasInventario: Math.round(diasInventario),
       rotacionInventario: ventasDiarias > 0 ? (stockTotal / ventasDiarias / 30).toFixed(1) : 'N/A',
-      tiempoPromedioPago: 'N/A', // Se podría calcular con más datos
-      satisfaccionDeudores: 'N/A', // Se podría implementar con sistema de ratings
-      eficienciaCobros: deudaTotal > 0 ? ((deudaTotal * 0.8) / deudaTotal * 100).toFixed(1) : 'N/A',
-      crecimientoMensual: 'N/A', // Se podría calcular comparando períodos
-      margenBrutoPromedio: 'N/A' // Se podría calcular con datos más detallados
+      tiempoPromedioPago: 'N/A' // Se podría calcular con más datos
+      , satisfaccionDeudores: 'N/A' // Se podría implementar con sistema de ratings
+      , eficienciaCobros: deudaTotal > 0 ? ((deudaTotal * 0.8) / deudaTotal * 100).toFixed(1) : 'N/A'
+      , crecimientoMensual: 'N/A' // Se podría calcular comparando períodos
+      , margenBrutoPromedio: 'N/A' // Se podría calcular con datos más detallados
     };
   }
 }

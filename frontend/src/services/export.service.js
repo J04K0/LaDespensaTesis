@@ -2,10 +2,177 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from 'xlsx';
 
-// Función helper para formatear números con punto como separador de miles
+// ============ CONFIGURACIÓN DE DISEÑO Y ESTILOS ============
+
+// Paleta de colores profesional
+const COLORES = {
+  primario: [13, 71, 161],      // Azul corporativo #0D47A1
+  secundario: [33, 150, 243],   // Azul claro #2196F3
+  acento: [255, 193, 7],        // Amarillo dorado #FFC107
+  exito: [76, 175, 80],         // Verde #4CAF50
+  peligro: [244, 67, 54],       // Rojo #F44336
+  advertencia: [255, 152, 0],   // Naranja #FF9800
+  gris: [117, 117, 117],        // Gris neutro #757575
+  grisClarito: [245, 245, 245], // Gris muy claro #F5F5F5
+  blanco: [255, 255, 255],      // Blanco
+  negro: [33, 33, 33]           // Negro suave
+};
+
+// Configuración de tipografía
+const TIPOGRAFIA = {
+  titulo: { size: 22, weight: 'bold' },
+  subtitulo: { size: 18, weight: 'bold' },
+  seccion: { size: 16, weight: 'bold' },
+  subseccion: { size: 14, weight: 'bold' },
+  normal: { size: 12, weight: 'normal' },
+  pequeno: { size: 10, weight: 'normal' },
+  mini: { size: 8, weight: 'normal' }
+};
+
+// Configuración de espaciado
+const ESPACIADO = {
+  margen: { left: 20, right: 20, top: 20, bottom: 20 },
+  entreSeccion: 25,
+  entreElemento: 15,
+  entreLinea: 7
+};
+
+// Función helper mejorada para formatear números
 const formatNumberWithDots = (number) => {
   if (typeof number !== 'number' || isNaN(number)) return '0';
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return new Intl.NumberFormat('es-ES').format(number);
+};
+
+// Función para crear encabezados elegantes con gradiente
+const crearEncabezadoElegante = (doc, titulo, subtitulo = null, yPos = 20) => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Fondo degradado simulado con rectángulos
+  doc.setFillColor(COLORES.primario[0], COLORES.primario[1], COLORES.primario[2]);
+  doc.rect(0, yPos - 5, pageWidth, 35, 'F');
+  
+  // Línea decorativa superior
+  doc.setFillColor(COLORES.acento[0], COLORES.acento[1], COLORES.acento[2]);
+  doc.rect(0, yPos - 5, pageWidth, 3, 'F');
+  
+  // Título principal
+  doc.setFont("helvetica", TIPOGRAFIA.titulo.weight);
+  doc.setFontSize(TIPOGRAFIA.titulo.size);
+  doc.setTextColor(COLORES.blanco[0], COLORES.blanco[1], COLORES.blanco[2]);
+  doc.text(titulo, pageWidth / 2, yPos + 10, { align: 'center' });
+  
+  // Subtítulo si existe
+  if (subtitulo) {
+    doc.setFont("helvetica", TIPOGRAFIA.normal.weight);
+    doc.setFontSize(TIPOGRAFIA.normal.size);
+    doc.text(subtitulo, pageWidth / 2, yPos + 22, { align: 'center' });
+  }
+  
+  // Restablecer colores
+  doc.setTextColor(COLORES.negro[0], COLORES.negro[1], COLORES.negro[2]);
+  
+  return yPos + 40;
+};
+
+// Función para crear secciones con estilo
+const crearSeccionConEstilo = (doc, titulo, yPos) => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Fondo de la sección
+  doc.setFillColor(COLORES.grisClarito[0], COLORES.grisClarito[1], COLORES.grisClarito[2]);
+  doc.rect(ESPACIADO.margen.left - 5, yPos - 3, pageWidth - (ESPACIADO.margen.left * 2) + 10, 15, 'F');
+  
+  // Línea lateral colorida
+  doc.setFillColor(COLORES.secundario[0], COLORES.secundario[1], COLORES.secundario[2]);
+  doc.rect(ESPACIADO.margen.left - 5, yPos - 3, 4, 15, 'F');
+  
+  // Título de la sección
+  doc.setFont("helvetica", TIPOGRAFIA.seccion.weight);
+  doc.setFontSize(TIPOGRAFIA.seccion.size);
+  doc.setTextColor(COLORES.primario[0], COLORES.primario[1], COLORES.primario[2]);
+  doc.text(titulo, ESPACIADO.margen.left + 5, yPos + 7);
+  
+  // Restablecer color
+  doc.setTextColor(COLORES.negro[0], COLORES.negro[1], COLORES.negro[2]);
+  
+  return yPos + 20;
+};
+
+// Función para crear tarjetas KPI elegantes
+const crearTarjetaKPI = (doc, kpis, startY) => {
+  const cardWidth = 45;
+  const cardHeight = 32;
+  const spacing = 8;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const totalWidth = kpis.length * cardWidth + (kpis.length - 1) * spacing;
+  const startX = (pageWidth - totalWidth) / 2;
+
+  kpis.forEach((kpi, index) => {
+    const x = startX + index * (cardWidth + spacing);
+    
+    // Sombra de la tarjeta
+    doc.setFillColor(0, 0, 0, 0.1);
+    doc.roundedRect(x + 2, startY + 2, cardWidth, cardHeight, 4, 4, 'F');
+    
+    // Tarjeta principal
+    doc.setFillColor(COLORES.blanco[0], COLORES.blanco[1], COLORES.blanco[2]);
+    doc.roundedRect(x, startY, cardWidth, cardHeight, 4, 4, 'F');
+    
+    // Borde de la tarjeta
+    doc.setDrawColor(COLORES.grisClarito[0], COLORES.grisClarito[1], COLORES.grisClarito[2]);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(x, startY, cardWidth, cardHeight, 4, 4, 'S');
+    
+    // Borde superior colorido
+    doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2]);
+    doc.roundedRect(x, startY, cardWidth, 5, 4, 4, 'F');
+    doc.rect(x, startY + 2.5, cardWidth, 2.5, 'F');
+    
+    // Título
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(COLORES.gris[0], COLORES.gris[1], COLORES.gris[2]);
+    doc.text(kpi.titulo, x + cardWidth / 2, startY + 15, { align: 'center' });
+    
+    // Valor
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(COLORES.negro[0], COLORES.negro[1], COLORES.negro[2]);
+    doc.text(kpi.valor, x + cardWidth / 2, startY + 25, { align: 'center' });
+  });
+  
+  return startY + cardHeight + 15;
+};
+
+// Función para crear pie de página profesional
+const crearPiePaginaProfesional = (doc, titulo, fecha, pagina, totalPaginas) => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  // Línea separadora
+  doc.setDrawColor(COLORES.secundario[0], COLORES.secundario[1], COLORES.secundario[2]);
+  doc.setLineWidth(0.8);
+  doc.line(ESPACIADO.margen.left, pageHeight - 25, pageWidth - ESPACIADO.margen.right, pageHeight - 25);
+  
+  // Información del pie
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(TIPOGRAFIA.pequeno.size);
+  doc.setTextColor(COLORES.gris[0], COLORES.gris[1], COLORES.gris[2]);
+  
+  // Lado izquierdo - Título del documento
+  doc.text(titulo, ESPACIADO.margen.left, pageHeight - 15);
+  
+  // Centro - Fecha
+  doc.text(fecha, pageWidth / 2, pageHeight - 15, { align: 'center' });
+  
+  // Lado derecho - Número de página
+  doc.text(`Página ${pagina} de ${totalPaginas}`, pageWidth - ESPACIADO.margen.right, pageHeight - 15, { align: 'right' });
+  
+  // Logo o marca de agua (opcional)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(COLORES.grisClarito[0], COLORES.grisClarito[1], COLORES.grisClarito[2]);
+  doc.text("LA DESPENSA", pageWidth / 2, pageHeight - 8, { align: 'center' });
 };
 
 export class ExportService {
