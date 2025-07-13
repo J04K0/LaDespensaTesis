@@ -5,22 +5,17 @@ let socket = null;
 let isConnecting = false;
 
 export const initializeSocket = () => {
-  // Si ya existe una conexión activa, devolverla
   if (socket && socket.connected) {
     return socket;
   }
 
-  // Si ya se está conectando, esperar a que termine
   if (isConnecting) {
     return socket;
   }
 
-  // Evitar múltiples intentos de conexión simultáneos
   isConnecting = true;
 
-  // Determinar la URL base del servidor
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';    
-  // Crear la conexión WebSocket con configuración mejorada
   socket = io(baseUrl, {
     autoConnect: true,
     reconnection: true,

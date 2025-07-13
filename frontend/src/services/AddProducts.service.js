@@ -33,7 +33,7 @@ export const addProducts = async (formData) => {
         
         if (imageFile && imageFile instanceof File) {
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            const maxSize = 5 * 1024 * 1024;
             
             if (!imageFile.name || imageFile.size === 0) {
                 throw new Error('Archivo de imagen corrupto o vacío');
@@ -83,7 +83,6 @@ export const addProducts = async (formData) => {
             console.log('🔗 URL de imagen agregada:', imageUrl);
         }
         
-        // 🆕 NUEVO: Verificar que el FormData final no esté vacío
         let finalEntries = [];
         for (let [key, value] of mappedFormData.entries()) {
             finalEntries.push([key, value]);
@@ -98,13 +97,13 @@ export const addProducts = async (formData) => {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
-            timeout: 30000, // 30 segundos de timeout
-            maxContentLength: 10 * 1024 * 1024, // 10MB máximo
-            maxBodyLength: 10 * 1024 * 1024, // 10MB máximo
+            timeout: 30000,
+            maxContentLength: 10 * 1024 * 1024,
+            maxBodyLength: 10 * 1024 * 1024,
             validateStatus: function (status) {
-                return status < 500; // Considerar válidos todos los status codes menores a 500
+                return status < 500;
             },
-            maxRedirects: 0, // Evitar redirecciones que puedan corromper el FormData
+            maxRedirects: 0,
         };
         
         const response = await axios.post('/products/agregar', mappedFormData, config);
@@ -119,9 +118,9 @@ export const addProducts = async (formData) => {
         } else if (error.code === 'ERR_NETWORK') {
             throw new Error('Error de conexión. Verifique su conexión a internet y que el servidor esté disponible.');
         } else if (error.message && error.message.includes('imagen')) {
-            throw error; // Mantener errores de validación de imagen
+            throw error;
         } else if (error.message && error.message.includes('archivo')) {
-            throw error; // Mantener errores de validación de archivo
+            throw error;
         } else if (error.response) {
             const serverMessage = error.response.data?.message || error.response.data?.error || 'Error del servidor';
             throw new Error(serverMessage);

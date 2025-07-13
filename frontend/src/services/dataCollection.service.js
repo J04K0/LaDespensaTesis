@@ -14,13 +14,9 @@ export class DataCollectionService {
    * @returns {Promise<Object>} - Objeto con todos los datos del sistema
    */
   static async recopilarDatosSistema() {
-    try {
-      console.log('🔄 Iniciando recopilación de datos del sistema...');
-      
-      // Obtener usuario actual
+    try {      
       const usuario = JSON.parse(localStorage.getItem('user')) || { email: 'Sistema' };
       
-      // Recopilar todos los datos en paralelo para mayor eficiencia
       const [
         productosResponse,
         ventasResponse,
@@ -42,18 +38,8 @@ export class DataCollectionService {
       const proveedores = proveedoresResponse.status === 'fulfilled' ? proveedoresResponse.value : [];
       const cuentasPorPagar = cuentasPorPagarResponse.status === 'fulfilled' ? cuentasPorPagarResponse.value : [];
 
-      console.log('📊 Datos recopilados:', {
-        productos: productos.length,
-        ventas: ventas.length,
-        deudores: deudores.length,
-        proveedores: proveedores.length,
-        cuentasPorPagar: cuentasPorPagar.length
-      });
-
-      // Calcular datos financieros
       const datosFinancieros = this.calcularDatosFinancieros(ventas, productos);
       
-      // Calcular estadísticas generales
       const estadisticasGenerales = this.calcularEstadisticasGenerales(productos, ventas, deudores);
 
       return {

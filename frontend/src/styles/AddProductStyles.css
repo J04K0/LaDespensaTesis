@@ -1,4 +1,3 @@
-/* OPTIMIZADO PARA RENDIMIENTO - AddProductStyles.css */
 :root {
   --primary-dark: #002651;
   --primary: #006EDF;
@@ -766,7 +765,6 @@
   }
 }
 
-/* Responsividad */
 @media (max-width: 1200px) {
   .content-container {
     padding: 80px 30px 30px;

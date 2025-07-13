@@ -34,7 +34,6 @@ export const getDeudorById = async (id) => {
 
 export const updateDeudor = async (id, deudorData) => {
   try {
-    console.log("Enviando al backend:", deudorData); // Log para depuración
     const response = await axios.patch(`/deudores/actualizar/${id}`, deudorData);
     return response.data.data;
   } catch (error) {

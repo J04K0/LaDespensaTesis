@@ -159,7 +159,7 @@ export const registrarVenta = async (productosVendidos, metodoPago = 'efectivo',
     try {
       const response = await axios.put(`/ventas/ticket/${ticketId}`, { 
         productos,
-        comentario: comentario.trim() // 🆕 Enviar comentario al backend
+        comentario: comentario.trim()
       });
       return response.data;
     } catch (error) {
