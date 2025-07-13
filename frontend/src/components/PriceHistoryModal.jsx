@@ -59,7 +59,6 @@ const PriceHistoryModal = ({ isOpen, onClose, productId, embedded = false }) => 
     );
   };
 
-  // 🆕 Función para manejar clic en el overlay
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();

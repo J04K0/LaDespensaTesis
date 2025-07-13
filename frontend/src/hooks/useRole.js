@@ -16,7 +16,7 @@ export const useRole = () => {
 
   const userRole = useMemo(() => {
     if (!user?.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
-      return 'empleado'; // Rol por defecto
+      return 'empleado';
     }
     return user.roles[0].name || 'empleado';
   }, [user]);

@@ -6,7 +6,7 @@ import {
 import { showConfirmationAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
 import { STOCK_MINIMO_POR_CATEGORIA } from '../constants/products.constants.js';
-import { getProximoLoteProducto } from '../services/AddProducts.service'; // 🆕 Importar nueva función
+import { getProximoLoteProducto } from '../services/AddProducts.service';
 import '../styles/ProductInfoModal.css';
 
 const ProductInfoModal = React.memo(({ 
@@ -18,7 +18,7 @@ const ProductInfoModal = React.memo(({
   onDelete, 
   onShowPriceHistory,
   onShowStockHistory,
-  onDeletePermanently // 🆕 Nueva prop para eliminar definitivamente
+  onDeletePermanently
 }) => {
   const [isClosing, setIsClosing] = useState(false);
   const { permissions } = useRole();
@@ -39,7 +39,6 @@ const ProductInfoModal = React.memo(({
       `;
       document.body.dataset.scrollY = scrollY;
       
-      // 🔧 Resetear el estado de cierre cuando se abre el modal
       setIsClosing(false);
     } else {
       const scrollY = document.body.dataset.scrollY;
@@ -70,11 +69,9 @@ const ProductInfoModal = React.memo(({
     return 'modern-stock-value-green';
   }, [productInfo]);
 
-  // 🆕 NUEVO: Estados y lógica para información de lotes
   const [proximoLote, setProximoLote] = useState(null);
   const [loadingLote, setLoadingLote] = useState(false);
 
-  // 🆕 NUEVO: Cargar información del próximo lote cuando se abre el modal
   useEffect(() => {
     if (isOpen && productInfo && productInfo._id) {
       const fetchProximoLote = async () => {
@@ -94,21 +91,16 @@ const ProductInfoModal = React.memo(({
     }
   }, [isOpen, productInfo]);
 
-  // 🆕 NUEVO: Información mejorada con datos de lotes
   const enhancedProductInfo = useMemo(() => {
     if (!productInfo || !proximoLote) return productInfo;
 
-    // Si tiene múltiples lotes y hay un lote principal
     if (proximoLote.tieneMultiplesLotes && proximoLote.lotePrincipal) {
       const lote = proximoLote.lotePrincipal;
       
       return {
         ...productInfo,
-        // Usar precio de compra del lote FIFO
         PrecioCompra: lote.precioCompra || productInfo.PrecioCompra,
-        // Usar fecha de vencimiento del lote FIFO
         fechaVencimiento: lote.fechaVencimiento || productInfo.fechaVencimiento,
-        // Información adicional del lote
         _loteInfo: {
           tieneMultiplesLotes: true,
           totalLotes: proximoLote.totalLotes,
@@ -121,7 +113,6 @@ const ProductInfoModal = React.memo(({
       };
     }
 
-    // Si no tiene lotes múltiples, usar datos del producto principal
     return {
       ...productInfo,
       _loteInfo: {
@@ -159,7 +150,6 @@ const ProductInfoModal = React.memo(({
   }, [enhancedProductInfo]);
 
   const handleClose = () => {
-    // 🔧 SIMPLIFICADO: Cierre directo sin animación de delay para evitar parpadeo
     onClose();
   };
 
@@ -496,7 +486,7 @@ const ProductInfoModal = React.memo(({
             )}
             {permissions.canEditProduct && (
               <button 
-                onClick={handleDeletePermanently} // 🆕 Botón para eliminar definitivamente
+                onClick={handleDeletePermanently}
                 className="modern-btn modern-btn-danger"
               >
                 <FontAwesomeIcon icon={faTrash} /> Eliminar Definitivamente

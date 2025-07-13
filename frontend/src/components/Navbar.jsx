@@ -47,7 +47,6 @@ const Navbar = () => {
     };
   }, [activeDropdown]);
 
-  // Separate useEffect for socket initialization (only run once)
   useEffect(() => {
     initializeSocket();
     
@@ -56,8 +55,6 @@ const Navbar = () => {
     }
     
     return () => {
-      // Only close socket when component unmounts completely
-      // Not on every navigation
     };
   }, []);
 
@@ -128,7 +125,6 @@ const Navbar = () => {
         
         console.log('📦 Total de ventas en el sistema:', todasLasVentas.length);
         
-        // 🆕 MEJORA: Mostrar información detallada de las últimas 5 ventas para debug
         console.log('🔍 DEBUG: Últimas 5 ventas en el sistema:');
         todasLasVentas.slice(-5).forEach((venta, index) => {
           console.log(`  📄 Venta ${index + 1}:`, {
@@ -145,7 +141,6 @@ const Navbar = () => {
           const fechaVenta = new Date(venta.fecha);
           const esDeSesion = fechaVenta >= sessionStartTime && fechaVenta <= ahora;
           
-          // 🆕 MEJORA: Debug detallado del filtrado
           if (esDeSesion) {
             console.log(`✅ Venta de sesión encontrada:`, {
               id: venta._id,
@@ -190,7 +185,6 @@ const Navbar = () => {
           
           totalVentas += importeVenta;
 
-          // 🆕 MEJORA: Debug más detallado de la clasificación
           if (venta.deudorId) {
             console.log('👤 Clasificada como: VENTA A DEUDOR');
             ventasADeudores += importeVenta;
@@ -209,7 +203,6 @@ const Navbar = () => {
               metodoPago: venta.metodoPago,
               deudorId: venta.deudorId
             });
-            // Por defecto, asignar a efectivo si no está definido
             totalEfectivo += importeVenta;
             cantidadVentasEfectivo++;
           }

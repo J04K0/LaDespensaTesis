@@ -12,11 +12,9 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName, onLoteUpda
   const [error, setError] = useState(null);
   const [resumen, setResumen] = useState(null);
   
-  // 🆕 Estados para el modal de edición
   const [showEditModal, setShowEditModal] = useState(false);
   const [loteToEdit, setLoteToEdit] = useState(null);
   
-  // 🆕 Hook para obtener permisos del usuario
   const { permissions } = useRole();
 
   useEffect(() => {
@@ -72,38 +70,32 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName, onLoteUpda
     const lotesConStock = lotes.filter(lote => lote.cantidad > 0);
     if (lotesConStock.length === 0) return null;
     
-    // El primer lote (ya están ordenados por fecha de vencimiento)
     return lotesConStock[0];
   };
 
   if (!isOpen) return null;
 
-  // 🆕 Función para manejar clic en el overlay
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // 🆕 Función para abrir el modal de edición
   const handleEditLote = (lote) => {
     setLoteToEdit(lote);
     setShowEditModal(true);
   };
 
-  // 🆕 Función para cerrar el modal de edición
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setLoteToEdit(null);
   };
 
-  // 🆕 Función para manejar cuando se actualiza un lote
   const handleLoteUpdated = async () => {
-    await fetchLotes(); // Refrescar los lotes
+    await fetchLotes();
     setShowEditModal(false);
     setLoteToEdit(null);
     
-    // 🆕 NUEVO: Notificar al componente padre que se actualizó un lote
     if (onLoteUpdated) {
       onLoteUpdated();
     }
@@ -230,14 +222,13 @@ const ProductLotesModal = ({ isOpen, onClose, productId, productName, onLoteUpda
                 )}
               </div>
 
-              {/* 🆕 Modal para editar lote */}
               {showEditModal && loteToEdit && (
                 <EditLoteModal 
                   isOpen={showEditModal} 
                   onClose={handleCloseEditModal} 
                   lote={loteToEdit}
                   productId={productId}
-                  onLoteUpdated={handleLoteUpdated} // Callback para refrescar lotes
+                  onLoteUpdated={handleLoteUpdated}
                 />
               )}
             </>

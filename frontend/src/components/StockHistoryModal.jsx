@@ -84,7 +84,6 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
 
   if (!isOpen) return null;
 
-  // 🆕 Función para manejar clic en el overlay
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -131,7 +130,7 @@ const StockHistoryModal = ({ isOpen, onClose, productId, productName }) => {
                 <div key={index} className="timeline-item">
                   <div className="timeline-marker" style={{ 
                     backgroundColor: isRestoreMovement(cambio.motivo) 
-                      ? '#28a745' // Verde para restauraciones
+                      ? '#28a745'
                       : tipoMovimientoColors[cambio.tipoMovimiento] 
                   }}>
                     <span className="movement-icon">

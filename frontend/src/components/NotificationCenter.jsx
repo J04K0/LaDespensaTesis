@@ -131,7 +131,6 @@ const NotificationCenter = () => {
       setUnreadCount(prev => prev + 1);
     });
     
-    // Manejar eventos de conexión para debugging
     socket.on('connect', () => {
     });
     socket.on('disconnect', (reason) => {

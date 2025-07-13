@@ -7,7 +7,7 @@ const ProductTableView = ({
   products, 
   onEdit, 
   onDelete, 
-  onDeletePermanently, // 🆕 Nueva prop para eliminar definitivamente
+  onDeletePermanently,
   onInfo,
   onShowLotes,
   getStockColorClass,

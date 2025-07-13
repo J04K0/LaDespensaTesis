@@ -13,7 +13,6 @@ const EditLoteModal = ({ isOpen, onClose, lote, productId, productName, onLoteUp
   });
   const [loading, setLoading] = useState(false);
 
-  // Llenar el formulario cuando se abre el modal
   useEffect(() => {
     if (isOpen && lote) {
       setFormData({
@@ -53,11 +52,10 @@ const EditLoteModal = ({ isOpen, onClose, lote, productId, productName, onLoteUp
     try {
       setLoading(true);
       
-      // Solo enviar campos editables, mantener precio de venta original del lote
       const loteData = {
         cantidad: parseInt(formData.cantidad),
         precioCompra: parseFloat(formData.precioCompra),
-        precioVenta: parseFloat(lote.precioVenta), // Mantener el precio original
+        precioVenta: parseFloat(lote.precioVenta),
         fechaVencimiento: formData.fechaVencimiento
       };
 

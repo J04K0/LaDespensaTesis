@@ -11,9 +11,9 @@ import {
   faFilter,
   faSpinner,
   faEyeSlash,
-  faTrash // 🆕 Agregar icono de eliminar
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
-import { getDisabledProducts, restoreProduct, deleteProductPermanently } from '../services/AddProducts.service'; // 🆕 Importar función de eliminación
+import { getDisabledProducts, restoreProduct, deleteProductPermanently } from '../services/AddProducts.service';
 import { showConfirmationAlert, showSuccessAlert, showErrorAlert } from '../helpers/swaHelper';
 import { CATEGORIAS } from '../constants/products.constants';
 import SmartPagination from './SmartPagination';
@@ -78,7 +78,6 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
       const productIdToRemove = productToActivate._id;
       const productName = productToActivate.Nombre;
       
-      // Actualizar la lista local sin recargar la página
       setDisabledProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(product => product._id !== productIdToRemove);
         
@@ -102,18 +101,15 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
         return updatedProducts;
       });
       
-      // Mostrar mensaje de éxito sin opción de redirección
       showSuccessAlert(
         'Producto habilitado exitosamente', 
         `"${productName}" ha sido habilitado y está disponible en el inventario principal.`
       );
       
-      // Llama al callback para actualizar la lista principal de productos
       if (onProductReactivated) {
         onProductReactivated();
       }
       
-      // Cerrar el modal de confirmación y limpiar estados
       setShowActivateModal(false);
       setProductToActivate(null);
       setActivateComment('');
@@ -126,7 +122,6 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
     }
   };
 
-  // 🆕 NUEVA función para manejar eliminación definitiva
   const handleDeletePermanently = async (product) => {
     const result = await showConfirmationAlert(
       "¿Eliminar producto definitivamente?",
@@ -145,7 +140,6 @@ const DisabledProductsModal = ({ isOpen, onClose, onProductReactivated }) => {
       const productIdToRemove = product._id;
       const productName = product.Nombre;
       
-      // Actualizar la lista local sin recargar la página
       setDisabledProducts(prevProducts => {
         const updatedProducts = prevProducts.filter(p => p._id !== productIdToRemove);
         

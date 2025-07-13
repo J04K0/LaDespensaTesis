@@ -7,10 +7,7 @@ function Login() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Agregar la clase login-page al body cuando el componente se monta
     document.body.classList.add('login-page');
-    
-    // Eliminar la clase cuando el componente se desmonta
     return () => {
       document.body.classList.remove('login-page');
     };

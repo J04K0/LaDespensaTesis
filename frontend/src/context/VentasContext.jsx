@@ -32,7 +32,6 @@ export const VentasProvider = ({ children }) => {
           return;
         }
         
-        // 🔧 FIX: Solo mostrar loading en la carga inicial
         if (!initialLoadComplete) {
           setLoading(true);
         }
@@ -46,17 +45,14 @@ export const VentasProvider = ({ children }) => {
         setRetryCount(0);
         setInitialLoadComplete(true);
         
-        // 🔧 FIX: Establecer loading a false inmediatamente después de cargar los datos
         setLoading(false);
       } catch (err) {
         console.error('❌ Error al cargar ventas globales:', err);
         
-        // Si es error de autenticación y no hemos reintentado muchas veces
         if ((err.response?.status === 401 || err.response?.status === 403) && retryCount < 2) {
           console.log(`🔄 Reintentando carga de ventas (intento ${retryCount + 1}/2)...`);
           setRetryCount(prev => prev + 1);
           
-          // Reintentar después de un breve delay
           setTimeout(() => {
             fetchVentas();
           }, 1000);
@@ -109,7 +105,6 @@ export const VentasProvider = ({ children }) => {
       if (!ventasGlobales) return [];
       
       return ventasGlobales.filter(venta => {
-        // Buscar en el array de productos de cada ticket
         if (venta.ventas && Array.isArray(venta.ventas)) {
           return venta.ventas.some(producto => 
             producto.codigoBarras === codigoBarras || 
@@ -227,7 +222,6 @@ export const VentasProvider = ({ children }) => {
   }, [ventasGlobales]);
 
   const refreshVentas = async () => {
-    // 🔧 FIX: No mostrar loading global al refrescar, solo un indicador local si es necesario
     const wasLoading = loading;
     if (!wasLoading) {
       setLoading(true);
