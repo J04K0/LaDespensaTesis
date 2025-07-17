@@ -10,6 +10,7 @@ import ProductDisabledModal from '../components/ProductDisabledModal';
 import StockHistoryModal from '../components/StockHistoryModal';
 import DisabledProductsModal from '../components/DisabledProductsModal';
 import ProductLotesModal from '../components/ProductLotesModal';
+import StockControlModal from '../components/StockControlModal';
 import '../styles/ProductsStyles.css';
 import { getProducts, getProductsByCategory, disableProduct, deleteProductPermanently, getProductsExpiringSoon, getExpiredProducts, getLowStockProducts, updateProduct, getProductById } from '../services/AddProducts.service';
 import { obtenerVentas, obtenerVentasProducto } from '../services/venta.service';
@@ -18,7 +19,7 @@ import { useRole } from '../hooks/useRole';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import ProductCardSkeleton from '../components/Skeleton/ProductCardSkeleton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFilter, faSearch, faPen, faTrash, faInfo, faTimes, faChevronDown, faHistory, faEye, faEyeSlash, faFilePdf, faList, faThLarge, faTrashRestore, faClipboardList } from '@fortawesome/free-solid-svg-icons';
 import { ExportService } from '../services/export.service.js';
 import SmartPagination from '../components/SmartPagination';
 import { MARGENES_POR_CATEGORIA, STOCK_MINIMO_POR_CATEGORIA, CATEGORIAS } from '../constants/products.constants.js';
@@ -77,6 +78,9 @@ const Products = () => {
   const [showLotesModal, setShowLotesModal] = useState(false);
   const [lotesProductId, setLotesProductId] = useState(null);
   const [lotesProductName, setLotesProductName] = useState('');
+
+  // 🆕 Estado para el modal de control de stock
+  const [showStockControlModal, setShowStockControlModal] = useState(false);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -873,6 +877,13 @@ const Products = () => {
                 <button className="products-btn products-btn-export-pdf" onClick={handleExportToPDF}>
                   <FontAwesomeIcon icon={faFilePdf} /> Descargar PDF
                 </button>
+                <button 
+                  className="products-btn products-btn-stock-control" 
+                  onClick={() => setShowStockControlModal(true)}
+                  title="Control de stock manual"
+                >
+                  <FontAwesomeIcon icon={faClipboardList} /> Control de Stock
+                </button>
               </div>
             </div>
           
@@ -1089,6 +1100,12 @@ const Products = () => {
         productName={lotesProductName}
         onLoteUpdated={handleLoteUpdatedCallback}
         onToggleLotes={handleLotesToggle}
+      />
+      
+      {/* 🆕 NUEVO MODAL DE CONTROL DE STOCK */}
+      <StockControlModal
+        isOpen={showStockControlModal}
+        onClose={() => setShowStockControlModal(false)}
       />
     </div>
   );

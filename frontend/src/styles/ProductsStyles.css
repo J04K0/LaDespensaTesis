@@ -1020,6 +1020,20 @@
   box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
 }
 
+/* Botón de Control de Stock */
+.products-btn-stock-control {
+  background-color: #17a2b8;
+  color: white;
+  border: 1px solid #17a2b8;
+}
+
+.products-btn-stock-control:hover {
+  background-color: #138496;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
 /* Botón de Descargar PDF */
 .products-btn-export-pdf {
   background-color: #dc3545;
