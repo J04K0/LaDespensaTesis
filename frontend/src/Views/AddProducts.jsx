@@ -360,7 +360,7 @@ const AddProducts = () => {
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     
     if (!allowedTypes.includes(file.type)) {
-      showErrorAlert('Formato no válido', 'Solo se permiten archivos JPG, PNG y WebP');
+      showErrorAlert('Formato no válido', 'Solo se permiten archivos JPG, PNG');
       return;
     }
     

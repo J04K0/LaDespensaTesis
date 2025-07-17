@@ -409,13 +409,7 @@ export const verificarStock = async (req, res) => {
         return false;
       }
       return producto.Stock <= stockMinimo;
-    });
-
-    // ❌ ELIMINAR: Ya no enviar alertas automáticas desde aquí
-    // Esta función ahora solo devuelve los datos sin enviar alertas
-
-    // REVISAR ESTO//
-    
+    });    
     if (productosFiltrados.length > 0) {
       return handleSuccess(res, 200, 'Productos con poco stock', productosFiltrados);
     }

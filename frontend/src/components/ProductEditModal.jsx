@@ -173,7 +173,7 @@ const ProductEditModal = forwardRef(({
               className="product-edit-form-control product-edit-file-input"
               disabled={loading}
             />
-            <small className="product-edit-form-text">Formatos aceptados: JPG, PNG, GIF. Tamaño máximo: 5MB</small>
+            <small className="product-edit-form-text">Formatos aceptados: JPG, PNG, JPEG. Tamaño máximo: 5MB</small>
             
             {typeof editImage === 'string' && (
               <div className="product-edit-current-image">
