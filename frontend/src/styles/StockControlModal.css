@@ -626,6 +626,34 @@
   box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
 }
 
+/* Estados de productos con comentarios */
+.status-incorrect-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.status-comment {
+  width: 100%;
+}
+
+.comment-preview {
+  display: block;
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.2;
+  border-left: 3px solid #dc3545;
+  margin-top: 2px;
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
 /* Responsive para modal de comentario */
 @media (max-width: 768px) {
   .comment-modal {

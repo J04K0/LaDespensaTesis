@@ -588,9 +588,21 @@ const StockControlModal = ({ isOpen, onClose }) => {
                               </span>
                             )}
                             {stockStatus[product._id] === 'incorrect' && (
-                              <span className="status-incorrect">
-                                <FontAwesomeIcon icon={faExclamationTriangle} /> Incorrecto
-                              </span>
+                              <div className="status-incorrect-container">
+                                <span className="status-incorrect">
+                                  <FontAwesomeIcon icon={faExclamationTriangle} /> Incorrecto
+                                </span>
+                                {stockComments[product._id] && (
+                                  <div className="status-comment">
+                                    <small className="comment-preview">
+                                      {stockComments[product._id].length > 30 
+                                        ? `${stockComments[product._id].substring(0, 30)}...` 
+                                        : stockComments[product._id]
+                                      }
+                                    </small>
+                                  </div>
+                                )}
+                              </div>
                             )}
                             {!stockStatus[product._id] && (
                               <span className="status-pending">Sin verificar</span>
