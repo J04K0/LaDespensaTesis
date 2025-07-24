@@ -912,7 +912,7 @@ const AddProducts = () => {
                               </div>
                               <div className="addproducts-product-price">
                                 <FontAwesomeIcon icon={faDollarSign} />
-                                <span>${product.PrecioVenta}</span>
+                                <span>{product.PrecioVenta}</span>
                               </div>
                               <div className="addproducts-product-barcode">
                                 <FontAwesomeIcon icon={faBarcode} />

@@ -4,7 +4,7 @@
 
 ## Descripción
 
-La Despensa es un sistema completo de gestión para almacenes que permite administrar inventario, ventas, proveedores, finanzas, cuentas por pagar y gestión de deudores. Diseñado específicamente para satisfacer las necesidades de pequeños y medianos negocios con características avanzadas de análisis financiero y notificaciones en tiempo real.
+La Despensa es un sistema completo de gestión para almacenes que permite administrar inventario, ventas, proveedores, finanzas, cuentas por pagar y gestión de deudores. Diseñado específicamente para satisfacer las necesidades de pequeños y medianos negocios con características avanzadas de análisis financiero, notificaciones en tiempo real y reportería profesional.
 
 ## Funcionalidades Principales
 
@@ -16,6 +16,7 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Filtros temporales** (última semana, mes, año, todo el tiempo)
 - **Descarga de reportes completos** en PDF con todos los gráficos
 - **Indicadores visuales** de rendimiento y tendencias
+- **Centro de notificaciones** integrado con alertas en tiempo real
 
 ### 📦 Gestión Avanzada de Productos
 - **Registro completo** con datos detallados (nombre, código de barras, categoría, precio, stock, imagen)
@@ -59,6 +60,7 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Validaciones en tiempo real** de stock y disponibilidad
 - **Soporte para ventas a crédito** con registro automático en deudores
 - **Creación rápida de productos** desde el punto de venta
+- **Reporte de cierre de sesión** automático con resumen de actividades
 
 ### 📊 Historial de Ventas Completo
 - **Visualización cronológica** con ordenamiento por fecha y hora
@@ -67,11 +69,12 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Sistema de devoluciones** parciales y completas con actualización automática
 - **Anulación de ventas** completas con restauración de stock
 - **Vista de ventas anuladas** separada para mejor control
-- **Exportación a PDF** de reportes filtrados
+- **Exportación a PDF** de reportes filtrados con información detallada
 - **Vista detallada** de cada ticket con productos vendidos
 - **Paginación inteligente** para manejo eficiente de grandes volúmenes
 - **Control de permisos** por roles de usuario
 - **Estadísticas automáticas** de productos más vendidos
+- **Reportes diferenciados** para ventas activas y anuladas
 
 ### 💰 Gestión Integral de Deudores
 - **Registro completo** con datos de contacto y montos
@@ -100,7 +103,7 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Edición completa** de información de contacto y datos comerciales
 - **Categorización automática** basada en productos suministrados
 - **Filtros avanzados** por nombre, categoría, estado y productos
-- **Exportación a PDF** con listado completo
+- **Exportación a PDF** con listado completo diferenciado por estado
 - **Paginación inteligente** para catálogos grandes
 - **Vista previa** de productos asociados en la tabla principal
 
@@ -108,18 +111,22 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Panel de indicadores clave** con métricas en tiempo real
 - **Navegación por secciones**: General, Ingresos, Productos, Rentabilidad
 - **Gráficos interactivos** con capacidad de alternar entre tabla y gráfico
-- **Análisis por períodos** (semana, mes, año, personalizado)
+- **Análisis por períodos** flexibles (semana, mes, año, trimestre, personalizado)
+- **Filtros temporales avanzados** con selección específica de fechas
 - **Indicadores de rentabilidad** por producto y categoría
 - **Cálculo automático** de ganancias y márgenes
 - **Seguimiento de gastos** categorizados
 - **Balance completo** de ingresos vs costos
-- **Filtros temporales** avanzados con fechas específicas
 - **Tooltips informativos** que explican cada métrica
 - **Análisis de productos** más vendidos y de lenta rotación
 - **Comparativas financieras** visuales
 - **Análisis de inventario** por categoría con porcentajes
 - **Paginación inteligente** para datos temporales
 - **Exportación completa** a PDF con reportes profesionales
+- **Análisis de frecuencia de ventas** por producto
+- **Métricas de rotación de inventario** avanzadas
+- **Distribución de ventas** por días de la semana
+- **Análisis de márgenes** por categoría con clasificación de rendimiento
 
 ### 💳 Cuentas por Pagar
 - **Creación detallada** con vinculación a proveedores existentes
@@ -132,28 +139,44 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Búsqueda rápida** por nombre o identificador
 - **Resumen automático** mensual con totales y estadísticas
 - **Autocompletado** de proveedores existentes
-- **Exportación a PDF** con reportes detallados
+- **Exportación a PDF** con reportes detallados por año
 - **Paginación inteligente** para grandes volúmenes
 - **Control de permisos** por roles de usuario
+- **Indicadores visuales** de cumplimiento de pagos
+- **Análisis de tendencias** de gastos por categoría
 
-### 📄 Sistema de Reportes y Exportación
+### 📄 Sistema de Reportes y Exportación Profesional
 - **Servicio centralizado** de exportación con múltiples formatos
-- **Reportes en PDF** con diseño profesional y branding
+- **Reportes en PDF** con diseño profesional y branding corporativo
 - **Tipos de reportes disponibles**:
-  - Reporte de productos con filtros aplicados
-  - Reporte de proveedores con datos completos
-  - Reporte de deudores con estados de cuenta
-  - Reporte de historial de ventas con análisis detallado
-  - Reporte financiero completo con gráficos
-  - Reportes de cuentas por pagar
+  - **Reporte de productos** con filtros aplicados y datos completos
+  - **Reporte de proveedores** diferenciado por estado (activos/inactivos/mixto)
+  - **Reporte de deudores** con estados de cuenta detallados
+  - **Reporte de historial de ventas** con análisis detallado (activas/anuladas)
+  - **Reporte financiero completo** con gráficos y análisis por períodos
+  - **Reportes de cuentas por pagar** organizados por año
+  - **Reporte de cierre de sesión** automático para control de caja
+  - **Reporte integral del sistema** con todos los datos consolidados
 - **Generación automática** con metadatos completos
-- **Personalización** de períodos y filtros
+- **Personalización** de períodos y filtros aplicados
 - **Tablas formateadas** con autoTable para presentación profesional
+- **Información contextual** de filtros aplicados en cada reporte
+- **Numeración automática** de páginas con información corporativa
+- **Diseño responsivo** adaptado para impresión
 
-### 🔔 Sistema de Notificaciones
+### 🔔 Sistema de Notificaciones Inteligente
+- **Centro de notificaciones** unificado con gestión de estado
 - **Integración con servicios de email** para alertas importantes
-- **Notificaciones de stock bajo** y productos vencidos
-- **Alertas de fechas de vencimiento** próximas
+- **Notificaciones de stock bajo** y productos agotados
+- **Alertas de fechas de vencimiento** próximas y productos vencidos
+- **Sistema de cooldown** para evitar spam de notificaciones
+- **Notificaciones WebSocket** en tiempo real
+- **Agrupación inteligente** de notificaciones similares
+- **Reporte diario completo** automático por email
+- **Alertas diferenciadas** por urgencia y tipo
+- **Programación automática** de revisiones (cron jobs)
+- **Persistencia local** de notificaciones leídas/no leídas
+- **Eliminación automática** de duplicados
 
 ### 🎨 Experiencia de Usuario Optimizada
 - **Componentes Skeleton** para mejor percepción de carga
@@ -168,6 +191,8 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Navegación intuitiva** con breadcrumbs y controles optimizados
 - **Paginación inteligente** reutilizable (SmartPagination)
 - **Control de permisos** por roles en toda la aplicación
+- **Tooltips informativos** en secciones financieras
+- **Alternancia de vistas** entre gráficos y tablas
 
 ### 🔧 Características Técnicas Avanzadas
 - **Context API** para gestión de estado de ventas
@@ -182,6 +207,10 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Optimización de imágenes** automática
 - **Control de scroll** avanzado en modales
 - **Persistencia de estado** en navegación
+- **Servicio de recolección de datos** centralizado
+- **Exportación masiva** de datos del sistema
+- **Caching inteligente** para notificaciones
+- **WebSocket** para comunicación en tiempo real
 
 ## Tecnologías Utilizadas
 
@@ -193,6 +222,8 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **FontAwesome** para iconografía completa
 - **SweetAlert2** para notificaciones y confirmaciones
 - **jsPDF & AutoTable** para generación de reportes PDF
+- **Chart.js** con plugins para gráficos interactivos
+- **Socket.io-client** para notificaciones en tiempo real
 - **CSS personalizado** con variables y diseño responsivo
 
 ### Backend
@@ -202,6 +233,8 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Multer** para manejo de archivos e imágenes
 - **Express-validator** para validación de datos
 - **Nodemailer** para servicios de email
+- **Socket.io** para comunicación en tiempo real
+- **Node-cron** para tareas programadas
 - **Dotenv** para variables de entorno
 
 ## Arquitectura del Sistema
@@ -212,6 +245,8 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Routing** dinámico con protección de rutas por roles
 - **Componentes Skeleton** para mejor UX durante cargas
 - **Sistema de permisos** integrado en toda la aplicación
+- **Centro de notificaciones** con gestión de estado local
+- **Servicios especializados** para exportación y recolección de datos
 
 ### Backend (API RESTful)
 - **API RESTful** con Express y middleware personalizado
@@ -219,11 +254,15 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Validación robusta** con schemas específicos
 - **Servicios especializados** para emails, alertas y exportación
 - **Gestión de archivos** optimizada
+- **Sistema de notificaciones** con WebSocket
+- **Tareas programadas** para alertas automáticas
+- **Servicio de email** con templates profesionales
 
 ### Base de Datos
 - **MongoDB** con esquemas optimizados
 - **Modelos principales**: Products, Venta, Deudores, Proveedores, CuentasPorPagar, User
 - **Validaciones** a nivel de esquema con Mongoose
+- **Índices optimizados** para consultas eficientes
 
 ## Roles y Permisos
 
@@ -232,18 +271,50 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 - **Puede realizar ventas** en ProductScanner
 - **Puede consultar** productos, proveedores, deudores
 - **No puede crear, editar o eliminar** registros principales
+- **Reporte de sesión limitado** sin acceso al historial completo
 
 ### Jefe
 - **Acceso completo** a todas las funcionalidades
 - **Puede gestionar** productos, ventas, deudores
 - **Acceso a reportes** y análisis financieros
 - **Gestión de proveedores** y cuentas por pagar
+- **Reporte de cierre de caja** completo
 
 ### Admin
 - **Acceso total** del sistema
 - **Gestión de usuarios** y roles
 - **Configuración** del sistema
 - **Todas las funcionalidades** disponibles
+- **Acceso a reportes integrales** del sistema
+
+## Reportes y Salidas del Sistema
+
+### 📊 Informes en PDF
+- **Reporte de productos** con filtros aplicados y estadísticas
+- **Reporte de proveedores** diferenciado por estado
+- **Reporte de deudores** con análisis de cuentas
+- **Reporte financiero** con gráficos y métricas detalladas
+- **Reporte de ventas** (activas y anuladas) con análisis temporal
+- **Reporte de cuentas por pagar** organizadas por año
+- **Reporte de cierre de sesión** para control diario
+- **Reporte integral** con consolidado de todo el sistema
+
+### 📈 Gráficas Interactivas
+- **Gráficos de ventas** por categoría con datos dinámicos
+- **Análisis de productos** más y menos vendidos
+- **Distribución temporal** de ingresos por día/semana/mes
+- **Comparativas financieras** visuales de ingresos vs costos
+- **Análisis de rentabilidad** por categoría y período
+- **Métricas de rotación** de inventario
+- **Gráficos de frecuencia** de ventas por producto
+- **Visualización de márgenes** por categoría
+
+### 🔔 Notificaciones Automáticas
+- **Alertas de stock bajo** por email y en tiempo real
+- **Notificaciones de productos vencidos** y próximos a vencer
+- **Reporte diario completo** por email programado
+- **Alertas de cuentas por pagar** pendientes
+- **Notificaciones de operaciones críticas** del sistema
 
 ## Requisitos del Sistema
 
@@ -255,9 +326,10 @@ La Despensa es un sistema completo de gestión para almacenes que permite admini
 ### Producción
 - Node.js (v16.x o superior)
 - MongoDB Atlas o MongoDB (v5.x o superior)
-- Espacio en disco: Mínimo 1GB
+- Espacio en disco: Mínimo 2GB (incrementado por reportes y logs)
 - Memoria RAM: Mínimo 4GB recomendado
 - Procesador: Dual-core mínimo
+- Servicio de email: Gmail u otro proveedor SMTP
 
 ## Instalación y Despliegue
 
@@ -322,7 +394,7 @@ LaDespensaTesis/
 │   │   ├── models/          # Modelos de datos (Mongoose)
 │   │   ├── routes/          # Rutas de la API REST
 │   │   ├── schema/          # Esquemas de validación
-│   │   ├── services/        # Servicios de negocio
+│   │   ├── services/        # Servicios de negocio (email, alertas)
 │   │   └── utils/           # Utilidades generales
 │   └── package.json
 │
@@ -335,6 +407,8 @@ LaDespensaTesis/
     │   ├── helpers/         # Funciones auxiliares
     │   ├── hooks/           # Hooks personalizados
     │   ├── services/        # Servicios para comunicación con API
+    │   │   ├── export.service.js      # Servicio de exportación PDF
+    │   │   └── dataCollection.service.js # Recolección de datos
     │   ├── styles/          # Archivos CSS organizados
     │   └── Views/           # Componentes principales/páginas
     │       ├── Home.jsx
@@ -360,6 +434,7 @@ LaDespensaTesis/
 - **Gestión segura** de variables de entorno
 - **Validación de archivos** subidos al servidor
 - **Control de acceso** por roles en toda la aplicación
+- **Rate limiting** en notificaciones para prevenir spam
 
 ## Rendimiento y Optimización
 
@@ -371,11 +446,13 @@ LaDespensaTesis/
 - **Optimización de queries** MongoDB con índices
 - **Paginación inteligente** en todas las vistas
 - **Bundle optimization** con Vite
+- **Caching de notificaciones** para mejor rendimiento
+- **Generación asíncrona** de reportes PDF
 
 ---
 
 **Desarrollado por:** @J04K0 y @PabloCastilloFer © 2025
 
-**Tecnologías principales:** React 18, Node.js, Express, MongoDB, JWT
+**Tecnologías principales:** React 18, Node.js, Express, MongoDB, JWT, Socket.io
 
 **Licencia:** MIT - Consulta el archivo LICENSE para más detalles

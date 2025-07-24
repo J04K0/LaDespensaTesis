@@ -8,7 +8,7 @@ import '../styles/DeudoresStyles.css';
 import '../styles/SmartPagination.css';
 import { getDeudores, deleteDeudor, updateDeudor, getDeudorById, cambiarEstadoDeudor } from '../services/deudores.service.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf, faCheck, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus,faPerson, faMoneyBillWave, faHistory, faChevronDown, faChevronUp, faSearch, faTimes, faSave, faFilePdf, faCheck, faEye, faEyeSlash, faCalculator } from '@fortawesome/free-solid-svg-icons';
 import { showSuccessAlert, showErrorAlert, showConfirmationAlert, showEmpleadoAccessDeniedAlert } from '../helpers/swaHelper';
 import { useRole } from '../hooks/useRole';
 import DeudoresListSkeleton from '../components/Skeleton/DeudoresListSkeleton';
@@ -1164,7 +1164,7 @@ const DeudoresList = () => {
                 {/* Card de Total de Deudores */}
                 <div className="deudores-stat-card deudores-stat-card-info">
                   <div className="deudores-stat-icon">
-                    <FontAwesomeIcon icon={faPlus} />
+                    <FontAwesomeIcon icon={faPerson} />
                   </div>
                   <div className="deudores-stat-content">
                     <h3 className="deudores-stat-value">{stats.totalDeudores}</h3>
@@ -1232,7 +1232,7 @@ const DeudoresList = () => {
                 {/* Card de Deuda Promedio */}
                 <div className="deudores-stat-card deudores-stat-card-light">
                   <div className="deudores-stat-icon">
-                    <FontAwesomeIcon icon={faFilePdf} />
+                    <FontAwesomeIcon icon={faCalculator} />
                   </div>
                   <div className="deudores-stat-content">
                     <h3 className="deudores-stat-value">${stats.deudaPromedio.toLocaleString('es-ES')}</h3>

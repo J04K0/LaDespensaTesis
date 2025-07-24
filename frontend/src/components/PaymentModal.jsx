@@ -56,7 +56,7 @@ const PaymentModal = ({
           <div className="deudores-modal-info">
             <p><strong>Deudor:</strong> {selectedDeudor.Nombre}</p>
             <span className="deuda-actual">
-              Deuda actual: ${selectedDeudor.deudaTotal}
+              Deuda actual: {selectedDeudor.deudaTotal}
             </span>
           </div>
 

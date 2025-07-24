@@ -529,14 +529,14 @@ const ProductScanner = () => {
       errores.push('Debe seleccionar una categoría');
     }
     
-    if (!codigoBarras || codigoBarras.trim().length !== 13) {
-      errores.push('El código de barras debe tener exactamente 13 caracteres');
+    if (!codigoBarras || codigoBarras.trim().length < 8 || codigoBarras.trim().length > 20) {
+      errores.push('El código de barras debe tener entre 8 a 20 caracteres');
     }
     
     // Validaciones numéricas
     const stockNum = parseInt(stock);
     if (!stock || isNaN(stockNum) || stockNum < 0) {
-      errores.push('El stock debe ser un número mayor o igual a 0');
+      errores.push('El stock debe ser un número mayor a 0');
     }
     
     const precioCompraNum = parseFloat(precioCompra);
